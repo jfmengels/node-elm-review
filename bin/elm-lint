@@ -1,0 +1,175 @@
+#!/usr/bin/env node
+
+const processTitle = 'elm-lint';
+
+process.title = processTitle;
+
+const path = require('path');
+const fs = require('fs-extra');
+const chalk = require('chalk');
+const findUp = require('find-up');
+const temp = require('temp').track(); // Automatically cleans up temp files.
+const firstline = require('firstline');
+const compile = require('node-elm-compiler').compile;
+
+let lintFile = 'tests/LintConfig.elm';
+
+process.on('uncaughtException', console.error);
+
+if (!fs.existsSync(lintFile)) {
+  console.error('Could not find file ' + lintFile);
+  process.exit(1);
+}
+
+function spawnCompiler(cmd, args, opts) {
+  const compilerOpts =
+  _.defaults({stdio: [process.stdin, process.stdout, process.stderr] }, opts);
+
+  return spawn(cmd, args, compilerOpts);
+}
+
+const moduleNameP = firstline(lintFile).then(function (testModuleLine) {
+  const moduleMatches = testModuleLine.match(/^(?:port\s+)?module\s+([^\s]+)/);
+  if (moduleMatches) {
+    return moduleMatches[1];
+  }
+
+  return 'Main';
+});
+
+const tempP = findUp('elm-package.json', { cwd: path.dirname(lintFile) })
+.then(elmPackagePath => {
+  const elmRootDir = path.dirname(elmPackagePath);
+  if (fs.realpathSync(elmRootDir) !== fs.realpathSync(process.cwd())) {
+    lintFile = path.relative(elmRootDir, lintFile);
+    process.chdir(elmRootDir);
+  }
+})
+.then(() => {
+  return new Promise((resolve, reject) => {
+    temp.open({ prefix:'elm_lint_', suffix:'.js' }, (err, info) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(info);
+    })
+  });
+});
+
+const compilationP = tempP.then(info => {
+  const dest = info.path;
+  return new Promise((resolve, reject) => {
+    const compileProcess = compile([lintFile], {
+      output: dest,
+      verbose: true, // args.verbose,
+      yes: true,
+      spawn: spawnCompiler,
+      // pathToMake: pathToMake,
+      warn: true // args.warn
+    });
+    compileProcess.on('error', reject);
+    compileProcess.on('close', resolve);
+  });
+})
+.then(exitCode => {
+  if (exitCode !== 0) {
+    return Promise.reject(new Error('Compilation failed for ' + lintFile));
+  }
+})
+.catch(console.error);
+
+Promise.all([moduleNameP, tempP, compilationP])
+.then(args => {
+  const moduleName = args[0];
+  const dest = args[1].path;
+  try {
+    evalElmCode(fs.readFileSync(dest, {encoding: 'utf8'}), moduleName);
+  } catch (err) {
+    console.error('The test run failed because it encountered a runtime exception:\n\n', err);
+  }
+});
+
+function evalElmCode(compiledCode, moduleName) {
+  // Apply Node polyfills as necessary.
+  var window = {Date: Date, addEventListener: function() {}, removeEventListener: function() {}};
+  var document = {body: {}, createTextNode: function() {}};
+  if (typeof XMLHttpRequest === 'undefined') { XMLHttpRequest = function() { return { addEventListener: function() {}, open: function() {}, send: function() {} }; }; }
+  if (typeof FormData === 'undefined') { FormData = function () { this._data = []; }; FormData.prototype.append = function () { this._data.push(Array.prototype.slice.call(arguments)); }; }
+
+  var Elm = function(module) { eval(compiledCode); return module.exports; }({});
+
+  // Make sure necessary things are defined.
+  if (typeof Elm === 'undefined') { throw 'elm-io config error: Elm is not defined. Make sure you provide a file compiled by Elm!'; }
+
+  function getTestModule() {
+    var module = Elm;
+    var moduleParts = moduleName.split('.');
+    while (moduleParts.length) {
+      var modulePart = moduleParts.shift();
+      if (module[modulePart] === undefined) {
+        return undefined;
+      }
+
+      module = module[modulePart];
+    }
+
+    return module;
+  }
+
+  var testModule = getTestModule();
+  if (testModule === undefined) { throw 'Elm.' + moduleName + ' is not defined. Make sure you provide a file compiled by Elm!'; }
+
+  var initialSeed = null;
+
+  // Fix Windows Unicode problems. Credit to https://github.com/sindresorhus/figures for the Windows compat idea!
+  var windowsSubstitutions = [[/[↓✗►]/g, '>'], [/╵│╷╹┃╻/g, '|'], [/═/g, '='],, [/▔/g, '-'], [/✔/g, '√']];
+
+  function windowsify(str) {
+    return windowsSubstitutions.reduce(
+      function(result, sub) { return result.replace(sub[0], sub[1]); }, str
+    );
+  }
+
+  function chalkify(messages) {
+    return messages.map(function(msg) {
+      var path = msg.styles;
+      var text = process.platform === 'win32' ? windowsify(msg.text) : msg.text;
+
+      if (path.length === 0) {
+        return text;
+      } else {
+        var fn = chalk;
+
+        path.forEach(function(nextPath) { fn = fn[nextPath]; });
+
+        return fn(text);
+      }
+    }).join('');
+  }
+
+  // Run the Elm app.
+  var app = testModule.worker({seed: initialSeed, report: 'chalk'});
+
+  // Receive messages from ports and translate them into appropriate JS calls.
+  app.ports.emit.subscribe(function(msg) {
+    var msgType = msg[0];
+    var data = msg[1];
+
+    if (msgType === 'FINISHED') {
+      if (data.format === 'CHALK') {
+        console.log(chalkify(data.message));
+      } else if (data.format === 'JUNIT') {
+        console.log(builder.create(data.message).end());
+      } else {
+        console.log(JSON.stringify(data.message));
+      }
+    } else if (msgType === 'STARTED' || msgType === 'TEST_COMPLETED')  {
+      if (data.format === 'CHALK') {
+        console.log(chalkify(data.message));
+      } else if (data.format === 'JSON') {
+        console.log(JSON.stringify(data.message));
+      }
+
+    }
+  });
+}
