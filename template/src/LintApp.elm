@@ -46,13 +46,47 @@ lint source =
            )
 
 
-
--- countErrors : Severity -> Int
+countErrors : Severity -> List ( File, List ( Severity, LintError ) ) -> Int
+countErrors severity errors =
+    errors
+        |> List.map
+            (Tuple.second
+                >> List.filter
+                    (Tuple.first
+                        >> (==) severity
+                    )
+                >> List.length
+            )
+        |> List.sum
 
 
 summary : List ( File, List ( Severity, LintError ) ) -> String
 summary errors =
-    ""
+    let
+        criticalCount =
+            countErrors Critical errors
+
+        warningCount =
+            countErrors Warning errors
+
+        criticalMessage =
+            if criticalCount == 0 then
+                ""
+            else
+                toString criticalCount ++ " critical problem(s)"
+
+        warningMessage =
+            if warningCount == 0 then
+                ""
+            else
+                toString warningCount ++ " warning(s)"
+
+        tallyMessage =
+            [ criticalMessage, warningMessage ]
+                |> List.filter ((/=) "")
+                |> String.join ", "
+    in
+        tallyMessage ++ "."
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -72,10 +106,10 @@ update msg model =
                         |> String.join "\n\n"
 
                 success =
-                    List.isEmpty errors
+                    countErrors Critical errors == 0
 
                 report =
-                    case success of
+                    case List.isEmpty errors of
                         True ->
                             "No linting errors."
 
