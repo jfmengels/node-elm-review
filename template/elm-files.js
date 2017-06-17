@@ -66,8 +66,7 @@ function getElmFiles(filePathArgs) {
       filename: file,
       source: fs.readFileSync(file, 'utf8')
     };
-  })
-  .filter(file => file.filename === 'tests/TestUtil.elm');;
+  });
 }
 
 module.exports = getElmFiles;
