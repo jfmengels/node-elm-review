@@ -13,6 +13,7 @@ const app = Elm.LintApp.worker();
 
 app.ports.linting.send(elmFiles);
 
-app.ports.resultPort.subscribe(function(report) {
-  console.log(report);
+app.ports.resultPort.subscribe(function(result) {
+  console.log(result.report);
+  process.exit(result.success ? 0 : 1);
 });

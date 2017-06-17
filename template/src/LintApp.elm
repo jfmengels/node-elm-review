@@ -15,7 +15,7 @@ type alias File =
 port linting : (List File -> msg) -> Sub msg
 
 
-port resultPort : String -> Cmd msg
+port resultPort : { success : Bool, report : String } -> Cmd msg
 
 
 type alias Model =
@@ -46,21 +46,44 @@ lint source =
            )
 
 
+
+-- countErrors : Severity -> Int
+
+
+summary : List ( File, List ( Severity, LintError ) ) -> String
+summary errors =
+    ""
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Lint files ->
             let
-                lintResult =
+                errors =
                     files
                         |> List.map (\file -> ( file, lint file.source ))
                         |> List.filter
                             (Tuple.second >> List.isEmpty >> not)
+
+                fileReports =
+                    errors
                         |> List.map formatReport
                         |> String.join "\n\n"
+
+                success =
+                    List.isEmpty errors
+
+                report =
+                    case success of
+                        True ->
+                            "No linting errors."
+
+                        False ->
+                            fileReports ++ "\n\n" ++ (summary errors)
             in
                 ( model
-                , resultPort lintResult
+                , resultPort { success = success, report = report }
                 )
 
 
