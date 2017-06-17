@@ -1,15 +1,10 @@
 port module LintApp exposing (..)
 
+import Reporter.CliReporter
 import Json.Decode
-import Lint exposing (lintSource)
-import Lint.Types exposing (LintRule, LintError, Severity(..))
+import Lint exposing (countErrors, lintSource)
+import Lint.Types exposing (File, LintRule, LintError, Severity(..))
 import LintConfig exposing (config)
-
-
-type alias File =
-    { filename : String
-    , source : String
-    }
 
 
 port linting : (List File -> msg) -> Sub msg
@@ -46,49 +41,6 @@ lint source =
            )
 
 
-countErrors : Severity -> List ( File, List ( Severity, LintError ) ) -> Int
-countErrors severity errors =
-    errors
-        |> List.map
-            (Tuple.second
-                >> List.filter
-                    (Tuple.first
-                        >> (==) severity
-                    )
-                >> List.length
-            )
-        |> List.sum
-
-
-summary : List ( File, List ( Severity, LintError ) ) -> String
-summary errors =
-    let
-        criticalCount =
-            countErrors Critical errors
-
-        warningCount =
-            countErrors Warning errors
-
-        criticalMessage =
-            if criticalCount == 0 then
-                ""
-            else
-                toString criticalCount ++ " critical problem(s)"
-
-        warningMessage =
-            if warningCount == 0 then
-                ""
-            else
-                toString warningCount ++ " warning(s)"
-
-        tallyMessage =
-            [ criticalMessage, warningMessage ]
-                |> List.filter ((/=) "")
-                |> String.join ", "
-    in
-        tallyMessage ++ "."
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -100,21 +52,11 @@ update msg model =
                         |> List.filter
                             (Tuple.second >> List.isEmpty >> not)
 
-                fileReports =
-                    errors
-                        |> List.map formatReport
-                        |> String.join "\n\n"
-
                 success =
                     countErrors Critical errors == 0
 
                 report =
-                    case List.isEmpty errors of
-                        True ->
-                            "No linting errors."
-
-                        False ->
-                            fileReports ++ "\n\n" ++ (summary errors)
+                    Reporter.CliReporter.formatReport errors
             in
                 ( model
                 , resultPort { success = success, report = report }
@@ -133,33 +75,3 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-
-formatSeverity : Severity -> String
-formatSeverity severity =
-    case severity of
-        Disabled ->
-            "Disabled"
-
-        Warning ->
-            "Warning"
-
-        Critical ->
-            "Critical"
-
-
-formatReport : ( File, List ( Severity, LintError ) ) -> String
-formatReport ( { filename }, errors ) =
-    let
-        formattedErrors =
-            List.map
-                (\( severity, { rule, message } ) ->
-                    "(" ++ (formatSeverity severity) ++ ") " ++ rule ++ ": " ++ message
-                )
-                errors
-    in
-        (toString (List.length errors))
-            ++ " errors found in '"
-            ++ filename
-            ++ "':\n\n\t"
-            ++ (String.join "\n\t" formattedErrors)
