@@ -1,6 +1,6 @@
 # node-elm-lint
 
-Run [elm-lint](https://github.com/jfmengels/elm-lint) from Node.js.
+Run [elm-lint] from Node.js.
 
 ## Installation
 
@@ -11,79 +11,66 @@ npm install -g elm-lint
 ## Usage
 
 ```bash
-elm-test init  # Adds the elm-test dependency and creates Main.elm and Tests.elm
-elm-test       # Runs the tests
+elm-lint --help  # Print the help
+elm-lint init    # Creates a `LintConfig.elm` file in which you can declare how you want to configure elm-lint
+elm-lint         # Lint your project
 ```
-
-Then add your tests to Tests.elm.
-
 
 ### Configuration
 
-The `--compiler` flag can be used to use a version of the Elm compiler that
-has not been installed globally.
-
-```
-npm install elm
-elm-test --compiler ./node_modules/.bin/elm-make
-```
-
-
-### Travis CI
-
-If you want to run your tests on Travis CI, here's a good starter `.travis.yml`:
-
-```yml
-sudo: false
-
-cache:
-  directories:
-    - elm-stuff/build-artifacts
-    - elm-stuff/packages
-    - sysconfcpus
-os:
-  - linux
-
-env:
-  matrix:
-    - ELM_VERSION=0.18.0 TARGET_NODE_VERSION=node
-
-before_install:
-  - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-
-install:
-  - nvm install $TARGET_NODE_VERSION
-  - nvm use $TARGET_NODE_VERSION
-  - node --version
-  - npm --version
-  - npm install -g elm@$ELM_VERSION elm-test
-  - git clone https://github.com/NoRedInk/elm-ops-tooling
-  - elm-ops-tooling/with_retry.rb elm package install --yes
-  # Faster compile on Travis.
-  - |
-    if [ ! -d sysconfcpus/bin ];
-    then
-      git clone https://github.com/obmarg/libsysconfcpus.git;
-      cd libsysconfcpus;
-      ./configure --prefix=$TRAVIS_BUILD_DIR/sysconfcpus;
-      make && make install;
-      cd ..;
-    fi
-before_script:
-  - $TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make ./tests/Main.elm
-
-script:
-  - elm-test ./tests/Main.elm
-
-```
-
-### Doc-Tests
-
-You can use `elm-test` to run your [doc-tests][1].
-This uses [`elm-doc-test`][1] under the hood. See `examples` or the [README.md](https://github.com/stoeffel/elm-doc-test/blob/master/Readme.md) of [`elm-doc-test`][1].
+To run `elm-lint` for the first time, you need to run
 
 ```bash
-elm-test --doctest
+elm-lint init
 ```
 
-[1]: https://github.com/stoeffel/elm-doc-test
+This will create a `LintConfig.elm` file at the root of your project, which looks like the following:
+
+```elm
+module LintConfig exposing (config)
+
+import Lint.Types exposing (LintRule, Severity(..))
+import Lint.Rules.DefaultPatternPosition
+import Lint.Rules.NoDebug
+import Lint.Rules.NoUnusedVariables
+
+
+config : List ( Severity, LintRule )
+config =
+    [ ( Critical, Lint.Rules.DefaultPatternPosition.rule { position = Lint.Rules.DefaultPatternPosition.Last } )
+    , ( Warning, Lint.Rules.NoDebug.rule )
+    , ( Critical, Lint.Rules.NoUnusedVariables.rule )
+    ]
+```
+
+The configuration consists of a list of linting rules. Rules are
+Import the rules you wish to use and pair them with a severity level (`Critical` / `Warning`).
+A reported `Critical` error will make `elm-lint` return a failure exit code, while a `Warning` error will not. You can see the full list of rules [here](https://github.com/jfmengels/elm-lint#rules).
+Do note that some rules will need additional configuration, but don't worry, if you misconfigure `elm-lint`, the Elm compiler will tell you.
+
+Once you're done configuring, run `elm-lint` and you should be good to go.
+
+### FAQ
+
+- I get the error `(Critical) Parsing error: expected end of input` for some of my files, what is happening?
+
+This means that your file could not be parsed.
+You should try and copy-paste that file's source code into the [`elm-ast` online demo](http://bogdanp.github.io/elm-ast/example/) to see if you can reproduce the error. If you are able to, then try to make a minimal reproducible example and open an issue on [`elm-ast`](https://github.com/Bogdanp/elm-ast).
+
+**In most cases**, this is due to comments made using `--` (e.g. `-- a comment`) that are not well handled by the parser. [elm-lint] tries to remove them before parsing, but does a bad job at it at the moment (help wanted).
+
+- Thanks for pointing out the error, but I would like to know **where** in my code the error is.
+
+At the moment, `elm-ast` is missing positional information on the generated AST, that `elm-lint` uses. You can follow [this issue](https://github.com/Bogdanp/elm-ast/issues/13) if you want to know more or to contribute.
+
+- I have an idea for a rule, how can I get it integrated into elm-lint?
+
+Please open an issue on [elm-lint] so we can talk about it. Try to make your proposal look like [this](https://github.com/eslint/eslint/blob/master/templates/rule-proposal.md).
+
+[elm-lint] would like to be able to provide support for a plugin system so that you can work on it without my approval. Maybe that already works, but if it doesn't, please open an issue about that.
+
+- The code looks bad and can be improved upon, also the documentation is lacking.
+
+You're absolutely right. Please open an issue if you have suggestions or open a pull request!
+
+[elm-lint]: https://github.com/jfmengels/elm-lint
