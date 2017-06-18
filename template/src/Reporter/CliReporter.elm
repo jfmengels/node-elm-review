@@ -8,13 +8,21 @@ formatSeverity : Severity -> String
 formatSeverity severity =
     case severity of
         Disabled ->
-            "Disabled"
+            "(Disabled)"
 
         Warning ->
-            "Warning"
+            "(Warning) "
 
         Critical ->
-            "Critical"
+            "(Critical)"
+
+
+maxSeverityLength : Int
+maxSeverityLength =
+    [ Disabled, Warning, Critical ]
+        |> List.map (formatSeverity >> String.length)
+        |> List.maximum
+        |> Maybe.withDefault 0
 
 
 formatReportForFile : ( File, List ( Severity, LintError ) ) -> String
@@ -23,7 +31,7 @@ formatReportForFile ( { filename }, errors ) =
         formattedErrors =
             List.map
                 (\( severity, { rule, message } ) ->
-                    "(" ++ (formatSeverity severity) ++ ") " ++ rule ++ ": " ++ message
+                    String.pad maxSeverityLength ' ' (formatSeverity severity) ++ " " ++ rule ++ ": " ++ message
                 )
                 errors
     in
