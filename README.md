@@ -5,7 +5,7 @@ Run [elm-lint] from Node.js.
 ## Installation
 
 ```bash
-npm install -g elm-lint
+npm install -g node-elm-lint
 ```
 
 ## Usage
@@ -24,7 +24,7 @@ To run `elm-lint` for the first time, you need to run
 elm-lint init
 ```
 
-This will create a `LintConfig.elm` file at the root of your project, which looks like the following:
+This will create a `LintConfig.elm` file at the root of your project, which you should commit into your project, which looks like the following:
 
 ```elm
 module LintConfig exposing (config)
