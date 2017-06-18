@@ -11,8 +11,7 @@
     "repository": "https://github.com/jfmengels/elm-lint.git",
     "license": "BSD3",
     "source-directories": [
-        "src",
-        "../../../../../src"
+        "src"
     ],
     "exposed-modules": [],
     "elm-version": "0.18.0 <= v < 0.19.0"
