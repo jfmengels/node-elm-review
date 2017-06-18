@@ -7,7 +7,7 @@
   },
   "scripts": {
     "flow": "flow",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "eslint bin/ lib/ template/*.js && npm run flow"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,8 @@
     "pify": "^3.0.0"
   },
   "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "eslint": "^4.0.0",
     "flow-bin": "^0.48.0"
   }
 }
