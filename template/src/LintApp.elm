@@ -33,7 +33,7 @@ lint source =
         |> (\result ->
                 case result of
                     Err errors ->
-                        [ ( Critical, { rule = "ParseError", message = String.join "\n" errors } )
+                        [ ( Critical, { rule = "Parsing error", message = String.join "\n" errors } )
                         ]
 
                     Ok result ->
