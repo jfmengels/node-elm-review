@@ -1,7 +1,8 @@
 module Reporter.CliReporter exposing (formatReport)
 
-import Lint exposing (countErrors)
-import Lint.Types exposing (File, LintRule, LintError, Reporter, Severity(..))
+import File exposing (File)
+import Lint exposing (LintError, Severity(..), lintSource)
+import Lint.Rule exposing (Rule)
 
 
 formatSeverity : Severity -> String
@@ -26,62 +27,79 @@ maxSeverityLength =
 
 
 formatReportForFile : ( File, List ( Severity, LintError ) ) -> String
-formatReportForFile ( { filename }, errors ) =
+formatReportForFile ( file, errors ) =
     let
+        formattedErrors : List String
         formattedErrors =
             List.map
-                (\( severity, { rule, message } ) ->
-                    String.pad maxSeverityLength ' ' (formatSeverity severity) ++ " " ++ rule ++ ": " ++ message
+                (\( severity, { ruleName, message } ) ->
+                    String.pad maxSeverityLength ' ' (formatSeverity severity) ++ " " ++ ruleName ++ ": " ++ message
                 )
                 errors
     in
-        (toString (List.length errors))
-            ++ " errors found in '"
-            ++ filename
-            ++ "':\n\n\t"
-            ++ (String.join "\n\t" formattedErrors)
+    File.name file
+        ++ " - "
+        ++ String.fromInt (List.length errors)
+        ++ " error(s):\n\n\t"
+        ++ String.join "\n\t" formattedErrors
 
 
 summary : List ( File, List ( Severity, LintError ) ) -> String
 summary errors =
     let
+        allErrors : List ( Severity, LintError )
+        allErrors =
+            List.concatMap Tuple.second errors
+
+        criticalCount : Int
         criticalCount =
-            countErrors Critical errors
+            allErrors
+                |> List.filter (Tuple.first >> (==) Critical)
+                |> List.length
 
+        warningCount : Int
         warningCount =
-            countErrors Warning errors
+            allErrors
+                |> List.filter (Tuple.first >> (==) Warning)
+                |> List.length
 
+        criticalMessage : String
         criticalMessage =
             if criticalCount == 0 then
                 ""
-            else
-                toString criticalCount ++ " critical problem(s)"
 
+            else
+                String.fromInt criticalCount ++ " critical problem(s)"
+
+        warningMessage : String
         warningMessage =
             if warningCount == 0 then
                 ""
-            else
-                toString warningCount ++ " warning(s)"
 
+            else
+                String.fromInt warningCount ++ " warning(s)"
+
+        tallyMessage : String
         tallyMessage =
             [ criticalMessage, warningMessage ]
                 |> List.filter ((/=) "")
                 |> String.join ", "
     in
-        tallyMessage ++ "."
+    tallyMessage ++ "."
 
 
-formatReport : Reporter String
+formatReport : List ( File, List ( Severity, LintError ) ) -> String
 formatReport errors =
     case List.isEmpty errors of
         True ->
-            "No linting errors."
+            "I found no linting errors.\nYou're all good!"
 
         False ->
             let
+                fileReports : String
                 fileReports =
                     errors
                         |> List.map formatReportForFile
-                        |> String.join "\n\n"
+                        |> String.join "\n\n\n\n"
             in
-                fileReports ++ "\n\n" ++ (summary errors)
+            fileReports ++ "\n\n\n\n" ++ summary errors

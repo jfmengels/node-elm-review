@@ -9,9 +9,15 @@ if (elmFiles.length === 0) {
   process.exit(1);
 }
 
-const app = Elm.LintApp.worker();
+const app = Elm.Elm.LintApp.init();
 
-app.ports.linting.send(elmFiles);
+elmFiles.forEach(file => {
+  app.ports.collectFile.send(file);
+})
+
+setTimeout(() => {
+  app.ports.finishedCollecting.send(true);
+}, 500)
 
 app.ports.resultPort.subscribe(function(result) {
   console.log(result.report); // eslint-disable-line no-console

@@ -63,7 +63,7 @@ function getElmFiles(filePathArgs) {
   const relativeElmFiles = getElmFilePaths(filePathArgs);
   return flatMap(relativeElmFiles, resolveFilePath).map(file => {
     return {
-      filename: file,
+      name: file,
       source: fs.readFileSync(file, 'utf8')
     };
   });
