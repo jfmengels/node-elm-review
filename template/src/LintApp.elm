@@ -1,10 +1,10 @@
-port module LintApp exposing (..)
+port module LintApp exposing (main)
 
-import Reporter.CliReporter
 import Json.Decode
 import Lint exposing (countErrors, lintSource)
-import Lint.Types exposing (File, LintRule, LintError, Severity(..))
+import Lint.Types exposing (File, LintError, LintRule, Severity(..))
 import LintConfig exposing (config)
+import Reporter.CliReporter
 
 
 port linting : (List File -> msg) -> Sub msg
@@ -58,9 +58,9 @@ update msg model =
                 report =
                     Reporter.CliReporter.formatReport errors
             in
-                ( model
-                , resultPort { success = success, report = report }
-                )
+            ( model
+            , resultPort { success = success, report = report }
+            )
 
 
 subscriptions : Model -> Sub Msg

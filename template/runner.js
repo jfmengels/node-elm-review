@@ -5,7 +5,7 @@ const Elm = require('./compiledLintApp');
 
 const elmFiles = getElmFiles([]);
 if (elmFiles.length === 0) {
-  console.error('Could not find any files to lint.'); // eslint-disable-line no-console
+  console.error('I could not find any files to lint.'); // eslint-disable-line no-console
   process.exit(1);
 }
 
