@@ -1,5 +1,7 @@
 module Reporter.CliReporter exposing (formatReport)
 
+import Array exposing (Array)
+import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
 import Lint exposing (LintError, Severity(..), lintSource)
 import Lint.Rule exposing (Rule)
@@ -26,22 +28,100 @@ maxSeverityLength =
         |> Maybe.withDefault 0
 
 
-formatReportForFile : ( File, List ( Severity, LintError ) ) -> String
-formatReportForFile ( file, errors ) =
+formatReportForFileShort : ( File, List ( Severity, LintError ) ) -> String
+formatReportForFileShort ( file, errors ) =
     let
         formattedErrors : List String
         formattedErrors =
-            List.map
-                (\( severity, { ruleName, message } ) ->
-                    String.pad maxSeverityLength ' ' (formatSeverity severity) ++ " " ++ ruleName ++ ": " ++ message
-                )
-                errors
+            List.map (formatErrorShort file) errors
     in
     File.name file
         ++ " - "
         ++ String.fromInt (List.length errors)
         ++ " error(s):\n\n\t"
         ++ String.join "\n\t" formattedErrors
+
+
+formatReportForFileWithExtract : ( File, List ( Severity, LintError ) ) -> String
+formatReportForFileWithExtract ( file, errors ) =
+    let
+        formattedErrors : List String
+        formattedErrors =
+            List.map (formatErrorWithExtract file) errors
+    in
+    ("-- LINTING ERROR ----------------------------------- " ++ File.name file ++ "\n\n")
+        ++ String.join "\n\n\n" formattedErrors
+
+
+formatErrorShort : File -> ( Severity, LintError ) -> String
+formatErrorShort file ( severity, { ruleName, message, range } ) =
+    String.pad maxSeverityLength ' ' (formatSeverity severity)
+        ++ " "
+        ++ ruleName
+        ++ ": "
+        ++ message
+
+
+formatErrorWithExtract : File -> ( Severity, LintError ) -> String
+formatErrorWithExtract file ( severity, { ruleName, message, range } ) =
+    getCodeAtLocationInSourceCode file range
+        ++ ("\n" ++ formatSeverity severity ++ " " ++ ruleName ++ ": " ++ message)
+
+
+getCodeAtLocationInSourceCode : File -> Range -> String
+getCodeAtLocationInSourceCode file =
+    let
+        getRowAtLine_ : Int -> String
+        getRowAtLine_ =
+            getRowAtLine file
+    in
+    \({ start, end } as range) ->
+        if start.row == end.row then
+            getRowAtLine_ (start.row - 2)
+                ++ getRowAtLine_ (start.row - 1)
+                ++ underlineError range
+                ++ getRowAtLine_ end.row
+
+        else
+            "TODO multiline support"
+
+
+getRowAtLine : File -> Int -> String
+getRowAtLine file =
+    let
+        lines : Array String
+        lines =
+            file
+                |> File.source
+                |> String.lines
+                |> Array.fromList
+    in
+    \rowIndex ->
+        case Array.get rowIndex lines of
+            Just line ->
+                if String.trim line /= "" then
+                    String.fromInt rowIndex ++ "| " ++ line ++ "\n"
+
+                else
+                    ""
+
+            Nothing ->
+                ""
+
+
+underlineError : Range -> String
+underlineError { start, end } =
+    let
+        offsetBecauseOfLineNumber : Int
+        offsetBecauseOfLineNumber =
+            (end.row + 1)
+                |> String.fromInt
+                |> String.length
+                |> (+) 2
+    in
+    String.repeat (offsetBecauseOfLineNumber + start.column - 1) " "
+        ++ String.repeat (end.column - start.column) "^"
+        ++ "\n"
 
 
 summary : List ( File, List ( Severity, LintError ) ) -> String
@@ -99,7 +179,7 @@ formatReport errors =
                 fileReports : String
                 fileReports =
                     errors
-                        |> List.map formatReportForFile
+                        |> List.map formatReportForFileWithExtract
                         |> String.join "\n\n\n\n"
             in
             fileReports ++ "\n\n\n\n" ++ summary errors
