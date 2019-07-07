@@ -9,39 +9,40 @@ import Lint.Rule exposing (Rule)
 import Reporter.Text as Text exposing (Text)
 
 
-formatSeverity : Severity -> String
+formatSeverity : Severity -> Text
 formatSeverity severity =
     case severity of
         Disabled ->
-            "(Disabled)"
+            Text.from "(Disabled)"
 
         Warning ->
-            "(Warning) "
+            Text.from "(Warning) "
+                |> Text.inYellow
 
         Critical ->
-            "(Critical)"
+            Text.from "(Critical)"
+                |> Text.inRed
 
 
 maxSeverityLength : Int
 maxSeverityLength =
     [ Disabled, Warning, Critical ]
-        |> List.map (formatSeverity >> String.length)
+        |> List.map (formatSeverity >> Text.length)
         |> List.maximum
         |> Maybe.withDefault 0
 
 
-formatReportForFileShort : ( File, List ( Severity, LintError ) ) -> String
+formatReportForFileShort : ( File, List ( Severity, LintError ) ) -> List Text
 formatReportForFileShort ( file, errors ) =
     let
-        formattedErrors : List String
+        formattedErrors : List (List Text)
         formattedErrors =
             List.map (formatErrorShort file) errors
     in
-    File.name file
-        ++ " - "
-        ++ String.fromInt (List.length errors)
-        ++ " error(s):\n\n\t"
-        ++ String.join "\n\t" formattedErrors
+    List.concatMap identity
+        [ [ Text.from <| File.name file ++ " - " ++ String.fromInt (List.length errors) ++ " error(s):\n\n\t" ]
+        , Text.join "\n\t" formattedErrors
+        ]
 
 
 formatReportForFileWithExtract : ( File, List ( Severity, LintError ) ) -> List Text
@@ -59,13 +60,17 @@ formatReportForFileWithExtract ( file, errors ) =
     header :: Text.join "\n\n\n" formattedErrors
 
 
-formatErrorShort : File -> ( Severity, LintError ) -> String
+formatErrorShort : File -> ( Severity, LintError ) -> List Text
 formatErrorShort file ( severity, { ruleName, message, range } ) =
-    String.pad maxSeverityLength ' ' (formatSeverity severity)
-        ++ " "
-        ++ ruleName
-        ++ ": "
-        ++ message
+    let
+        formattedSeverity : Text
+        formattedSeverity =
+            formatSeverity severity
+    in
+    [ Text.from <| String.repeat (maxSeverityLength - Text.length formattedSeverity) " "
+    , formattedSeverity
+    , Text.from <| " " ++ ruleName ++ ": " ++ message
+    ]
 
 
 formatErrorWithExtract : File -> ( Severity, LintError ) -> List Text
@@ -73,7 +78,7 @@ formatErrorWithExtract file ( severity, { ruleName, message, range } ) =
     List.concat
         [ getCodeAtLocationInSourceCode file range
         , [ Text.from "\n" ]
-        , [ Text.from <| formatSeverity severity ]
+        , [ formatSeverity severity ]
         , [ Text.from <| " " ++ ruleName ++ ": " ++ message ]
         ]
 

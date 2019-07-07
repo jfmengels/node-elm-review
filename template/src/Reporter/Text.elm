@@ -1,8 +1,9 @@
 module Reporter.Text exposing
     ( Text
     , from
-    , inGreen, inRed
+    , inGreen, inRed, inYellow
     , join
+    , length
     , encode
     )
 
@@ -29,12 +30,17 @@ module Reporter.Text exposing
 
 # Modifiers
 
-@docs inGreen, inRed
+@docs inGreen, inRed, inYellow
 
 
 # Working with lists
 
 @docs join
+
+
+# ACCESS
+
+@docs length
 
 
 # Encoding
@@ -87,6 +93,11 @@ inRed (Text text) =
     Text { text | color = "red" }
 
 
+inYellow : Text -> Text
+inYellow (Text text) =
+    Text { text | color = "yellow" }
+
+
 
 -- WORKING WITH LISTS
 
@@ -95,6 +106,15 @@ join : String -> List (List Text) -> List Text
 join sep chunks =
     List.intersperse [ from sep ] chunks
         |> List.concatMap identity
+
+
+
+-- ACCESS
+
+
+length : Text -> Int
+length (Text text) =
+    String.length text.str
 
 
 
