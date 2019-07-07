@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const chalk = require('chalk')
 const getElmFiles = require('./elm-files');
 const Elm = require('./compiledLintApp');
 
@@ -11,6 +12,12 @@ if (elmFiles.length === 0) {
 
 const app = Elm.Elm.LintApp.init();
 
+const interpretReport = report => {
+  return report.map(part => {
+    return chalk[part.color](part.string)
+  }).join('')
+}
+
 elmFiles.forEach(file => {
   app.ports.collectFile.send(file);
 })
@@ -20,6 +27,6 @@ setTimeout(() => {
 }, 500)
 
 app.ports.resultPort.subscribe(function(result) {
-  console.log(result.report.join('')); // eslint-disable-line no-console
+  console.log(interpretReport(result.report)) // eslint-disable-line no-console
   process.exit(result.success ? 0 : 1);
 });

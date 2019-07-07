@@ -69,7 +69,7 @@ from : String -> Text
 from value =
     Text
         { str = value
-        , color = "black"
+        , color = "white"
         }
 
 
@@ -110,4 +110,7 @@ encode texts =
 
 encodePart : Text -> Encode.Value
 encodePart (Text text) =
-    Encode.string text.str
+    Encode.object
+        [ ( "string", Encode.string text.str )
+        , ( "color", Encode.string text.color )
+        ]
