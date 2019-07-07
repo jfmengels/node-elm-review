@@ -3,8 +3,10 @@ module Reporter.CliReporter exposing (formatReport)
 import Array exposing (Array)
 import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
+import Json.Encode as Encode
 import Lint exposing (LintError, Severity(..), lintSource)
 import Lint.Rule exposing (Rule)
+import Reporter.Text as Text exposing (Text)
 
 
 formatSeverity : Severity -> String
@@ -42,15 +44,19 @@ formatReportForFileShort ( file, errors ) =
         ++ String.join "\n\t" formattedErrors
 
 
-formatReportForFileWithExtract : ( File, List ( Severity, LintError ) ) -> String
+formatReportForFileWithExtract : ( File, List ( Severity, LintError ) ) -> List Text
 formatReportForFileWithExtract ( file, errors ) =
     let
-        formattedErrors : List String
+        formattedErrors : List (List Text)
         formattedErrors =
             List.map (formatErrorWithExtract file) errors
+
+        header : Text
+        header =
+            Text.from ("-- LINTING ERROR ----------------------------------- " ++ File.name file ++ "\n\n")
+                |> Text.inGreen
     in
-    ("-- LINTING ERROR ----------------------------------- " ++ File.name file ++ "\n\n")
-        ++ String.join "\n\n\n" formattedErrors
+    header :: Text.join "\n\n\n" formattedErrors
 
 
 formatErrorShort : File -> ( Severity, LintError ) -> String
@@ -62,13 +68,17 @@ formatErrorShort file ( severity, { ruleName, message, range } ) =
         ++ message
 
 
-formatErrorWithExtract : File -> ( Severity, LintError ) -> String
+formatErrorWithExtract : File -> ( Severity, LintError ) -> List Text
 formatErrorWithExtract file ( severity, { ruleName, message, range } ) =
-    getCodeAtLocationInSourceCode file range
-        ++ ("\n" ++ formatSeverity severity ++ " " ++ ruleName ++ ": " ++ message)
+    List.concat
+        [ getCodeAtLocationInSourceCode file range
+        , [ Text.from "\n" ]
+        , [ Text.from <| formatSeverity severity ]
+        , [ Text.from <| " " ++ ruleName ++ ": " ++ message ]
+        ]
 
 
-getCodeAtLocationInSourceCode : File -> Range -> String
+getCodeAtLocationInSourceCode : File -> Range -> List Text
 getCodeAtLocationInSourceCode file =
     let
         getRowAtLine_ : Int -> String
@@ -77,13 +87,15 @@ getCodeAtLocationInSourceCode file =
     in
     \({ start, end } as range) ->
         if start.row == end.row then
-            getRowAtLine_ (start.row - 2)
-                ++ getRowAtLine_ (start.row - 1)
-                ++ underlineError range
-                ++ getRowAtLine_ end.row
+            List.concat
+                [ [ Text.from <| getRowAtLine_ (start.row - 2) ]
+                , [ Text.from <| getRowAtLine_ (start.row - 1) ]
+                , underlineError range
+                , [ Text.from <| getRowAtLine_ end.row ]
+                ]
 
         else
-            "TODO multiline support"
+            [ Text.from "TODO multiline support" ]
 
 
 getRowAtLine : File -> Int -> String
@@ -109,7 +121,7 @@ getRowAtLine file =
                 ""
 
 
-underlineError : Range -> String
+underlineError : Range -> List Text
 underlineError { start, end } =
     let
         offsetBecauseOfLineNumber : Int
@@ -119,9 +131,12 @@ underlineError { start, end } =
                 |> String.length
                 |> (+) 2
     in
-    String.repeat (offsetBecauseOfLineNumber + start.column - 1) " "
-        ++ String.repeat (end.column - start.column) "^"
-        ++ "\n"
+    [ Text.from <| String.repeat (offsetBecauseOfLineNumber + start.column - 1) " "
+    , String.repeat (end.column - start.column) "^"
+        |> Text.from
+        |> Text.inRed
+    , Text.from "\n"
+    ]
 
 
 summary : List ( File, List ( Severity, LintError ) ) -> String
@@ -168,18 +183,24 @@ summary errors =
     tallyMessage ++ "."
 
 
-formatReport : List ( File, List ( Severity, LintError ) ) -> String
+formatReport : List ( File, List ( Severity, LintError ) ) -> Encode.Value
 formatReport errors =
     case List.isEmpty errors of
         True ->
-            "I found no linting errors.\nYou're all good!"
+            [ Text.from "I found no linting errors.\nYou're all good!" ]
+                |> Text.encode
 
         False ->
             let
-                fileReports : String
+                fileReports : List Text
                 fileReports =
                     errors
                         |> List.map formatReportForFileWithExtract
-                        |> String.join "\n\n\n\n"
+                        |> Text.join "\n\n\n\n"
             in
-            fileReports ++ "\n\n\n\n" ++ summary errors
+            [ fileReports
+            , [ Text.from "\n\n\n\n" ]
+            , [ Text.from <| summary errors ]
+            ]
+                |> List.concat
+                |> Text.encode

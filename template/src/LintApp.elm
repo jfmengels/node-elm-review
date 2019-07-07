@@ -2,6 +2,7 @@ port module LintApp exposing (main)
 
 import File exposing (File)
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Lint exposing (LintError, Severity(..), lintSource)
 import Lint.Rule exposing (Rule)
 import LintConfig exposing (config)
@@ -14,7 +15,7 @@ port collectFile : (Decode.Value -> msg) -> Sub msg
 port finishedCollecting : (Bool -> msg) -> Sub msg
 
 
-port resultPort : { success : Bool, report : String } -> Cmd msg
+port resultPort : { success : Bool, report : Encode.Value } -> Cmd msg
 
 
 type alias Model =
@@ -82,7 +83,7 @@ update msg model =
                         |> List.length
                         |> (==) 0
 
-                report : String
+                report : Encode.Value
                 report =
                     Reporter.CliReporter.formatReport errors
             in

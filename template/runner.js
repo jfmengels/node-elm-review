@@ -20,6 +20,6 @@ setTimeout(() => {
 }, 500)
 
 app.ports.resultPort.subscribe(function(result) {
-  console.log(result.report); // eslint-disable-line no-console
+  console.log(result.report.join('')); // eslint-disable-line no-console
   process.exit(result.success ? 0 : 1);
 });
