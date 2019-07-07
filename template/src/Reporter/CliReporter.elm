@@ -91,16 +91,75 @@ getCodeAtLocationInSourceCode file =
             getRowAtLine file
     in
     \({ start, end } as range) ->
+        let
+            offsetBecauseOfLineNumber : Int
+            offsetBecauseOfLineNumber =
+                (end.row + 1)
+                    |> String.fromInt
+                    |> String.length
+                    |> (+) 2
+
+            underlineError_ : { start : Int, end : Int } -> Text
+            underlineError_ =
+                underlineError offsetBecauseOfLineNumber
+        in
         if start.row == end.row then
-            List.concat
-                [ [ Text.from <| getRowAtLine_ (start.row - 2) ]
-                , [ Text.from <| getRowAtLine_ (start.row - 1) ]
-                , underlineError range
-                , [ Text.from <| getRowAtLine_ end.row ]
-                ]
+            [ Text.from <| getRowAtLine_ (start.row - 2)
+            , Text.from <| getRowAtLine_ (start.row - 1)
+            , underlineError_ { start = start.column, end = end.column }
+            , Text.from <| getRowAtLine_ end.row
+            ]
 
         else
-            [ Text.from "TODO multiline support" ]
+            let
+                startLine : String
+                startLine =
+                    getRowAtLine_ (start.row - 1)
+
+                linesBetweenStartAndEnd : List String
+                linesBetweenStartAndEnd =
+                    List.range start.row (end.row - 2)
+                        |> List.map getRowAtLine_
+
+                endLine : String
+                endLine =
+                    getRowAtLine_ (end.row - 1)
+            in
+            List.concat
+                [ [ Text.from <| getRowAtLine_ (start.row - 2)
+                  , Text.from <| startLine
+                  , underlineError_
+                        { start = start.column
+                        , end = String.length startLine - offsetBecauseOfLineNumber
+                        }
+                  ]
+                , linesBetweenStartAndEnd
+                    |> List.concatMap
+                        (\line ->
+                            [ Text.from <| line
+                            , underlineError_
+                                { start = getIndexOfFirstNonSpace offsetBecauseOfLineNumber line
+                                , end = String.length line - offsetBecauseOfLineNumber
+                                }
+                            ]
+                        )
+                , [ Text.from <| endLine
+                  , underlineError_
+                        { start = getIndexOfFirstNonSpace offsetBecauseOfLineNumber endLine
+                        , end = String.length endLine - offsetBecauseOfLineNumber
+                        }
+                  , Text.from <| getRowAtLine_ end.row
+                  ]
+                ]
+
+
+getIndexOfFirstNonSpace : Int -> String -> Int
+getIndexOfFirstNonSpace offsetBecauseOfLineNumber string =
+    string
+        |> String.indexes (String.trim <| String.dropLeft offsetBecauseOfLineNumber string)
+        |> List.head
+        |> Maybe.withDefault 0
+        |> (\n -> n - offsetBecauseOfLineNumber + 1)
 
 
 getRowAtLine : File -> Int -> String
@@ -117,7 +176,7 @@ getRowAtLine file =
         case Array.get rowIndex lines of
             Just line ->
                 if String.trim line /= "" then
-                    String.fromInt rowIndex ++ "| " ++ line ++ "\n"
+                    String.fromInt (rowIndex + 1) ++ "| " ++ line ++ "\n"
 
                 else
                     ""
@@ -126,22 +185,16 @@ getRowAtLine file =
                 ""
 
 
-underlineError : Range -> List Text
-underlineError { start, end } =
+underlineError : Int -> { start : Int, end : Int } -> Text
+underlineError offsetBecauseOfLineNumber { start, end } =
     let
-        offsetBecauseOfLineNumber : Int
-        offsetBecauseOfLineNumber =
-            (end.row + 1)
-                |> String.fromInt
-                |> String.length
-                |> (+) 2
+        baseText : String
+        baseText =
+            String.repeat (offsetBecauseOfLineNumber + start - 1) " " ++ String.repeat (end - start) "^" ++ "\n"
     in
-    [ Text.from <| String.repeat (offsetBecauseOfLineNumber + start.column - 1) " "
-    , String.repeat (end.column - start.column) "^"
+    baseText
         |> Text.from
         |> Text.inRed
-    , Text.from "\n"
-    ]
 
 
 summary : List ( File, List ( Severity, LintError ) ) -> String
