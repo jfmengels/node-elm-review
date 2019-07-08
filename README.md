@@ -30,15 +30,13 @@ This will create a `LintConfig.elm` file at the root of your project, which you 
 module LintConfig exposing (config)
 
 import Lint.Types exposing (LintRule, Severity(..))
-import Lint.Rules.DefaultPatternPosition
 import Lint.Rules.NoDebug
 import Lint.Rules.NoUnusedVariables
 
 
 config : List ( Severity, LintRule )
 config =
-    [ ( Critical, Lint.Rules.DefaultPatternPosition.rule { position = Lint.Rules.DefaultPatternPosition.Last } )
-    , ( Warning, Lint.Rules.NoDebug.rule )
+    [ ( Warning, Lint.Rules.NoDebug.rule )
     , ( Critical, Lint.Rules.NoUnusedVariables.rule )
     ]
 ```
