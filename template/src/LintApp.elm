@@ -18,37 +18,35 @@ port finishedCollecting : (Bool -> msg) -> Sub msg
 port resultPort : { success : Bool, report : Encode.Value } -> Cmd msg
 
 
+
+-- PROGRAM
+
+
+main : Program () Model Msg
+main =
+    Platform.worker
+        { init = \() -> ( { files = [] }, Cmd.none )
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+
+-- MODEL
+
+
 type alias Model =
     { files : List File
     }
 
 
+
+-- UPDATE
+
+
 type Msg
     = CollectFile Decode.Value
     | FinishedCollecting
-
-
-enabledRules : List ( Severity, Rule )
-enabledRules =
-    config
-        |> List.filter (Tuple.first >> (/=) Disabled)
-
-
-lint : File -> List ( Severity, LintError )
-lint file =
-    case lintSource enabledRules <| File.source file of
-        Err errors ->
-            [ ( Critical
-              , { file = Just <| File.name file
-                , ruleName = "Parsing error"
-                , message = "Could not parse file: " ++ File.name file
-                , range = { start = { row = 0, column = 0 }, end = { row = 0, column = 0 } }
-                }
-              )
-            ]
-
-        Ok result ->
-            result
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,18 +90,40 @@ update msg model =
             )
 
 
+
+-- LINTING
+
+
+lint : File -> List ( Severity, LintError )
+lint file =
+    case lintSource enabledRules <| File.source file of
+        Err errors ->
+            [ ( Critical
+              , { file = Just <| File.name file
+                , ruleName = "Parsing error"
+                , message = "Could not parse file: " ++ File.name file
+                , range = { start = { row = 0, column = 0 }, end = { row = 0, column = 0 } }
+                }
+              )
+            ]
+
+        Ok result ->
+            result
+
+
+enabledRules : List ( Severity, Rule )
+enabledRules =
+    config
+        |> List.filter (Tuple.first >> (/=) Disabled)
+
+
+
+-- SUBSCRIPTIONS
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ collectFile CollectFile
         , finishedCollecting (\_ -> FinishedCollecting)
         ]
-
-
-main : Program () Model Msg
-main =
-    Platform.worker
-        { init = \() -> ( { files = [] }, Cmd.none )
-        , update = update
-        , subscriptions = subscriptions
-        }
