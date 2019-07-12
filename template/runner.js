@@ -4,6 +4,8 @@ const chalk = require('chalk')
 const getElmFiles = require('./elm-files');
 const Elm = require('./compiledLintApp');
 
+const colorEnabled = process.argv.includes("color=1")
+
 const elmFiles = getElmFiles([]);
 if (elmFiles.length === 0) {
   console.error('I could not find any files to lint.'); // eslint-disable-line no-console
@@ -14,7 +16,7 @@ const app = Elm.Elm.LintApp.init();
 
 const interpretReport = report => {
   return report.map(part => {
-    const chalkWithColor = part.color ? chalk[part.color] : chalk
+    const chalkWithColor = part.color && colorEnabled ? chalk[part.color] : chalk
     return chalkWithColor(part.string)
   }).join('')
 }

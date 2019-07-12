@@ -22,10 +22,14 @@ port resultPort : { success : Bool, report : Encode.Value } -> Cmd msg
 -- PROGRAM
 
 
-main : Program () Model Msg
+type alias Flags =
+    ()
+
+
+main : Program Flags Model Msg
 main =
     Platform.worker
-        { init = \() -> ( { files = [] }, Cmd.none )
+        { init = init
         , update = update
         , subscriptions = subscriptions
         }
@@ -38,6 +42,11 @@ main =
 type alias Model =
     { files : List File
     }
+
+
+init : Flags -> ( Model, Cmd msg )
+init () =
+    ( { files = [] }, Cmd.none )
 
 
 
