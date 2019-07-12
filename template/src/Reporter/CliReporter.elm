@@ -52,12 +52,17 @@ formatReportForFileWithExtract ( file, errors ) =
         formattedErrors =
             List.map (formatErrorWithExtract file) errors
 
+        prefix : String
+        prefix =
+            "-- ELM-LINT ERROR "
+
         header : Text
         header =
-            Text.from ("-- LINTING ERROR ----------------------------------- " ++ File.name file ++ "\n\n")
+            (prefix ++ String.padLeft (80 - String.length prefix) '-' (File.name file))
+                |> Text.from
                 |> Text.inGreen
     in
-    header :: Text.join "\n\n\n" formattedErrors
+    header :: Text.from "\n\n" :: Text.join "\n\n\n" formattedErrors
 
 
 formatErrorShort : File -> ( Severity, LintError ) -> List Text
