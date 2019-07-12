@@ -14,7 +14,8 @@ const app = Elm.Elm.LintApp.init();
 
 const interpretReport = report => {
   return report.map(part => {
-    return chalk[part.color](part.string)
+    const chalkWithColor = part.color ? chalk[part.color] : chalk
+    return chalkWithColor(part.string)
   }).join('')
 }
 

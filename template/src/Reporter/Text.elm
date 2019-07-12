@@ -61,7 +61,7 @@ import Json.Encode as Encode
 type Text
     = Text
         { str : String
-        , color : String
+        , color : Maybe String
         }
 
 
@@ -75,7 +75,7 @@ from : String -> Text
 from value =
     Text
         { str = value
-        , color = "white"
+        , color = Nothing
         }
 
 
@@ -85,17 +85,17 @@ from value =
 
 inGreen : Text -> Text
 inGreen (Text text) =
-    Text { text | color = "green" }
+    Text { text | color = Just "green" }
 
 
 inRed : Text -> Text
 inRed (Text text) =
-    Text { text | color = "red" }
+    Text { text | color = Just "red" }
 
 
 inYellow : Text -> Text
 inYellow (Text text) =
-    Text { text | color = "yellow" }
+    Text { text | color = Just "yellow" }
 
 
 
@@ -132,5 +132,12 @@ encodePart : Text -> Encode.Value
 encodePart (Text text) =
     Encode.object
         [ ( "string", Encode.string text.str )
-        , ( "color", Encode.string text.color )
+        , ( "color"
+          , case text.color of
+                Just color ->
+                    Encode.string color
+
+                Nothing ->
+                    Encode.null
+          )
         ]
