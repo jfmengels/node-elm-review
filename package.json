@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/jfmengels/node-elm-lint#readme",
   "dependencies": {
+    "chalk": "^2.4.2",
     "cross-spawn": "^6.0.5",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.4",
