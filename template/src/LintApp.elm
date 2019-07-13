@@ -12,7 +12,10 @@ import Reporter.CliReporter
 port collectFile : (Decode.Value -> msg) -> Sub msg
 
 
-port finishedCollecting : (Bool -> msg) -> Sub msg
+port acknowledgeFileReceipt : String -> Cmd msg
+
+
+port requestToLint : (Bool -> msg) -> Sub msg
 
 
 port resultPort : { success : Bool, report : Encode.Value } -> Cmd msg
@@ -54,17 +57,19 @@ init () =
 
 
 type Msg
-    = CollectFile Decode.Value
-    | FinishedCollecting
+    = ReceivedFile Decode.Value
+    | GotRequestToLint
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        CollectFile rawFile ->
+        ReceivedFile rawFile ->
             case Decode.decodeValue File.decode rawFile of
                 Ok file ->
-                    ( { model | files = file :: model.files }, Cmd.none )
+                    ( { model | files = file :: model.files }
+                    , acknowledgeFileReceipt <| File.name file
+                    )
 
                 Err err ->
                     let
@@ -73,7 +78,7 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
-        FinishedCollecting ->
+        GotRequestToLint ->
             let
                 errors : List ( File, List ( Severity, LintError ) )
                 errors =
@@ -133,6 +138,6 @@ enabledRules =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ collectFile CollectFile
-        , finishedCollecting (\_ -> FinishedCollecting)
+        [ collectFile ReceivedFile
+        , requestToLint (\_ -> GotRequestToLint)
         ]
