@@ -58,27 +58,4 @@ elm install author/packagename
 
 Once you're done configuring, run `elm-lint` and you should be good to go.
 
-### FAQ
-
-- I get the error `(Critical) Parsing error: expected end of input` for some of my files, what is happening?
-
-This means that your file could not be parsed.
-You should try and copy-paste that file's source code into the [`elm-ast` online demo](http://bogdanp.github.io/elm-ast/example/) to see if you can reproduce the error. If you are able to, then try to make a minimal reproducible example and open an issue on [`elm-ast`](https://github.com/Bogdanp/elm-ast).
-
-**In most cases**, this is due to comments made using `--` (e.g. `-- a comment`) that are not well handled by the parser. [elm-lint] tries to remove them before parsing, but does a bad job at it at the moment (help wanted).
-
-- Thanks for pointing out the error, but I would like to know **where** in my code the error is.
-
-At the moment, `elm-ast` is missing positional information on the generated AST, that `elm-lint` uses. You can follow [this issue](https://github.com/Bogdanp/elm-ast/issues/13) if you want to know more or to contribute.
-
-- I have an idea for a rule, how can I get it integrated into elm-lint?
-
-Please open an issue on [elm-lint] so we can talk about it. Try to make your proposal look like [this](https://github.com/eslint/eslint/blob/master/templates/rule-proposal.md).
-
-[elm-lint] would like to be able to provide support for a plugin system so that you can work on it without my approval. Maybe that already works, but if it doesn't, please open an issue about that.
-
-- The code looks bad and can be improved upon, also the documentation is lacking.
-
-You're absolutely right. Please open an issue if you have suggestions or open a pull request!
-
 [elm-lint]: https://github.com/jfmengels/elm-lint
