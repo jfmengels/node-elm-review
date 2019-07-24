@@ -5,6 +5,11 @@ Run [elm-lint] from Node.js.
 ## Installation
 
 ```bash
+# Save it to your package.json, if you use npm in your project.
+# This is the recommended way.
+npm install node-elm-lint --save-dev
+
+# Install globally. This is not recommended.
 npm install -g node-elm-lint
 ```
 
