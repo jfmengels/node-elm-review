@@ -4,35 +4,12 @@ import Array exposing (Array)
 import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
 import Json.Encode as Encode
-import Lint exposing (LintError, Severity(..), lintSource)
+import Lint exposing (LintError, lintSource)
 import Lint.Rule exposing (Rule)
 import Reporter.Text as Text exposing (Text)
 
 
-formatSeverity : Severity -> Text
-formatSeverity severity =
-    case severity of
-        Disabled ->
-            Text.from "(Disabled)"
-
-        Warning ->
-            Text.from "(Warning) "
-                |> Text.inYellow
-
-        Critical ->
-            Text.from "(Critical)"
-                |> Text.inRed
-
-
-maxSeverityLength : Int
-maxSeverityLength =
-    [ Disabled, Warning, Critical ]
-        |> List.map (formatSeverity >> Text.length)
-        |> List.maximum
-        |> Maybe.withDefault 0
-
-
-formatReportForFileShort : ( File, List ( Severity, LintError ) ) -> List Text
+formatReportForFileShort : ( File, List LintError ) -> List Text
 formatReportForFileShort ( file, errors ) =
     let
         formattedErrors : List (List Text)
@@ -45,7 +22,7 @@ formatReportForFileShort ( file, errors ) =
         ]
 
 
-formatReportForFileWithExtract : ( File, List ( Severity, LintError ) ) -> List Text
+formatReportForFileWithExtract : ( File, List LintError ) -> List Text
 formatReportForFileWithExtract ( file, errors ) =
     let
         formattedErrors : List (List Text)
@@ -65,26 +42,22 @@ formatReportForFileWithExtract ( file, errors ) =
     header :: Text.from "\n\n" :: Text.join "\n\n\n" formattedErrors
 
 
-formatErrorShort : File -> ( Severity, LintError ) -> List Text
-formatErrorShort file ( severity, { ruleName, message, range } ) =
-    let
-        formattedSeverity : Text
-        formattedSeverity =
-            formatSeverity severity
-    in
-    [ Text.from <| String.repeat (maxSeverityLength - Text.length formattedSeverity) " "
-    , formattedSeverity
-    , Text.from <| " " ++ ruleName ++ ": " ++ message
+formatErrorShort : File -> LintError -> List Text
+formatErrorShort file { ruleName, message, range } =
+    [ Text.from ("    " ++ ruleName)
+        |> Text.inRed
+    , Text.from <| ": " ++ message
     ]
 
 
-formatErrorWithExtract : File -> ( Severity, LintError ) -> List Text
-formatErrorWithExtract file ( severity, { ruleName, message, range } ) =
+formatErrorWithExtract : File -> LintError -> List Text
+formatErrorWithExtract file { ruleName, message, range } =
     List.concat
         [ getCodeAtLocationInSourceCode file range
-        , [ Text.from "\n" ]
-        , [ formatSeverity severity ]
-        , [ Text.from <| " " ++ ruleName ++ ": " ++ message ]
+        , [ Text.from ("\n    " ++ ruleName)
+                |> Text.inRed
+          , Text.from <| ": " ++ message
+          ]
         ]
 
 
@@ -202,51 +175,23 @@ underlineError offsetBecauseOfLineNumber { start, end } =
         |> Text.inRed
 
 
-summary : List ( File, List ( Severity, LintError ) ) -> String
+summary : List ( File, List LintError ) -> String
 summary errors =
     let
-        allErrors : List ( Severity, LintError )
-        allErrors =
-            List.concatMap Tuple.second errors
-
-        criticalCount : Int
-        criticalCount =
-            allErrors
-                |> List.filter (Tuple.first >> (==) Critical)
+        errorCount : Int
+        errorCount =
+            errors
+                |> List.concatMap Tuple.second
                 |> List.length
-
-        warningCount : Int
-        warningCount =
-            allErrors
-                |> List.filter (Tuple.first >> (==) Warning)
-                |> List.length
-
-        criticalMessage : String
-        criticalMessage =
-            if criticalCount == 0 then
-                ""
-
-            else
-                String.fromInt criticalCount ++ " critical problem(s)"
-
-        warningMessage : String
-        warningMessage =
-            if warningCount == 0 then
-                ""
-
-            else
-                String.fromInt warningCount ++ " warning(s)"
-
-        tallyMessage : String
-        tallyMessage =
-            [ criticalMessage, warningMessage ]
-                |> List.filter ((/=) "")
-                |> String.join ", "
     in
-    tallyMessage ++ "."
+    if errorCount == 0 then
+        ""
+
+    else
+        String.fromInt errorCount ++ " problem(s)."
 
 
-formatReport : List ( File, List ( Severity, LintError ) ) -> Encode.Value
+formatReport : List ( File, List LintError ) -> Encode.Value
 formatReport errors =
     case List.isEmpty errors of
         True ->

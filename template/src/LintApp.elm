@@ -3,7 +3,7 @@ port module LintApp exposing (main)
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Lint exposing (LintError, Severity(..), lintSource)
+import Lint exposing (LintError, lintSource)
 import Lint.Rule exposing (Rule)
 import LintConfig exposing (config)
 import Reporter.CliReporter
@@ -80,7 +80,7 @@ update msg model =
 
         GotRequestToLint ->
             let
-                errors : List ( File, List ( Severity, LintError ) )
+                errors : List ( File, List LintError )
                 errors =
                     model.files
                         |> List.map (\file -> ( file, lint file ))
@@ -91,7 +91,6 @@ update msg model =
                 success =
                     errors
                         |> List.concatMap Tuple.second
-                        |> List.filter (Tuple.first >> (==) Critical)
                         |> List.length
                         |> (==) 0
 
@@ -108,27 +107,19 @@ update msg model =
 -- LINTING
 
 
-lint : File -> List ( Severity, LintError )
+lint : File -> List LintError
 lint file =
-    case lintSource enabledRules <| File.source file of
+    case lintSource config <| File.source file of
         Err errors ->
-            [ ( Critical
-              , { file = Just <| File.name file
-                , ruleName = "Parsing error"
-                , message = "Could not parse file: " ++ File.name file
-                , range = { start = { row = 0, column = 0 }, end = { row = 0, column = 0 } }
-                }
-              )
+            [ { file = Just <| File.name file
+              , ruleName = "Parsing error"
+              , message = "Could not parse file: " ++ File.name file
+              , range = { start = { row = 0, column = 0 }, end = { row = 0, column = 0 } }
+              }
             ]
 
         Ok result ->
             result
-
-
-enabledRules : List ( Severity, Rule )
-enabledRules =
-    config
-        |> List.filter (Tuple.first >> (/=) Disabled)
 
 
 
