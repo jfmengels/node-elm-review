@@ -7,7 +7,7 @@
   },
   "scripts": {
     "flow": "flow",
-    "test": "eslint bin/ lib/ template/*.js && npm run flow"
+    "test": "eslint lib/ && npm run flow"
   },
   "repository": {
     "type": "git",
