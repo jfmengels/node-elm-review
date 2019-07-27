@@ -51,18 +51,32 @@ formatErrorShort file { ruleName, message, range } =
 
 
 formatErrorWithExtract : File -> LintError -> List Text
-formatErrorWithExtract file { ruleName, message, range } =
-    List.concat
-        [ getCodeAtLocationInSourceCode file range
-        , [ Text.from ("\n    " ++ ruleName)
+formatErrorWithExtract file { ruleName, message, details, range } =
+    let
+        title : List Text
+        title =
+            [ Text.from ruleName
                 |> Text.inRed
-          , Text.from <| ": " ++ message
-          ]
-        ]
+            , Text.from <| ": " ++ message
+            ]
+
+        codeExtract_ : List Text
+        codeExtract_ =
+            codeExtract file range
+
+        details_ : List Text
+        details_ =
+            List.map Text.from details
+                |> List.intersperse (Text.from "\n\n")
+    in
+    [ title, codeExtract_, details_ ]
+        |> List.filter (List.isEmpty >> not)
+        |> List.intersperse [ Text.from "\n\n" ]
+        |> List.concat
 
 
-getCodeAtLocationInSourceCode : File -> Range -> List Text
-getCodeAtLocationInSourceCode file =
+codeExtract : File -> Range -> List Text
+codeExtract file =
     let
         getRowAtLine_ : Int -> String
         getRowAtLine_ =
@@ -81,7 +95,10 @@ getCodeAtLocationInSourceCode file =
             underlineError_ =
                 underlineError offsetBecauseOfLineNumber
         in
-        if start.row == end.row then
+        if range.start == range.end then
+            []
+
+        else if start.row == end.row then
             [ Text.from <| getRowAtLine_ (start.row - 2)
             , Text.from <| getRowAtLine_ (start.row - 1)
             , underlineError_ { start = start.column, end = end.column }
