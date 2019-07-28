@@ -4,7 +4,6 @@ import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Lint exposing (LintError, lintSource)
-import Lint.Rule exposing (Rule)
 import LintConfig exposing (config)
 import Reporter
 import Text

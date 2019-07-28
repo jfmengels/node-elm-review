@@ -3,8 +3,7 @@ module Reporter exposing (formatReport)
 import Array exposing (Array)
 import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
-import Lint exposing (LintError, lintSource)
-import Lint.Rule exposing (Rule)
+import Lint exposing (LintError)
 import Text exposing (Text)
 
 
