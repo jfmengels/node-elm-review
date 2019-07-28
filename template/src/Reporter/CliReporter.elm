@@ -35,7 +35,7 @@ formatReportForFileWithExtract ( file, errors ) =
 
         header : Text
         header =
-            (prefix ++ String.padLeft (80 - String.length prefix) '-' (File.name file))
+            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ File.name file))
                 |> Text.from
                 |> Text.inGreen
     in
