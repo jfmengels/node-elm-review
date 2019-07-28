@@ -1,4 +1,4 @@
-module Reporter.Text exposing
+module Text exposing
     ( Text
     , from
     , inGreen, inRed

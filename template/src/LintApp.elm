@@ -6,7 +6,12 @@ import Json.Encode as Encode
 import Lint exposing (LintError, lintSource)
 import Lint.Rule exposing (Rule)
 import LintConfig exposing (config)
-import Reporter.CliReporter
+import Reporter
+import Text
+
+
+
+-- PORTS
 
 
 port collectFile : (Decode.Value -> msg) -> Sub msg
@@ -96,7 +101,8 @@ update msg model =
 
                 report : Encode.Value
                 report =
-                    Reporter.CliReporter.formatReport errors
+                    Reporter.formatReport errors
+                        |> Text.encode
             in
             ( model
             , resultPort { success = success, report = report }

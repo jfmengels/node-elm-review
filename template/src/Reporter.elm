@@ -1,12 +1,11 @@
-module Reporter.CliReporter exposing (formatReport)
+module Reporter exposing (formatReport)
 
 import Array exposing (Array)
 import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
-import Json.Encode as Encode
 import Lint exposing (LintError, lintSource)
 import Lint.Rule exposing (Rule)
-import Reporter.Text as Text exposing (Text)
+import Text exposing (Text)
 
 
 formatReportForFileShort : ( File, List LintError ) -> List Text
@@ -208,12 +207,11 @@ summary errors =
         String.fromInt errorCount ++ " problem(s)."
 
 
-formatReport : List ( File, List LintError ) -> Encode.Value
+formatReport : List ( File, List LintError ) -> List Text
 formatReport errors =
     case List.isEmpty errors of
         True ->
             [ Text.from "I found no linting errors.\nYou're all good!" ]
-                |> Text.encode
 
         False ->
             let
@@ -224,8 +222,6 @@ formatReport errors =
                         |> Text.join "\n\n\n\n"
             in
             [ fileReports
-            , [ Text.from "\n\n\n\n" ]
-            , [ Text.from <| summary errors ]
+            , [ Text.from <| "\n\n\n\n" ++ summary errors ]
             ]
                 |> List.concat
-                |> Text.encode
