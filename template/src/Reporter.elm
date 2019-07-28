@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
 import Lint exposing (LintError)
+import List.Extra
 import Text exposing (Text)
 
 
@@ -213,14 +214,40 @@ formatReport errors =
             [ Text.from "I found no linting errors.\nYou're all good!" ]
 
         False ->
-            let
-                fileReports : List Text
-                fileReports =
-                    errors
-                        |> List.map formatReportForFileWithExtract
-                        |> Text.join "\n\n\n\n"
-            in
-            [ fileReports
-            , [ Text.from <| "\n\n\n\n" ++ summary errors ]
-            ]
-                |> List.concat
+            List.concat
+                [ formatReports errors
+                , [ Text.from <| "\n\n\n\n" ++ summary errors ]
+                ]
+
+
+formatReports : List ( File, List LintError ) -> List Text
+formatReports errors =
+    case errors of
+        [] ->
+            []
+
+        [ error ] ->
+            formatReportForFileWithExtract error
+
+        (( fileA, error ) as a) :: (( fileB, _ ) as b) :: restOfErrors ->
+            List.concat
+                [ formatReportForFileWithExtract a
+                , [ fileSeparator fileA fileB ]
+                , formatReports (b :: restOfErrors)
+                ]
+
+
+fileSeparator : File -> File -> Text
+fileSeparator file1 file2 =
+    let
+        str : String
+        str =
+            "\n\n"
+                ++ String.padLeft 80 ' ' (File.name file1 ++ "  ↑    ")
+                ++ "\n====o======================================================================o===="
+                ++ "\n    ↓  "
+                ++ File.name file2
+                ++ "\n\n\n"
+    in
+    Text.from str
+        |> Text.inRed
