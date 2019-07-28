@@ -83,25 +83,13 @@ codeExtract file =
             getRowAtLine file
     in
     \({ start, end } as range) ->
-        let
-            offsetBecauseOfLineNumber : Int
-            offsetBecauseOfLineNumber =
-                (end.row + 1)
-                    |> String.fromInt
-                    |> String.length
-                    |> (+) 2
-
-            underlineError_ : { start : Int, end : Int } -> Text
-            underlineError_ =
-                underlineError offsetBecauseOfLineNumber
-        in
         if range.start == range.end then
             []
 
         else if start.row == end.row then
             [ Text.from <| getRowAtLine_ (start.row - 2)
             , Text.from <| getRowAtLine_ (start.row - 1)
-            , underlineError_ { start = start.column, end = end.column }
+            , underlineError (start.row - 1) { start = start.column, end = end.column }
             , Text.from <| getRowAtLine_ end.row
             ]
 
@@ -123,25 +111,29 @@ codeExtract file =
             List.concat
                 [ [ Text.from <| getRowAtLine_ (start.row - 2)
                   , Text.from <| startLine
-                  , underlineError_
+                  , underlineError
+                        (start.row - 1)
                         { start = start.column
-                        , end = String.length startLine - offsetBecauseOfLineNumber
+                        , end = String.length startLine - offsetBecauseOfLineNumber (start.row - 1)
                         }
                   ]
                 , linesBetweenStartAndEnd
+                    |> List.indexedMap Tuple.pair
                     |> List.concatMap
-                        (\line ->
+                        (\( lineNumber, line ) ->
                             [ Text.from <| line
-                            , underlineError_
-                                { start = getIndexOfFirstNonSpace offsetBecauseOfLineNumber line
-                                , end = String.length line - offsetBecauseOfLineNumber
+                            , underlineError
+                                lineNumber
+                                { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber lineNumber) line
+                                , end = String.length line - offsetBecauseOfLineNumber lineNumber
                                 }
                             ]
                         )
                 , [ Text.from <| endLine
-                  , underlineError_
-                        { start = getIndexOfFirstNonSpace offsetBecauseOfLineNumber endLine
-                        , end = String.length endLine - offsetBecauseOfLineNumber
+                  , underlineError
+                        (end.row - 1)
+                        { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber (end.row - 1)) endLine
+                        , end = String.length endLine - offsetBecauseOfLineNumber (end.row - 1)
                         }
                   , Text.from <| getRowAtLine_ end.row
                   ]
@@ -149,12 +141,12 @@ codeExtract file =
 
 
 getIndexOfFirstNonSpace : Int -> String -> Int
-getIndexOfFirstNonSpace offsetBecauseOfLineNumber string =
+getIndexOfFirstNonSpace offset string =
     string
-        |> String.indexes (String.trim <| String.dropLeft offsetBecauseOfLineNumber string)
+        |> String.indexes (String.trim <| String.dropLeft offset string)
         |> List.head
         |> Maybe.withDefault 0
-        |> (\n -> n - offsetBecauseOfLineNumber + 1)
+        |> (\n -> n - offset + 1)
 
 
 getRowAtLine : File -> Int -> String
@@ -181,15 +173,23 @@ getRowAtLine file =
 
 
 underlineError : Int -> { start : Int, end : Int } -> Text
-underlineError offsetBecauseOfLineNumber { start, end } =
+underlineError lineNumber { start, end } =
     let
         baseText : String
         baseText =
-            String.repeat (offsetBecauseOfLineNumber + start - 1) " " ++ String.repeat (end - start) "^" ++ "\n"
+            String.repeat (offsetBecauseOfLineNumber lineNumber + start - 1) " " ++ String.repeat (end - start) "^" ++ "\n"
     in
     baseText
         |> Text.from
         |> Text.inRed
+
+
+offsetBecauseOfLineNumber : Int -> Int
+offsetBecauseOfLineNumber lineNumber =
+    lineNumber
+        |> String.fromInt
+        |> String.length
+        |> (+) 2
 
 
 summary : List ( File, List LintError ) -> String

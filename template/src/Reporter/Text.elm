@@ -1,7 +1,7 @@
 module Reporter.Text exposing
     ( Text
     , from
-    , inGreen, inRed, inYellow
+    , inGreen, inRed
     , join
     , length
     , encode
@@ -30,7 +30,7 @@ module Reporter.Text exposing
 
 # Modifiers
 
-@docs inGreen, inRed, inYellow
+@docs inGreen, inRed
 
 
 # Working with lists
@@ -91,11 +91,6 @@ inGreen (Text text) =
 inRed : Text -> Text
 inRed (Text text) =
     Text { text | color = Just "red" }
-
-
-inYellow : Text -> Text
-inYellow (Text text) =
-    Text { text | color = Just "yellow" }
 
 
 
