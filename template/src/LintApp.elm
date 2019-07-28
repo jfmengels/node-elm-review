@@ -88,8 +88,7 @@ update msg model =
                 errors =
                     model.files
                         |> List.map (\file -> ( file, lint file ))
-                        |> List.filter
-                            (Tuple.second >> List.isEmpty >> not)
+                        |> List.filter (Tuple.second >> List.isEmpty >> not)
 
                 success : Bool
                 success =
@@ -114,25 +113,9 @@ update msg model =
 
 lint : File -> List LintError
 lint file =
-    case lintSource config <| File.source file of
-        Err errors ->
-            [ { file = Just <| File.name file
-              , ruleName = "Parsing error"
-              , message = "Could not parse file: " ++ File.name file
-              , details =
-                    [ "I could not understand the contents of this file, and this prevents me from analyzing it. It's highly likely that the contents of the file is not valid Elm code."
-                    , "Hint: Try running `elm make`. The compiler should give you better hints on how to resolve the problem."
-                    ]
-              , range = { start = { row = 0, column = 0 }, end = { row = 0, column = 0 } }
-              }
-            ]
-
-        Ok result ->
-            result
-
-
-
--- SUBSCRIPTIONS
+    lintSource
+        config
+        { fileName = File.name file, source = File.source file }
 
 
 subscriptions : Model -> Sub Msg
