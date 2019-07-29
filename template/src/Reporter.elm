@@ -4,24 +4,19 @@ import Array exposing (Array)
 import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
 import Lint exposing (LintError)
-import List.Extra
 import Text exposing (Text)
 
 
-formatReportForFileShort : ( File, List LintError ) -> List Text
-formatReportForFileShort ( file, errors ) =
-    let
-        formattedErrors : List (List Text)
-        formattedErrors =
-            List.map (formatErrorShort file) errors
-    in
-    List.concatMap identity
-        [ [ Text.from <| File.name file ++ " - " ++ String.fromInt (List.length errors) ++ " error(s):\n\n\t" ]
-        , Text.join "\n\t" formattedErrors
-        ]
+type alias Error =
+    { file : String
+    , ruleName : String
+    , message : String
+    , details : List String
+    , range : Range
+    }
 
 
-formatReportForFileWithExtract : ( File, List LintError ) -> List Text
+formatReportForFileWithExtract : ( File, List Error ) -> List Text
 formatReportForFileWithExtract ( file, errors ) =
     let
         formattedErrors : List (List Text)
@@ -41,15 +36,7 @@ formatReportForFileWithExtract ( file, errors ) =
     header :: Text.from "\n\n" :: Text.join "\n\n\n" formattedErrors
 
 
-formatErrorShort : File -> LintError -> List Text
-formatErrorShort file { ruleName, message, range } =
-    [ Text.from ("    " ++ ruleName)
-        |> Text.inRed
-    , Text.from <| ": " ++ message
-    ]
-
-
-formatErrorWithExtract : File -> LintError -> List Text
+formatErrorWithExtract : File -> Error -> List Text
 formatErrorWithExtract file { ruleName, message, details, range } =
     let
         title : List Text
@@ -215,12 +202,12 @@ formatReport errors =
 
         False ->
             List.concat
-                [ formatReports errors
+                [ formatReports <| fromLintErrors errors
                 , [ Text.from <| "\n\n\n\n" ++ summary errors ]
                 ]
 
 
-formatReports : List ( File, List LintError ) -> List Text
+formatReports : List ( File, List Error ) -> List Text
 formatReports errors =
     case errors of
         [] ->
@@ -251,3 +238,18 @@ fileSeparator file1 file2 =
     in
     Text.from str
         |> Text.inRed
+
+
+fromLintErrors : List ( File, List LintError ) -> List ( File, List Error )
+fromLintErrors errors =
+    (List.map <| Tuple.mapSecond <| List.map fromLintError) errors
+
+
+fromLintError : LintError -> Error
+fromLintError error =
+    { file = Lint.errorFile error
+    , ruleName = Lint.errorRuleName error
+    , message = Lint.errorMessage error
+    , details = Lint.errorDetails error
+    , range = Lint.errorRange error
+    }
