@@ -76,10 +76,6 @@ update msg model =
                     )
 
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "file decoding" err
-                    in
                     ( model, Cmd.none )
 
         GotRequestToLint ->
