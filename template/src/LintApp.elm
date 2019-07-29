@@ -72,7 +72,7 @@ update msg model =
             case Decode.decodeValue File.decode rawFile of
                 Ok file ->
                     ( { model | files = file :: model.files }
-                    , acknowledgeFileReceipt <| File.name file
+                    , acknowledgeFileReceipt file.name
                     )
 
                 Err err ->
@@ -115,7 +115,7 @@ lint : File -> List LintError
 lint file =
     lintSource
         config
-        { fileName = File.name file, source = File.source file }
+        { fileName = file.name, source = file.source }
 
 
 subscriptions : Model -> Sub Msg

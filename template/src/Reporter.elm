@@ -29,7 +29,7 @@ formatReportForFileWithExtract ( file, errors ) =
 
         header : Text
         header =
-            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ File.name file))
+            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ file.name))
                 |> Text.from
                 |> Text.inBlue
     in
@@ -140,8 +140,7 @@ getRowAtLine file =
     let
         lines : Array String
         lines =
-            file
-                |> File.source
+            file.source
                 |> String.lines
                 |> Array.fromList
     in
@@ -230,10 +229,10 @@ fileSeparator file1 file2 =
         str : String
         str =
             "\n\n"
-                ++ String.padLeft 80 ' ' (File.name file1 ++ "  ↑    ")
+                ++ String.padLeft 80 ' ' (file1.name ++ "  ↑    ")
                 ++ "\n====o======================================================================o===="
                 ++ "\n    ↓  "
-                ++ File.name file2
+                ++ file2.name
                 ++ "\n\n\n"
     in
     Text.from str

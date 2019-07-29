@@ -1,6 +1,5 @@
 module File exposing
     ( File
-    , name, source
     , decode
     )
 
@@ -10,11 +9,6 @@ module File exposing
 # Definition
 
 @docs File
-
-
-# Access
-
-@docs name, source
 
 
 # Decoding
@@ -30,25 +24,10 @@ import Json.Decode as Decode
 -- DEFINITION
 
 
-type File
-    = File
-        { name : String
-        , source : String
-        }
-
-
-
--- ACCESS
-
-
-name : File -> String
-name (File file) =
-    file.name
-
-
-source : File -> String
-source (File file) =
-    file.source
+type alias File =
+    { name : String
+    , source : String
+    }
 
 
 
@@ -57,6 +36,6 @@ source (File file) =
 
 decode : Decode.Decoder File
 decode =
-    Decode.map2 (\name_ source_ -> File { name = name_, source = source_ })
+    Decode.map2 (\name_ source_ -> { name = name_, source = source_ })
         (Decode.field "name" Decode.string)
         (Decode.field "source" Decode.string)
