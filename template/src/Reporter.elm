@@ -36,7 +36,7 @@ formatReportForFileWithExtract ( file, errors ) =
         header =
             (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ File.name file))
                 |> Text.from
-                |> Text.inGreen
+                |> Text.inBlue
     in
     header :: Text.from "\n\n" :: Text.join "\n\n\n" formattedErrors
 
