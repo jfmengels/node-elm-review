@@ -8,8 +8,7 @@ import Text exposing (Text)
 
 
 type alias Error =
-    { file : String
-    , ruleName : String
+    { ruleName : String
     , message : String
     , details : List String
     , range : Range
@@ -246,8 +245,7 @@ fromLintErrors errors =
 
 fromLintError : LintError -> Error
 fromLintError error =
-    { file = Lint.errorFile error
-    , ruleName = Lint.errorRuleName error
+    { ruleName = Lint.errorRuleName error
     , message = Lint.errorMessage error
     , details = Lint.errorDetails error
     , range = Lint.errorRange error
