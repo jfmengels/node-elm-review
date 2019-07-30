@@ -6,7 +6,6 @@ import Json.Encode as Encode
 import Lint exposing (LintError, lintSource)
 import LintConfig exposing (config)
 import Reporter
-import Text
 
 
 
@@ -95,12 +94,55 @@ update msg model =
 
                 report : Encode.Value
                 report =
-                    Reporter.formatReport errors
-                        |> Text.encode
+                    errors
+                        |> fromLintErrors
+                        |> Reporter.formatReport
+                        |> encodeReport
             in
             ( model
             , resultPort { success = success, report = report }
             )
+
+
+fromLintErrors : List ( File, List LintError ) -> List ( File, List Reporter.Error )
+fromLintErrors errors =
+    (List.map <| Tuple.mapSecond <| List.map fromLintError) errors
+
+
+fromLintError : LintError -> Reporter.Error
+fromLintError error =
+    { ruleName = Lint.errorRuleName error
+    , message = Lint.errorMessage error
+    , details = Lint.errorDetails error
+    , range = Lint.errorRange error
+    }
+
+
+
+-- ENCODING
+
+
+{-| Encode texts to a JSON value.
+-}
+encodeReport : List { str : String, color : Maybe ( Int, Int, Int ) } -> Encode.Value
+encodeReport texts =
+    texts
+        |> Encode.list encodeReportPart
+
+
+encodeReportPart : { str : String, color : Maybe ( Int, Int, Int ) } -> Encode.Value
+encodeReportPart { str, color } =
+    Encode.object
+        [ ( "string", Encode.string str )
+        , ( "color"
+          , case color of
+                Just ( red, green, blue ) ->
+                    Encode.list Encode.int [ red, green, blue ]
+
+                Nothing ->
+                    Encode.null
+          )
+        ]
 
 
 
