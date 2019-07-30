@@ -83,7 +83,6 @@ update msg model =
                 errors =
                     model.files
                         |> List.map (\file -> ( file, lint file ))
-                        |> List.filter (Tuple.second >> List.isEmpty >> not)
 
                 success : Bool
                 success =
@@ -111,7 +110,8 @@ fromLintErrors errors =
 
 fromLintError : LintError -> Reporter.Error
 fromLintError error =
-    { ruleName = Lint.errorRuleName error
+    { moduleName = Lint.errorModuleName error
+    , ruleName = Lint.errorRuleName error
     , message = Lint.errorMessage error
     , details = Lint.errorDetails error
     , range = Lint.errorRange error
