@@ -25,7 +25,7 @@ import Json.Decode as Decode
 
 
 type alias File =
-    { name : String
+    { path : String
     , source : String
     }
 
@@ -36,6 +36,6 @@ type alias File =
 
 decode : Decode.Decoder File
 decode =
-    Decode.map2 (\name_ source_ -> { name = name_, source = source_ })
-        (Decode.field "name" Decode.string)
+    Decode.map2 (\path_ source_ -> { path = path_, source = source_ })
+        (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
