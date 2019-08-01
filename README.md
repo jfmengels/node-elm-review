@@ -1,5 +1,7 @@
 # node-elm-lint
 
+![](https://travis-ci.com/jfmengels/node-elm-lint.svg?branch=master)
+
 Run [elm-lint] from Node.js.
 
 ## Installation
