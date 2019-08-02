@@ -115,6 +115,7 @@ fromLintError error =
     , message = Lint.errorMessage error
     , details = Lint.errorDetails error
     , range = Lint.errorRange error
+    , fixedSource = Lint.fixedSource error
     }
 
 
