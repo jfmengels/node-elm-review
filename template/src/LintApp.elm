@@ -24,12 +24,15 @@ port requestToLint : (Bool -> msg) -> Sub msg
 port resultPort : { success : Bool, report : Encode.Value, fixedFiles : Encode.Value } -> Cmd msg
 
 
+port abort : String -> Cmd msg
+
+
 
 -- PROGRAM
 
 
 type alias Flags =
-    ()
+    Encode.Value
 
 
 main : Program Flags Model Msg
@@ -47,12 +50,46 @@ main =
 
 type alias Model =
     { files : List File
+    , fixMode : FixMode
     }
 
 
+type FixMode
+    = DontFix
+    | FixOneByOne
+    | FixAll
+
+
 init : Flags -> ( Model, Cmd msg )
-init () =
-    ( { files = [] }, Cmd.none )
+init flags =
+    case Decode.decodeValue decodeFlags flags of
+        Ok fixMode ->
+            ( { files = [], fixMode = fixMode }, Cmd.none )
+
+        Err _ ->
+            ( { files = [], fixMode = DontFix }
+            , abort <| "Problem decoding the flags of the LintApp"
+            )
+
+
+decodeFlags : Decode.Decoder FixMode
+decodeFlags =
+    Decode.field "fixMode" Decode.string
+        |> Decode.andThen
+            (\fixMode ->
+                case fixMode of
+                    "dontfix" ->
+                        Decode.succeed DontFix
+
+                    "fix-one-by-one" ->
+                        Decode.succeed FixOneByOne
+
+                    "fix-all" ->
+                        Decode.succeed FixAll
+
+                    _ ->
+                        Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
+            )
 
 
 
@@ -78,6 +115,45 @@ update msg model =
                     ( model, Cmd.none )
 
         GotRequestToLint ->
+            runLinting model
+
+
+runLinting : Model -> ( Model, Cmd msg )
+runLinting model =
+    case model.fixMode of
+        DontFix ->
+            let
+                errors : List ( File, List LintError )
+                errors =
+                    model.files
+                        |> List.map (\file -> ( file, lint file ))
+
+                success : Bool
+                success =
+                    errors
+                        |> List.concatMap Tuple.second
+                        |> List.length
+                        |> (==) 0
+
+                report : Encode.Value
+                report =
+                    errors
+                        |> fromLintErrors
+                        |> Reporter.formatReport
+                        |> encodeReport
+            in
+            ( model
+            , resultPort
+                { success = success
+                , report = report
+                , fixedFiles = Encode.list File.encode []
+                }
+            )
+
+        FixOneByOne ->
+            ( model, Cmd.none )
+
+        FixAll ->
             let
                 errors : List ( File, List LintError )
                 errors =
