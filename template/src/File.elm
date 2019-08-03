@@ -1,6 +1,6 @@
 module File exposing
     ( File
-    , decode
+    , encode, decode
     )
 
 {-| Represents a file
@@ -13,11 +13,12 @@ module File exposing
 
 # Decoding
 
-@decode
+@docs encode, decode
 
 -}
 
 import Json.Decode as Decode
+import Json.Encode as Encode
 
 
 
@@ -31,7 +32,7 @@ type alias File =
 
 
 
--- DECODING
+-- ENCODING / DECODING
 
 
 decode : Decode.Decoder File
@@ -39,3 +40,11 @@ decode =
     Decode.map2 (\path_ source_ -> { path = path_, source = source_ })
         (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
+
+
+encode : File -> Encode.Value
+encode file =
+    Encode.object
+        [ ( "path", Encode.string file.path )
+        , ( "source", Encode.string file.source )
+        ]

@@ -21,7 +21,7 @@ port acknowledgeFileReceipt : String -> Cmd msg
 port requestToLint : (Bool -> msg) -> Sub msg
 
 
-port resultPort : { success : Bool, report : Encode.Value } -> Cmd msg
+port resultPort : { success : Bool, report : Encode.Value, fixedFiles : Encode.Value } -> Cmd msg
 
 
 
@@ -97,10 +97,44 @@ update msg model =
                         |> fromLintErrors
                         |> Reporter.formatReport
                         |> encodeReport
+
+                fixedFiles : List File
+                fixedFiles =
+                    errors
+                        |> List.filterMap
+                            (\( file, errorsForFile ) ->
+                                findFirstFix errorsForFile
+                                    |> Maybe.map (\fixedSource -> { file | source = fixedSource })
+                            )
             in
             ( model
-            , resultPort { success = success, report = report }
+            , resultPort
+                { success = success
+                , report = report
+                , fixedFiles = Encode.list File.encode fixedFiles
+                }
             )
+
+
+findFirstFix : List LintError -> Maybe String
+findFirstFix errors =
+    case errors of
+        [] ->
+            Nothing
+
+        error :: restOfErrors ->
+            case applyFixFromError error of
+                Just fix ->
+                    Just fix
+
+                Nothing ->
+                    findFirstFix restOfErrors
+
+
+applyFixFromError : LintError -> Maybe String
+applyFixFromError error =
+    Lint.fixedSource error
+        |> Maybe.map (\fixSource -> fixSource ())
 
 
 fromLintErrors : List ( File, List LintError ) -> List ( File, List Reporter.Error )
