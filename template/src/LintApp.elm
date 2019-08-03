@@ -139,7 +139,7 @@ runLinting model =
                 report =
                     errors
                         |> fromLintErrors
-                        |> Reporter.formatReport
+                        |> Reporter.formatReport False
                         |> encodeReport
             in
             ( model
@@ -154,42 +154,98 @@ runLinting model =
             ( model, Cmd.none )
 
         FixAll ->
-            let
-                errors : List ( File, List LintError )
-                errors =
-                    model.files
-                        |> List.map (\file -> ( file, lint file ))
+            fixAll model
 
-                success : Bool
-                success =
-                    errors
-                        |> List.concatMap Tuple.second
-                        |> List.length
-                        |> (==) 0
 
-                report : Encode.Value
-                report =
-                    errors
-                        |> fromLintErrors
-                        |> Reporter.formatReport
-                        |> encodeReport
+type FileFixResult
+    = Unchanged
+    | Fixed
 
-                fixedFiles : List File
-                fixedFiles =
-                    errors
-                        |> List.filterMap
-                            (\( file, errorsForFile ) ->
-                                findFirstFix errorsForFile
-                                    |> Maybe.map (\fixedSource -> { file | source = fixedSource })
-                            )
-            in
-            ( model
-            , resultPort
-                { success = success
-                , report = report
-                , fixedFiles = Encode.list File.encode fixedFiles
-                }
-            )
+
+fixAll : Model -> ( Model, Cmd msg )
+fixAll model =
+    let
+        errors : List ( ( FileFixResult, File ), List LintError )
+        errors =
+            model.files
+                |> List.map
+                    (\file ->
+                        let
+                            ( newFile, errorsForFile ) =
+                                fixAllForOneFile file
+
+                            fileFixResult : FileFixResult
+                            fileFixResult =
+                                if file == newFile then
+                                    Unchanged
+
+                                else
+                                    Fixed
+                        in
+                        ( ( fileFixResult, newFile ), errorsForFile )
+                    )
+
+        success : Bool
+        success =
+            errors
+                |> List.concatMap Tuple.second
+                |> List.length
+                |> (==) 0
+
+        report : Encode.Value
+        report =
+            errors
+                |> List.map (Tuple.mapFirst Tuple.second)
+                |> fromLintErrors
+                |> Reporter.formatReport True
+                |> encodeReport
+
+        fixedFiles : List File
+        fixedFiles =
+            errors
+                |> List.filterMap
+                    (\( ( fileFixResult, file ), errorsForFile ) ->
+                        case fileFixResult of
+                            Unchanged ->
+                                Nothing
+
+                            Fixed ->
+                                Just file
+                    )
+    in
+    ( model
+    , resultPort
+        { success = success
+        , report = report
+        , fixedFiles = Encode.list File.encode fixedFiles
+        }
+    )
+
+
+fixAllForOneFile : File -> ( File, List LintError )
+fixAllForOneFile file =
+    let
+        errors : List LintError
+        errors =
+            lint file
+    in
+    -- Check if there are fixes available for this file
+    case findFirstFix errors of
+        -- if there are none, return the remaining errors
+        Nothing ->
+            ( file, errors )
+
+        -- if there is then
+        Just fixedSource ->
+            if file.source == fixedSource then
+                -- if the fix does not make any change, we're likely to enter an
+                -- infinite loop. Don't apply it, and return the remaining errors
+                ( file, errors )
+
+            else
+                -- if the fix makes a meaningful change, update the file, and
+                -- relint from scratch (ignoring the previously computed errors)
+                fixAllForOneFile { file | source = fixedSource }
 
 
 findFirstFix : List LintError -> Maybe String
