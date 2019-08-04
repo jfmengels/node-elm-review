@@ -4,6 +4,7 @@ import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Lint exposing (LintError, lintSource)
+import Lint.Fix as Fix
 import LintConfig exposing (config)
 import Reporter
 
@@ -99,6 +100,10 @@ decodeFlags =
 type Msg
     = ReceivedFile Decode.Value
     | GotRequestToLint
+
+
+type alias Source =
+    String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -230,43 +235,45 @@ fixAllForOneFile file =
             lint file
     in
     -- Check if there are fixes available for this file
-    case findFirstFix errors of
+    case findFirstFix file.source errors of
         -- if there are none, return the remaining errors
         Nothing ->
             ( file, errors )
 
         -- if there is then
-        Just fixedSource ->
-            if file.source == fixedSource then
-                -- if the fix does not make any change, we're likely to enter an
-                -- infinite loop. Don't apply it, and return the remaining errors
-                ( file, errors )
+        Just fixResult ->
+            case fixResult of
+                Fix.Successful fixedSource ->
+                    -- if the fix makes change successfully, update the file, and
+                    -- relint from scratch (ignoring the previously computed errors)
+                    fixAllForOneFile { file | source = fixedSource }
 
-            else
-                -- if the fix makes a meaningful change, update the file, and
-                -- relint from scratch (ignoring the previously computed errors)
-                fixAllForOneFile { file | source = fixedSource }
+                Fix.Errored Fix.Unchanged ->
+                    -- if the fix does not make any change, we're likely to enter an
+                    -- infinite loop. Don't apply it, and return the remaining errors
+                    ( file, errors )
 
 
-findFirstFix : List LintError -> Maybe String
-findFirstFix errors =
+findFirstFix : Source -> List LintError -> Maybe Fix.Result
+findFirstFix source errors =
     case errors of
         [] ->
             Nothing
 
         error :: restOfErrors ->
-            case applyFixFromError error of
+            case applyFixFromError source error of
                 Just fix ->
                     Just fix
 
                 Nothing ->
-                    findFirstFix restOfErrors
+                    findFirstFix source restOfErrors
 
 
-applyFixFromError : LintError -> Maybe String
-applyFixFromError error =
-    Lint.fixedSource error
-        |> Maybe.map (\fixSource -> fixSource ())
+applyFixFromError : Source -> LintError -> Maybe Fix.Result
+applyFixFromError source error =
+    error
+        |> Lint.fixes
+        |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
 fromLintErrors : List ( File, List LintError ) -> List ( File, List Reporter.Error )
@@ -281,7 +288,7 @@ fromLintError error =
     , message = Lint.errorMessage error
     , details = Lint.errorDetails error
     , range = Lint.errorRange error
-    , fixedSource = Lint.fixedSource error
+    , hasFix = Lint.fixes error /= Nothing
     }
 
 
