@@ -1,4 +1,4 @@
-port module LintApp exposing (main)
+port module Main exposing (main)
 
 import File exposing (File)
 import Json.Decode as Decode
@@ -69,7 +69,7 @@ init flags =
 
         Err _ ->
             ( { files = [], fixMode = DontFix }
-            , abort <| "Problem decoding the flags of the LintApp"
+            , abort <| "Problem decoding the flags when running the elm-lint runner"
             )
 
 
