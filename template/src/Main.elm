@@ -248,14 +248,8 @@ fixAllForOneFile file =
                     -- relint from scratch (ignoring the previously computed errors)
                     fixAllForOneFile { file | source = fixedSource }
 
-                Fix.Errored Fix.Unchanged ->
-                    -- if the fix does not make any change, we're likely to enter an
-                    -- infinite loop. Don't apply it, and return the remaining errors
-                    ( file, errors )
-
-                Fix.Errored (Fix.SourceCodeIsNotValid _) ->
-                    -- if the fix makes the code invalid, don't apply it, and
-                    -- return the remaining errors
+                Fix.Errored _ ->
+                    -- if the fix could not be applied, ignore it, and stop here
                     ( file, errors )
 
 
