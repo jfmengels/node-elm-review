@@ -253,6 +253,11 @@ fixAllForOneFile file =
                     -- infinite loop. Don't apply it, and return the remaining errors
                     ( file, errors )
 
+                Fix.Errored (Fix.SourceCodeIsNotValid _) ->
+                    -- if the fix makes the code invalid, don't apply it, and
+                    -- return the remaining errors
+                    ( file, errors )
+
 
 findFirstFix : Source -> List LintError -> Maybe Fix.Result
 findFirstFix source errors =
