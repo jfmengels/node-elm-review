@@ -3,7 +3,7 @@ port module Main exposing (main)
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Lint exposing (LintError, lintSource)
+import Lint exposing (LintError)
 import Lint.Fix as Fix
 import LintConfig exposing (config)
 import Reporter
@@ -324,7 +324,7 @@ encodeReportPart { str, color } =
 
 lint : File -> List LintError
 lint file =
-    lintSource config file
+    Lint.lint config file
 
 
 subscriptions : Model -> Sub Msg
