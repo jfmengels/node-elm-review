@@ -57,8 +57,7 @@ type alias Model =
 
 type FixMode
     = DontFix
-    | FixOneByOne
-    | FixAll
+    | Fix
 
 
 init : Flags -> ( Model, Cmd msg )
@@ -82,11 +81,8 @@ decodeFlags =
                     "dontfix" ->
                         Decode.succeed DontFix
 
-                    "fix-one-by-one" ->
-                        Decode.succeed FixOneByOne
-
-                    "fix-all" ->
-                        Decode.succeed FixAll
+                    "fix" ->
+                        Decode.succeed Fix
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
@@ -155,10 +151,7 @@ runLinting model =
                 }
             )
 
-        FixOneByOne ->
-            ( model, Cmd.none )
-
-        FixAll ->
+        Fix ->
             fixAll model
 
 
