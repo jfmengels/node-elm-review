@@ -3,7 +3,7 @@ port module Main exposing (main)
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Lint exposing (LintError)
+import Lint
 import Lint.Fix as Fix
 import LintConfig exposing (config)
 import Reporter
@@ -128,7 +128,7 @@ runLinting model =
     case model.fixMode of
         DontFix ->
             let
-                errors : List ( File, List LintError )
+                errors : List ( File, List Lint.Error )
                 errors =
                     model.files
                         |> List.map (\file -> ( file, lint file ))
@@ -170,7 +170,7 @@ type FileFixResult
 fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
     let
-        errors : List ( ( FileFixResult, File ), List LintError )
+        errors : List ( ( FileFixResult, File ), List Lint.Error )
         errors =
             model.files
                 |> List.map
@@ -227,10 +227,10 @@ fixAll model =
     )
 
 
-fixAllForOneFile : File -> ( File, List LintError )
+fixAllForOneFile : File -> ( File, List Lint.Error )
 fixAllForOneFile file =
     let
-        errors : List LintError
+        errors : List Lint.Error
         errors =
             lint file
     in
@@ -253,7 +253,7 @@ fixAllForOneFile file =
                     ( file, errors )
 
 
-findFirstFix : Source -> List LintError -> Maybe Fix.Result
+findFirstFix : Source -> List Lint.Error -> Maybe Fix.Result
 findFirstFix source errors =
     case errors of
         [] ->
@@ -268,19 +268,19 @@ findFirstFix source errors =
                     findFirstFix source restOfErrors
 
 
-applyFixFromError : Source -> LintError -> Maybe Fix.Result
+applyFixFromError : Source -> Lint.Error -> Maybe Fix.Result
 applyFixFromError source error =
     error
         |> Lint.errorFixes
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromLintErrors : List ( File, List LintError ) -> List ( File, List Reporter.Error )
+fromLintErrors : List ( File, List Lint.Error ) -> List ( File, List Reporter.Error )
 fromLintErrors errors =
     (List.map <| Tuple.mapSecond <| List.map fromLintError) errors
 
 
-fromLintError : LintError -> Reporter.Error
+fromLintError : Lint.Error -> Reporter.Error
 fromLintError error =
     { moduleName = Lint.errorModuleName error
     , ruleName = Lint.errorRuleName error
@@ -322,7 +322,7 @@ encodeReportPart { str, color } =
 -- LINTING
 
 
-lint : File -> List LintError
+lint : File -> List Lint.Error
 lint file =
     Lint.lint config file
 
