@@ -1,5 +1,6 @@
 port module Main exposing (main)
 
+import Dict exposing (Dict)
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -23,6 +24,12 @@ port requestToLint : (Bool -> msg) -> Sub msg
 
 
 port resultPort : { success : Bool, report : Encode.Value, fixedFiles : Encode.Value } -> Cmd msg
+
+
+port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
+
+
+port askConfirmationToFix : { file : Encode.Value, error : String } -> Cmd msg
 
 
 port abort : String -> Cmd msg
@@ -52,6 +59,8 @@ main =
 type alias Model =
     { files : List File
     , fixMode : FixMode
+    , lintErrors : Dict File (List Lint.Error)
+    , errorAwaitingConfirmation : Maybe Lint.Error
     }
 
 
@@ -64,10 +73,12 @@ init : Flags -> ( Model, Cmd msg )
 init flags =
     case Decode.decodeValue decodeFlags flags of
         Ok fixMode ->
-            ( { files = [], fixMode = fixMode }, Cmd.none )
+            ( { files = [], fixMode = fixMode, lintErrors = Dict.empty, errorAwaitingConfirmation = Nothing }
+            , Cmd.none
+            )
 
         Err _ ->
-            ( { files = [], fixMode = DontFix }
+            ( { files = [], fixMode = DontFix, lintErrors = Dict.empty, errorAwaitingConfirmation = Nothing }
             , abort <| "Problem decoding the flags when running the elm-lint runner"
             )
 
@@ -96,6 +107,7 @@ decodeFlags =
 type Msg
     = ReceivedFile Decode.Value
     | GotRequestToLint
+    | UserConfirmedFix Decode.Value
 
 
 type alias Source =
@@ -117,6 +129,48 @@ update msg model =
 
         GotRequestToLint ->
             runLinting model
+
+        UserConfirmedFix confirmation ->
+            case Decode.decodeValue confirmationDecoder confirmation of
+                Ok (Accepted updatedFile) ->
+                    { model
+                        | files =
+                            List.map
+                                (\file ->
+                                    if file.path == updatedFile.path then
+                                        updatedFile
+
+                                    else
+                                        file
+                                )
+                                model.files
+                    }
+                        |> runLinting
+
+                Ok Refused ->
+                    ( model, Cmd.none )
+
+                Err err ->
+                    ( model, abort <| Decode.errorToString err )
+
+
+type Confirmation
+    = Accepted File
+    | Refused
+
+
+confirmationDecoder : Decode.Decoder Confirmation
+confirmationDecoder =
+    Decode.field "answer" Decode.bool
+        |> Decode.andThen
+            (\accepted ->
+                if accepted then
+                    Decode.field "file" File.decode
+                        |> Decode.map Accepted
+
+                else
+                    Decode.succeed Refused
+            )
 
 
 runLinting : Model -> ( Model, Cmd msg )
@@ -152,72 +206,68 @@ runLinting model =
             )
 
         Fix ->
-            fixAll model
+            fixOneByOne model
 
 
-type FileFixResult
-    = Unchanged
-    | Fixed
-
-
-fixAll : Model -> ( Model, Cmd msg )
-fixAll model =
+fixOneByOne : Model -> ( Model, Cmd msg )
+fixOneByOne model =
     let
-        errors : List ( ( FileFixResult, File ), List Lint.Error )
-        errors =
+        lintErrors : List ( File, List Lint.Error )
+        lintErrors =
             model.files
-                |> List.map
-                    (\file ->
-                        let
-                            ( newFile, errorsForFile ) =
-                                fixAllForOneFile file
-
-                            fileFixResult : FileFixResult
-                            fileFixResult =
-                                if file == newFile then
-                                    Unchanged
-
-                                else
-                                    Fixed
-                        in
-                        ( ( fileFixResult, newFile ), errorsForFile )
-                    )
-
-        success : Bool
-        success =
-            errors
-                |> List.concatMap Tuple.second
-                |> List.length
-                |> (==) 0
-
-        report : Encode.Value
-        report =
-            errors
-                |> List.map (Tuple.mapFirst Tuple.second)
-                |> fromLintErrors
-                |> Reporter.formatReport Reporter.Fixing
-                |> encodeReport
-
-        fixedFiles : List File
-        fixedFiles =
-            errors
-                |> List.filterMap
-                    (\( ( fileFixResult, file ), errorsForFile ) ->
-                        case fileFixResult of
-                            Unchanged ->
-                                Nothing
-
-                            Fixed ->
-                                Just file
-                    )
+                |> List.map (\file -> ( file, lint file ))
     in
-    ( model
-    , resultPort
-        { success = success
-        , report = report
-        , fixedFiles = Encode.list File.encode fixedFiles
-        }
-    )
+    case findFix lintErrors of
+        Just ( file, error, fixedSource ) ->
+            ( { model | errorAwaitingConfirmation = Just error }
+            , askConfirmationToFix
+                { file = File.encode { file | source = fixedSource }
+                , error = Lint.errorMessage error
+                }
+            )
+
+        Nothing ->
+            ( model
+            , Cmd.none
+              -- , resultPort
+              --     { success = success
+              --     , report = report
+              --     , fixedFiles = Encode.list File.encode fixedFiles
+              --     }
+            )
+
+
+findFix : List ( File, List Lint.Error ) -> Maybe ( File, Lint.Error, String )
+findFix errors =
+    case errors of
+        [] ->
+            Nothing
+
+        ( file, errorsForFile ) :: restOfErrors ->
+            case findFixForFile file.source errorsForFile of
+                Just ( error, fixedSource ) ->
+                    Just ( file, error, fixedSource )
+
+                Nothing ->
+                    findFix restOfErrors
+
+
+findFixForFile : String -> List Lint.Error -> Maybe ( Lint.Error, String )
+findFixForFile source errors =
+    case errors of
+        [] ->
+            Nothing
+
+        error :: restOfErrors ->
+            case applyFixFromError source error of
+                Just (Fix.Successful fixedSource) ->
+                    Just ( error, fixedSource )
+
+                Just (Fix.Errored _) ->
+                    findFixForFile source restOfErrors
+
+                Nothing ->
+                    findFixForFile source restOfErrors
 
 
 fixAllForOneFile : File -> ( File, List Lint.Error )
@@ -325,4 +375,5 @@ subscriptions model =
     Sub.batch
         [ collectFile ReceivedFile
         , requestToLint (\_ -> GotRequestToLint)
+        , userConfirmedFix UserConfirmedFix
         ]

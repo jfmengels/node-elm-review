@@ -37,7 +37,7 @@ type alias File =
 
 decode : Decode.Decoder File
 decode =
-    Decode.map2 (\path_ source_ -> { path = path_, source = source_ })
+    Decode.map2 (\path source -> { path = path, source = source })
         (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
 
