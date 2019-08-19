@@ -144,7 +144,7 @@ runLinting model =
                 report =
                     errors
                         |> fromLintErrors
-                        |> Reporter.formatReport False
+                        |> Reporter.formatReport Reporter.Linting
                         |> encodeReport
             in
             ( model
@@ -202,7 +202,7 @@ fixAll model =
             errors
                 |> List.map (Tuple.mapFirst Tuple.second)
                 |> fromLintErrors
-                |> Reporter.formatReport True
+                |> Reporter.formatReport Reporter.Fixing
                 |> encodeReport
 
         fixedFiles : List File
