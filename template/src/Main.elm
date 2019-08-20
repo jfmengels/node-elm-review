@@ -275,14 +275,7 @@ fixOneByOne model =
             )
 
         Nothing ->
-            ( model
-            , Cmd.none
-              -- , resultPort
-              --     { success = success
-              --     , report = report
-              --     , fixedFiles = Encode.list File.encode fixedFiles
-              --     }
-            )
+            makeReport model
 
 
 findFix : RefusedErrorFixes -> List ( File, List Lint.Error ) -> Maybe ( File, Lint.Error, String )
