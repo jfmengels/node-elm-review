@@ -23,7 +23,7 @@ port acknowledgeFileReceipt : String -> Cmd msg
 port requestToLint : (Bool -> msg) -> Sub msg
 
 
-port resultPort : { success : Bool, report : Encode.Value, fixedFiles : Encode.Value } -> Cmd msg
+port lintReport : { success : Bool, report : Encode.Value } -> Cmd msg
 
 
 port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
@@ -255,10 +255,9 @@ makeReport model =
                 |> encodeReport
     in
     ( model
-    , resultPort
+    , lintReport
         { success = success
         , report = report
-        , fixedFiles = Encode.list File.encode []
         }
     )
 
