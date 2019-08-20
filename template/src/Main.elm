@@ -1,6 +1,7 @@
 port module Main exposing (main)
 
 import Dict exposing (Dict)
+import Elm.Syntax.Range exposing (Range)
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -8,6 +9,7 @@ import Lint
 import Lint.Fix as Fix
 import LintConfig exposing (config)
 import Reporter
+import Set exposing (Set)
 
 
 
@@ -60,6 +62,7 @@ type alias Model =
     { files : List File
     , fixMode : FixMode
     , lintErrors : Dict File (List Lint.Error)
+    , errorsRefused : Set String
     , errorAwaitingConfirmation : Maybe Lint.Error
     }
 
@@ -73,12 +76,22 @@ init : Flags -> ( Model, Cmd msg )
 init flags =
     case Decode.decodeValue decodeFlags flags of
         Ok fixMode ->
-            ( { files = [], fixMode = fixMode, lintErrors = Dict.empty, errorAwaitingConfirmation = Nothing }
+            ( { files = []
+              , fixMode = fixMode
+              , lintErrors = Dict.empty
+              , errorAwaitingConfirmation = Nothing
+              , errorsRefused = Set.empty
+              }
             , Cmd.none
             )
 
         Err _ ->
-            ( { files = [], fixMode = DontFix, lintErrors = Dict.empty, errorAwaitingConfirmation = Nothing }
+            ( { files = []
+              , fixMode = DontFix
+              , lintErrors = Dict.empty
+              , errorAwaitingConfirmation = Nothing
+              , errorsRefused = Set.empty
+              }
             , abort <| "Problem decoding the flags when running the elm-lint runner"
             )
 
@@ -134,7 +147,8 @@ update msg model =
             case Decode.decodeValue confirmationDecoder confirmation of
                 Ok (Accepted updatedFile) ->
                     { model
-                        | files =
+                        | errorAwaitingConfirmation = Nothing
+                        , files =
                             List.map
                                 (\file ->
                                     if file.path == updatedFile.path then
@@ -148,10 +162,44 @@ update msg model =
                         |> runLinting
 
                 Ok Refused ->
-                    ( model, Cmd.none )
+                    case model.errorAwaitingConfirmation of
+                        Just errorAwaitingConfirmation ->
+                            model
+                                |> refuseError errorAwaitingConfirmation
+                                |> runLinting
+
+                        Nothing ->
+                            runLinting model
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
+
+
+refuseError : Lint.Error -> Model -> Model
+refuseError error model =
+    { model | errorsRefused = Set.insert (errorKey error) model.errorsRefused }
+
+
+errorKey : Lint.Error -> String
+errorKey error =
+    let
+        range : Range
+        range =
+            Lint.errorRange error
+    in
+    String.join "###"
+        [ Lint.errorRuleName error
+        , Lint.errorModuleName error |> Maybe.withDefault "unknown module name"
+        , Lint.errorMessage error
+        , Lint.errorDetails error |> String.join "\n"
+        , [ range.start.row
+          , range.start.column
+          , range.end.row
+          , range.end.column
+          ]
+            |> List.map String.fromInt
+            |> String.join "-"
+        ]
 
 
 type Confirmation
@@ -217,7 +265,7 @@ fixOneByOne model =
             model.files
                 |> List.map (\file -> ( file, lint file ))
     in
-    case findFix lintErrors of
+    case findFix model.errorsRefused lintErrors of
         Just ( file, error, fixedSource ) ->
             ( { model | errorAwaitingConfirmation = Just error }
             , askConfirmationToFix
@@ -237,37 +285,41 @@ fixOneByOne model =
             )
 
 
-findFix : List ( File, List Lint.Error ) -> Maybe ( File, Lint.Error, String )
-findFix errors =
+findFix : Set String -> List ( File, List Lint.Error ) -> Maybe ( File, Lint.Error, String )
+findFix errorsRefused errors =
     case errors of
         [] ->
             Nothing
 
         ( file, errorsForFile ) :: restOfErrors ->
-            case findFixForFile file.source errorsForFile of
+            case findFixForFile errorsRefused file.source errorsForFile of
                 Just ( error, fixedSource ) ->
                     Just ( file, error, fixedSource )
 
                 Nothing ->
-                    findFix restOfErrors
+                    findFix errorsRefused restOfErrors
 
 
-findFixForFile : String -> List Lint.Error -> Maybe ( Lint.Error, String )
-findFixForFile source errors =
+findFixForFile : Set String -> String -> List Lint.Error -> Maybe ( Lint.Error, String )
+findFixForFile errorsRefused source errors =
     case errors of
         [] ->
             Nothing
 
         error :: restOfErrors ->
-            case applyFixFromError source error of
-                Just (Fix.Successful fixedSource) ->
-                    Just ( error, fixedSource )
+            if Set.member (errorKey error) errorsRefused then
+                findFixForFile errorsRefused source restOfErrors
 
-                Just (Fix.Errored _) ->
-                    findFixForFile source restOfErrors
+            else
+                case applyFixFromError source error of
+                    Just (Fix.Successful fixedSource) ->
+                        Just ( error, fixedSource )
 
-                Nothing ->
-                    findFixForFile source restOfErrors
+                    Just (Fix.Errored _) ->
+                        findFixForFile errorsRefused source restOfErrors
+
+                    Nothing ->
+                        findFixForFile errorsRefused source restOfErrors
 
 
 fixAllForOneFile : File -> ( File, List Lint.Error )
