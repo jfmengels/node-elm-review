@@ -29,7 +29,7 @@ port lintReport : { success : Bool, report : Encode.Value } -> Cmd msg
 port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
 
 
-port askConfirmationToFix : { file : Encode.Value, error : String } -> Cmd msg
+port askConfirmationToFix : { file : Encode.Value, error : String, confirmationMessage : Encode.Value } -> Cmd msg
 
 
 port abort : String -> Cmd msg
@@ -270,6 +270,9 @@ fixOneByOne model =
             , askConfirmationToFix
                 { file = File.encode { file | source = fixedSource }
                 , error = Lint.errorMessage error
+                , confirmationMessage =
+                    Reporter.formatFixProposal file (fromLintError error) fixedSource
+                        |> encodeReport
                 }
             )
 
@@ -388,18 +391,26 @@ fromLintError error =
 
 {-| Encode texts to a JSON value.
 -}
-encodeReport : List { str : String, color : Maybe ( Int, Int, Int ) } -> Encode.Value
+encodeReport : List Reporter.TextContent -> Encode.Value
 encodeReport texts =
     texts
         |> Encode.list encodeReportPart
 
 
-encodeReportPart : { str : String, color : Maybe ( Int, Int, Int ) } -> Encode.Value
-encodeReportPart { str, color } =
+encodeReportPart : Reporter.TextContent -> Encode.Value
+encodeReportPart { str, color, backgroundColor } =
     Encode.object
         [ ( "string", Encode.string str )
         , ( "color"
           , case color of
+                Just ( red, green, blue ) ->
+                    Encode.list Encode.int [ red, green, blue ]
+
+                Nothing ->
+                    Encode.null
+          )
+        , ( "backgroundColor"
+          , case backgroundColor of
                 Just ( red, green, blue ) ->
                     Encode.list Encode.int [ red, green, blue ]
 
