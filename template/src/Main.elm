@@ -4,7 +4,7 @@ import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Lint
-import Lint.Fix as Fix
+import Lint.Fix as Fix exposing (FixResult)
 import LintConfig exposing (config)
 import RefusedErrorFixes exposing (RefusedErrorFixes)
 import Reporter
@@ -347,7 +347,7 @@ fixAllForOneFile file =
                     ( file, errors )
 
 
-findFirstFix : Source -> List Lint.Error -> Maybe Fix.Result
+findFirstFix : Source -> List Lint.Error -> Maybe FixResult
 findFirstFix source errors =
     case errors of
         [] ->
@@ -362,7 +362,7 @@ findFirstFix source errors =
                     findFirstFix source restOfErrors
 
 
-applyFixFromError : Source -> Lint.Error -> Maybe Fix.Result
+applyFixFromError : Source -> Lint.Error -> Maybe FixResult
 applyFixFromError source error =
     error
         |> Lint.errorFixes
