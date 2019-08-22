@@ -1,5 +1,6 @@
 port module Main exposing (main)
 
+import Elm.Project
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -16,6 +17,9 @@ import Reporter
 
 
 port collectFile : (Decode.Value -> msg) -> Sub msg
+
+
+port collectElmJson : (Decode.Value -> msg) -> Sub msg
 
 
 port acknowledgeFileReceipt : String -> Cmd msg
@@ -59,6 +63,7 @@ main =
 
 type alias Model =
     { files : List File
+    , project : Lint.Project.Project
     , fixMode : FixMode
     , lintErrors : List ( File, List Lint.Error )
     , refusedErrorFixes : RefusedErrorFixes
@@ -76,6 +81,7 @@ init flags =
     case Decode.decodeValue decodeFlags flags of
         Ok fixMode ->
             ( { files = []
+              , project = Lint.Project.new
               , fixMode = fixMode
               , lintErrors = []
               , errorAwaitingConfirmation = Nothing
@@ -86,6 +92,7 @@ init flags =
 
         Err _ ->
             ( { files = []
+              , project = Lint.Project.new
               , fixMode = DontFix
               , lintErrors = []
               , errorAwaitingConfirmation = Nothing
@@ -118,6 +125,7 @@ decodeFlags =
 
 type Msg
     = ReceivedFile Decode.Value
+    | ReceivedElmJson Decode.Value
     | GotRequestToLint
     | UserConfirmedFix Decode.Value
 
@@ -134,6 +142,16 @@ update msg model =
                 Ok file ->
                     ( { model | files = file :: model.files }
                     , acknowledgeFileReceipt file.path
+                    )
+
+                Err err ->
+                    ( model, Cmd.none )
+
+        ReceivedElmJson rawElmJson ->
+            case Decode.decodeValue Elm.Project.decoder rawElmJson of
+                Ok elmJson ->
+                    ( { model | project = Lint.Project.withElmJson elmJson model.project }
+                    , Cmd.none
                     )
 
                 Err err ->
@@ -177,7 +195,7 @@ update msg model =
 
 relintFile : File -> Model -> Model
 relintFile updatedFile model =
-    { model | lintErrors = replaceFileErrors updatedFile (lint updatedFile) model.lintErrors }
+    { model | lintErrors = replaceFileErrors updatedFile (lint model.project updatedFile) model.lintErrors }
 
 
 replaceFileErrors : File -> List Lint.Error -> List ( File, List Lint.Error ) -> List ( File, List Lint.Error )
@@ -224,7 +242,7 @@ runLinting model =
         lintErrors : List ( File, List Lint.Error )
         lintErrors =
             model.files
-                |> List.map (\file -> ( file, lint file ))
+                |> List.map (\file -> ( file, lint model.project file ))
 
         modelWithErrors : Model
         modelWithErrors =
@@ -322,12 +340,12 @@ findFixForFile refusedErrorFixes source errors =
                         Just ( error, fixedSource )
 
 
-fixAllForOneFile : File -> ( File, List Lint.Error )
-fixAllForOneFile file =
+fixAllForOneFile : Lint.Project.Project -> File -> ( File, List Lint.Error )
+fixAllForOneFile project file =
     let
         errors : List Lint.Error
         errors =
-            lint file
+            lint project file
     in
     -- Check if there are fixes available for this file
     case findFirstFix file.source errors of
@@ -341,7 +359,7 @@ fixAllForOneFile file =
                 Fix.Successful fixedSource ->
                     -- if the fix makes change successfully, update the file, and
                     -- relint from scratch (ignoring the previously computed errors)
-                    fixAllForOneFile { file | source = fixedSource }
+                    fixAllForOneFile project { file | source = fixedSource }
 
                 Fix.Errored _ ->
                     -- if the fix could not be applied, ignore it, and stop here
@@ -425,20 +443,16 @@ encodeReportPart { str, color, backgroundColor } =
 -- LINTING
 
 
-lint : File -> List Lint.Error
-lint file =
+lint : Lint.Project.Project -> File -> List Lint.Error
+lint project file =
     Lint.lint config project file
-
-
-project : Lint.Project.Project
-project =
-    Lint.Project.new
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ collectFile ReceivedFile
+        , collectElmJson ReceivedElmJson
         , requestToLint (\_ -> GotRequestToLint)
         , userConfirmedFix UserConfirmedFix
         ]
