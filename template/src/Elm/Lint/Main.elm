@@ -1,14 +1,14 @@
-port module Main exposing (main)
+port module Elm.Lint.Main exposing (main)
 
+import Elm.Lint.File as File exposing (File)
+import Elm.Lint.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Project
-import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Lint
 import Lint.Fix as Fix exposing (FixResult)
 import Lint.Project
 import LintConfig exposing (config)
-import RefusedErrorFixes exposing (RefusedErrorFixes)
 import Reporter
 
 

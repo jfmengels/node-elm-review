@@ -1,4 +1,4 @@
-module File exposing
+module Elm.Lint.File exposing
     ( File
     , encode, decode
     )
