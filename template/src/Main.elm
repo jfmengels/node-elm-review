@@ -5,6 +5,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Lint
 import Lint.Fix as Fix exposing (FixResult)
+import Lint.Project
 import LintConfig exposing (config)
 import RefusedErrorFixes exposing (RefusedErrorFixes)
 import Reporter
@@ -426,7 +427,12 @@ encodeReportPart { str, color, backgroundColor } =
 
 lint : File -> List Lint.Error
 lint file =
-    Lint.lint config file
+    Lint.lint config project file
+
+
+project : Lint.Project.Project
+project =
+    Lint.Project.new
 
 
 subscriptions : Model -> Sub Msg
