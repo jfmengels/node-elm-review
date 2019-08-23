@@ -53,7 +53,7 @@ main =
     Platform.worker
         { init = init
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> subscriptions
         }
 
 
@@ -340,47 +340,6 @@ findFixForFile refusedErrorFixes source errors =
                         Just ( error, fixedSource )
 
 
-fixAllForOneFile : Lint.Project.Project -> File -> ( File, List Lint.Error )
-fixAllForOneFile project file =
-    let
-        errors : List Lint.Error
-        errors =
-            lint project file
-    in
-    -- Check if there are fixes available for this file
-    case findFirstFix file.source errors of
-        -- if there are none, return the remaining errors
-        Nothing ->
-            ( file, errors )
-
-        -- if there is then
-        Just fixResult ->
-            case fixResult of
-                Fix.Successful fixedSource ->
-                    -- if the fix makes change successfully, update the file, and
-                    -- relint from scratch (ignoring the previously computed errors)
-                    fixAllForOneFile project { file | source = fixedSource }
-
-                Fix.Errored _ ->
-                    -- if the fix could not be applied, ignore it, and stop here
-                    ( file, errors )
-
-
-findFirstFix : Source -> List Lint.Error -> Maybe FixResult
-findFirstFix source errors =
-    case errors of
-        [] ->
-            Nothing
-
-        error :: restOfErrors ->
-            case applyFixFromError source error of
-                Just fix ->
-                    Just fix
-
-                Nothing ->
-                    findFirstFix source restOfErrors
-
-
 applyFixFromError : Source -> Lint.Error -> Maybe FixResult
 applyFixFromError source error =
     error
@@ -448,8 +407,8 @@ lint project file =
     Lint.lint config project file
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Sub Msg
+subscriptions =
     Sub.batch
         [ collectFile ReceivedFile
         , collectElmJson ReceivedElmJson
