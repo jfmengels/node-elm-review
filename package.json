@@ -30,7 +30,10 @@
   "homepage": "https://github.com/jfmengels/node-elm-lint#readme",
   "xo": {
     "space": 2,
-    "prettier": true
+    "prettier": true,
+    "rules": {
+      "promise/prefer-await-to-then": "off"
+    }
   },
   "dependencies": {
     "chalk": "^2.4.2",
