@@ -4,6 +4,8 @@
 
 Run [elm-lint] from Node.js.
 
+**WARNING: This project is still under construction. The CLI for the latest version of elm-lint has not been released yet, and will not work.**
+
 ## Installation
 
 ```bash
