@@ -91,6 +91,13 @@ elm-lint --extra tests/ --extra lint/
 ```
 
 
+## Exit status
+
+If any rule from your configuration reports a pattern in one of the analyzed files, the process will exit with status 1. Otherwise, it will exit with status 0.
+
+If the process fails at some point, it will exit with status 1.
+
+
 ## Why is there a need for a lint directory?
 
 When the CLI uses looks at your configuration, it is in practice compiling an application using the configuration in your project, then running that application to analyze your project.
