@@ -2,7 +2,7 @@
 
 ![](https://travis-ci.com/jfmengels/node-elm-lint.svg?branch=master)
 
-Run [elm-lint] from Node.js.
+Run [`elm-lint`] from Node.js.
 
 **WARNING: This project is still under construction. The CLI for the latest version of elm-lint has not been released yet, and will not work.**
 
@@ -58,10 +58,21 @@ Do note that some rules will need additional configuration, but don't worry, if 
 If you need to install packages to get third-party rules from the Elm packages, go inside the directory then run
 
 ```bash
-cd lint/ # Go inside your lint configuration folder
+cd lint/ # Go inside your lint configuration directory
 elm install authorName/packageName
 ```
 
 Once you're done configuring, run `elm-lint` to analyze your project.
 
-[elm-lint]: https://github.com/jfmengels/elm-lint
+## Why is there a need for a lint directory?
+
+When the CLI uses looks at your configuration, it is in practice compiling an application using the configuration in your project, then running that application to analyze your project.
+
+The CLI need at least two pieces of information from your configuration:
+  - An `elm.json` file to know the external packages your configuration depends upon
+  - A `LintConfig.elm` file that determines your configuration.
+
+Your custom rules, unless you want to share them in the Elm package registry, should be in the `lint/` directory too, so as not to pollute your main project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
+
+
+[`elm-lint`]: https://github.com/jfmengels/elm-lint
