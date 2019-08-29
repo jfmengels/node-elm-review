@@ -33,6 +33,7 @@ To run `elm-lint` for the first time, you need to run
 
 ```bash
 elm-lint init
+elm-lint init --help # for more information and the available flags
 ```
 
 This will create a `lint/` directory containing an `elm.json` and a `LintConfig.elm` file, which you should commit into your project. Here is what it may look like:
@@ -62,7 +63,14 @@ cd lint/ # Go inside your lint configuration directory
 elm install authorName/packageName
 ```
 
+## Run linting
+
 Once you're done configuring, run `elm-lint` to analyze your project.
+
+You can also run `elm-lint --fix`. The CLI will present you fixes for the errors that offer an automatic fix, which you can then accept or not. When there are no more fixable errors left, elm-lint will report the remaining errors as if it was called without `--fix`. Fixed errors will be reformatted using [`elm-format`].
+
+Run `elm-lint --help` for more information on the available flags.
+
 
 ## Why is there a need for a lint directory?
 
@@ -76,3 +84,4 @@ Your custom rules, unless you want to share them in the Elm package registry, sh
 
 
 [`elm-lint`]: https://github.com/jfmengels/elm-lint
+[`elm-format`]: https://github.com/avh4/elm-format
