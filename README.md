@@ -71,6 +71,25 @@ You can also run `elm-lint --fix`. The CLI will present you fixes for the errors
 
 Run `elm-lint --help` for more information on the available flags.
 
+```bash
+elm-lint # Analyze your project
+elm-lint --fix # Analyze your project and potentially proposes automatic fixes
+elm-lint --help # for more information and the available flags
+```
+
+
+## Which parts of the project will be analyzed?
+
+`elm-lint` targets a project, and therefore requires an `elm.json`. It will lint all the files of the project
+  - For packages: all the Elm files in `src/`
+  - For applications: all the Elm files in the `elm.json`'s `source-directories`
+
+If you wish to also lint your tests directory or the lint configuration itself, you can use the `--extra` flag.
+
+```bash
+elm-lint --extra tests/ --extra lint/
+```
+
 
 ## Why is there a need for a lint directory?
 
