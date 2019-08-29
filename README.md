@@ -23,12 +23,11 @@ npm install -g @jfmengels/elm-lint
 
 ```bash
 elm-lint --help  # Print the help
-elm-lint init    # Creates a `LintConfig.elm` file in which you can declare how you want to configure elm-lint
-elm-lint install # Install a package which contains rules and add it to your "test-dependencies"
+elm-lint init    # Creates an empty lint configuration
 elm-lint         # Lint your project
 ```
 
-### Configuration
+## Configuration
 
 To run `elm-lint` for the first time, you need to run
 
@@ -36,35 +35,33 @@ To run `elm-lint` for the first time, you need to run
 elm-lint init
 ```
 
-This will create a `LintConfig.elm` file at the root of your project, which you should commit into your project, which looks like the following:
+This will create a `lint/` directory containing an `elm.json` and a `LintConfig.elm` file, which you should commit into your project. Here is what it may look like:
 
 ```elm
 module LintConfig exposing (config)
 
 import Lint.Rule exposing Rule
-import Lint.Rule.NoDebug
-import Lint.Rule.NoUnusedVariables
+import NoDebug
+import NoUnused.Variables
 
 
 config : List Rule
 config =
-    [ Lint.Rule.NoDebug.rule
-    , Lint.Rule.NoUnusedVariables.rule
+    [ NoDebug.rule
+    , NoUnused.Variables.rule
     ]
 ```
 
 The configuration consists of a list of linting rules. Import the rules you wish to use and add them to `config`.
 Do note that some rules will need additional configuration, but don't worry, if you misconfigure `elm-lint`, the Elm compiler will tell you.
 
-If you need to install packages to get third-party rules, rather than use `elm install` which will add it to your `elm.json`'s `dependencies`, use `elm-lint install`, which will add them to your `elm.json`'s `test-dependencies`. Doing so will avoid polluting your dependencies, which you want to avoid especially if your project is a package.
+If you need to install packages to get third-party rules from the Elm packages, go inside the directory then run
 
 ```bash
-# Good!
-elm-lint install author/packagename
-# Bad!
-elm install author/packagename
+cd lint/ # Go inside your lint configuration folder
+elm install authorName/packageName
 ```
 
-Once you're done configuring, run `elm-lint` and you should be good to go.
+Once you're done configuring, run `elm-lint` to analyze your project.
 
 [elm-lint]: https://github.com/jfmengels/elm-lint
