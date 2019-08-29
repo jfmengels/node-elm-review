@@ -1,4 +1,4 @@
-# node-elm-lint
+# elm-lint CLI
 
 ![](https://travis-ci.com/jfmengels/node-elm-lint.svg?branch=master)
 
@@ -11,11 +11,13 @@ Run [elm-lint] from Node.js.
 ```bash
 # Save it to your package.json, if you use npm in your project.
 # This is the recommended way.
-npm install node-elm-lint --save-dev
+npm install @jfmengels/elm-lint --save-dev
 
 # Install globally. This is not recommended.
-npm install -g node-elm-lint
+npm install -g @jfmengels/elm-lint
 ```
+
+**Note**: Not to be confused with the `elm-lint` package, which has no relationship to this project.
 
 ## Usage
 
