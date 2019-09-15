@@ -84,12 +84,13 @@ elm-lint --help # for more information and the available flags
 
 `elm-lint` targets a project, and therefore requires an `elm.json`. It will lint all the files of the project
   - For packages: all the Elm files in `src/`
-  - For applications: all the Elm files in the `elm.json`'s `source-directories`
+  - For applications: all the Elm files in the project's `elm.json`'s `source-directories`
 
-If you wish to also lint your tests directory or the lint configuration itself, you can use the `--extra` flag.
+If you wish to also lint your tests directory or the lint configuration itself,
+then you should specify all the directories you want to be looked at.
 
 ```bash
-elm-lint --extra tests/ --extra lint/
+elm-lint src/ tests/ lint/
 ```
 
 
