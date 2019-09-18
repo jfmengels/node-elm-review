@@ -3,10 +3,8 @@ module LintConfig exposing (config)
 {-| Do not rename the module or the exposed function. `elm-lint` will look for
 these.
 
-To add packages that contain rules, run `elm-lint install author/packagename`
-This will add the package to your `test-dependencies`, which will avoid
-polluting your dependencies, which you want to avoid especially if your project
-is a package.
+To add packages that contain rules, in your terminal, go to this lint directory,
+then run `elm install author/packagename`.
 
 -}
 
