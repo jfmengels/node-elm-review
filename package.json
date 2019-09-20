@@ -1,6 +1,6 @@
 {
   "name": "@jfmengels/elm-lint",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Run elm-lint from Node.js",
   "engines": {
     "node": ">=8.0.0"
