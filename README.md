@@ -55,10 +55,7 @@ config =
     ]
 ```
 
-The configuration consists of a list of linting rules. Import the rules you wish to use and add them to `config`.
-Do note that some rules will need additional configuration, but don't worry, if you misconfigure `elm-lint`, the Elm compiler will tell you.
-
-If you need to install packages to get third-party rules from the Elm packages, go inside the directory then run
+`elm-lint` does not come with any built-in rules. You can read why [here](https://github.com/jfmengels/elm-lint/blob/master/documentation/design/no-built-in-rules.md). You can find rules in the Elm package registry by [using `elm-search` and searching for `Lint.Rule.Rule`](https://klaftertief.github.io/elm-search/?q=Lint.Rule.Rule), and use by going to your lint directory and running `elm install` in your terminal.
 
 ```bash
 cd lint/ # Go inside your lint configuration directory
