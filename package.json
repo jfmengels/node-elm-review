@@ -1,7 +1,7 @@
 {
-  "name": "@jfmengels/elm-lint",
-  "version": "1.0.0-beta.5",
-  "description": "Run elm-lint from Node.js",
+  "name": "elm-review",
+  "version": "1.0.0-beta.1",
+  "description": "Run elm-review from Node.js",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -11,23 +11,27 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jfmengels/node-elm-lint.git"
+    "url": "git+https://github.com/jfmengels/node-elm-review.git"
   },
   "bin": {
-    "elm-lint": "bin/elm-lint"
+    "elm-review": "bin/elm-review"
   },
   "keywords": [
     "elm",
+    "review",
+    "elm-review",
     "lint",
+    "linter",
     "elm-lint",
+    "check",
     "cli"
   ],
   "author": "Jeroen Engels",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/jfmengels/node-elm-lint/issues"
+    "url": "https://github.com/jfmengels/node-elm-review/issues"
   },
-  "homepage": "https://github.com/jfmengels/node-elm-lint#readme",
+  "homepage": "https://github.com/jfmengels/node-elm-review#readme",
   "xo": {
     "space": 2,
     "prettier": true,

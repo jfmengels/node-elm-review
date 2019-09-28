@@ -1,47 +1,43 @@
-# elm-lint CLI
+# elm-review CLI
 
-![](https://travis-ci.com/jfmengels/node-elm-lint.svg?branch=master)
+![](https://travis-ci.com/jfmengels/node-elm-review.svg?branch=master)
 
-Run [`elm-lint`] from Node.js.
+Run [`elm-review`] from Node.js.
 
-**WARNING: This project is still under construction. The CLI for the latest version of elm-lint has not been released yet, and will not work.**
-
-![elm-lint reporter output](https://github.com/jfmengels/node-elm-lint/blob/master/documentation/images/elm-lint-report.png?raw=true)
+![elm-review reporter output](https://github.com/jfmengels/node-elm-review/blob/master/documentation/images/elm-review-report.png?raw=true)
 
 ## Installation
 
 ```bash
 # Save it to your package.json, if you use npm in your project.
 # This is the recommended way.
-npm install @jfmengels/elm-lint --save-dev
+npm install elm-review --save-dev
 
 # Install globally. This is not recommended.
-npm install -g @jfmengels/elm-lint
+npm install -g elm-review
 ```
-
-**Note**: Not to be confused with the `elm-lint` package, which has no relationship to this project.
 
 ## Usage
 
 ```bash
-elm-lint --help  # Print the help
-elm-lint init    # Creates an empty lint configuration
-elm-lint         # Lint your project
+elm-review --help  # Print the help
+elm-review init    # Creates an empty review configuration
+elm-review         # Review your project
 ```
 
 ## Configuration
 
-To run `elm-lint` for the first time, you need to run
+To run `elm-review` for the first time, you need to run
 
 ```bash
-elm-lint init
-elm-lint init --help # for more information and the available flags
+elm-review init
+elm-review init --help # for more information and the available flags
 ```
 
-This will create a `lint/` directory containing an `elm.json` and a `LintConfig.elm` file, which you should commit into your project. Here is what it may look like:
+This will create a `review/` directory containing an `elm.json` and a `ReviewConfig.elm` file, which you should commit into your project. Here is what it may look like:
 
 ```elm
-module LintConfig exposing (config)
+module ReviewConfig exposing (config)
 
 import Lint.Rule exposing Rule
 import NoDebug
@@ -55,59 +51,64 @@ config =
     ]
 ```
 
-`elm-lint` does not come with any built-in rules. You can read why [here](https://github.com/jfmengels/elm-lint/blob/master/documentation/design/no-built-in-rules.md). You can find rules in the Elm package registry by [using `elm-search` and searching for `Lint.Rule.Rule`](https://klaftertief.github.io/elm-search/?q=Lint.Rule.Rule), and use by going to your lint directory and running `elm install` in your terminal.
+`elm-review` does not come with any built-in rules. You can read why [here](https://github.com/jfmengels/elm-review/blob/master/documentation/design/no-built-in-rules.md). You can find rules in the Elm package registry by [using `elm-search` and searching for `Lint.Rule.Rule`](https://klaftertief.github.io/elm-search/?q=Lint.Rule.Rule), and use them by going to your `review/` directory and running `elm install` in your terminal.
 
 ```bash
-cd lint/ # Go inside your lint configuration directory
+cd review/ # Go inside your review configuration directory
 elm install authorName/packageName
 ```
 
-## Run linting
+## Run a review
 
-Once you're done configuring, run `elm-lint` to analyze your project.
+Once you're done configuring, run `elm-review` to analyze your project.
 
-You can also run `elm-lint --fix`. The CLI will present you fixes for the errors that offer an automatic fix, which you can then accept or not. When there are no more fixable errors left, elm-lint will report the remaining errors as if it was called without `--fix`. Fixed errors will be reformatted using [`elm-format`].
+You can also run `elm-review --fix`. The CLI will present you fixes for the errors that offer an automatic fix, which you can then accept or not. When there are no more fixable errors left, `elm-review` will report the remaining errors as if it was called without `--fix`. Fixed errors will be reformatted using [`elm-format`].
 
-Run `elm-lint --help` for more information on the available flags.
+Run `elm-review --help` for more information on the available flags.
 
 ```bash
-elm-lint # Analyze your project
-elm-lint --fix # Analyze your project and potentially proposes automatic fixes
-elm-lint --help # for more information and the available flags
+elm-review # Analyze your project
+elm-review --fix # Analyze your project and potentially proposes automatic fixes
+elm-review --help # for more information and the available flags
 ```
 
 
 ## Which parts of the project will be analyzed?
 
-`elm-lint` targets a project, and therefore requires an `elm.json`. It will lint all the files of the project
+`elm-review` targets a project, and therefore requires an `elm.json`. It will review all the Elm files of the project
   - For packages: all the Elm files in `src/`
   - For applications: all the Elm files in the project's `elm.json`'s `source-directories`
 
-If you wish to also lint your tests directory or the lint configuration itself,
-then you should specify all the directories you want to be looked at.
+If you wish to also review your tests directory or the review configuration itself,
+then you should specify the directory of your project, or all the directories you want to be looked at.
 
 ```bash
-elm-lint src/ tests/ lint/
+# Review `src/` if project is a package, or the "source-directories" otherwise
+elm-review
+# Review all the Elm files in the current directory
+elm-review .
+# Review all the Elm files in the src/, tests/ and review/ directories
+elm-review src/ tests/ review/
 ```
 
 
 ## Exit status
 
-If any rule from your configuration reports a pattern in one of the analyzed files, the process will exit with status 1. Otherwise, it will exit with status 0.
+If any rule from your configuration reports an error in one of the analyzed files, the process will exit with status 1. Otherwise, it will exit with status 0.
 
-If the process fails at some point, it will exit with status 1.
+If the process fails for any other reason (crash, misconfiguration, ...), it will exit with status 1.
 
 
-## Why is there a need for a lint directory?
+## Why is there a need for a review/ directory?
 
 When the CLI uses looks at your configuration, it is in practice compiling an application using the configuration in your project, then running that application to analyze your project.
 
 The CLI need at least two pieces of information from your configuration:
-  - An `elm.json` file to know the external packages your configuration depends upon
-  - A `LintConfig.elm` file that determines your configuration.
+  - An `elm.json` file to know the external packages your configuration depends upon, and the Elm version of your project
+  - A `ReviewConfig.elm` file that determines your configuration
 
-Your custom rules, unless you want to share them in the Elm package registry, should be in the `lint/` directory too, so as not to pollute your main project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
+Your custom rules, unless you want to share them in the Elm package registry, should be in the `review/` directory too, so as not to pollute your main project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
 
 
-[`elm-lint`]: https://github.com/jfmengels/elm-lint
+[`elm-review`]: https://github.com/jfmengels/elm-review
 [`elm-format`]: https://github.com/avh4/elm-format
