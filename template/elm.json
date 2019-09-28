@@ -3,7 +3,7 @@
     "source-directories": [
         "src",
         "/home/jeroen/dev/elm-lint/src",
-        "/home/jeroen/dev/elm-lint-reporter/src"
+        "/home/jeroen/dev/elm-review-reporter/src"
     ],
     "elm-version": "0.19.0",
     "dependencies": {

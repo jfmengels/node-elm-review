@@ -1,4 +1,4 @@
-module Elm.Lint.RefusedErrorFixes exposing
+module Elm.Review.RefusedErrorFixes exposing
     ( RefusedErrorFixes, insert, member
     , empty
     )

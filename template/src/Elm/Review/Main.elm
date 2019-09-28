@@ -1,15 +1,15 @@
-port module Elm.Lint.Main exposing (main)
+port module Elm.Review.Main exposing (main)
 
-import Elm.Lint.File as File exposing (File)
-import Elm.Lint.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Project
+import Elm.Review.File as File exposing (File)
+import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Lint
 import Lint.Fix as Fix exposing (FixResult)
 import Lint.Project
-import LintConfig exposing (config)
 import Reporter
+import ReviewConfig exposing (config)
 
 
 
@@ -25,10 +25,10 @@ port collectElmJson : (Decode.Value -> msg) -> Sub msg
 port acknowledgeFileReceipt : String -> Cmd msg
 
 
-port requestToLint : (Bool -> msg) -> Sub msg
+port startReview : (Bool -> msg) -> Sub msg
 
 
-port lintReport : { success : Bool, report : Encode.Value } -> Cmd msg
+port reviewReport : { success : Bool, report : Encode.Value } -> Cmd msg
 
 
 port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
@@ -65,7 +65,7 @@ type alias Model =
     { files : List File
     , project : Lint.Project.Project
     , fixMode : FixMode
-    , lintErrors : List ( File, List Lint.Error )
+    , reviewErrors : List ( File, List Lint.Error )
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : Maybe Lint.Error
     }
@@ -83,7 +83,7 @@ init flags =
             ( { files = []
               , project = Lint.Project.new
               , fixMode = fixMode
-              , lintErrors = []
+              , reviewErrors = []
               , errorAwaitingConfirmation = Nothing
               , refusedErrorFixes = RefusedErrorFixes.empty
               }
@@ -94,11 +94,11 @@ init flags =
             ( { files = []
               , project = Lint.Project.new
               , fixMode = DontFix
-              , lintErrors = []
+              , reviewErrors = []
               , errorAwaitingConfirmation = Nothing
               , refusedErrorFixes = RefusedErrorFixes.empty
               }
-            , abort <| "Problem decoding the flags when running the elm-lint runner"
+            , abort <| "Problem decoding the flags when running the elm-review runner"
             )
 
 
@@ -126,7 +126,7 @@ decodeFlags =
 type Msg
     = ReceivedFile Decode.Value
     | ReceivedElmJson Decode.Value
-    | GotRequestToLint
+    | GotRequestToReview
     | UserConfirmedFix Decode.Value
 
 
@@ -157,8 +157,8 @@ update msg model =
                 Err err ->
                     ( model, Cmd.none )
 
-        GotRequestToLint ->
-            runLinting model
+        GotRequestToReview ->
+            runReview model
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue confirmationDecoder confirmation of
@@ -176,7 +176,7 @@ update msg model =
                                 )
                                 model.files
                     }
-                        |> relintFile updatedFile
+                        |> reReviewFile updatedFile
                         |> fixOneByOne
 
                 Ok Refused ->
@@ -193,9 +193,9 @@ update msg model =
                     ( model, abort <| Decode.errorToString err )
 
 
-relintFile : File -> Model -> Model
-relintFile updatedFile model =
-    { model | lintErrors = replaceFileErrors updatedFile (lint model.project updatedFile) model.lintErrors }
+reReviewFile : File -> Model -> Model
+reReviewFile updatedFile model =
+    { model | reviewErrors = replaceFileErrors updatedFile (review model.project updatedFile) model.reviewErrors }
 
 
 replaceFileErrors : File -> List Lint.Error -> List ( File, List Lint.Error ) -> List ( File, List Lint.Error )
@@ -236,17 +236,17 @@ confirmationDecoder =
             )
 
 
-runLinting : Model -> ( Model, Cmd msg )
-runLinting model =
+runReview : Model -> ( Model, Cmd msg )
+runReview model =
     let
-        lintErrors : List ( File, List Lint.Error )
-        lintErrors =
+        reviewErrors : List ( File, List Lint.Error )
+        reviewErrors =
             model.files
-                |> List.map (\file -> ( file, lint model.project file ))
+                |> List.map (\file -> ( file, review model.project file ))
 
         modelWithErrors : Model
         modelWithErrors =
-            { model | lintErrors = lintErrors }
+            { model | reviewErrors = reviewErrors }
     in
     case modelWithErrors.fixMode of
         DontFix ->
@@ -261,20 +261,20 @@ makeReport model =
     let
         success : Bool
         success =
-            model.lintErrors
+            model.reviewErrors
                 |> List.concatMap Tuple.second
                 |> List.length
                 |> (==) 0
 
         report : Encode.Value
         report =
-            model.lintErrors
-                |> fromLintErrors
-                |> Reporter.formatReport Reporter.Linting
+            model.reviewErrors
+                |> fromReviewErrors
+                |> Reporter.formatReport Reporter.Reviewing
                 |> encodeReport
     in
     ( model
-    , lintReport
+    , reviewReport
         { success = success
         , report = report
         }
@@ -283,14 +283,14 @@ makeReport model =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    case findFix model.refusedErrorFixes model.lintErrors of
+    case findFix model.refusedErrorFixes model.reviewErrors of
         Just ( file, error, fixedSource ) ->
             ( { model | errorAwaitingConfirmation = Just error }
             , askConfirmationToFix
                 { file = File.encode { file | source = fixedSource }
                 , error = Lint.errorMessage error
                 , confirmationMessage =
-                    Reporter.formatFixProposal file (fromLintError error) fixedSource
+                    Reporter.formatFixProposal file (fromReviewError error) fixedSource
                         |> encodeReport
                 }
             )
@@ -347,13 +347,13 @@ applyFixFromError source error =
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromLintErrors : List ( File, List Lint.Error ) -> List ( File, List Reporter.Error )
-fromLintErrors errors =
-    (List.map <| Tuple.mapSecond <| List.map fromLintError) errors
+fromReviewErrors : List ( File, List Lint.Error ) -> List ( File, List Reporter.Error )
+fromReviewErrors errors =
+    (List.map <| Tuple.mapSecond <| List.map fromReviewError) errors
 
 
-fromLintError : Lint.Error -> Reporter.Error
-fromLintError error =
+fromReviewError : Lint.Error -> Reporter.Error
+fromReviewError error =
     { moduleName = Lint.errorModuleName error
     , ruleName = Lint.errorRuleName error
     , message = Lint.errorMessage error
@@ -399,11 +399,11 @@ encodeReportPart { str, color, backgroundColor } =
 
 
 
--- LINTING
+-- REVIEWING
 
 
-lint : Lint.Project.Project -> File -> List Lint.Error
-lint project file =
+review : Lint.Project.Project -> File -> List Lint.Error
+review project file =
     Lint.lint config project file
 
 
@@ -412,6 +412,6 @@ subscriptions =
     Sub.batch
         [ collectFile ReceivedFile
         , collectElmJson ReceivedElmJson
-        , requestToLint (\_ -> GotRequestToLint)
+        , startReview (\_ -> GotRequestToReview)
         , userConfirmedFix UserConfirmedFix
         ]
