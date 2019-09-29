@@ -5,10 +5,10 @@ import Elm.Review.File as File exposing (File)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Lint
-import Lint.Fix as Fix exposing (FixResult)
-import Lint.Project
 import Reporter
+import Review
+import Review.Fix as Fix exposing (FixResult)
+import Review.Project
 import ReviewConfig exposing (config)
 
 
@@ -63,11 +63,11 @@ main =
 
 type alias Model =
     { files : List File
-    , project : Lint.Project.Project
+    , project : Review.Project.Project
     , fixMode : FixMode
-    , reviewErrors : List ( File, List Lint.Error )
+    , reviewErrors : List ( File, List Review.Error )
     , refusedErrorFixes : RefusedErrorFixes
-    , errorAwaitingConfirmation : Maybe Lint.Error
+    , errorAwaitingConfirmation : Maybe Review.Error
     }
 
 
@@ -81,7 +81,7 @@ init flags =
     case Decode.decodeValue decodeFlags flags of
         Ok fixMode ->
             ( { files = []
-              , project = Lint.Project.new
+              , project = Review.Project.new
               , fixMode = fixMode
               , reviewErrors = []
               , errorAwaitingConfirmation = Nothing
@@ -92,7 +92,7 @@ init flags =
 
         Err _ ->
             ( { files = []
-              , project = Lint.Project.new
+              , project = Review.Project.new
               , fixMode = DontFix
               , reviewErrors = []
               , errorAwaitingConfirmation = Nothing
@@ -150,7 +150,7 @@ update msg model =
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
-                    ( { model | project = Lint.Project.withElmJson elmJson model.project }
+                    ( { model | project = Review.Project.withElmJson elmJson model.project }
                     , Cmd.none
                     )
 
@@ -198,7 +198,7 @@ reReviewFile updatedFile model =
     { model | reviewErrors = replaceFileErrors updatedFile (review model.project updatedFile) model.reviewErrors }
 
 
-replaceFileErrors : File -> List Lint.Error -> List ( File, List Lint.Error ) -> List ( File, List Lint.Error )
+replaceFileErrors : File -> List Review.Error -> List ( File, List Review.Error ) -> List ( File, List Review.Error )
 replaceFileErrors updatedFile errorsForFile allErrors =
     case allErrors of
         [] ->
@@ -212,7 +212,7 @@ replaceFileErrors updatedFile errorsForFile allErrors =
                 fileAndErrors :: replaceFileErrors updatedFile errorsForFile restOfErrors
 
 
-refuseError : Lint.Error -> Model -> Model
+refuseError : Review.Error -> Model -> Model
 refuseError error model =
     { model | refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes }
 
@@ -239,7 +239,7 @@ confirmationDecoder =
 runReview : Model -> ( Model, Cmd msg )
 runReview model =
     let
-        reviewErrors : List ( File, List Lint.Error )
+        reviewErrors : List ( File, List Review.Error )
         reviewErrors =
             model.files
                 |> List.map (\file -> ( file, review model.project file ))
@@ -288,7 +288,7 @@ fixOneByOne model =
             ( { model | errorAwaitingConfirmation = Just error }
             , askConfirmationToFix
                 { file = File.encode { file | source = fixedSource }
-                , error = Lint.errorMessage error
+                , error = Review.errorMessage error
                 , confirmationMessage =
                     Reporter.formatFixProposal file (fromReviewError error) fixedSource
                         |> encodeReport
@@ -299,7 +299,7 @@ fixOneByOne model =
             makeReport model
 
 
-findFix : RefusedErrorFixes -> List ( File, List Lint.Error ) -> Maybe ( File, Lint.Error, String )
+findFix : RefusedErrorFixes -> List ( File, List Review.Error ) -> Maybe ( File, Review.Error, String )
 findFix refusedErrorFixes errors =
     case errors of
         [] ->
@@ -314,7 +314,7 @@ findFix refusedErrorFixes errors =
                     findFix refusedErrorFixes restOfErrors
 
 
-findFixForFile : RefusedErrorFixes -> String -> List Lint.Error -> Maybe ( Lint.Error, String )
+findFixForFile : RefusedErrorFixes -> String -> List Review.Error -> Maybe ( Review.Error, String )
 findFixForFile refusedErrorFixes source errors =
     case errors of
         [] ->
@@ -340,26 +340,26 @@ findFixForFile refusedErrorFixes source errors =
                         Just ( error, fixedSource )
 
 
-applyFixFromError : Source -> Lint.Error -> Maybe FixResult
+applyFixFromError : Source -> Review.Error -> Maybe FixResult
 applyFixFromError source error =
     error
-        |> Lint.errorFixes
+        |> Review.errorFixes
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromReviewErrors : List ( File, List Lint.Error ) -> List ( File, List Reporter.Error )
+fromReviewErrors : List ( File, List Review.Error ) -> List ( File, List Reporter.Error )
 fromReviewErrors errors =
     (List.map <| Tuple.mapSecond <| List.map fromReviewError) errors
 
 
-fromReviewError : Lint.Error -> Reporter.Error
+fromReviewError : Review.Error -> Reporter.Error
 fromReviewError error =
-    { moduleName = Lint.errorModuleName error
-    , ruleName = Lint.errorRuleName error
-    , message = Lint.errorMessage error
-    , details = Lint.errorDetails error
-    , range = Lint.errorRange error
-    , hasFix = Lint.errorFixes error /= Nothing
+    { moduleName = Review.errorModuleName error
+    , ruleName = Review.errorRuleName error
+    , message = Review.errorMessage error
+    , details = Review.errorDetails error
+    , range = Review.errorRange error
+    , hasFix = Review.errorFixes error /= Nothing
     }
 
 
@@ -402,9 +402,9 @@ encodeReportPart { str, color, backgroundColor } =
 -- REVIEWING
 
 
-review : Lint.Project.Project -> File -> List Lint.Error
+review : Review.Project.Project -> File -> List Review.Error
 review project file =
-    Lint.lint config project file
+    Review.review config project file
 
 
 subscriptions : Sub Msg

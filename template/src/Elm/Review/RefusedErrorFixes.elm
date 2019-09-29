@@ -10,7 +10,7 @@ module Elm.Review.RefusedErrorFixes exposing
 -}
 
 import Elm.Syntax.Range exposing (Range)
-import Lint
+import Review
 import Set exposing (Set)
 
 
@@ -29,7 +29,7 @@ empty =
 
 {-| Insert an error in the list of refused error fixes.
 -}
-insert : Lint.Error -> RefusedErrorFixes -> RefusedErrorFixes
+insert : Review.Error -> RefusedErrorFixes -> RefusedErrorFixes
 insert error (RefusedErrorFixes refusedErrorFixes) =
     refusedErrorFixes
         |> Set.insert (errorKey error)
@@ -38,23 +38,23 @@ insert error (RefusedErrorFixes refusedErrorFixes) =
 
 {-| Determine if the error has been refused.
 -}
-member : Lint.Error -> RefusedErrorFixes -> Bool
+member : Review.Error -> RefusedErrorFixes -> Bool
 member error (RefusedErrorFixes refusedErrorFixes) =
     Set.member (errorKey error) refusedErrorFixes
 
 
-errorKey : Lint.Error -> String
+errorKey : Review.Error -> String
 errorKey error =
     let
         range : Range
         range =
-            Lint.errorRange error
+            Review.errorRange error
     in
     String.join "###"
-        [ Lint.errorRuleName error
-        , Lint.errorModuleName error |> Maybe.withDefault "unknown module name"
-        , Lint.errorMessage error
-        , Lint.errorDetails error |> String.join "\n"
+        [ Review.errorRuleName error
+        , Review.errorModuleName error |> Maybe.withDefault "unknown module name"
+        , Review.errorMessage error
+        , Review.errorDetails error |> String.join "\n"
         , [ range.start.row
           , range.start.column
           , range.end.row

@@ -11,7 +11,7 @@ when inside the directory containing this file.
 
 -}
 
-import Lint.Rule exposing (Rule)
+import Review.Rule exposing (Rule)
 
 
 config : List Rule
