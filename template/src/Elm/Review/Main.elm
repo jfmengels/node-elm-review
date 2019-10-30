@@ -1,12 +1,14 @@
 port module Elm.Review.Main exposing (main)
 
+import Dict exposing (Dict)
 import Elm.Project
-import Elm.Review.File as File exposing (File)
+import Elm.Review.File as File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Reporter
 import Review
+import Review.File exposing (ParsedFile, RawFile)
 import Review.Fix as Fix exposing (FixResult)
 import Review.Project
 import ReviewConfig exposing (config)
@@ -62,10 +64,11 @@ main =
 
 
 type alias Model =
-    { files : List File
+    { files : Dict String ParsedFile
     , project : Review.Project.Project
     , fixMode : FixMode
-    , reviewErrors : List ( File, List Review.Error )
+    , reviewErrors : List Review.Error
+    , parseErrors : List Review.Error
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : Maybe Review.Error
     }
@@ -80,10 +83,11 @@ init : Flags -> ( Model, Cmd msg )
 init flags =
     case Decode.decodeValue decodeFlags flags of
         Ok fixMode ->
-            ( { files = []
+            ( { files = Dict.empty
               , project = Review.Project.new
               , fixMode = fixMode
               , reviewErrors = []
+              , parseErrors = []
               , errorAwaitingConfirmation = Nothing
               , refusedErrorFixes = RefusedErrorFixes.empty
               }
@@ -91,10 +95,11 @@ init flags =
             )
 
         Err _ ->
-            ( { files = []
+            ( { files = Dict.empty
               , project = Review.Project.new
               , fixMode = DontFix
               , reviewErrors = []
+              , parseErrors = []
               , errorAwaitingConfirmation = Nothing
               , refusedErrorFixes = RefusedErrorFixes.empty
               }
@@ -137,12 +142,19 @@ type alias Source =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReceivedFile rawFile ->
-            case Decode.decodeValue File.decode rawFile of
-                Ok file ->
-                    ( { model | files = file :: model.files }
-                    , acknowledgeFileReceipt file.path
-                    )
+        ReceivedFile json ->
+            case Decode.decodeValue File.decode json of
+                Ok rawFile ->
+                    case Review.parseFile rawFile of
+                        Ok parsedFile ->
+                            ( { model | files = Dict.insert parsedFile.path parsedFile model.files }
+                            , acknowledgeFileReceipt parsedFile.path
+                            )
+
+                        Err parseError ->
+                            ( { model | parseErrors = parseError :: model.parseErrors }
+                            , acknowledgeFileReceipt rawFile.path
+                            )
 
                 Err err ->
                     ( model, Cmd.none )
@@ -162,22 +174,21 @@ update msg model =
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue confirmationDecoder confirmation of
-                Ok (Accepted updatedFile) ->
-                    { model
-                        | errorAwaitingConfirmation = Nothing
-                        , files =
-                            List.map
-                                (\file ->
-                                    if file.path == updatedFile.path then
-                                        updatedFile
+                Ok (Accepted rawFile) ->
+                    case Review.parseFile rawFile of
+                        Ok parsedFile ->
+                            { model
+                                | errorAwaitingConfirmation = Nothing
+                                , files = Dict.insert parsedFile.path parsedFile model.files
+                            }
+                                |> reReviewFile parsedFile
+                                |> fixOneByOne
 
-                                    else
-                                        file
-                                )
-                                model.files
-                    }
-                        |> reReviewFile updatedFile
-                        |> fixOneByOne
+                        Err _ ->
+                            ( model
+                              -- TODO Improve abort message
+                            , abort <| "File " ++ rawFile.path ++ " could not be read. An incorrect fix may have been introduced into this file..."
+                            )
 
                 Ok Refused ->
                     case model.errorAwaitingConfirmation of
@@ -193,12 +204,13 @@ update msg model =
                     ( model, abort <| Decode.errorToString err )
 
 
-reReviewFile : File -> Model -> Model
+reReviewFile : ParsedFile -> Model -> Model
 reReviewFile updatedFile model =
-    { model | reviewErrors = replaceFileErrors updatedFile (review model.project updatedFile) model.reviewErrors }
+    -- { model | reviewErrors = replaceFileErrors updatedFile (review model.project updatedFile) model.reviewErrors }
+    Debug.todo "reReviewFile"
 
 
-replaceFileErrors : File -> List Review.Error -> List ( File, List Review.Error ) -> List ( File, List Review.Error )
+replaceFileErrors : ParsedFile -> List Review.Error -> List ( ParsedFile, List Review.Error ) -> List ( ParsedFile, List Review.Error )
 replaceFileErrors updatedFile errorsForFile allErrors =
     case allErrors of
         [] ->
@@ -218,7 +230,7 @@ refuseError error model =
 
 
 type Confirmation
-    = Accepted File
+    = Accepted RawFile
     | Refused
 
 
@@ -239,14 +251,9 @@ confirmationDecoder =
 runReview : Model -> ( Model, Cmd msg )
 runReview model =
     let
-        reviewErrors : List ( File, List Review.Error )
-        reviewErrors =
-            model.files
-                |> List.map (\file -> ( file, review model.project file ))
-
         modelWithErrors : Model
         modelWithErrors =
-            { model | reviewErrors = reviewErrors }
+            { model | reviewErrors = Review.reviewFiles config model.project (Dict.values model.files) }
     in
     case modelWithErrors.fixMode of
         DontFix ->
@@ -259,17 +266,23 @@ runReview model =
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
     let
+        errors : List Review.Error
+        errors =
+            List.concat
+                [ model.reviewErrors
+                , model.parseErrors
+                ]
+
         success : Bool
         success =
-            model.reviewErrors
-                |> List.concatMap Tuple.second
+            errors
                 |> List.length
                 |> (==) 0
 
         report : Encode.Value
         report =
-            model.reviewErrors
-                |> fromReviewErrors
+            errors
+                |> fromReviewErrors model.files
                 |> Reporter.formatReport Reporter.Reviewing
                 |> encodeReport
     in
@@ -283,23 +296,24 @@ makeReport model =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    case findFix model.refusedErrorFixes model.reviewErrors of
-        Just ( file, error, fixedSource ) ->
-            ( { model | errorAwaitingConfirmation = Just error }
-            , askConfirmationToFix
-                { file = File.encode { file | source = fixedSource }
-                , error = Review.errorMessage error
-                , confirmationMessage =
-                    Reporter.formatFixProposal file (fromReviewError error) fixedSource
-                        |> encodeReport
-                }
-            )
+    -- case findFix model.refusedErrorFixes model.reviewErrors of
+    --     Just ( file, error, fixedSource ) ->
+    --         ( { model | errorAwaitingConfirmation = Just error }
+    --         , askConfirmationToFix
+    --             { file = File.encode { file | source = fixedSource }
+    --             , error = Review.errorMessage error
+    --             , confirmationMessage =
+    --                 Reporter.formatFixProposal file (fromReviewError error) fixedSource
+    --                     |> encodeReport
+    --             }
+    --         )
+    --
+    --     Nothing ->
+    --         makeReport model
+    Debug.todo "fixOneByOne"
 
-        Nothing ->
-            makeReport model
 
-
-findFix : RefusedErrorFixes -> List ( File, List Review.Error ) -> Maybe ( File, Review.Error, String )
+findFix : RefusedErrorFixes -> List ( ParsedFile, List Review.Error ) -> Maybe ( ParsedFile, Review.Error, String )
 findFix refusedErrorFixes errors =
     case errors of
         [] ->
@@ -347,9 +361,19 @@ applyFixFromError source error =
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromReviewErrors : List ( File, List Review.Error ) -> List ( File, List Reporter.Error )
-fromReviewErrors errors =
-    (List.map <| Tuple.mapSecond <| List.map fromReviewError) errors
+fromReviewErrors : Dict String ParsedFile -> List Review.Error -> List ( RawFile, List Reporter.Error )
+fromReviewErrors files errors =
+    files
+        |> Dict.values
+        |> List.map
+            (\file ->
+                ( { path = file.path, source = file.source }
+                , errors
+                    |> List.filter (\error -> file.path == Review.errorFilePath error)
+                    |> List.map fromReviewError
+                )
+            )
+        |> List.filter (\( file, fileErrors ) -> not <| List.isEmpty fileErrors)
 
 
 fromReviewError : Review.Error -> Reporter.Error
@@ -400,11 +424,6 @@ encodeReportPart { str, color, backgroundColor } =
 
 
 -- REVIEWING
-
-
-review : Review.Project.Project -> File -> List Review.Error
-review project file =
-    Review.review config project file
 
 
 subscriptions : Sub Msg

@@ -1,14 +1,6 @@
-module Elm.Review.File exposing
-    ( File
-    , encode, decode
-    )
+module Elm.Review.File exposing (encode, decode)
 
-{-| Represents a file
-
-
-# Definition
-
-@docs File
+{-| TODO file
 
 
 # Decoding
@@ -19,30 +11,21 @@ module Elm.Review.File exposing
 
 import Json.Decode as Decode
 import Json.Encode as Encode
-
-
-
--- DEFINITION
-
-
-type alias File =
-    { path : String
-    , source : String
-    }
+import Review.File exposing (RawFile)
 
 
 
 -- ENCODING / DECODING
 
 
-decode : Decode.Decoder File
+decode : Decode.Decoder RawFile
 decode =
     Decode.map2 (\path source -> { path = path, source = source })
         (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
 
 
-encode : File -> Encode.Value
+encode : { file | path : String, source : String } -> Encode.Value
 encode file =
     Encode.object
         [ ( "path", Encode.string file.path )
