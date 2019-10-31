@@ -68,7 +68,7 @@ type alias Model =
     , project : Review.Project.Project
     , fixMode : FixMode
     , reviewErrors : List Review.Error
-    , parseErrors : List Review.Error
+    , parseErrors : List ( RawFile, List Reporter.Error )
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : Maybe Review.Error
     }
@@ -152,7 +152,7 @@ update msg model =
                             )
 
                         Err parseError ->
-                            ( { model | parseErrors = parseError :: model.parseErrors }
+                            ( { model | parseErrors = ( rawFile, [ fromReviewError parseError ] ) :: model.parseErrors }
                             , acknowledgeFileReceipt rawFile.path
                             )
 
@@ -266,10 +266,10 @@ runReview model =
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
     let
-        errors : List Review.Error
+        errors : List ( RawFile, List Reporter.Error )
         errors =
             List.concat
-                [ model.reviewErrors
+                [ fromReviewErrors model.files model.reviewErrors
                 , model.parseErrors
                 ]
 
@@ -282,7 +282,6 @@ makeReport model =
         report : Encode.Value
         report =
             errors
-                |> fromReviewErrors model.files
                 |> Reporter.formatReport Reporter.Reviewing
                 |> encodeReport
     in
