@@ -11,6 +11,7 @@ import Review
 import Review.File exposing (ParsedFile, RawFile)
 import Review.Fix as Fix exposing (FixResult)
 import Review.Project
+import Review.Rule as Rule
 import ReviewConfig exposing (config)
 
 
@@ -67,10 +68,10 @@ type alias Model =
     { files : Dict String ParsedFile
     , project : Review.Project.Project
     , fixMode : FixMode
-    , reviewErrors : List Review.Error
+    , reviewErrors : List Rule.Error
     , parseErrors : List ( RawFile, List Reporter.Error )
     , refusedErrorFixes : RefusedErrorFixes
-    , errorAwaitingConfirmation : Maybe Review.Error
+    , errorAwaitingConfirmation : Maybe Rule.Error
     }
 
 
@@ -210,7 +211,7 @@ reReviewFile updatedFile model =
     Debug.todo "reReviewFile"
 
 
-replaceFileErrors : ParsedFile -> List Review.Error -> List ( ParsedFile, List Review.Error ) -> List ( ParsedFile, List Review.Error )
+replaceFileErrors : ParsedFile -> List Rule.Error -> List ( ParsedFile, List Rule.Error ) -> List ( ParsedFile, List Rule.Error )
 replaceFileErrors updatedFile errorsForFile allErrors =
     case allErrors of
         [] ->
@@ -224,7 +225,7 @@ replaceFileErrors updatedFile errorsForFile allErrors =
                 fileAndErrors :: replaceFileErrors updatedFile errorsForFile restOfErrors
 
 
-refuseError : Review.Error -> Model -> Model
+refuseError : Rule.Error -> Model -> Model
 refuseError error model =
     { model | refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes }
 
@@ -300,7 +301,7 @@ fixOneByOne model =
     --         ( { model | errorAwaitingConfirmation = Just error }
     --         , askConfirmationToFix
     --             { file = File.encode { file | source = fixedSource }
-    --             , error = Review.errorMessage error
+    --             , error = Rule.errorMessage error
     --             , confirmationMessage =
     --                 Reporter.formatFixProposal file (fromReviewError error) fixedSource
     --                     |> encodeReport
@@ -312,7 +313,7 @@ fixOneByOne model =
     Debug.todo "fixOneByOne"
 
 
-findFix : RefusedErrorFixes -> List ( ParsedFile, List Review.Error ) -> Maybe ( ParsedFile, Review.Error, String )
+findFix : RefusedErrorFixes -> List ( ParsedFile, List Rule.Error ) -> Maybe ( ParsedFile, Rule.Error, String )
 findFix refusedErrorFixes errors =
     case errors of
         [] ->
@@ -327,7 +328,7 @@ findFix refusedErrorFixes errors =
                     findFix refusedErrorFixes restOfErrors
 
 
-findFixForFile : RefusedErrorFixes -> String -> List Review.Error -> Maybe ( Review.Error, String )
+findFixForFile : RefusedErrorFixes -> String -> List Rule.Error -> Maybe ( Rule.Error, String )
 findFixForFile refusedErrorFixes source errors =
     case errors of
         [] ->
@@ -353,14 +354,14 @@ findFixForFile refusedErrorFixes source errors =
                         Just ( error, fixedSource )
 
 
-applyFixFromError : Source -> Review.Error -> Maybe FixResult
+applyFixFromError : Source -> Rule.Error -> Maybe FixResult
 applyFixFromError source error =
     error
-        |> Review.errorFixes
+        |> Rule.errorFixes
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromReviewErrors : Dict String ParsedFile -> List Review.Error -> List ( RawFile, List Reporter.Error )
+fromReviewErrors : Dict String ParsedFile -> List Rule.Error -> List ( RawFile, List Reporter.Error )
 fromReviewErrors files errors =
     files
         |> Dict.values
@@ -368,21 +369,20 @@ fromReviewErrors files errors =
             (\file ->
                 ( { path = file.path, source = file.source }
                 , errors
-                    |> List.filter (\error -> file.path == Review.errorFilePath error)
+                    |> List.filter (\error -> file.path == Rule.errorFilePath error)
                     |> List.map fromReviewError
                 )
             )
         |> List.filter (\( file, fileErrors ) -> not <| List.isEmpty fileErrors)
 
 
-fromReviewError : Review.Error -> Reporter.Error
+fromReviewError : Rule.Error -> Reporter.Error
 fromReviewError error =
-    { moduleName = Review.errorModuleName error
-    , ruleName = Review.errorRuleName error
-    , message = Review.errorMessage error
-    , details = Review.errorDetails error
-    , range = Review.errorRange error
-    , hasFix = Review.errorFixes error /= Nothing
+    { ruleName = Rule.errorRuleName error
+    , message = Rule.errorMessage error
+    , details = Rule.errorDetails error
+    , range = Rule.errorRange error
+    , hasFix = Rule.errorFixes error /= Nothing
     }
 
 
