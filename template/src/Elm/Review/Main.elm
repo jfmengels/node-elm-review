@@ -11,7 +11,7 @@ import Review
 import Review.File exposing (ParsedFile, RawFile)
 import Review.Fix as Fix exposing (FixResult)
 import Review.Project
-import Review.Rule as Rule
+import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 
 
@@ -66,6 +66,7 @@ main =
 
 type alias Model =
     { files : Dict String ParsedFile
+    , rules : List Rule
     , project : Review.Project.Project
     , fixMode : FixMode
     , reviewErrors : List Rule.Error
@@ -85,6 +86,7 @@ init flags =
     case Decode.decodeValue decodeFlags flags of
         Ok fixMode ->
             ( { files = Dict.empty
+              , rules = config
               , project = Review.Project.new
               , fixMode = fixMode
               , reviewErrors = []
@@ -97,6 +99,7 @@ init flags =
 
         Err _ ->
             ( { files = Dict.empty
+              , rules = config
               , project = Review.Project.new
               , fixMode = DontFix
               , reviewErrors = []
@@ -252,9 +255,12 @@ confirmationDecoder =
 runReview : Model -> ( Model, Cmd msg )
 runReview model =
     let
+        ( reviewErrors, rules ) =
+            Review.reviewFiles model.rules model.project (Dict.values model.files)
+
         modelWithErrors : Model
         modelWithErrors =
-            { model | reviewErrors = Review.reviewFiles config model.project (Dict.values model.files) }
+            { model | reviewErrors = reviewErrors, rules = rules }
     in
     case modelWithErrors.fixMode of
         DontFix ->
