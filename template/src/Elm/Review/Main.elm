@@ -83,32 +83,26 @@ type FixMode
 
 init : Flags -> ( Model, Cmd msg )
 init flags =
-    case Decode.decodeValue decodeFlags flags of
-        Ok fixMode ->
-            ( { files = Dict.empty
-              , rules = config
-              , project = Review.Project.new
-              , fixMode = fixMode
-              , reviewErrors = []
-              , parseErrors = []
-              , errorAwaitingConfirmation = Nothing
-              , refusedErrorFixes = RefusedErrorFixes.empty
-              }
-            , Cmd.none
-            )
+    let
+        ( fixMode, cmd ) =
+            case Decode.decodeValue decodeFlags flags of
+                Ok fixMode_ ->
+                    ( fixMode_, Cmd.none )
 
-        Err _ ->
-            ( { files = Dict.empty
-              , rules = config
-              , project = Review.Project.new
-              , fixMode = DontFix
-              , reviewErrors = []
-              , parseErrors = []
-              , errorAwaitingConfirmation = Nothing
-              , refusedErrorFixes = RefusedErrorFixes.empty
-              }
-            , abort <| "Problem decoding the flags when running the elm-review runner"
-            )
+                Err _ ->
+                    ( DontFix, abort <| "Problem decoding the flags when running the elm-review runner" )
+    in
+    ( { files = Dict.empty
+      , rules = config
+      , project = Review.Project.new
+      , fixMode = fixMode
+      , reviewErrors = []
+      , parseErrors = []
+      , errorAwaitingConfirmation = Nothing
+      , refusedErrorFixes = RefusedErrorFixes.empty
+      }
+    , cmd
+    )
 
 
 decodeFlags : Decode.Decoder FixMode
@@ -175,6 +169,7 @@ update msg model =
 
         GotRequestToReview ->
             runReview model
+                |> reportOrFix
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue confirmationDecoder confirmation of
@@ -185,7 +180,7 @@ update msg model =
                                 | errorAwaitingConfirmation = Nothing
                                 , files = Dict.insert parsedFile.path parsedFile model.files
                             }
-                                |> reReviewFile parsedFile
+                                |> runReview
                                 |> fixOneByOne
 
                         Err _ ->
@@ -206,12 +201,6 @@ update msg model =
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
-
-
-reReviewFile : ParsedFile -> Model -> Model
-reReviewFile updatedFile model =
-    -- { model | reviewErrors = replaceFileErrors updatedFile (review model.project updatedFile) model.reviewErrors }
-    Debug.todo "reReviewFile"
 
 
 replaceFileErrors : ParsedFile -> List Rule.Error -> List ( ParsedFile, List Rule.Error ) -> List ( ParsedFile, List Rule.Error )
@@ -252,22 +241,23 @@ confirmationDecoder =
             )
 
 
-runReview : Model -> ( Model, Cmd msg )
+runReview : Model -> Model
 runReview model =
     let
         ( reviewErrors, rules ) =
             Review.reviewFiles model.rules model.project (Dict.values model.files)
-
-        modelWithErrors : Model
-        modelWithErrors =
-            { model | reviewErrors = reviewErrors, rules = rules }
     in
-    case modelWithErrors.fixMode of
+    { model | reviewErrors = reviewErrors, rules = rules }
+
+
+reportOrFix : Model -> ( Model, Cmd msg )
+reportOrFix model =
+    case model.fixMode of
         DontFix ->
-            makeReport modelWithErrors
+            makeReport model
 
         Fix ->
-            fixOneByOne modelWithErrors
+            fixOneByOne model
 
 
 makeReport : Model -> ( Model, Cmd msg )
@@ -302,66 +292,56 @@ makeReport model =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    -- case findFix model.refusedErrorFixes model.reviewErrors of
-    --     Just ( file, error, fixedSource ) ->
-    --         ( { model | errorAwaitingConfirmation = Just error }
-    --         , askConfirmationToFix
-    --             { file = File.encode { file | source = fixedSource }
-    --             , error = Rule.errorMessage error
-    --             , confirmationMessage =
-    --                 Reporter.formatFixProposal file (fromReviewError error) fixedSource
-    --                     |> encodeReport
-    --             }
-    --         )
-    --
-    --     Nothing ->
-    --         makeReport model
-    Debug.todo "fixOneByOne"
+    case findFix model.refusedErrorFixes model.files model.reviewErrors of
+        Just ( file, error, fixedSource ) ->
+            ( { model | errorAwaitingConfirmation = Just error }
+            , askConfirmationToFix
+                { file = File.encode { file | source = fixedSource }
+                , error = Rule.errorMessage error
+                , confirmationMessage =
+                    Reporter.formatFixProposal
+                        { path = file.path, source = file.source }
+                        (fromReviewError error)
+                        fixedSource
+                        |> encodeReport
+                }
+            )
+
+        Nothing ->
+            makeReport model
 
 
-findFix : RefusedErrorFixes -> List ( ParsedFile, List Rule.Error ) -> Maybe ( ParsedFile, Rule.Error, String )
-findFix refusedErrorFixes errors =
-    case errors of
-        [] ->
-            Nothing
-
-        ( file, errorsForFile ) :: restOfErrors ->
-            case findFixForFile refusedErrorFixes file.source errorsForFile of
-                Just ( error, fixedSource ) ->
-                    Just ( file, error, fixedSource )
-
-                Nothing ->
-                    findFix refusedErrorFixes restOfErrors
-
-
-findFixForFile : RefusedErrorFixes -> String -> List Rule.Error -> Maybe ( Rule.Error, String )
-findFixForFile refusedErrorFixes source errors =
+findFix : RefusedErrorFixes -> Dict String ParsedFile -> List Rule.Error -> Maybe ( ParsedFile, Rule.Error, String )
+findFix refusedErrorFixes files errors =
     case errors of
         [] ->
             Nothing
 
         error :: restOfErrors ->
             if RefusedErrorFixes.member error refusedErrorFixes then
-                -- Ignore error if it was previously refused by the user
-                findFixForFile refusedErrorFixes source restOfErrors
+                findFix refusedErrorFixes files restOfErrors
 
             else
-                case applyFixFromError source error of
+                case Dict.get (Rule.errorFilePath error) files of
                     Nothing ->
-                        -- Ignore error if it has no fixes
-                        findFixForFile refusedErrorFixes source restOfErrors
+                        findFix refusedErrorFixes files restOfErrors
 
-                    Just (Fix.Errored _) ->
-                        -- Ignore error if applying the fix results in a problem
-                        findFixForFile refusedErrorFixes source restOfErrors
+                    Just file ->
+                        case applyFixFromError error file.source of
+                            Nothing ->
+                                findFix refusedErrorFixes files restOfErrors
 
-                    Just (Fix.Successful fixedSource) ->
-                        -- Return error and the result of the fix otherwise
-                        Just ( error, fixedSource )
+                            Just (Fix.Errored _) ->
+                                -- Ignore error if applying the fix results in a problem
+                                findFix refusedErrorFixes files restOfErrors
+
+                            Just (Fix.Successful fixedSource) ->
+                                -- Return error and the result of the fix otherwise
+                                Just ( file, error, fixedSource )
 
 
-applyFixFromError : Source -> Rule.Error -> Maybe FixResult
-applyFixFromError source error =
+applyFixFromError : Rule.Error -> Source -> Maybe FixResult
+applyFixFromError error source =
     error
         |> Rule.errorFixes
         |> Maybe.map (\fixes -> Fix.fix fixes source)
