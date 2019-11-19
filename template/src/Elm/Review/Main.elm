@@ -1,6 +1,7 @@
 port module Elm.Review.Main exposing (main)
 
 import Dict exposing (Dict)
+import Elm.Docs
 import Elm.Project
 import Elm.Review.File as File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
@@ -10,7 +11,6 @@ import Reporter
 import Review
 import Review.File exposing (ParsedFile, RawFile)
 import Review.Fix as Fix exposing (FixResult)
-import Review.ModuleInterface as ModuleInterface
 import Review.Project as Project exposing (Project)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
@@ -173,7 +173,7 @@ update msg model =
                 project =
                     List.foldl
                         (\{ packageName, version, docsJson } project_ ->
-                            case Decode.decodeString ModuleInterface.fromDocsJson docsJson of
+                            case Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson of
                                 Ok interfaces ->
                                     Project.withDependency
                                         { packageName = packageName, version = version, interfaces = interfaces }
