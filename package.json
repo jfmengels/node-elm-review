@@ -46,6 +46,7 @@
     "find-up": "^4.1.0",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.4",
+    "got": "^9.6.0",
     "minimist": "^1.2.0",
     "node-elm-compiler": "^5.0.4",
     "prompts": "^2.2.1",

@@ -10,7 +10,8 @@ import Reporter
 import Review
 import Review.File exposing (ParsedFile, RawFile)
 import Review.Fix as Fix exposing (FixResult)
-import Review.Project
+import Review.ModuleInterface as ModuleInterface
+import Review.Project as Project exposing (Project)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 
@@ -23,6 +24,9 @@ port collectFile : (Decode.Value -> msg) -> Sub msg
 
 
 port collectElmJson : (Decode.Value -> msg) -> Sub msg
+
+
+port collectDependencies : (List { packageName : String, version : String, docsJson : String } -> msg) -> Sub msg
 
 
 port acknowledgeFileReceipt : String -> Cmd msg
@@ -67,7 +71,7 @@ main =
 type alias Model =
     { files : Dict String ParsedFile
     , rules : List Rule
-    , project : Review.Project.Project
+    , project : Project
     , fixMode : FixMode
     , reviewErrors : List Rule.Error
     , parseErrors : List ( RawFile, List Reporter.Error )
@@ -94,7 +98,7 @@ init flags =
     in
     ( { files = Dict.empty
       , rules = config
-      , project = Review.Project.new
+      , project = Project.new
       , fixMode = fixMode
       , reviewErrors = []
       , parseErrors = []
@@ -129,6 +133,7 @@ decodeFlags =
 type Msg
     = ReceivedFile Decode.Value
     | ReceivedElmJson Decode.Value
+    | ReceivedDependencies (List { packageName : String, version : String, docsJson : String })
     | GotRequestToReview
     | UserConfirmedFix Decode.Value
 
@@ -160,12 +165,32 @@ update msg model =
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
-                    ( { model | project = Review.Project.withElmJson elmJson model.project }
+                    ( { model | project = Project.withElmJson elmJson model.project }
                     , Cmd.none
                     )
 
                 Err err ->
                     ( model, Cmd.none )
+
+        ReceivedDependencies dependencies ->
+            let
+                project : Project
+                project =
+                    List.foldl
+                        (\{ packageName, version, docsJson } project_ ->
+                            case Decode.decodeString ModuleInterface.fromDocsJson docsJson of
+                                Ok interfaces ->
+                                    Project.withDependency
+                                        { packageName = packageName, version = version, interfaces = interfaces }
+                                        project_
+
+                                Err _ ->
+                                    project_
+                        )
+                        model.project
+                        dependencies
+            in
+            ( { model | project = project }, Cmd.none )
 
         GotRequestToReview ->
             runReview model
@@ -416,6 +441,7 @@ subscriptions =
     Sub.batch
         [ collectFile ReceivedFile
         , collectElmJson ReceivedElmJson
+        , collectDependencies ReceivedDependencies
         , startReview (\_ -> GotRequestToReview)
         , userConfirmedFix UserConfirmedFix
         ]
