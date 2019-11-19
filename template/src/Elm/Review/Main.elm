@@ -20,7 +20,7 @@ import ReviewConfig exposing (config)
 -- PORTS
 
 
-port collectFile : (Decode.Value -> msg) -> Sub msg
+port collectFile : (RawFile -> msg) -> Sub msg
 
 
 port collectElmJson : (Decode.Value -> msg) -> Sub msg
@@ -131,7 +131,7 @@ decodeFlags =
 
 
 type Msg
-    = ReceivedFile Decode.Value
+    = ReceivedFile RawFile
     | ReceivedElmJson Decode.Value
     | ReceivedDependencies (List { packageName : String, version : String, docsJson : String })
     | GotRequestToReview
@@ -145,22 +145,17 @@ type alias Source =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReceivedFile json ->
-            case Decode.decodeValue File.decode json of
-                Ok rawFile ->
-                    case Review.parseFile rawFile of
-                        Ok parsedFile ->
-                            ( { model | files = Dict.insert parsedFile.path parsedFile model.files }
-                            , acknowledgeFileReceipt parsedFile.path
-                            )
+        ReceivedFile rawFile ->
+            case Review.parseFile rawFile of
+                Ok parsedFile ->
+                    ( { model | files = Dict.insert parsedFile.path parsedFile model.files }
+                    , acknowledgeFileReceipt parsedFile.path
+                    )
 
-                        Err parseError ->
-                            ( { model | parseErrors = ( rawFile, [ fromReviewError parseError ] ) :: model.parseErrors }
-                            , acknowledgeFileReceipt rawFile.path
-                            )
-
-                Err err ->
-                    ( model, Cmd.none )
+                Err parseError ->
+                    ( { model | parseErrors = ( rawFile, [ fromReviewError parseError ] ) :: model.parseErrors }
+                    , acknowledgeFileReceipt rawFile.path
+                    )
 
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue Elm.Project.decoder rawElmJson of
