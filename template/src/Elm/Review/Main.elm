@@ -174,9 +174,9 @@ update msg model =
                     List.foldl
                         (\{ packageName, version, docsJson } project_ ->
                             case Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson of
-                                Ok interfaces ->
+                                Ok modules ->
                                     Project.withDependency
-                                        { packageName = packageName, version = version, interfaces = interfaces }
+                                        { packageName = packageName, version = version, modules = modules }
                                         project_
 
                                 Err _ ->
