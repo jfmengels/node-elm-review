@@ -69,12 +69,10 @@ main =
 
 
 type alias Model =
-    { files : Dict String ParsedFile
-    , rules : List Rule
+    { rules : List Rule
     , project : Project
     , fixMode : FixMode
     , reviewErrors : List Rule.Error
-    , parseErrors : List ( RawFile, List Reporter.Error )
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : Maybe Rule.Error
     }
@@ -96,12 +94,10 @@ init flags =
                 Err _ ->
                     ( DontFix, abort <| "Problem decoding the flags when running the elm-review runner" )
     in
-    ( { files = Dict.empty
-      , rules = config
+    ( { rules = config
       , project = Project.new
       , fixMode = fixMode
       , reviewErrors = []
-      , parseErrors = []
       , errorAwaitingConfirmation = Nothing
       , refusedErrorFixes = RefusedErrorFixes.empty
       }
@@ -146,16 +142,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ReceivedFile rawFile ->
-            case Review.parseFile rawFile of
-                Ok parsedFile ->
-                    ( { model | files = Dict.insert parsedFile.path parsedFile model.files }
-                    , acknowledgeFileReceipt parsedFile.path
-                    )
-
-                Err parseError ->
-                    ( { model | parseErrors = ( rawFile, [ fromReviewError parseError ] ) :: model.parseErrors }
-                    , acknowledgeFileReceipt rawFile.path
-                    )
+            ( { model | project = Project.withModule rawFile model.project }
+            , acknowledgeFileReceipt rawFile.path
+            )
 
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue Elm.Project.decoder rawElmJson of
@@ -194,20 +183,28 @@ update msg model =
         UserConfirmedFix confirmation ->
             case Decode.decodeValue confirmationDecoder confirmation of
                 Ok (Accepted rawFile) ->
-                    case Review.parseFile rawFile of
-                        Ok parsedFile ->
-                            { model
-                                | errorAwaitingConfirmation = Nothing
-                                , files = Dict.insert parsedFile.path parsedFile model.files
-                            }
-                                |> runReview
-                                |> fixOneByOne
+                    let
+                        newProject : Project
+                        newProject =
+                            Project.withModule rawFile model.project
+                    in
+                    if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
+                        -- There is a new file that failed to parse in the
+                        -- project when we updated the fixed file. This means
+                        -- that our fix introduced a syntactical regression that
+                        -- we were not successful in preventing earlier.
+                        ( model
+                          -- TODO Improve abort message
+                        , abort <| "File " ++ rawFile.path ++ " could not be read. An incorrect fix may have been introduced into this file..."
+                        )
 
-                        Err _ ->
-                            ( model
-                              -- TODO Improve abort message
-                            , abort <| "File " ++ rawFile.path ++ " could not be read. An incorrect fix may have been introduced into this file..."
-                            )
+                    else
+                        { model
+                            | errorAwaitingConfirmation = Nothing
+                            , project = Project.withModule rawFile model.project
+                        }
+                            |> runReview
+                            |> fixOneByOne
 
                 Ok Refused ->
                     case model.errorAwaitingConfirmation of
@@ -265,7 +262,7 @@ runReview : Model -> Model
 runReview model =
     let
         ( reviewErrors, rules ) =
-            Review.reviewFiles model.rules model.project (Dict.values model.files)
+            Review.review model.rules model.project
     in
     { model | reviewErrors = reviewErrors, rules = rules }
 
@@ -285,10 +282,7 @@ makeReport model =
     let
         errors : List ( RawFile, List Reporter.Error )
         errors =
-            List.concat
-                [ fromReviewErrors model.files model.reviewErrors
-                , model.parseErrors
-                ]
+            fromReviewErrors model.project model.reviewErrors
 
         success : Bool
         success =
@@ -312,7 +306,14 @@ makeReport model =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    case findFix model.refusedErrorFixes model.files model.reviewErrors of
+    let
+        files : Dict String ParsedFile
+        files =
+            Project.modules model.project
+                |> List.map (\module_ -> ( module_.path, module_ ))
+                |> Dict.fromList
+    in
+    case findFix model.refusedErrorFixes files model.reviewErrors of
         Just ( file, error, fixedSource ) ->
             ( { model | errorAwaitingConfirmation = Just error }
             , askConfirmationToFix
@@ -367,13 +368,22 @@ applyFixFromError error source =
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromReviewErrors : Dict String ParsedFile -> List Rule.Error -> List ( RawFile, List Reporter.Error )
-fromReviewErrors files errors =
+fromReviewErrors : Project -> List Rule.Error -> List ( RawFile, List Reporter.Error )
+fromReviewErrors project errors =
+    let
+        files : List { path : String, source : String }
+        files =
+            List.concat
+                [ project
+                    |> Project.modules
+                    |> List.map (\file -> { path = file.path, source = file.source })
+                , Project.filesThatFailedToParse project
+                ]
+    in
     files
-        |> Dict.values
         |> List.map
             (\file ->
-                ( { path = file.path, source = file.source }
+                ( file
                 , errors
                     |> List.filter (\error -> file.path == Rule.errorFilePath error)
                     |> List.map fromReviewError
