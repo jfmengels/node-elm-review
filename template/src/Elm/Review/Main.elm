@@ -177,7 +177,8 @@ update msg model =
             ( { model | project = project }, Cmd.none )
 
         GotRequestToReview ->
-            runReview model
+            { model | project = Project.precomputeModuleGraph model.project }
+                |> runReview
                 |> reportOrFix
 
         UserConfirmedFix confirmation ->
