@@ -5,6 +5,7 @@ import Elm.Docs
 import Elm.Project
 import Elm.Review.File as File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
+import Elm.Syntax.File
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Reporter
@@ -20,13 +21,16 @@ import ReviewConfig exposing (config)
 -- PORTS
 
 
-port collectFile : (RawFile -> msg) -> Sub msg
+port collectFile : (Decode.Value -> msg) -> Sub msg
 
 
 port collectElmJson : (Decode.Value -> msg) -> Sub msg
 
 
 port collectDependencies : (List { packageName : String, version : String, docsJson : String } -> msg) -> Sub msg
+
+
+port cacheFile : Encode.Value -> Cmd msg
 
 
 port acknowledgeFileReceipt : String -> Cmd msg
@@ -127,7 +131,7 @@ decodeFlags =
 
 
 type Msg
-    = ReceivedFile RawFile
+    = ReceivedFile Decode.Value
     | ReceivedElmJson Decode.Value
     | ReceivedDependencies (List { packageName : String, version : String, docsJson : String })
     | GotRequestToReview
@@ -141,10 +145,38 @@ type alias Source =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReceivedFile rawFile ->
-            ( { model | project = Project.withModule rawFile model.project }
-            , acknowledgeFileReceipt rawFile.path
-            )
+        ReceivedFile value ->
+            case Decode.decodeValue File.decode value of
+                Ok rawFile ->
+                    case rawFile.ast of
+                        Nothing ->
+                            let
+                                project : Project
+                                project =
+                                    Project.withModule { path = rawFile.path, source = rawFile.source } model.project
+                            in
+                            ( { model | project = project }
+                            , Cmd.batch
+                                [ acknowledgeFileReceipt rawFile.path
+                                , sendFileToBeCached project rawFile.source
+                                ]
+                            )
+
+                        Just ast ->
+                            ( { model
+                                | project =
+                                    Project.withParsedModule
+                                        { path = rawFile.path
+                                        , source = rawFile.source
+                                        , ast = ast
+                                        }
+                                        model.project
+                              }
+                            , acknowledgeFileReceipt rawFile.path
+                            )
+
+                Err err ->
+                    ( model, abort <| Decode.errorToString err )
 
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue Elm.Project.decoder rawElmJson of
@@ -187,7 +219,7 @@ update msg model =
                     let
                         newProject : Project
                         newProject =
-                            Project.withModule rawFile model.project
+                            Project.withModule { path = rawFile.path, source = rawFile.source } model.project
                     in
                     if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
@@ -202,10 +234,17 @@ update msg model =
                     else
                         { model
                             | errorAwaitingConfirmation = Nothing
-                            , project = Project.withModule rawFile model.project
+                            , project = newProject
                         }
                             |> runReview
                             |> fixOneByOne
+                            |> Tuple.mapSecond
+                                (\cmd ->
+                                    Cmd.batch
+                                        [ cmd
+                                        , sendFileToBeCached newProject rawFile.source
+                                        ]
+                                )
 
                 Ok Refused ->
                     case model.errorAwaitingConfirmation of
@@ -219,6 +258,42 @@ update msg model =
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
+
+
+sendFileToBeCached : Project -> String -> Cmd msg
+sendFileToBeCached project source =
+    case
+        project
+            |> Project.modules
+            |> find (\module_ -> module_.source == source)
+    of
+        Just { ast } ->
+            Encode.object
+                [ ( "source", Encode.string source )
+                , ( "ast", Elm.Syntax.File.encode ast )
+                ]
+                |> cacheFile
+
+        Nothing ->
+            Cmd.none
+
+
+{-| Find the first element that satisfies a predicate and return
+Just that element. If none match, return Nothing.
+find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
+-}
+find : (a -> Bool) -> List a -> Maybe a
+find predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+
+            else
+                find predicate rest
 
 
 replaceFileErrors : ParsedFile -> List Rule.Error -> List ( ParsedFile, List Rule.Error ) -> List ( ParsedFile, List Rule.Error )
@@ -281,7 +356,7 @@ reportOrFix model =
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
     let
-        errors : List ( RawFile, List Reporter.Error )
+        errors : List ( { path : String, source : String }, List Reporter.Error )
         errors =
             fromReviewErrors model.project model.reviewErrors
 
@@ -369,7 +444,7 @@ applyFixFromError error source =
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-fromReviewErrors : Project -> List Rule.Error -> List ( RawFile, List Reporter.Error )
+fromReviewErrors : Project -> List Rule.Error -> List ( { path : String, source : String }, List Reporter.Error )
 fromReviewErrors project errors =
     let
         files : List { path : String, source : String }

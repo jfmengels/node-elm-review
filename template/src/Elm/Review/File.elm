@@ -9,6 +9,7 @@ module Elm.Review.File exposing (encode, decode)
 
 -}
 
+import Elm.Syntax.File
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.File exposing (RawFile)
@@ -20,9 +21,14 @@ import Review.File exposing (RawFile)
 
 decode : Decode.Decoder RawFile
 decode =
-    Decode.map2 (\path source -> { path = path, source = source })
+    Decode.map3 (\path source ast -> { path = path, source = source, ast = ast })
         (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
+        (Decode.oneOf
+            [ Decode.field "ast" (Elm.Syntax.File.decoder |> Decode.map Just)
+            , Decode.succeed Nothing
+            ]
+        )
 
 
 encode : { file | path : String, source : String } -> Encode.Value
