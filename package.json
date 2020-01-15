@@ -44,6 +44,7 @@
     "cross-spawn": "^6.0.5",
     "elm-json": "^0.2.6",
     "find-up": "^4.1.0",
+    "folder-hash": "^3.3.0",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.4",
     "got": "^9.6.0",
