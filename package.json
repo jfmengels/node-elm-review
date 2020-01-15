@@ -42,7 +42,7 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "cross-spawn": "^6.0.5",
-    "elm-json": "^0.2.2",
+    "elm-json": "^0.2.6",
     "find-up": "^4.1.0",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.4",
