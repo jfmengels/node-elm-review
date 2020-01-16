@@ -23,6 +23,9 @@ import ReviewConfig exposing (config)
 port collectFile : (Decode.Value -> msg) -> Sub msg
 
 
+port removeFile : (String -> msg) -> Sub msg
+
+
 port collectElmJson : (Decode.Value -> msg) -> Sub msg
 
 
@@ -131,6 +134,7 @@ decodeFlags =
 
 type Msg
     = ReceivedFile Decode.Value
+    | RemovedFile String
     | ReceivedElmJson Decode.Value
     | ReceivedDependencies (List { packageName : String, version : String, docsJson : String })
     | GotRequestToReview
@@ -176,6 +180,9 @@ update msg model =
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
+
+        RemovedFile path ->
+            ( { model | project = Project.removeModule path model.project }, Cmd.none )
 
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue Elm.Project.decoder rawElmJson of
@@ -520,6 +527,7 @@ subscriptions : Sub Msg
 subscriptions =
     Sub.batch
         [ collectFile ReceivedFile
+        , removeFile RemovedFile
         , collectElmJson ReceivedElmJson
         , collectDependencies ReceivedDependencies
         , startReview (\_ -> GotRequestToReview)
