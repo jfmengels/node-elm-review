@@ -12,14 +12,13 @@ module Elm.Review.File exposing (encode, decode)
 import Elm.Syntax.File
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Review.File exposing (RawFile)
 
 
 
 -- ENCODING / DECODING
 
 
-decode : Decode.Decoder RawFile
+decode : Decode.Decoder { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
 decode =
     Decode.map3 (\path source ast -> { path = path, source = source, ast = ast })
         (Decode.field "path" Decode.string)

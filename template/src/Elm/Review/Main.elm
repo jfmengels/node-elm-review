@@ -10,9 +10,8 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Reporter
 import Review
-import Review.File exposing (ParsedFile, RawFile)
 import Review.Fix as Fix exposing (FixResult)
-import Review.Project as Project exposing (Project)
+import Review.Project as Project exposing (ParsedFile, Project)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 
@@ -316,7 +315,7 @@ refuseError error model =
 
 
 type Confirmation
-    = Accepted RawFile
+    = Accepted { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
     | Refused
 
 
