@@ -209,7 +209,7 @@ update msg model =
                                 Err _ ->
                                     project_
                         )
-                        model.project
+                        (Project.removeDependencies model.project)
                         dependencies
             in
             ( { model | project = project }, Cmd.none )
