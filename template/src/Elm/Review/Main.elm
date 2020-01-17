@@ -50,6 +50,12 @@ port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
 port askConfirmationToFix : { file : Encode.Value, error : String, confirmationMessage : Encode.Value } -> Cmd msg
 
 
+port askForFixConfirmationStatus : (() -> msg) -> Sub msg
+
+
+port fixConfirmationStatus : Bool -> Cmd msg
+
+
 port abort : String -> Cmd msg
 
 
@@ -139,6 +145,7 @@ type Msg
     | ReceivedDependencies (List { packageName : String, version : String, docsJson : String })
     | GotRequestToReview
     | UserConfirmedFix Decode.Value
+    | RequestedToKnowIfAFixConfirmationIsExpected
 
 
 type alias Source =
@@ -238,10 +245,7 @@ update msg model =
                         )
 
                     else
-                        { model
-                            | errorAwaitingConfirmation = Nothing
-                            , project = newProject
-                        }
+                        { model | project = newProject }
                             |> runReview
                             |> fixOneByOne
                             |> Tuple.mapSecond
@@ -264,6 +268,9 @@ update msg model =
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
+
+        RequestedToKnowIfAFixConfirmationIsExpected ->
+            ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= Nothing) )
 
 
 sendFileToBeCached : Project -> String -> Cmd msg
@@ -346,7 +353,11 @@ runReview model =
         ( reviewErrors, rules ) =
             Review.review model.rules model.project
     in
-    { model | reviewErrors = reviewErrors, rules = rules }
+    { model
+        | reviewErrors = reviewErrors
+        , rules = rules
+        , errorAwaitingConfirmation = Nothing
+    }
 
 
 reportOrFix : Model -> ( Model, Cmd msg )
@@ -532,4 +543,5 @@ subscriptions =
         , collectDependencies ReceivedDependencies
         , startReview (\_ -> GotRequestToReview)
         , userConfirmedFix UserConfirmedFix
+        , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
         ]
