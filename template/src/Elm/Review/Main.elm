@@ -11,7 +11,7 @@ import Json.Encode as Encode
 import Reporter
 import Review
 import Review.Fix as Fix exposing (FixResult)
-import Review.Project as Project exposing (ParsedFile, Project)
+import Review.Project as Project exposing (Project, ProjectModule)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 
@@ -309,18 +309,18 @@ find predicate list =
                 find predicate rest
 
 
-replaceFileErrors : ParsedFile -> List Rule.Error -> List ( ParsedFile, List Rule.Error ) -> List ( ParsedFile, List Rule.Error )
-replaceFileErrors updatedFile errorsForFile allErrors =
+replaceFileErrors : ProjectModule -> List Rule.Error -> List ( ProjectModule, List Rule.Error ) -> List ( ProjectModule, List Rule.Error )
+replaceFileErrors module_ errorsForFile allErrors =
     case allErrors of
         [] ->
             []
 
         (( file, _ ) as fileAndErrors) :: restOfErrors ->
-            if file.path == updatedFile.path then
-                ( updatedFile, errorsForFile ) :: restOfErrors
+            if file.path == module_.path then
+                ( module_, errorsForFile ) :: restOfErrors
 
             else
-                fileAndErrors :: replaceFileErrors updatedFile errorsForFile restOfErrors
+                fileAndErrors :: replaceFileErrors module_ errorsForFile restOfErrors
 
 
 refuseError : Rule.Error -> Model -> Model
@@ -400,7 +400,7 @@ makeReport model =
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
     let
-        files : Dict String ParsedFile
+        files : Dict String ProjectModule
         files =
             Project.modules model.project
                 |> List.map (\module_ -> ( module_.path, module_ ))
@@ -425,7 +425,7 @@ fixOneByOne model =
             makeReport model
 
 
-findFix : RefusedErrorFixes -> Dict String ParsedFile -> List Rule.Error -> Maybe ( ParsedFile, Rule.Error, String )
+findFix : RefusedErrorFixes -> Dict String ProjectModule -> List Rule.Error -> Maybe ( ProjectModule, Rule.Error, String )
 findFix refusedErrorFixes files errors =
     case errors of
         [] ->
