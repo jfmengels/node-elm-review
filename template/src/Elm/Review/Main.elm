@@ -9,7 +9,6 @@ import Elm.Syntax.File
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Reporter
-import Review
 import Review.Fix as Fix exposing (FixResult)
 import Review.Project as Project exposing (Project, ProjectModule)
 import Review.Rule as Rule exposing (Rule)
@@ -351,7 +350,7 @@ runReview : Model -> Model
 runReview model =
     let
         ( reviewErrors, rules ) =
-            Review.review model.rules model.project
+            Rule.review model.rules model.project
     in
     { model
         | reviewErrors = reviewErrors
