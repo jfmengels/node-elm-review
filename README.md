@@ -21,7 +21,7 @@ npm install -g elm-review
 
 ```bash
 elm-review --help  # Print the help
-elm-review init    # Creates an empty review configuration
+elm-review init    # Create an empty review configuration
 elm-review         # Review your project
 ```
 
@@ -39,7 +39,7 @@ This will create a `review/` directory containing an `elm.json` and a `ReviewCon
 ```elm
 module ReviewConfig exposing (config)
 
-import Lint.Rule exposing Rule
+import Review.Rule exposing Rule
 import NoDebug
 import NoUnused.Variables
 
@@ -51,7 +51,7 @@ config =
     ]
 ```
 
-`elm-review` does not come with any built-in rules. You can read why [here](https://github.com/jfmengels/elm-review/blob/master/documentation/design/no-built-in-rules.md). You can find rules in the Elm package registry by [using `elm-search` and searching for `Lint.Rule.Rule`](https://klaftertief.github.io/elm-search/?q=Lint.Rule.Rule), and use them by going to your `review/` directory and running `elm install` in your terminal.
+`elm-review` does not come with any built-in rules. You can read why [here](https://github.com/jfmengels/elm-review/blob/master/documentation/design/no-built-in-rules.md). You can find rules in the Elm package registry by [using `elm-search` and searching for `Review.Rule.Rule`](https://klaftertief.github.io/elm-search/?q=Review.Rule.Rule), and use them by going to your `review/` directory and running `elm install` in your terminal.
 
 ```bash
 cd review/ # Go inside your review configuration directory
@@ -101,11 +101,11 @@ If the process fails for any other reason (crash, misconfiguration, ...), it wil
 
 ## Why is there a need for a review/ directory?
 
-When the CLI uses looks at your configuration, it is in practice compiling an application using the configuration in your project, then running that application to analyze your project.
+When the CLI looks at your configuration, it is in practice compiling an application using the configuration in your project, then running that application to analyze your project.
 
 The CLI need at least two pieces of information from your configuration:
-  - An `elm.json` file to know the external packages your configuration depends upon, and the Elm version of your project
-  - A `ReviewConfig.elm` file that determines your configuration
+  - An `elm.json` file to know the external packages your configuration depends upon (like the ones that contain the rules you enabled), and the Elm version of your project
+  - A `ReviewConfig.elm` file that sets the rules to enforce for your project
 
 Your custom rules, unless you want to share them in the Elm package registry, should be in the `review/` directory too, so as not to pollute your main project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
 
