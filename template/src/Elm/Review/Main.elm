@@ -162,7 +162,7 @@ update msg model =
                             let
                                 project : Project
                                 project =
-                                    Project.withModule { path = rawFile.path, source = rawFile.source } model.project
+                                    Project.addModule { path = rawFile.path, source = rawFile.source } model.project
                             in
                             ( { model | project = project }
                             , Cmd.batch
@@ -174,7 +174,7 @@ update msg model =
                         Just ast ->
                             ( { model
                                 | project =
-                                    Project.withParsedModule
+                                    Project.addParsedModule
                                         { path = rawFile.path
                                         , source = rawFile.source
                                         , ast = ast
@@ -231,7 +231,7 @@ update msg model =
                     let
                         newProject : Project
                         newProject =
-                            Project.withModule { path = rawFile.path, source = rawFile.source } model.project
+                            Project.addModule { path = rawFile.path, source = rawFile.source } model.project
                     in
                     if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
