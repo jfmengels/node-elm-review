@@ -75,21 +75,26 @@ elm-review --help # for more information and the available flags
 
 ## Which parts of the project will be analyzed?
 
-`elm-review` targets a project, and therefore requires an `elm.json`. It will review all the Elm files of the project
-  - For packages: all the Elm files in `src/`
-  - For applications: all the Elm files in the project's `elm.json`'s `source-directories`
+`elm-review` targets a project, and therefore requires an `elm.json`. By default, it will review all the Elm files of the project and of the tests.
+  - For packages: all the Elm files in `src/` and `tests/`
+  - For applications: all the Elm files in `tests/` and in the project's `elm.json`'s `source-directories`
 
-If you wish to also review your tests directory or the review configuration itself,
-then you should specify the directory of your project, or all the directories you want to be looked at.
+If you wish to, you can list the directories you wish to have reviewed, so as to review additional directories or to remove ignore some of directories, by adding them as arguments to the command line.
 
 ```bash
-# Review `src/` if project is a package, or the "source-directories" otherwise
+# Review `src/` if project is a package, or the "source-directories" otherwise, along with `tests/`
 elm-review
-# Review all the Elm files in the current directory
-elm-review .
+# Review only the Elm files in the `src/Dashboard/`
+elm-review src/Dashboard/
 # Review all the Elm files in the src/, tests/ and review/ directories
 elm-review src/ tests/ review/
+# Review a specific file
+elm-review src/Dashboard.elm
 ```
+
+The recommended way to use `elm-review` is without arguments. It is best not to "remove" directories from the project, because some rules expect to have access to all the files in order to make the best analysis. If some data is missing, they may make incorrect reports. If you wish to ignore some files, it is best to handle that in the implementation and/or configuration of your rules.
+
+If you add files that are not part of the project, you may run into different problems, such as conflicting module names (two `Main.elm` files), relying on different dependencies, etc. It is best to run `elm-review` once for each project, and depending on your needs, with different configurations (using the `--config` flag).
 
 
 ## Exit status
@@ -107,7 +112,7 @@ The CLI need at least two pieces of information from your configuration:
   - An `elm.json` file to know the external packages your configuration depends upon (like the ones that contain the rules you enabled), and the Elm version of your project
   - A `ReviewConfig.elm` file that sets the rules to enforce for your project
 
-Your custom rules, unless you want to share them in the Elm package registry, should be in the `review/` directory too, so as not to pollute your main project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
+Your custom rules, unless you want to share them in the Elm package registry, should be in the `review/` directory too, so as not to pollute your project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
 
 
 [`elm-review`]: https://github.com/jfmengels/elm-review
