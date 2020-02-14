@@ -469,6 +469,7 @@ fromReviewErrors project errors =
                 [ project
                     |> Project.modules
                     |> List.map (\file -> { path = file.path, source = file.source })
+                , [ { path = "GLOBAL ERROR", source = "" } ]
                 , Project.filesThatFailedToParse project
                 ]
     in
