@@ -191,7 +191,15 @@ update msg model =
             ( { model | project = Project.removeModule path model.project }, Cmd.none )
 
         ReceivedElmJson rawElmJson ->
-            case Decode.decodeValue Elm.Project.decoder rawElmJson of
+            let
+                elmJsonDecoder : Decode.Decoder { path : String, raw : String, project : Elm.Project.Project }
+                elmJsonDecoder =
+                    Decode.map3 (\path raw project -> { path = path, raw = raw, project = project })
+                        (Decode.field "path" Decode.string)
+                        (Decode.field "raw" Decode.string)
+                        (Decode.field "project" Elm.Project.decoder)
+            in
+            case Decode.decodeValue elmJsonDecoder rawElmJson of
                 Ok elmJson ->
                     ( { model | project = Project.withElmJson elmJson model.project }
                     , Cmd.none
@@ -470,6 +478,12 @@ fromReviewErrors project errors =
                     |> Project.modules
                     |> List.map (\file -> { path = file.path, source = file.source })
                 , [ { path = "GLOBAL ERROR", source = "" } ]
+                , case Project.elmJson project of
+                    Just { path, raw } ->
+                        [ { path = path, source = raw } ]
+
+                    Nothing ->
+                        []
                 , Project.filesThatFailedToParse project
                 ]
     in
