@@ -6,6 +6,7 @@ import Elm.Project
 import Elm.Review.File as File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Syntax.File
+import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Reporter
@@ -28,7 +29,7 @@ port removeFile : (String -> msg) -> Sub msg
 port collectElmJson : (Decode.Value -> msg) -> Sub msg
 
 
-port collectDependencies : (List { packageName : String, version : String, docsJson : String } -> msg) -> Sub msg
+port collectDependencies : (Decode.Value -> msg) -> Sub msg
 
 
 port cacheFile : Encode.Value -> Cmd msg
@@ -141,7 +142,7 @@ type Msg
     = ReceivedFile Decode.Value
     | RemovedFile String
     | ReceivedElmJson Decode.Value
-    | ReceivedDependencies (List { packageName : String, version : String, docsJson : String })
+    | ReceivedDependencies Decode.Value
     | GotRequestToReview
     | UserConfirmedFix Decode.Value
     | RequestedToKnowIfAFixConfirmationIsExpected
@@ -208,25 +209,34 @@ update msg model =
                 Err err ->
                     ( model, Cmd.none )
 
-        ReceivedDependencies dependencies ->
+        ReceivedDependencies json ->
             let
-                project : Project
-                project =
-                    List.foldl
-                        (\{ packageName, version, docsJson } project_ ->
-                            case Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson of
-                                Ok modules ->
-                                    Project.withDependency
-                                        { packageName = packageName, version = version, modules = modules }
-                                        project_
-
-                                Err _ ->
-                                    project_
-                        )
-                        (Project.removeDependencies model.project)
-                        dependencies
+                dependencyDecoder : Decode.Decoder Project.Dependency
+                dependencyDecoder =
+                    Decode.map4 Project.Dependency
+                        (Decode.field "name" Decode.string)
+                        (Decode.field "version" Elm.Version.decoder)
+                        (Decode.field "elmJson" Elm.Project.decoder)
+                        (Decode.field "docsJson" <| Decode.list Elm.Docs.decoder)
             in
-            ( { model | project = project }, Cmd.none )
+            case Decode.decodeValue (Decode.list dependencyDecoder) json of
+                Err decodeError ->
+                    ( model
+                    , abort <|
+                        "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
+                            ++ Decode.errorToString decodeError
+                    )
+
+                Ok dependencies ->
+                    ( { model
+                        | project =
+                            List.foldl
+                                Project.withDependency
+                                (Project.removeDependencies model.project)
+                                dependencies
+                      }
+                    , Cmd.none
+                    )
 
         GotRequestToReview ->
             { model | project = Project.precomputeModuleGraph model.project }
