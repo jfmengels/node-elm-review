@@ -2,7 +2,6 @@
     "type": "application",
     "source-directories": [
         "src",
-        "/home/jeroen/dev/elm-review-reporter/src",
         "/home/jeroen/dev/elm-review/src"
     ],
     "elm-version": "0.19.1",

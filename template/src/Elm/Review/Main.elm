@@ -5,11 +5,11 @@ import Elm.Docs
 import Elm.Project
 import Elm.Review.File as File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
+import Elm.Review.Reporter as Reporter
 import Elm.Syntax.File
 import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Reporter
 import Review.Fix as Fix exposing (FixResult)
 import Review.Project as Project exposing (Project, ProjectModule)
 import Review.Rule as Rule exposing (Rule)
