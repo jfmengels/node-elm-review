@@ -7,7 +7,8 @@
   },
   "scripts": {
     "flow": "flow",
-    "test": "xo && npm run flow"
+    "test": "npm run elm-tests && xo && npm run flow",
+    "elm-tests" : "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null)"
   },
   "repository": {
     "type": "git",
