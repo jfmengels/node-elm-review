@@ -24,7 +24,7 @@ module Elm.Review.Reporter exposing
 -}
 
 import Array exposing (Array)
-import Diff
+import Elm.Review.Diff as Diff
 import Elm.Review.Text as Text exposing (Text)
 
 
