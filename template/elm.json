@@ -2,7 +2,7 @@
     "type": "application",
     "source-directories": [
         "src",
-        "/home/jeroen/dev/elm-review/src"
+        "../../elm-review/src"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
@@ -31,10 +31,11 @@
         }
     },
     "test-dependencies": {
-        "direct": {},
-        "indirect": {
-            "elm/random": "1.0.0",
+        "direct": {
             "elm-explorations/test": "1.2.2"
+        },
+        "indirect": {
+            "elm/random": "1.0.0"
         }
     }
 }
