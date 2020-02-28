@@ -451,7 +451,54 @@ fixOneByOne model =
 
 fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
-    fixOneByOne model
+    case applyAllFixes model of
+        Just newModel ->
+            let
+                _ =
+                    diff model.project newModel.project
+                        |> List.map (\{ before, after } -> ( before.path, after.path ))
+                        |> Debug.log "diff"
+            in
+            ( newModel, Cmd.none )
+
+        Nothing ->
+            ( model
+            , abort "Got an error while trying to fix all automatic fixes. One of them made the code invalid. I suggest fixing the errors manually, or using `--fix` but with a lot of precaution."
+            )
+
+
+applyAllFixes : Model -> Maybe Model
+applyAllFixes model =
+    let
+        files : Dict String ProjectModule
+        files =
+            Project.modules model.project
+                |> List.map (\module_ -> ( module_.path, module_ ))
+                |> Dict.fromList
+    in
+    case findFix model.refusedErrorFixes files model.reviewErrors of
+        Just ( file, _, fixedSource ) ->
+            let
+                newProject : Project
+                newProject =
+                    Project.addModule { path = file.path, source = fixedSource } model.project
+            in
+            if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
+                -- There is a new file that failed to parse in the
+                -- project when we updated the fixed file. This means
+                -- that our fix introduced a syntactical regression that
+                -- we were not successful in preventing earlier.
+                Nothing
+
+            else
+                { model | project = newProject }
+                    |> runReview
+                    |> applyAllFixes
+
+        Nothing ->
+            Just model
+
+
 findFix : RefusedErrorFixes -> Dict String ProjectModule -> List Rule.Error -> Maybe ( ProjectModule, Rule.Error, String )
 findFix refusedErrorFixes files errors =
     case errors of
@@ -486,6 +533,38 @@ applyFixFromError error source =
     error
         |> Rule.errorFixes
         |> Maybe.map (\fixes -> Fix.fix fixes source)
+
+
+diff : Project -> Project -> List { before : ProjectModule, after : ProjectModule }
+diff before after =
+    let
+        beforeModules : Dict String ProjectModule
+        beforeModules =
+            before
+                |> Project.modules
+                |> List.map (\mod -> ( mod.path, mod ))
+                |> Dict.fromList
+
+        afterModules : Dict String ProjectModule
+        afterModules =
+            after
+                |> Project.modules
+                |> List.map (\mod -> ( mod.path, mod ))
+                |> Dict.fromList
+    in
+    Dict.merge
+        (\_ _ acc -> acc)
+        (\_ beforeModule afterModule acc ->
+            if beforeModule.source /= afterModule.source then
+                { before = beforeModule, after = afterModule } :: acc
+
+            else
+                acc
+        )
+        (\_ _ acc -> acc)
+        beforeModules
+        afterModules
+        []
 
 
 fromReviewErrors : Project -> List Rule.Error -> List ( { path : String, source : String }, List Reporter.Error )
