@@ -93,6 +93,7 @@ type alias Model =
 type FixMode
     = DontFix
     | Fix
+    | FixAll
 
 
 init : Flags -> ( Model, Cmd msg )
@@ -128,6 +129,9 @@ decodeFlags =
 
                     "fix" ->
                         Decode.succeed Fix
+
+                    "fixAll" ->
+                        Decode.succeed FixAll
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
@@ -386,6 +390,9 @@ reportOrFix model =
         Fix ->
             fixOneByOne model
 
+        FixAll ->
+            fixAll model
+
 
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
@@ -442,6 +449,9 @@ fixOneByOne model =
             makeReport model
 
 
+fixAll : Model -> ( Model, Cmd msg )
+fixAll model =
+    fixOneByOne model
 findFix : RefusedErrorFixes -> Dict String ProjectModule -> List Rule.Error -> Maybe ( ProjectModule, Rule.Error, String )
 findFix refusedErrorFixes files errors =
     case errors of
