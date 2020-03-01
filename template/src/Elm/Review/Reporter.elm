@@ -1,7 +1,7 @@
 module Elm.Review.Reporter exposing
     ( Error, File, TextContent
     , Mode(..), formatReport
-    , formatFixProposal
+    , formatFixProposal, formatFixProposals
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -19,7 +19,7 @@ module Elm.Review.Reporter exposing
 
 # Fix
 
-@docs formatFixProposal
+@docs formatFixProposal, formatFixProposals
 
 -}
 
@@ -362,23 +362,18 @@ formatReports mode errors =
         firstError :: secondError :: restOfErrors ->
             List.concat
                 [ formatReportForFileWithExtract mode firstError
-                , fileSeparator firstError secondError
+                , fileSeparator (firstError |> Tuple.first |> .path) (secondError |> Tuple.first |> .path)
                 , formatReports mode (secondError :: restOfErrors)
                 ]
 
 
-fileSeparator : ( File, List Error ) -> ( File, List Error ) -> List Text
-fileSeparator a b =
-    let
-        identifierAbove : String
-        identifierAbove =
-            fileIdentifier a
-    in
-    [ Text.from <| "\n\n" ++ String.repeat (73 - String.length identifierAbove) " "
-    , (fileIdentifier a ++ "  ↑")
+fileSeparator : String -> String -> List Text
+fileSeparator pathAbove pathBelow =
+    [ Text.from <| "\n\n" ++ String.repeat (73 - String.length pathAbove) " "
+    , (pathAbove ++ "  ↑")
         ++ "\n====o======================================================================o===="
         ++ "\n    ↓  "
-        ++ fileIdentifier b
+        ++ pathBelow
         |> Text.from
         |> Text.inRed
     , Text.from "\n\n\n"
@@ -394,7 +389,7 @@ fileIdentifier ( file, _ ) =
 -- FIX
 
 
-{-| Reports a fix proposal for a single error reported by `elm-review` in a nice human-readable way.
+{-| Reports a fix proposal for a single errorin a nice human-readable way.
 -}
 formatFixProposal : File -> Error -> String -> List TextContent
 formatFixProposal file error fixedSource =
@@ -410,6 +405,75 @@ formatFixProposal file error fixedSource =
         , [ Text.from "\n" ]
         ]
         |> List.map Text.toRecord
+
+
+{-| Reports the proposal for the fix-all changes in a nice human-readable way.
+-}
+formatFixProposals : List { path : String, source : String, fixedSource : String } -> List TextContent
+formatFixProposals changedFiles =
+    let
+        headerText : String
+        headerText =
+            "-- ELM-REVIEW FIX-ALL PROPOSAL "
+
+        header : Text
+        header =
+            headerText
+                |> String.padRight 80 '-'
+                |> Text.from
+                |> Text.inBlue
+
+        filesListing : List Text
+        filesListing =
+            Text.from "I found fixable errors for the following files:"
+                :: List.concatMap
+                    (\file ->
+                        [ Text.from "\n  "
+                        , "- " ++ file.path |> Text.from |> Text.inYellow
+                        ]
+                    )
+                    changedFiles
+
+        body : List Text
+        body =
+            [ [ header ]
+            , filesListing
+            , [ Text.from "Here is how the code would change if you applied each fix." ]
+            , formatFileDiffs changedFiles
+            ]
+                |> Text.join "\n\n"
+    in
+    (body ++ [ Text.from "\n" ])
+        |> List.map Text.toRecord
+
+
+formatFileDiffs : List { path : String, source : String, fixedSource : String } -> List Text
+formatFileDiffs changedFiles =
+    case changedFiles of
+        [] ->
+            []
+
+        [ file ] ->
+            formatFileDiff file
+
+        firstFile :: secondFile :: restOfFiles ->
+            List.concat
+                [ formatFileDiff firstFile
+                , [ Text.from "\n" ]
+                , fileSeparator firstFile.path secondFile.path
+                , formatFileDiffs (secondFile :: restOfFiles)
+                ]
+
+
+formatFileDiff : { path : String, source : String, fixedSource : String } -> List Text
+formatFileDiff file =
+    ((" " ++ file.path)
+        |> String.padLeft 80 '-'
+        |> Text.from
+        |> Text.inBlue
+    )
+        :: Text.from "\n\n"
+        :: diff file.source file.fixedSource
 
 
 diff : String -> String -> List Text

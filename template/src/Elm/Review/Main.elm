@@ -50,6 +50,9 @@ port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
 port askConfirmationToFix : { file : Encode.Value, error : String, confirmationMessage : Encode.Value } -> Cmd msg
 
 
+port askConfirmationToFixAll : Encode.Value -> Cmd msg
+
+
 port askForFixConfirmationStatus : (() -> msg) -> Sub msg
 
 
@@ -83,10 +86,12 @@ main =
 type alias Model =
     { rules : List Rule
     , project : Project
+    , fixAllResultProject : Project
     , fixMode : FixMode
     , reviewErrors : List Rule.Error
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : Maybe Rule.Error
+    , errorAwaitingConfirmationForFixAll : Bool
     }
 
 
@@ -109,10 +114,12 @@ init flags =
     in
     ( { rules = config
       , project = Project.new
+      , fixAllResultProject = Project.new
       , fixMode = fixMode
       , reviewErrors = []
-      , errorAwaitingConfirmation = Nothing
       , refusedErrorFixes = RefusedErrorFixes.empty
+      , errorAwaitingConfirmation = Nothing
+      , errorAwaitingConfirmationForFixAll = False
       }
     , cmd
     )
@@ -291,7 +298,7 @@ update msg model =
                     ( model, abort <| Decode.errorToString err )
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
-            ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= Nothing) )
+            ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= Nothing || model.errorAwaitingConfirmationForFixAll) )
 
 
 sendFileToBeCached : Project -> String -> Cmd msg
@@ -453,18 +460,46 @@ fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
     case applyAllFixes model of
         Just newModel ->
-            let
-                _ =
-                    diff model.project newModel.project
-                        |> List.map (\{ before, after } -> ( before.path, after.path ))
-                        |> Debug.log "diff"
-            in
-            ( newModel, Cmd.none )
+            case diff model.project newModel.project of
+                [] ->
+                    ( newModel, Cmd.none )
+
+                diffs ->
+                    let
+                        changedFiles : List { path : String, source : String, fixedSource : String }
+                        changedFiles =
+                            List.map
+                                (\{ before, after } -> { path = before.path, source = before.source, fixedSource = after.source })
+                                diffs
+
+                        confirmationMessage : Encode.Value
+                        confirmationMessage =
+                            changedFiles
+                                |> Reporter.formatFixProposals
+                                |> encodeReport
+                    in
+                    ( { newModel | project = model.project, fixAllResultProject = newModel.project }
+                    , askConfirmationToFixAll
+                        (Encode.object
+                            [ ( "confirmationMessage", confirmationMessage )
+                            , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
+                            ]
+                        )
+                    )
 
         Nothing ->
             ( model
             , abort "Got an error while trying to fix all automatic fixes. One of them made the code invalid. I suggest fixing the errors manually, or using `--fix` but with a lot of precaution."
             )
+
+
+encodeChangedFile : { path : String, source : String, fixedSource : String } -> Encode.Value
+encodeChangedFile changedFile =
+    Encode.object
+        [ ( "path", Encode.string changedFile.path )
+        , ( "source", Encode.string changedFile.source )
+        , ( "fixedSource", Encode.string changedFile.fixedSource )
+        ]
 
 
 applyAllFixes : Model -> Maybe Model

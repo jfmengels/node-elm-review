@@ -1,7 +1,7 @@
 module Elm.Review.Text exposing
     ( Text, TextContent
     , from
-    , inBlue, inRed, inGreen
+    , inBlue, inRed, inYellow, inGreen
     , join
     , toRecord
     )
@@ -29,7 +29,7 @@ module Elm.Review.Text exposing
 
 # Modifiers
 
-@docs inBlue, inRed, inGreen
+@docs inBlue, inRed, inYellow, inGreen
 
 
 # Working with lists
@@ -86,6 +86,11 @@ inBlue (Text text) =
 inRed : Text -> Text
 inRed (Text text) =
     Text { text | color = Just ( 255, 0, 0 ) }
+
+
+inYellow : Text -> Text
+inYellow (Text text) =
+    Text { text | color = Just ( 255, 255, 0 ) }
 
 
 inGreen : Text -> Text
