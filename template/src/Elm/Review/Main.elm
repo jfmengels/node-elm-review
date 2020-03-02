@@ -83,11 +83,16 @@ main =
 type alias Model =
     { rules : List Rule
     , project : Project
-    , fixAllResultProject : Project
     , fixMode : FixMode
     , reviewErrors : List Rule.Error
+
+    -- FIX
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : AwaitingConfirmation
+
+    -- FIX ALL
+    , fixAllResultProject : Project
+    , fixAllErrors : Dict String (List Reporter.Error)
     }
 
 
@@ -121,6 +126,7 @@ init flags =
       , reviewErrors = []
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
+      , fixAllErrors = Dict.empty
       }
     , cmd
     )
@@ -251,7 +257,10 @@ update msg model =
                     )
 
         GotRequestToReview ->
-            { model | project = Project.precomputeModuleGraph model.project }
+            { model
+                | project = Project.precomputeModuleGraph model.project
+                , fixAllErrors = Dict.empty
+            }
                 |> runReview
                 |> reportOrFix
 
@@ -277,9 +286,9 @@ update msg model =
                         )
 
                     else
-                        { model | project = newProject }
+                        { model | project = newProject, fixAllErrors = Dict.empty }
                             |> runReview
-                            |> fixOneByOne
+                            |> reportOrFix
                             |> Tuple.mapSecond
                                 (\cmd ->
                                     (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
@@ -478,11 +487,13 @@ fixAll model =
                         changedFiles : List { path : String, source : String, fixedSource : String, errors : List Reporter.Error }
                         changedFiles =
                             List.map
-                                (\{ before, after } ->
-                                    { path = before.path
-                                    , source = before.source
-                                    , fixedSource = after.source
-                                    , errors = []
+                                (\{ module_, fixedSource } ->
+                                    { path = module_.path
+                                    , source = module_.source
+                                    , fixedSource = fixedSource
+                                    , errors =
+                                        Dict.get module_.path newModel.fixAllErrors
+                                            |> Maybe.withDefault []
                                     }
                                 )
                                 diffs
@@ -534,7 +545,7 @@ applyAllFixes model =
                 |> Dict.fromList
     in
     case findFix model.refusedErrorFixes files model.reviewErrors of
-        Just ( file, _, fixedSource ) ->
+        Just ( file, error, fixedSource ) ->
             let
                 newProject : Project
                 newProject =
@@ -549,11 +560,25 @@ applyAllFixes model =
 
             else
                 { model | project = newProject }
+                    |> addFixedErrorForFile file.path error
                     |> runReview
                     |> applyAllFixes
 
         Nothing ->
             Just model
+
+
+addFixedErrorForFile : String -> Rule.Error -> Model -> Model
+addFixedErrorForFile path error model =
+    let
+        errorsForFile : List Reporter.Error
+        errorsForFile =
+            fromReviewError error
+                :: (Dict.get path model.fixAllErrors
+                        |> Maybe.withDefault []
+                   )
+    in
+    { model | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors }
 
 
 findFix : RefusedErrorFixes -> Dict String ProjectModule -> List Rule.Error -> Maybe ( ProjectModule, Rule.Error, String )
@@ -592,7 +617,7 @@ applyFixFromError error source =
         |> Maybe.map (\fixes -> Fix.fix fixes source)
 
 
-diff : Project -> Project -> List { before : ProjectModule, after : ProjectModule }
+diff : Project -> Project -> List { module_ : ProjectModule, fixedSource : String }
 diff before after =
     let
         beforeModules : Dict String ProjectModule
@@ -602,25 +627,25 @@ diff before after =
                 |> List.map (\mod -> ( mod.path, mod ))
                 |> Dict.fromList
 
-        afterModules : Dict String ProjectModule
-        afterModules =
+        fixedSources : Dict String String
+        fixedSources =
             after
                 |> Project.modules
-                |> List.map (\mod -> ( mod.path, mod ))
+                |> List.map (\mod -> ( mod.path, mod.source ))
                 |> Dict.fromList
     in
     Dict.merge
         (\_ _ acc -> acc)
-        (\_ beforeModule afterModule acc ->
-            if beforeModule.source /= afterModule.source then
-                { before = beforeModule, after = afterModule } :: acc
+        (\_ beforeModule fixedSource acc ->
+            if beforeModule.source /= fixedSource then
+                { module_ = beforeModule, fixedSource = fixedSource } :: acc
 
             else
                 acc
         )
         (\_ _ acc -> acc)
         beforeModules
-        afterModules
+        fixedSources
         []
 
 

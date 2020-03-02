@@ -67,7 +67,7 @@ Here is how the code would change if you applied each fix.
 ------------------------------------------------------------------ src/FileA.elm
 
 Applied from the fixes for the following errors:
-  - NoDebug: Do not use Debug
+  NoDebug: Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -83,7 +83,7 @@ Applied from the fixes for the following errors:
 ------------------------------------------------------------------ src/FileB.elm
 
 Applied from the fixes for the following errors:
-  - NoDebug: Do not use Debug
+  NoDebug: Do not use Debug
 
 1| module FileB exposing (b)
 2| b = Debug.log "debug" someOther
@@ -101,7 +101,7 @@ Here is how the code would change if you applied each fix.
 [------------------------------------------------------------------ src/FileA.elm](51-187-200)
 
 Applied from the fixes for the following errors:
-  - [NoDebug](255-0-0): Do not use Debug
+  [NoDebug](255-0-0): Do not use Debug
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](255-0-0)
@@ -117,7 +117,7 @@ Applied from the fixes for the following errors:
 [------------------------------------------------------------------ src/FileB.elm](51-187-200)
 
 Applied from the fixes for the following errors:
-  - [NoDebug](255-0-0): Do not use Debug
+  [NoDebug](255-0-0): Do not use Debug
 
 1| module FileB exposing (b)
 [2| b = Debug.log "debug" someOther](255-0-0)

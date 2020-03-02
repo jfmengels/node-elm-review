@@ -474,7 +474,7 @@ formatFileDiff file =
             |> Text.inBlue
       ]
     , Text.from "Applied from the fixes for the following errors:"
-        :: List.concatMap (\error -> Text.from "\n  - " :: formatErrorTitle error) file.errors
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle error) file.errors
     , diff file.source file.fixedSource
     ]
         |> Text.join "\n\n"
