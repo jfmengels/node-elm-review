@@ -47,10 +47,7 @@ port reviewReport : { success : Bool, report : Encode.Value } -> Cmd msg
 port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
 
 
-port askConfirmationToFix : { file : Encode.Value, error : String, confirmationMessage : Encode.Value } -> Cmd msg
-
-
-port askConfirmationToFixAll : Encode.Value -> Cmd msg
+port askConfirmationToFix : Encode.Value -> Cmd msg
 
 
 port askForFixConfirmationStatus : (() -> msg) -> Sub msg
@@ -90,9 +87,14 @@ type alias Model =
     , fixMode : FixMode
     , reviewErrors : List Rule.Error
     , refusedErrorFixes : RefusedErrorFixes
-    , errorAwaitingConfirmation : Maybe Rule.Error
-    , errorAwaitingConfirmationForFixAll : Bool
+    , errorAwaitingConfirmation : AwaitingConfirmation
     }
+
+
+type AwaitingConfirmation
+    = NotAwaiting
+    | AwaitingError Rule.Error
+    | AwaitingFixAll
 
 
 type FixMode
@@ -118,8 +120,7 @@ init flags =
       , fixMode = fixMode
       , reviewErrors = []
       , refusedErrorFixes = RefusedErrorFixes.empty
-      , errorAwaitingConfirmation = Nothing
-      , errorAwaitingConfirmationForFixAll = False
+      , errorAwaitingConfirmation = NotAwaiting
       }
     , cmd
     )
@@ -256,11 +257,14 @@ update msg model =
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue confirmationDecoder confirmation of
-                Ok (Accepted rawFile) ->
+                Ok (Accepted rawFiles) ->
                     let
                         newProject : Project
                         newProject =
-                            Project.addModule { path = rawFile.path, source = rawFile.source } model.project
+                            List.foldl
+                                (\file project -> Project.addModule { path = file.path, source = file.source } project)
+                                model.project
+                                rawFiles
                     in
                     if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
@@ -269,7 +273,7 @@ update msg model =
                         -- we were not successful in preventing earlier.
                         ( model
                           -- TODO Improve abort message
-                        , abort <| "File " ++ rawFile.path ++ " could not be read. An incorrect fix may have been introduced into this file..."
+                        , abort <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
                         )
 
                     else
@@ -278,27 +282,30 @@ update msg model =
                             |> fixOneByOne
                             |> Tuple.mapSecond
                                 (\cmd ->
-                                    Cmd.batch
-                                        [ cmd
-                                        , sendFileToBeCached newProject rawFile.source
-                                        ]
+                                    (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
+                                        |> Cmd.batch
                                 )
 
                 Ok Refused ->
                     case model.errorAwaitingConfirmation of
-                        Just errorAwaitingConfirmation ->
+                        AwaitingError error ->
                             model
-                                |> refuseError errorAwaitingConfirmation
+                                |> refuseError error
                                 |> fixOneByOne
 
-                        Nothing ->
+                        AwaitingFixAll ->
+                            { model | errorAwaitingConfirmation = NotAwaiting }
+                                |> runReview
+                                |> makeReport
+
+                        NotAwaiting ->
                             fixOneByOne model
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
-            ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= Nothing || model.errorAwaitingConfirmationForFixAll) )
+            ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
 
 
 sendFileToBeCached : Project -> String -> Cmd msg
@@ -357,7 +364,7 @@ refuseError error model =
 
 
 type Confirmation
-    = Accepted { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
+    = Accepted (List { path : String, source : String, ast : Maybe Elm.Syntax.File.File })
     | Refused
 
 
@@ -367,7 +374,7 @@ confirmationDecoder =
         |> Decode.andThen
             (\accepted ->
                 if accepted then
-                    Decode.field "file" File.decode
+                    Decode.field "files" (Decode.list File.decode)
                         |> Decode.map Accepted
 
                 else
@@ -384,7 +391,7 @@ runReview model =
     { model
         | reviewErrors = reviewErrors
         , rules = rules
-        , errorAwaitingConfirmation = Nothing
+        , errorAwaitingConfirmation = NotAwaiting
     }
 
 
@@ -439,17 +446,19 @@ fixOneByOne model =
     in
     case findFix model.refusedErrorFixes files model.reviewErrors of
         Just ( file, error, fixedSource ) ->
-            ( { model | errorAwaitingConfirmation = Just error }
-            , askConfirmationToFix
-                { file = File.encode { file | source = fixedSource }
-                , error = Rule.errorMessage error
-                , confirmationMessage =
-                    Reporter.formatFixProposal
-                        { path = file.path, source = file.source }
-                        (fromReviewError error)
-                        fixedSource
-                        |> encodeReport
-                }
+            ( { model | errorAwaitingConfirmation = AwaitingError error }
+            , [ ( "confirmationMessage"
+                , Reporter.formatFixProposal
+                    { path = file.path, source = file.source }
+                    (fromReviewError error)
+                    fixedSource
+                    |> encodeReport
+                )
+              , ( "changedFiles", Encode.list encodeChangedFile [ { path = file.path, source = fixedSource } ] )
+              , ( "error", Encode.string <| Rule.errorMessage error )
+              ]
+                |> Encode.object
+                |> askConfirmationToFix
             )
 
         Nothing ->
@@ -462,7 +471,7 @@ fixAll model =
         Just newModel ->
             case diff model.project newModel.project of
                 [] ->
-                    ( newModel, Cmd.none )
+                    makeReport newModel
 
                 diffs ->
                     let
@@ -478,11 +487,19 @@ fixAll model =
                                 |> Reporter.formatFixProposals
                                 |> encodeReport
                     in
-                    ( { newModel | project = model.project, fixAllResultProject = newModel.project }
-                    , askConfirmationToFixAll
+                    ( { newModel
+                        | project = model.project
+                        , fixAllResultProject = newModel.project
+                        , errorAwaitingConfirmation = AwaitingFixAll
+                      }
+                    , askConfirmationToFix
                         (Encode.object
                             [ ( "confirmationMessage", confirmationMessage )
-                            , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
+                            , ( "changedFiles"
+                              , changedFiles
+                                    |> List.map (\file -> { path = file.path, source = file.fixedSource })
+                                    |> Encode.list encodeChangedFile
+                              )
                             ]
                         )
                     )
@@ -493,12 +510,11 @@ fixAll model =
             )
 
 
-encodeChangedFile : { path : String, source : String, fixedSource : String } -> Encode.Value
+encodeChangedFile : { path : String, source : String } -> Encode.Value
 encodeChangedFile changedFile =
     Encode.object
         [ ( "path", Encode.string changedFile.path )
         , ( "source", Encode.string changedFile.source )
-        , ( "fixedSource", Encode.string changedFile.fixedSource )
         ]
 
 
