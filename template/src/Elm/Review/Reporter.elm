@@ -136,30 +136,23 @@ formatReportForFileWithExtract mode ( file, errors ) =
 
 
 formatErrorWithExtract : Mode -> File -> Error -> List Text
-formatErrorWithExtract mode file { ruleName, message, details, range, hasFix } =
+formatErrorWithExtract mode file error =
     let
-        title : List Text
-        title =
-            [ Text.from ruleName
-                |> Text.inRed
-            , Text.from <| ": " ++ message
-            ]
-
         codeExtract_ : List Text
         codeExtract_ =
-            codeExtract file range
+            codeExtract file error.range
 
         details_ : List Text
         details_ =
-            List.map Text.from details
+            List.map Text.from error.details
                 |> List.intersperse (Text.from "\n\n")
     in
-    [ title
+    [ formatErrorTitle error
     , codeExtract_
     , details_
     , case mode of
         Reviewing ->
-            if hasFix then
+            if error.hasFix then
                 [ Text.from "I think I know how to fix this problem. If you run "
                 , "elm-review --fix" |> Text.from |> Text.inBlue
                 , Text.from ", I can\nsuggest a solution and you can validate it."
@@ -174,6 +167,14 @@ formatErrorWithExtract mode file { ruleName, message, details, range, hasFix } =
         |> List.filter (List.isEmpty >> not)
         |> List.intersperse [ Text.from "\n\n" ]
         |> List.concat
+
+
+formatErrorTitle : Error -> List Text
+formatErrorTitle error =
+    [ Text.from error.ruleName
+        |> Text.inRed
+    , Text.from <| ": " ++ error.message
+    ]
 
 
 compareErrorPositions : Error -> Error -> Order
@@ -271,7 +272,7 @@ codeExtract file =
                     |> List.indexedMap Tuple.pair
                     |> List.concatMap
                         (\( lineNumber, line ) ->
-                            (Text.from <| line)
+                            Text.from line
                                 :: underlineError
                                     lineNumber
                                     { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber lineNumber) line
@@ -409,7 +410,7 @@ formatFixProposal file error fixedSource =
 
 {-| Reports the proposal for the fix-all changes in a nice human-readable way.
 -}
-formatFixProposals : List { path : String, source : String, fixedSource : String } -> List TextContent
+formatFixProposals : List { path : String, source : String, fixedSource : String, errors : List Error } -> List TextContent
 formatFixProposals changedFiles =
     let
         headerText : String
@@ -447,7 +448,7 @@ formatFixProposals changedFiles =
         |> List.map Text.toRecord
 
 
-formatFileDiffs : List { path : String, source : String, fixedSource : String } -> List Text
+formatFileDiffs : List { path : String, source : String, fixedSource : String, errors : List Error } -> List Text
 formatFileDiffs changedFiles =
     case changedFiles of
         [] ->
@@ -465,15 +466,18 @@ formatFileDiffs changedFiles =
                 ]
 
 
-formatFileDiff : { path : String, source : String, fixedSource : String } -> List Text
+formatFileDiff : { path : String, source : String, fixedSource : String, errors : List Error } -> List Text
 formatFileDiff file =
-    ((" " ++ file.path)
-        |> String.padLeft 80 '-'
-        |> Text.from
-        |> Text.inBlue
-    )
-        :: Text.from "\n\n"
-        :: diff file.source file.fixedSource
+    [ [ (" " ++ file.path)
+            |> String.padLeft 80 '-'
+            |> Text.from
+            |> Text.inBlue
+      ]
+    , Text.from "Applied from the fixes for the following errors:"
+        :: List.concatMap (\error -> Text.from "\n  - " :: formatErrorTitle error) file.errors
+    , diff file.source file.fixedSource
+    ]
+        |> Text.join "\n\n"
 
 
 diff : String -> String -> List Text

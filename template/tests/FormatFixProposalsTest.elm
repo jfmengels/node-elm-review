@@ -26,7 +26,7 @@ suite =
                         , hasFix = True
                         }
 
-                    changedFiles : List { path : String, source : String, fixedSource : String }
+                    changedFiles : List { path : String, source : String, fixedSource : String, errors : List Error }
                     changedFiles =
                         [ { path = "src/FileA.elm"
                           , source = """module FileA exposing (a)
@@ -39,6 +39,7 @@ a = 1
 other=lines
 other2=lines2
 """
+                          , errors = [ error ]
                           }
                         , { path = "src/FileB.elm"
                           , source = """module FileB exposing (b)
@@ -49,6 +50,7 @@ someOther=lines
 b = someOther
 someOther=lines
 """
+                          , errors = [ error ]
                           }
                         ]
                 in
@@ -64,6 +66,9 @@ Here is how the code would change if you applied each fix.
 
 ------------------------------------------------------------------ src/FileA.elm
 
+Applied from the fixes for the following errors:
+  - NoDebug: Do not use Debug
+
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
 3| a = 1
@@ -76,6 +81,9 @@ Here is how the code would change if you applied each fix.
 
 
 ------------------------------------------------------------------ src/FileB.elm
+
+Applied from the fixes for the following errors:
+  - NoDebug: Do not use Debug
 
 1| module FileB exposing (b)
 2| b = Debug.log "debug" someOther
@@ -92,6 +100,9 @@ Here is how the code would change if you applied each fix.
 
 [------------------------------------------------------------------ src/FileA.elm](51-187-200)
 
+Applied from the fixes for the following errors:
+  - [NoDebug](255-0-0): Do not use Debug
+
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](255-0-0)
 [3| a = 1](0-128-0)
@@ -104,6 +115,9 @@ Here is how the code would change if you applied each fix.
 
 
 [------------------------------------------------------------------ src/FileB.elm](51-187-200)
+
+Applied from the fixes for the following errors:
+  - [NoDebug](255-0-0): Do not use Debug
 
 1| module FileB exposing (b)
 [2| b = Debug.log "debug" someOther](255-0-0)

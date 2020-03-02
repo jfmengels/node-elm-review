@@ -475,10 +475,16 @@ fixAll model =
 
                 diffs ->
                     let
-                        changedFiles : List { path : String, source : String, fixedSource : String }
+                        changedFiles : List { path : String, source : String, fixedSource : String, errors : List Reporter.Error }
                         changedFiles =
                             List.map
-                                (\{ before, after } -> { path = before.path, source = before.source, fixedSource = after.source })
+                                (\{ before, after } ->
+                                    { path = before.path
+                                    , source = before.source
+                                    , fixedSource = after.source
+                                    , errors = []
+                                    }
+                                )
                                 diffs
 
                         confirmationMessage : Encode.Value
