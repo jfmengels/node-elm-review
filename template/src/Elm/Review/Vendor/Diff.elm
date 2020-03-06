@@ -1,4 +1,4 @@
-module Elm.Review.Diff exposing
+module Elm.Review.Vendor.Diff exposing
     ( Change(..)
     , diff, diffLines
     )

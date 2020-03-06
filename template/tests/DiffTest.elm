@@ -1,6 +1,6 @@
 module DiffTest exposing (..)
 
-import Elm.Review.Diff exposing (..)
+import Elm.Review.Vendor.Diff exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
 

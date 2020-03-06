@@ -24,8 +24,8 @@ module Elm.Review.Reporter exposing
 -}
 
 import Array exposing (Array)
-import Elm.Review.Diff as Diff
 import Elm.Review.Text as Text exposing (Text)
+import Elm.Review.Vendor.Diff as Diff
 
 
 {-| Contents of an error. Convert the errors from
