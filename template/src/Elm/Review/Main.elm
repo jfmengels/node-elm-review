@@ -3,7 +3,7 @@ port module Elm.Review.Main exposing (main)
 import Dict exposing (Dict)
 import Elm.Docs
 import Elm.Project
-import Elm.Review.File as File
+import Elm.Review.File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Syntax.File
@@ -174,7 +174,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ReceivedFile value ->
-            case Decode.decodeValue File.decode value of
+            case Decode.decodeValue Elm.Review.File.decode value of
                 Ok rawFile ->
                     case rawFile.ast of
                         Nothing ->
@@ -382,7 +382,7 @@ confirmationDecoder =
         |> Decode.andThen
             (\accepted ->
                 if accepted then
-                    Decode.field "files" (Decode.list File.decode)
+                    Decode.field "files" (Decode.list Elm.Review.File.decode)
                         |> Decode.map Accepted
 
                 else
