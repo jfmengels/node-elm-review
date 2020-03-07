@@ -7,6 +7,7 @@ import Elm.Review.File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Syntax.File
+import Elm.Syntax.Range as Range
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (FixResult)
@@ -41,7 +42,7 @@ port acknowledgeFileReceipt : String -> Cmd msg
 port startReview : (Bool -> msg) -> Sub msg
 
 
-port reviewReport : { success : Bool, report : Encode.Value } -> Cmd msg
+port reviewReport : Encode.Value -> Cmd msg
 
 
 port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
@@ -436,11 +437,24 @@ makeReport model =
                 |> encodeReport
     in
     ( model
-    , reviewReport
-        { success = success
-        , report = report
-        }
+    , [ ( "success", Encode.bool success )
+      , ( "report", report )
+      , ( "json", Encode.list encodeError model.reviewErrors )
+      ]
+        |> Encode.object
+        |> reviewReport
     )
+
+
+encodeError : Rule.Error -> Encode.Value
+encodeError error =
+    Encode.object
+        [ ( "message", Encode.string <| Rule.errorMessage error )
+        , ( "ruleName", Encode.string <| Rule.errorRuleName error )
+        , ( "filePath", Encode.string <| Rule.errorFilePath error )
+        , ( "details", Encode.list Encode.string <| Rule.errorDetails error )
+        , ( "range", Range.encode <| Rule.errorRange error )
+        ]
 
 
 fixOneByOne : Model -> ( Model, Cmd msg )
