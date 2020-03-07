@@ -7,11 +7,11 @@ import Elm.Review.File as File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Syntax.File
-import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (FixResult)
 import Review.Project as Project exposing (Project, ProjectModule)
+import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 
@@ -229,11 +229,10 @@ update msg model =
 
         ReceivedDependencies json ->
             let
-                dependencyDecoder : Decode.Decoder Project.Dependency
+                dependencyDecoder : Decode.Decoder Dependency
                 dependencyDecoder =
-                    Decode.map4 Project.Dependency
+                    Decode.map3 Dependency.create
                         (Decode.field "name" Decode.string)
-                        (Decode.field "version" Elm.Version.decoder)
                         (Decode.field "elmJson" Elm.Project.decoder)
                         (Decode.field "docsJson" <| Decode.list Elm.Docs.decoder)
             in
