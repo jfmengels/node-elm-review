@@ -132,7 +132,12 @@ formatReportForFileWithExtract mode ( file, errors ) =
                 |> Text.from
                 |> Text.inBlue
     in
-    header :: Text.from "\n\n" :: Text.join "\n\n\n" formattedErrors
+    header :: Text.from "\n\n" :: Text.join errorSeparator formattedErrors
+
+
+errorSeparator : String
+errorSeparator =
+    "\n\n" ++ String.repeat 80 "─" ++ "\n\n"
 
 
 formatErrorWithExtract : Mode -> File -> Error -> List Text
