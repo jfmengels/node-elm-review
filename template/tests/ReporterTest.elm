@@ -394,7 +394,7 @@ a = Debug.log "debug" 1"""
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
-NoDebug: Do not use Debug
+🔧 NoDebug: Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -405,12 +405,12 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I think I know how to fix this problem. If you run elm-review --fix, I can
-suggest a solution and you can validate it.
+
+Errors marked with 🔧 can be fixed automatically by running `elm-review --fix`.
 """
                         , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
 
-[NoDebug](255-0-0): Do not use Debug
+🔧 [NoDebug](255-0-0): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -421,8 +421,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I think I know how to fix this problem. If you run [elm-review --fix](51-187-200), I can
-suggest a solution and you can validate it.
+
+[Errors marked with 🔧 can be fixed automatically by running `elm-review --fix`.](51-187-200)
 """
                         }
             )

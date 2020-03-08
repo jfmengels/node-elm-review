@@ -108,6 +108,21 @@ formatReport mode errors =
             |> List.sortBy (Tuple.first >> .path)
             |> formatReports mode
         , [ Text.from "\n" ]
+        , case mode of
+            Reviewing ->
+                if hasFixableErrors errors then
+                    [ Text.from "\n\n"
+                    , "Errors marked with 🔧 can be fixed automatically by running `elm-review --fix`."
+                        |> Text.from
+                        |> Text.inBlue
+                    , Text.from "\n"
+                    ]
+
+                else
+                    []
+
+            Fixing ->
+                []
         ]
             |> List.concat
             |> List.map Text.toRecord
@@ -152,31 +167,33 @@ formatErrorWithExtract mode file error =
             List.map Text.from error.details
                 |> List.intersperse (Text.from "\n\n")
     in
-    [ formatErrorTitle error
+    [ formatErrorTitle mode error
     , codeExtract_
     , details_
-    , case mode of
-        Reviewing ->
-            if error.hasFix then
-                [ Text.from "I think I know how to fix this problem. If you run "
-                , "elm-review --fix" |> Text.from |> Text.inBlue
-                , Text.from ", I can\nsuggest a solution and you can validate it."
-                ]
-
-            else
-                []
-
-        Fixing ->
-            []
     ]
         |> List.filter (List.isEmpty >> not)
         |> List.intersperse [ Text.from "\n\n" ]
         |> List.concat
 
 
-formatErrorTitle : Error -> List Text
-formatErrorTitle error =
-    [ Text.from error.ruleName
+formatErrorTitle : Mode -> Error -> List Text
+formatErrorTitle mode error =
+    let
+        fixIcon : Text
+        fixIcon =
+            case mode of
+                Reviewing ->
+                    if error.hasFix then
+                        Text.from "🔧 "
+
+                    else
+                        Text.from ""
+
+                Fixing ->
+                    Text.from ""
+    in
+    [ fixIcon
+    , Text.from error.ruleName
         |> Text.inRed
     , Text.from <| ": " ++ error.message
     ]
@@ -356,6 +373,11 @@ totalNumberOfErrors errors =
         |> List.length
 
 
+hasFixableErrors : List ( File, List Error ) -> Bool
+hasFixableErrors errors =
+    List.any (Tuple.second >> List.any .hasFix) errors
+
+
 formatReports : Mode -> List ( File, List Error ) -> List Text
 formatReports mode errors =
     case errors of
@@ -479,7 +501,7 @@ formatFileDiff file =
             |> Text.inBlue
       ]
     , Text.from "Applied from the fixes for the following errors:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle error) file.errors
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) file.errors
     , diff file.source file.fixedSource
     ]
         |> Text.join "\n\n"
