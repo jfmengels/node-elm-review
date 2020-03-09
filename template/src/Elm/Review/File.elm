@@ -1,6 +1,6 @@
 module Elm.Review.File exposing (encode, decode)
 
-{-| TODO file
+{-| Represents an Elm file.
 
 
 # Decoding
