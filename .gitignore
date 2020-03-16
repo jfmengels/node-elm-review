@@ -27,3 +27,6 @@ build/Release
 node_modules
 elm-stuff
 tmp
+
+# Editors
+.idea/
