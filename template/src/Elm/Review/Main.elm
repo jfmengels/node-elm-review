@@ -30,6 +30,9 @@ port removeFile : (String -> msg) -> Sub msg
 port collectElmJson : (Decode.Value -> msg) -> Sub msg
 
 
+port collectReadme : (Decode.Value -> msg) -> Sub msg
+
+
 port collectDependencies : (Decode.Value -> msg) -> Sub msg
 
 
@@ -161,6 +164,7 @@ type Msg
     = ReceivedFile Decode.Value
     | RemovedFile String
     | ReceivedElmJson Decode.Value
+    | ReceivedReadme Decode.Value
     | ReceivedDependencies Decode.Value
     | GotRequestToReview
     | UserConfirmedFix Decode.Value
@@ -222,6 +226,23 @@ update msg model =
             case Decode.decodeValue elmJsonDecoder rawElmJson of
                 Ok elmJson ->
                     ( { model | project = Project.addElmJson elmJson model.project }
+                    , Cmd.none
+                    )
+
+                Err err ->
+                    ( model, Cmd.none )
+
+        ReceivedReadme rawReadme ->
+            let
+                readmeDecoder : Decode.Decoder { path : String, content : String }
+                readmeDecoder =
+                    Decode.map2 (\path content -> { path = path, content = content })
+                        (Decode.field "path" Decode.string)
+                        (Decode.field "content" Decode.string)
+            in
+            case Decode.decodeValue readmeDecoder rawReadme of
+                Ok readme ->
+                    ( { model | project = Project.addReadme readme model.project }
                     , Cmd.none
                     )
 
@@ -678,6 +699,12 @@ fromReviewErrors project errors =
 
                     Nothing ->
                         []
+                , case Project.readme project of
+                    Just { path, content } ->
+                        [ { path = path, source = content } ]
+
+                    Nothing ->
+                        []
                 , Project.filesThatFailedToParse project
                 ]
     in
@@ -748,6 +775,7 @@ subscriptions =
         [ collectFile ReceivedFile
         , removeFile RemovedFile
         , collectElmJson ReceivedElmJson
+        , collectReadme ReceivedReadme
         , collectDependencies ReceivedDependencies
         , startReview (\_ -> GotRequestToReview)
         , userConfirmedFix UserConfirmedFix
