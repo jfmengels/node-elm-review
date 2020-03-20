@@ -221,7 +221,7 @@ update msg model =
             in
             case Decode.decodeValue elmJsonDecoder rawElmJson of
                 Ok elmJson ->
-                    ( { model | project = Project.withElmJson elmJson model.project }
+                    ( { model | project = Project.addElmJson elmJson model.project }
                     , Cmd.none
                     )
 
@@ -249,7 +249,7 @@ update msg model =
                     ( { model
                         | project =
                             List.foldl
-                                Project.withDependency
+                                Project.addDependency
                                 (Project.removeDependencies model.project)
                                 dependencies
                       }
