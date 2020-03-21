@@ -39,7 +39,7 @@ port collectDependencies : (Decode.Value -> msg) -> Sub msg
 port cacheFile : Encode.Value -> Cmd msg
 
 
-port acknowledgeFileReceipt : String -> Cmd msg
+port acknowledgeFileReceipt : Encode.Value -> Cmd msg
 
 
 port startReview : (Bool -> msg) -> Sub msg
@@ -189,10 +189,11 @@ update msg model =
                                     Project.addModule { path = rawFile.path, source = rawFile.source } model.project
                             in
                             ( { model | project = project }
-                            , Cmd.batch
-                                [ acknowledgeFileReceipt rawFile.path
-                                , sendFileToBeCached project rawFile.source
+                            , Encode.object
+                                [ ( "path", Encode.string rawFile.path )
+                                , ( "cacheRequest", cacheFileRequest project rawFile.source )
                                 ]
+                                |> acknowledgeFileReceipt
                             )
 
                         Just ast ->
@@ -205,7 +206,11 @@ update msg model =
                                         }
                                         model.project
                               }
-                            , acknowledgeFileReceipt rawFile.path
+                            , Encode.object
+                                [ ( "path", Encode.string rawFile.path )
+                                , ( "cacheRequest", Encode.null )
+                                ]
+                                |> acknowledgeFileReceipt
                             )
 
                 Err err ->
@@ -336,6 +341,23 @@ update msg model =
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
             ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
+
+
+cacheFileRequest : Project -> String -> Encode.Value
+cacheFileRequest project source =
+    case
+        project
+            |> Project.modules
+            |> find (\module_ -> module_.source == source)
+    of
+        Just { ast } ->
+            Encode.object
+                [ ( "source", Encode.string source )
+                , ( "ast", Elm.Syntax.File.encode ast )
+                ]
+
+        Nothing ->
+            Encode.null
 
 
 sendFileToBeCached : Project -> String -> Cmd msg
