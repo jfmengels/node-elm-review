@@ -301,7 +301,7 @@ update msg model =
                                 model.project
                                 rawFiles
                     in
-                    if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
+                    if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
                         -- project when we updated the fixed file. This means
                         -- that our fix introduced a syntactical regression that
@@ -607,7 +607,7 @@ applyAllFixes model =
                 newProject =
                     Project.addModule { path = file.path, source = fixedSource } model.project
             in
-            if List.length (Project.filesThatFailedToParse newProject) > List.length (Project.filesThatFailedToParse model.project) then
+            if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
                 -- There is a new file that failed to parse in the
                 -- project when we updated the fixed file. This means
                 -- that our fix introduced a syntactical regression that
@@ -727,7 +727,7 @@ fromReviewErrors project errors =
 
                     Nothing ->
                         []
-                , Project.filesThatFailedToParse project
+                , Project.modulesThatFailedToParse project
                 ]
     in
     files
