@@ -61,11 +61,7 @@ together without spaces.
 
 -}
 type alias TextContent =
-    -- Should be the same as Text.TextContent
-    { str : String
-    , color : Maybe ( Int, Int, Int )
-    , backgroundColor : Maybe ( Int, Int, Int )
-    }
+    Text.TextContent
 
 
 type alias Range =
@@ -112,7 +108,7 @@ formatReport mode errors =
             Reviewing ->
                 if hasFixableErrors errors then
                     [ Text.from "\n\n"
-                    , "Errors marked with 🔧 can be fixed automatically by running `elm-review --fix`."
+                    , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
                         |> Text.from
                         |> Text.inBlue
                     , Text.from "\n"
@@ -184,7 +180,9 @@ formatErrorTitle mode error =
             case mode of
                 Reviewing ->
                     if error.hasFix then
-                        Text.from "🔧 "
+                        "(fix) "
+                            |> Text.from
+                            |> Text.inBlue
 
                     else
                         Text.from ""
