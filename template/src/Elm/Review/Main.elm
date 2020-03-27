@@ -88,7 +88,7 @@ type alias Model =
     { rules : List Rule
     , project : Project
     , fixMode : FixMode
-    , reviewErrors : List Rule.Error
+    , reviewErrors : List Rule.ReviewError
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
@@ -102,7 +102,7 @@ type alias Model =
 
 type AwaitingConfirmation
     = NotAwaiting
-    | AwaitingError Rule.Error
+    | AwaitingError Rule.ReviewError
     | AwaitingFixAll
 
 
@@ -396,7 +396,7 @@ find predicate list =
                 find predicate rest
 
 
-replaceFileErrors : ProjectModule -> List Rule.Error -> List ( ProjectModule, List Rule.Error ) -> List ( ProjectModule, List Rule.Error )
+replaceFileErrors : ProjectModule -> List Rule.ReviewError -> List ( ProjectModule, List Rule.ReviewError ) -> List ( ProjectModule, List Rule.ReviewError )
 replaceFileErrors module_ errorsForFile allErrors =
     case allErrors of
         [] ->
@@ -410,7 +410,7 @@ replaceFileErrors module_ errorsForFile allErrors =
                 fileAndErrors :: replaceFileErrors module_ errorsForFile restOfErrors
 
 
-refuseError : Rule.Error -> Model -> Model
+refuseError : Rule.ReviewError -> Model -> Model
 refuseError error model =
     { model | refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes }
 
@@ -489,7 +489,7 @@ makeReport model =
     )
 
 
-encodeError : Rule.Error -> Encode.Value
+encodeError : Rule.ReviewError -> Encode.Value
 encodeError error =
     Encode.object
         [ ( "message", Encode.string <| Rule.errorMessage error )
@@ -624,7 +624,7 @@ applyAllFixes model =
             Just model
 
 
-addFixedErrorForFile : String -> Rule.Error -> Model -> Model
+addFixedErrorForFile : String -> Rule.ReviewError -> Model -> Model
 addFixedErrorForFile path error model =
     let
         errorsForFile : List Reporter.Error
@@ -637,7 +637,7 @@ addFixedErrorForFile path error model =
     { model | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors }
 
 
-findFix : RefusedErrorFixes -> Dict String ProjectModule -> List Rule.Error -> Maybe ( ProjectModule, Rule.Error, String )
+findFix : RefusedErrorFixes -> Dict String ProjectModule -> List Rule.ReviewError -> Maybe ( ProjectModule, Rule.ReviewError, String )
 findFix refusedErrorFixes files errors =
     case errors of
         [] ->
@@ -666,7 +666,7 @@ findFix refusedErrorFixes files errors =
                                 Just ( file, error, fixedSource )
 
 
-applyFixFromError : Rule.Error -> Source -> Maybe FixResult
+applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
 applyFixFromError error source =
     error
         |> Rule.errorFixes
@@ -705,7 +705,7 @@ diff before after =
         []
 
 
-fromReviewErrors : Project -> List Rule.Error -> List ( { path : String, source : String }, List Reporter.Error )
+fromReviewErrors : Project -> List Rule.ReviewError -> List ( { path : String, source : String }, List Reporter.Error )
 fromReviewErrors project errors =
     let
         files : List { path : String, source : String }
@@ -742,7 +742,7 @@ fromReviewErrors project errors =
         |> List.filter (\( file, fileErrors ) -> not <| List.isEmpty fileErrors)
 
 
-fromReviewError : Rule.Error -> Reporter.Error
+fromReviewError : Rule.ReviewError -> Reporter.Error
 fromReviewError error =
     { ruleName = Rule.errorRuleName error
     , message = Rule.errorMessage error
