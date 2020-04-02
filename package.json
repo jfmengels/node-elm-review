@@ -17,6 +17,13 @@
   "bin": {
     "elm-review": "bin/elm-review"
   },
+  "files": [
+    "bin/",
+    "lib/",
+    "template/src/**/*.elm",
+    "template/elm.json",
+    "DefaultReviewConfig.elm"
+  ],
   "keywords": [
     "elm",
     "review",
