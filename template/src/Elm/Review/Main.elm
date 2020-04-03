@@ -653,7 +653,7 @@ findFix refusedErrorFixes files errors =
                         findFix refusedErrorFixes files restOfErrors
 
                     Just file ->
-                        case applyFixFromError error file.source of
+                        case applyFixFromError True error file.source of
                             Nothing ->
                                 findFix refusedErrorFixes files restOfErrors
 
@@ -666,11 +666,11 @@ findFix refusedErrorFixes files errors =
                                 Just ( file, error, fixedSource )
 
 
-applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
-applyFixFromError error source =
+applyFixFromError : Bool -> Rule.ReviewError -> Source -> Maybe FixResult
+applyFixFromError isModule error source =
     error
         |> Rule.errorFixes
-        |> Maybe.map (\fixes -> Fix.fix fixes source)
+        |> Maybe.map (\fixes -> Fix.fix isModule fixes source)
 
 
 diff : Project -> Project -> List { module_ : ProjectModule, fixedSource : String }
