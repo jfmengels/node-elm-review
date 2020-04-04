@@ -665,26 +665,13 @@ findFix readme refusedErrorFixes files errors =
             if RefusedErrorFixes.member error refusedErrorFixes then
                 findFix readme refusedErrorFixes files restOfErrors
 
-            else if Rule.errorFilePath error == readme.path then
-                case applyFixFromError False error readme.source of
-                    Nothing ->
-                        findFix readme refusedErrorFixes files restOfErrors
-
-                    Just (Fix.Errored _) ->
-                        -- Ignore error if applying the fix results in a problem
-                        findFix readme refusedErrorFixes files restOfErrors
-
-                    Just (Fix.Successful fixedSource) ->
-                        -- Return error and the result of the fix otherwise
-                        Just ( readme, error, fixedSource )
-
             else
                 case Dict.get (Rule.errorFilePath error) files of
                     Nothing ->
                         findFix readme refusedErrorFixes files restOfErrors
 
                     Just file ->
-                        case applyFixFromError True error file.source of
+                        case applyFixFromError error file.source of
                             Nothing ->
                                 findFix readme refusedErrorFixes files restOfErrors
 
@@ -697,11 +684,11 @@ findFix readme refusedErrorFixes files errors =
                                 Just ( { path = file.path, source = file.source }, error, fixedSource )
 
 
-applyFixFromError : Bool -> Rule.ReviewError -> Source -> Maybe FixResult
-applyFixFromError isModule error source =
+applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
+applyFixFromError error source =
     error
         |> Rule.errorFixes
-        |> Maybe.map (\fixes -> Fix.fix isModule fixes source)
+        |> Maybe.map (\fixes -> Fix.fix (Rule.errorTarget error) fixes source)
 
 
 diff : Project -> Project -> List { module_ : ProjectModule, fixedSource : String }
