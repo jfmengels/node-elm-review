@@ -542,12 +542,12 @@ fixAll model =
                         changedFiles : List { path : String, source : String, fixedSource : String, errors : List Reporter.Error }
                         changedFiles =
                             List.map
-                                (\{ module_, fixedSource } ->
-                                    { path = module_.path
-                                    , source = module_.source
+                                (\{ path, source, fixedSource } ->
+                                    { path = path
+                                    , source = source
                                     , fixedSource = fixedSource
                                     , errors =
-                                        Dict.get module_.path newModel.fixAllErrors
+                                        Dict.get path newModel.fixAllErrors
                                             |> Maybe.withDefault []
                                     }
                                 )
@@ -597,10 +597,14 @@ applyAllFixes model =
             let
                 newProject : Project
                 newProject =
-                    Project.addModule { path = file.path, source = fixedSource } model.project
+                    if Just file.path == Maybe.map .path (Project.readme model.project) then
+                        Project.addReadme { path = file.path, content = fixedSource } model.project
+
+                    else
+                        Project.addModule { path = file.path, source = fixedSource } model.project
             in
             if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
-                -- There is a new file that failed to parse in the
+                -- There is a new module that failed to parse in the
                 -- project when we updated the fixed file. This means
                 -- that our fix introduced a syntactical regression that
                 -- we were not successful in preventing earlier.
@@ -682,28 +686,59 @@ applyFixFromError error source =
         |> Maybe.map (\fixes -> Fix.fix (Rule.errorTarget error) fixes source)
 
 
-diff : Project -> Project -> List { module_ : ProjectModule, fixedSource : String }
+type alias FixedFile =
+    { path : String
+    , source : String
+    , fixedSource : String
+    }
+
+
+diff : Project -> Project -> List FixedFile
 diff before after =
     let
-        beforeModules : Dict String ProjectModule
+        beforeReadme : List ( String, { path : String, source : String } )
+        beforeReadme =
+            case Project.readme before of
+                Just readme ->
+                    [ ( readme.path, { path = readme.path, source = readme.content } ) ]
+
+                Nothing ->
+                    []
+
+        afterReadme : List ( String, String )
+        afterReadme =
+            case Project.readme after of
+                Just readme ->
+                    [ ( readme.path, readme.content ) ]
+
+                Nothing ->
+                    []
+
+        beforeModules : Dict String { path : String, source : String }
         beforeModules =
-            before
-                |> Project.modules
-                |> List.map (\mod -> ( mod.path, mod ))
+            List.concat
+                [ beforeReadme
+                , before
+                    |> Project.modules
+                    |> List.map (\mod -> ( mod.path, { path = mod.path, source = mod.source } ))
+                ]
                 |> Dict.fromList
 
         fixedSources : Dict String String
         fixedSources =
-            after
-                |> Project.modules
-                |> List.map (\mod -> ( mod.path, mod.source ))
+            List.concat
+                [ afterReadme
+                , after
+                    |> Project.modules
+                    |> List.map (\mod -> ( mod.path, mod.source ))
+                ]
                 |> Dict.fromList
     in
     Dict.merge
         (\_ _ acc -> acc)
-        (\_ beforeModule fixedSource acc ->
+        (\path beforeModule fixedSource acc ->
             if beforeModule.source /= fixedSource then
-                { module_ = beforeModule, fixedSource = fixedSource } :: acc
+                { path = beforeModule.path, source = beforeModule.source, fixedSource = fixedSource } :: acc
 
             else
                 acc
