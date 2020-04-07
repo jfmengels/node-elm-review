@@ -508,20 +508,7 @@ encodeError error =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    let
-        files : Dict String ProjectModule
-        files =
-            Project.modules model.project
-                |> List.map (\module_ -> ( module_.path, module_ ))
-                |> Dict.fromList
-
-        readme : { path : String, source : String }
-        readme =
-            Project.readme model.project
-                |> Maybe.map (\r -> { path = r.path, source = r.content })
-                |> Maybe.withDefault { path = "$$Not a valid module name$$", source = "" }
-    in
-    case findFix readme model.refusedErrorFixes files model.reviewErrors of
+    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
         Just ( file, error, fixedSource ) ->
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
@@ -605,20 +592,7 @@ encodeChangedFile changedFile =
 
 applyAllFixes : Model -> Maybe Model
 applyAllFixes model =
-    let
-        files : Dict String ProjectModule
-        files =
-            Project.modules model.project
-                |> List.map (\module_ -> ( module_.path, module_ ))
-                |> Dict.fromList
-
-        readme : { path : String, source : String }
-        readme =
-            Project.readme model.project
-                |> Maybe.map (\r -> { path = r.path, source = r.content })
-                |> Maybe.withDefault { path = "$$Not a valid module name$$", source = "" }
-    in
-    case findFix readme model.refusedErrorFixes files model.reviewErrors of
+    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
         Just ( file, error, fixedSource ) ->
             let
                 newProject : Project
@@ -655,29 +629,46 @@ addFixedErrorForFile path error model =
     { model | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors }
 
 
-findFix : { path : String, source : String } -> RefusedErrorFixes -> Dict String ProjectModule -> List Rule.ReviewError -> Maybe ( { path : String, source : String }, Rule.ReviewError, String )
-findFix readme refusedErrorFixes files errors =
+fixableFilesInProject : Project -> Dict String { path : String, source : String }
+fixableFilesInProject project =
+    let
+        readme : { path : String, source : String }
+        readme =
+            Project.readme project
+                |> Maybe.map (\r -> { path = r.path, source = r.content })
+                |> Maybe.withDefault { path = "$$Not a valid module name$$", source = "" }
+
+        moduleFiles : List ( String, { path : String, source : String } )
+        moduleFiles =
+            Project.modules project
+                |> List.map (\module_ -> ( module_.path, { path = module_.path, source = module_.source } ))
+    in
+    Dict.fromList (( readme.path, readme ) :: moduleFiles)
+
+
+findFix : RefusedErrorFixes -> Dict String { path : String, source : String } -> List Rule.ReviewError -> Maybe ( { path : String, source : String }, Rule.ReviewError, String )
+findFix refusedErrorFixes files errors =
     case errors of
         [] ->
             Nothing
 
         error :: restOfErrors ->
             if RefusedErrorFixes.member error refusedErrorFixes then
-                findFix readme refusedErrorFixes files restOfErrors
+                findFix refusedErrorFixes files restOfErrors
 
             else
                 case Dict.get (Rule.errorFilePath error) files of
                     Nothing ->
-                        findFix readme refusedErrorFixes files restOfErrors
+                        findFix refusedErrorFixes files restOfErrors
 
                     Just file ->
                         case applyFixFromError error file.source of
                             Nothing ->
-                                findFix readme refusedErrorFixes files restOfErrors
+                                findFix refusedErrorFixes files restOfErrors
 
                             Just (Fix.Errored _) ->
                                 -- Ignore error if applying the fix results in a problem
-                                findFix readme refusedErrorFixes files restOfErrors
+                                findFix refusedErrorFixes files restOfErrors
 
                             Just (Fix.Successful fixedSource) ->
                                 -- Return error and the result of the fix otherwise
