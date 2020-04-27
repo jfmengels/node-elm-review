@@ -7,7 +7,7 @@
   },
   "scripts": {
     "flow": "flow",
-    "test": "npm run elm-tests && xo && npm run flow",
+    "test": "npm run elm-tests && xo && npm run flow && npm run test-init",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-init": "rm -rf test-init && mkdir test-init && cd test-init && echo Y | elm init && echo Y | ../bin/elm-review init"
   },
