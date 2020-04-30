@@ -7,7 +7,8 @@
   },
   "scripts": {
     "flow": "flow",
-    "test": "npm run elm-tests && xo && npm run flow && npm run test-init",
+    "build": "./build.sh",
+    "test": "npm run elm-tests && xo lib/ && npm run flow && npm run test-init && npm run build",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-init": "rm -rf test-init && mkdir test-init && cd test-init && echo Y | elm init && echo Y | ../bin/elm-review init"
   },
@@ -21,6 +22,7 @@
   "files": [
     "bin/",
     "lib/",
+    "build/",
     "template/src/**/*.elm",
     "template/elm.json",
     "DefaultReviewConfig.elm"
@@ -70,6 +72,7 @@
     "elm-test": "^0.19.1-revision2",
     "eslint": "^6.2.2",
     "flow-bin": "^0.122.0",
+    "uglify-js": "^3.9.1",
     "xo": "^0.28.2"
   }
 }
