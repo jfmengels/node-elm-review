@@ -7,7 +7,7 @@ import Elm.Syntax.File exposing (File)
 import Json.Encode as Encode
 
 
-port requestParsing : ({ path : String, source : String } -> msg) -> Sub msg
+port requestParsing : (String -> msg) -> Sub msg
 
 
 port parseResult : Encode.Value -> Cmd msg
@@ -28,19 +28,14 @@ subscriptions =
 
 
 type Msg
-    = GotFile { path : String, source : String }
+    = GotFile String
 
 
 update : Msg -> () -> ( (), Cmd Msg )
-update (GotFile { path, source }) () =
-    Encode.object
-        [ ( "path", Encode.string path )
-        , ( "ast"
-          , parseSource source
-                |> Result.map Elm.Syntax.File.encode
-                |> Result.withDefault Encode.null
-          )
-        ]
+update (GotFile source) () =
+    parseSource source
+        |> Result.map Elm.Syntax.File.encode
+        |> Result.withDefault Encode.null
         |> parseResult
         |> Tuple.pair ()
 
