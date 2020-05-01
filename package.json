@@ -8,7 +8,7 @@
   "scripts": {
     "flow": "flow",
     "build": "./build.sh",
-    "test": "npm run elm-tests && xo lib/ && npm run flow && npm run test-init && npm run build",
+    "test": "npm run build && npm run elm-tests && xo lib/ && npm run flow && npm run test-init",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-init": "rm -rf test-init && mkdir test-init && cd test-init && echo Y | elm init && echo Y | ../bin/elm-review init"
   },
