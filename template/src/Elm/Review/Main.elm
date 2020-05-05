@@ -42,7 +42,7 @@ port cacheFile : Encode.Value -> Cmd msg
 port acknowledgeFileReceipt : Encode.Value -> Cmd msg
 
 
-port startReview : (Bool -> msg) -> Sub msg
+port startReview : (() -> msg) -> Sub msg
 
 
 port reviewReport : Encode.Value -> Cmd msg
@@ -843,7 +843,7 @@ subscriptions =
         , collectElmJson ReceivedElmJson
         , collectReadme ReceivedReadme
         , collectDependencies ReceivedDependencies
-        , startReview (\_ -> GotRequestToReview)
+        , startReview (always GotRequestToReview)
         , userConfirmedFix UserConfirmedFix
         , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
         ]
