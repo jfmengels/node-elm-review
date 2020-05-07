@@ -85,14 +85,20 @@ type Mode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : List ( File, List Error ) -> List TextContent
-formatReport errors =
+formatReport : Bool -> List ( File, List Error ) -> List TextContent
+formatReport errorsHaveBeenFixedPreviously errors =
     let
         numberOfErrors : Int
         numberOfErrors =
             totalNumberOfErrors errors
     in
-    if numberOfErrors == 0 then
+    if errorsHaveBeenFixedPreviously && numberOfErrors == 0 then
+        "I found no more problems while reviewing!\n"
+            |> Text.from
+            |> Text.toRecord
+            |> List.singleton
+
+    else if numberOfErrors == 0 then
         "I found no problems while reviewing!\n"
             |> Text.from
             |> Text.toRecord

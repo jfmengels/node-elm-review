@@ -89,6 +89,7 @@ type alias Model =
     , project : Project
     , fixMode : FixMode
     , reviewErrors : List Rule.ReviewError
+    , errorsHaveBeenFixedPreviously : Bool
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
@@ -128,6 +129,7 @@ init flags =
       , fixAllResultProject = Project.new
       , fixMode = fixMode
       , reviewErrors = []
+      , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
       , fixAllErrors = Dict.empty
@@ -318,7 +320,7 @@ update msg model =
                         )
 
                     else
-                        { model | project = newProject, fixAllErrors = Dict.empty }
+                        { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
                             |> runReview
                             |> reportOrFix
                             |> Tuple.mapSecond
@@ -482,7 +484,7 @@ makeReport model =
         report : Encode.Value
         report =
             errors
-                |> Reporter.formatReport
+                |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
                 |> encodeReport
     in
     ( model
