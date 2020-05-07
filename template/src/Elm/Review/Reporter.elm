@@ -85,8 +85,8 @@ type Mode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Mode -> List ( File, List Error ) -> List TextContent
-formatReport mode errors =
+formatReport : List ( File, List Error ) -> List TextContent
+formatReport errors =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -102,23 +102,18 @@ formatReport mode errors =
         [ errors
             |> List.filter (Tuple.second >> List.isEmpty >> not)
             |> List.sortBy (Tuple.first >> .path)
-            |> formatReports mode
+            |> formatReports
         , [ Text.from "\n" ]
-        , case mode of
-            Reviewing ->
-                if hasFixableErrors errors then
-                    [ Text.from "\n\n"
-                    , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
-                        |> Text.from
-                        |> Text.inBlue
-                    , Text.from "\n"
-                    ]
+        , if hasFixableErrors errors then
+            [ Text.from "\n\n"
+            , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
+                |> Text.from
+                |> Text.inBlue
+            , Text.from "\n"
+            ]
 
-                else
-                    []
-
-            Fixing ->
-                []
+          else
+            []
         ]
             |> List.concat
             |> List.map Text.toRecord
@@ -376,20 +371,20 @@ hasFixableErrors errors =
     List.any (Tuple.second >> List.any .hasFix) errors
 
 
-formatReports : Mode -> List ( File, List Error ) -> List Text
-formatReports mode errors =
+formatReports : List ( File, List Error ) -> List Text
+formatReports errors =
     case errors of
         [] ->
             []
 
         [ error ] ->
-            formatReportForFileWithExtract mode error
+            formatReportForFileWithExtract Reviewing error
 
         firstError :: secondError :: restOfErrors ->
             List.concat
-                [ formatReportForFileWithExtract mode firstError
+                [ formatReportForFileWithExtract Reviewing firstError
                 , fileSeparator (firstError |> Tuple.first |> .path) (secondError |> Tuple.first |> .path)
-                , formatReports mode (secondError :: restOfErrors)
+                , formatReports (secondError :: restOfErrors)
                 ]
 
 

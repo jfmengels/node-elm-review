@@ -482,7 +482,7 @@ makeReport model =
         report : Encode.Value
         report =
             errors
-                |> Reporter.formatReport Reporter.Reviewing
+                |> Reporter.formatReport
                 |> encodeReport
     in
     ( model
