@@ -10,6 +10,7 @@ suite : Test
 suite =
     describe "formatReport"
         [ noErrorTest
+        , noErrorButPreviousTest
         , singleErrorTest
         , multipleErrorsTests
         , fixAvailableTest
@@ -33,10 +34,35 @@ a = Debug.log "debug" 1"""
               , []
               )
             ]
-                |> Reporter.formatReport Reporter.Reviewing
+                |> Reporter.formatReport False
                 |> expect
                     { withoutColors = "I found no problems while reviewing!\n"
                     , withColors = "I found no problems while reviewing!\n"
+                    }
+        )
+
+
+noErrorButPreviousTest : Test
+noErrorButPreviousTest =
+    test "report that all is fine when there are no errors but some have been fixed"
+        (\() ->
+            [ ( { path = "src/FileA.elm"
+                , source = """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+                }
+              , []
+              )
+            , ( { path = "src/FileB.elm"
+                , source = """module FileB exposing (a)
+a = Debug.log "debug" 1"""
+                }
+              , []
+              )
+            ]
+                |> Reporter.formatReport True
+                |> expect
+                    { withoutColors = "I found no more problems while reviewing!\n"
+                    , withColors = "I found no more problems while reviewing!\n"
                     }
         )
 
@@ -70,7 +96,7 @@ a = Debug.log "debug" 1"""
               , []
               )
             ]
-                |> Reporter.formatReport Reporter.Reviewing
+                |> Reporter.formatReport False
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -146,7 +172,7 @@ a = Debug.log "debug" 1"""
                   , []
                   )
                 ]
-                    |> Reporter.formatReport Reporter.Reviewing
+                    |> Reporter.formatReport False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -261,7 +287,7 @@ a = Debug.log "debug" 1"""
                     ]
                   )
                 ]
-                    |> Reporter.formatReport Reporter.Reviewing
+                    |> Reporter.formatReport False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -390,7 +416,7 @@ a = Debug.log "debug" 1"""
                     ]
                   )
                 ]
-                    |> Reporter.formatReport Reporter.Reviewing
+                    |> Reporter.formatReport False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -425,33 +451,5 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 [Errors marked with (fix) can be fixed automatically by running `elm-review --fix`.](51-187-200)
 """
                         }
-            )
-        , test "should not mention a fix is available if the process is currently fixing errors (just like if no fix was available)"
-            (\() ->
-                let
-                    file : File
-                    file =
-                        { path = "src/FileA.elm"
-                        , source = """module FileA exposing (a)
-      a = Debug.log "debug" 1"""
-                        }
-
-                    error : Error
-                    error =
-                        { ruleName = "NoDebug"
-                        , message = "Do not use Debug"
-                        , details =
-                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
-                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
-                            ]
-                        , range =
-                            { start = { row = 2, column = 5 }
-                            , end = { row = 2, column = 10 }
-                            }
-                        , hasFix = True
-                        }
-                in
-                Reporter.formatReport Reporter.Fixing [ ( file, [ error ] ) ]
-                    |> Expect.equal (Reporter.formatReport Reporter.Reviewing [ ( file, [ { error | hasFix = False } ] ) ])
             )
         ]
