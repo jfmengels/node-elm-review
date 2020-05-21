@@ -1,5 +1,5 @@
 module Elm.Review.Reporter exposing
-    ( Error, File, TextContent
+    ( Error, File, Source(..), TextContent
     , Mode(..), formatReport
     , formatFixProposal, formatFixProposals
     )
@@ -9,7 +9,7 @@ module Elm.Review.Reporter exposing
 
 # Types
 
-@docs Error, File, TextContent
+@docs Error, File, Source, TextContent
 
 
 # Report
@@ -53,6 +53,17 @@ type alias File =
     }
 
 
+type alias FileWithError =
+    { path : String
+    , source : Source
+    , errors : List Error
+    }
+
+
+type Source
+    = Source String
+
+
 {-| Represents styled text.
 
 Formatter functions return a list of these, that should be
@@ -85,12 +96,12 @@ type Mode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Bool -> List ( File, List Error ) -> List TextContent
-formatReport errorsHaveBeenFixedPreviously errors =
+formatReport : Bool -> List FileWithError -> List TextContent
+formatReport errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
         numberOfErrors =
-            totalNumberOfErrors errors
+            totalNumberOfErrors files
     in
     if errorsHaveBeenFixedPreviously && numberOfErrors == 0 then
         "I found no more problems while reviewing!\n"
@@ -105,12 +116,11 @@ formatReport errorsHaveBeenFixedPreviously errors =
             |> List.singleton
 
     else
-        [ errors
-            |> List.filter (Tuple.second >> List.isEmpty >> not)
-            |> List.sortBy (Tuple.first >> .path)
+        [ files
+            |> List.sortBy .path
             |> formatReports
         , [ Text.from "\n" ]
-        , if hasFixableErrors errors then
+        , if hasFixableErrors files then
             [ Text.from "\n\n"
             , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
                 |> Text.from
@@ -126,14 +136,14 @@ formatReport errorsHaveBeenFixedPreviously errors =
             |> List.map Text.toRecord
 
 
-formatReportForFileWithExtract : Mode -> ( File, List Error ) -> List Text
-formatReportForFileWithExtract mode ( file, errors ) =
+formatReportForFileWithExtract : Mode -> FileWithError -> List Text
+formatReportForFileWithExtract mode file =
     let
         formattedErrors : List (List Text)
         formattedErrors =
-            errors
+            file.errors
                 |> List.sortWith compareErrorPositions
-                |> List.map (formatErrorWithExtract mode file)
+                |> List.map (formatErrorWithExtract mode file.source)
 
         prefix : String
         prefix =
@@ -141,7 +151,7 @@ formatReportForFileWithExtract mode ( file, errors ) =
 
         header : Text
         header =
-            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ fileIdentifier ( file, errors )))
+            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ file.path))
                 |> Text.from
                 |> Text.inBlue
     in
@@ -153,12 +163,12 @@ errorSeparator =
     "\n\n" ++ String.repeat 80 "─" ++ "\n\n"
 
 
-formatErrorWithExtract : Mode -> File -> Error -> List Text
-formatErrorWithExtract mode file error =
+formatErrorWithExtract : Mode -> Source -> Error -> List Text
+formatErrorWithExtract mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
-            codeExtract file error.range
+            codeExtract source error.range
 
         details_ : List Text
         details_ =
@@ -246,12 +256,12 @@ compareRange a b =
         EQ
 
 
-codeExtract : File -> Range -> List Text
-codeExtract file =
+codeExtract : Source -> Range -> List Text
+codeExtract source =
     let
         getRowAtLine_ : Int -> String
         getRowAtLine_ =
-            getRowAtLine file
+            getRowAtLine source
     in
     \({ start, end } as range) ->
         if range.start == range.end then
@@ -320,12 +330,12 @@ getIndexOfFirstNonSpace offset string =
         |> (\n -> n - offset + 1)
 
 
-getRowAtLine : File -> Int -> String
-getRowAtLine file =
+getRowAtLine : Source -> Int -> String
+getRowAtLine (Source source) =
     let
         lines : Array String
         lines =
-            file.source
+            source
                 |> String.lines
                 |> Array.fromList
     in
@@ -366,32 +376,32 @@ offsetBecauseOfLineNumber lineNumber =
         |> (+) 2
 
 
-totalNumberOfErrors : List ( File, List Error ) -> Int
-totalNumberOfErrors errors =
-    errors
-        |> List.concatMap Tuple.second
+totalNumberOfErrors : List FileWithError -> Int
+totalNumberOfErrors files =
+    files
+        |> List.concatMap .errors
         |> List.length
 
 
-hasFixableErrors : List ( File, List Error ) -> Bool
-hasFixableErrors errors =
-    List.any (Tuple.second >> List.any .hasFix) errors
+hasFixableErrors : List FileWithError -> Bool
+hasFixableErrors files =
+    List.any (.errors >> List.any .hasFix) files
 
 
-formatReports : List ( File, List Error ) -> List Text
-formatReports errors =
-    case errors of
+formatReports : List FileWithError -> List Text
+formatReports files =
+    case files of
         [] ->
             []
 
-        [ error ] ->
-            formatReportForFileWithExtract Reviewing error
+        [ file ] ->
+            formatReportForFileWithExtract Reviewing file
 
-        firstError :: secondError :: restOfErrors ->
+        firstFile :: secondFile :: restOfFiles ->
             List.concat
-                [ formatReportForFileWithExtract Reviewing firstError
-                , fileSeparator (firstError |> Tuple.first |> .path) (secondError |> Tuple.first |> .path)
-                , formatReports (secondError :: restOfErrors)
+                [ formatReportForFileWithExtract Reviewing firstFile
+                , fileSeparator firstFile.path secondFile.path
+                , formatReports (secondFile :: restOfFiles)
                 ]
 
 
@@ -408,11 +418,6 @@ fileSeparator pathAbove pathBelow =
     ]
 
 
-fileIdentifier : ( File, List Error ) -> String
-fileIdentifier ( file, _ ) =
-    file.path
-
-
 
 -- FIX
 
@@ -423,7 +428,12 @@ formatFixProposal : File -> Error -> String -> List TextContent
 formatFixProposal file error fixedSource =
     List.concat
         [ Text.join "\n\n"
-            [ formatReportForFileWithExtract Fixing ( file, [ error ] )
+            [ formatReportForFileWithExtract
+                Fixing
+                { path = file.path
+                , source = Source file.source
+                , errors = [ error ]
+                }
             , [ "I think I can fix this. Here is my proposal:"
                     |> Text.from
                     |> Text.inBlue

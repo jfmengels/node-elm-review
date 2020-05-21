@@ -7,7 +7,7 @@ import Elm.Review.File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Syntax.File
-import Elm.Syntax.Range as Range
+import Elm.Syntax.Range as Range exposing (Range)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (FixResult)
@@ -504,7 +504,7 @@ reportOrFix model =
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
     let
-        errors : List ( { path : String, source : String }, List Reporter.Error )
+        errors : List { path : String, source : Reporter.Source, errors : List Reporter.Error }
         errors =
             fromReviewErrors model.project model.reviewErrors
     in
@@ -533,7 +533,23 @@ encodeError error =
         , ( "ruleName", Encode.string <| Rule.errorRuleName error )
         , ( "filePath", Encode.string <| Rule.errorFilePath error )
         , ( "details", Encode.list Encode.string <| Rule.errorDetails error )
-        , ( "range", Range.encode <| Rule.errorRange error )
+        , ( "region", encodeRange <| Rule.errorRange error )
+        ]
+
+
+encodeRange : Range -> Encode.Value
+encodeRange range =
+    Encode.object
+        [ ( "start", encodePosition range.start )
+        , ( "end", encodePosition range.end )
+        ]
+
+
+encodePosition : { row : Int, column : Int } -> Encode.Value
+encodePosition position =
+    Encode.object
+        [ ( "line", Encode.int position.row )
+        , ( "column", Encode.int position.column )
         ]
 
 
@@ -780,7 +796,7 @@ diff before after =
         []
 
 
-fromReviewErrors : Project -> List Rule.ReviewError -> List ( { path : String, source : String }, List Reporter.Error )
+fromReviewErrors : Project -> List Rule.ReviewError -> List { path : String, source : Reporter.Source, errors : List Reporter.Error }
 fromReviewErrors project errors =
     let
         files : List { path : String, source : String }
@@ -808,13 +824,15 @@ fromReviewErrors project errors =
     files
         |> List.map
             (\file ->
-                ( file
-                , errors
-                    |> List.filter (\error -> file.path == Rule.errorFilePath error)
-                    |> List.map fromReviewError
-                )
+                { path = file.path
+                , source = Reporter.Source file.source
+                , errors =
+                    errors
+                        |> List.filter (\error -> file.path == Rule.errorFilePath error)
+                        |> List.map fromReviewError
+                }
             )
-        |> List.filter (\( file, fileErrors ) -> not <| List.isEmpty fileErrors)
+        |> List.filter (\file -> not (List.isEmpty file.errors))
 
 
 fromReviewError : Rule.ReviewError -> Reporter.Error
@@ -835,8 +853,7 @@ fromReviewError error =
 -}
 encodeReport : List Reporter.TextContent -> Encode.Value
 encodeReport texts =
-    texts
-        |> Encode.list encodeReportPart
+    Encode.list encodeReportPart texts
 
 
 encodeReportPart : Reporter.TextContent -> Encode.Value
