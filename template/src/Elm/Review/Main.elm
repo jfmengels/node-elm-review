@@ -88,6 +88,7 @@ type alias Model =
     { rules : List Rule
     , project : Project
     , fixMode : FixMode
+    , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
     , errorsHaveBeenFixedPreviously : Bool
 
@@ -113,21 +114,29 @@ type FixMode
     | FixAll
 
 
+type ReportMode
+    = HumanReadable
+    | Json
+
+
 init : Flags -> ( Model, Cmd msg )
 init flags =
     let
-        ( fixMode, cmd ) =
+        ( { fixMode, reportMode }, cmd ) =
             case Decode.decodeValue decodeFlags flags of
-                Ok fixMode_ ->
-                    ( fixMode_, Cmd.none )
+                Ok decodedFlags ->
+                    ( decodedFlags, Cmd.none )
 
                 Err _ ->
-                    ( DontFix, abort <| "Problem decoding the flags when running the elm-review runner" )
+                    ( { fixMode = DontFix, reportMode = HumanReadable }
+                    , abort <| "Problem decoding the flags when running the elm-review runner"
+                    )
     in
     ( { rules = config
       , project = Project.new
       , fixAllResultProject = Project.new
       , fixMode = fixMode
+      , reportMode = reportMode
       , reviewErrors = []
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
@@ -138,9 +147,16 @@ init flags =
     )
 
 
-decodeFlags : Decode.Decoder FixMode
+decodeFlags : Decode.Decoder { fixMode : FixMode, reportMode : ReportMode }
 decodeFlags =
-    Decode.field "fixMode" Decode.string
+    Decode.map2 (\fixMode reportMode -> { fixMode = fixMode, reportMode = reportMode })
+        (Decode.field "fixMode" decodeFix)
+        (Decode.field "report" decodeReportMode)
+
+
+decodeFix : Decode.Decoder FixMode
+decodeFix =
+    Decode.string
         |> Decode.andThen
             (\fixMode ->
                 case fixMode of
@@ -155,6 +171,23 @@ decodeFlags =
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
+            )
+
+
+decodeReportMode : Decode.Decoder ReportMode
+decodeReportMode =
+    Decode.string
+        |> Decode.andThen
+            (\reportMode ->
+                case reportMode of
+                    "human" ->
+                        Decode.succeed HumanReadable
+
+                    "json" ->
+                        Decode.succeed Json
+
+                    _ ->
+                        Decode.fail <| "I could not understand the following report mode: " ++ reportMode
             )
 
 
@@ -474,23 +507,19 @@ makeReport model =
         errors : List ( { path : String, source : String }, List Reporter.Error )
         errors =
             fromReviewErrors model.project model.reviewErrors
-
-        success : Bool
-        success =
-            errors
-                |> List.length
-                |> (==) 0
-
-        report : Encode.Value
-        report =
-            errors
-                |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
-                |> encodeReport
     in
     ( model
-    , [ ( "success", Encode.bool success )
-      , ( "report", report )
-      , ( "json", Encode.list encodeError model.reviewErrors )
+    , [ ( "success", Encode.bool <| List.isEmpty errors )
+      , case model.reportMode of
+            HumanReadable ->
+                ( "report"
+                , errors
+                    |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
+                    |> encodeReport
+                )
+
+            Json ->
+                ( "json", Encode.list encodeError model.reviewErrors )
       ]
         |> Encode.object
         |> reviewReport
