@@ -122,6 +122,7 @@ formatReport errorsHaveBeenFixedPreviously errors =
             []
         ]
             |> List.concat
+            |> Text.simplify
             |> List.map Text.toRecord
 
 

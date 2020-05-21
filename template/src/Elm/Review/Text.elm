@@ -2,7 +2,7 @@ module Elm.Review.Text exposing
     ( Text, TextContent
     , from
     , inBlue, inRed, inYellow, inGreen
-    , join
+    , join, simplify
     , toRecord
     )
 
@@ -34,7 +34,7 @@ module Elm.Review.Text exposing
 
 # Working with lists
 
-@docs join
+@docs join, simplify
 
 
 # Access
@@ -106,6 +106,31 @@ join : String -> List (List Text) -> List Text
 join sep chunks =
     List.intersperse [ from sep ] chunks
         |> List.concatMap identity
+
+
+simplify : List Text -> List Text
+simplify chunks =
+    case chunks of
+        [] ->
+            []
+
+        (Text chunk) :: restOfChunks ->
+            simplifyHelp [] chunk restOfChunks
+                |> List.reverse
+
+
+simplifyHelp : List Text -> TextContent -> List Text -> List Text
+simplifyHelp previousTexts lastText chunks =
+    case chunks of
+        [] ->
+            Text lastText :: previousTexts
+
+        (Text newLastText) :: restOfChunks ->
+            if lastText.color == newLastText.color && lastText.backgroundColor == newLastText.backgroundColor then
+                simplifyHelp previousTexts { lastText | str = lastText.str ++ newLastText.str } restOfChunks
+
+            else
+                simplifyHelp (Text lastText :: previousTexts) newLastText restOfChunks
 
 
 
