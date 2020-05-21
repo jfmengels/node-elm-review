@@ -840,19 +840,11 @@ encodeReport texts =
 
 
 encodeReportPart : Reporter.TextContent -> Encode.Value
-encodeReportPart { str, color, backgroundColor } =
+encodeReportPart { str, color } =
     Encode.object
         [ ( "string", Encode.string str )
         , ( "color"
           , case color of
-                Just ( red, green, blue ) ->
-                    Encode.list Encode.int [ red, green, blue ]
-
-                Nothing ->
-                    Encode.null
-          )
-        , ( "backgroundColor"
-          , case backgroundColor of
                 Just ( red, green, blue ) ->
                     Encode.list Encode.int [ red, green, blue ]
 

@@ -55,7 +55,6 @@ type Text
 type alias TextContent =
     { str : String
     , color : Maybe ( Int, Int, Int )
-    , backgroundColor : Maybe ( Int, Int, Int )
     }
 
 
@@ -70,7 +69,6 @@ from value =
     Text
         { str = value
         , color = Nothing
-        , backgroundColor = Nothing
         }
 
 
@@ -126,8 +124,8 @@ simplifyHelp previousTexts lastText chunks =
             Text lastText :: previousTexts
 
         (Text newLastText) :: restOfChunks ->
-            if lastText.color == newLastText.color && lastText.backgroundColor == newLastText.backgroundColor then
-                simplifyHelp previousTexts { lastText | str = lastText.str ++ newLastText.str } restOfChunks
+            if lastText.color == newLastText.color then
+                simplifyHelp previousTexts { str = lastText.str ++ newLastText.str, color = lastText.color } restOfChunks
 
             else
                 simplifyHelp (Text lastText :: previousTexts) newLastText restOfChunks
