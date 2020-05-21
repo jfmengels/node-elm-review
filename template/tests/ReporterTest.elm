@@ -21,18 +21,16 @@ noErrorTest : Test
 noErrorTest =
     test "report that all is fine when there are no errors"
         (\() ->
-            [ ( { path = "src/FileA.elm"
-                , source = """module FileA exposing (a)
+            [ { path = Reporter.FilePath "src/FileA.elm"
+              , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
-                }
-              , []
-              )
-            , ( { path = "src/FileB.elm"
-                , source = """module FileB exposing (a)
+              , errors = []
+              }
+            , { path = Reporter.FilePath "src/FileB.elm"
+              , source = Reporter.Source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
-                }
-              , []
-              )
+              , errors = []
+              }
             ]
                 |> Reporter.formatReport False
                 |> expect
@@ -46,18 +44,16 @@ noErrorButPreviousTest : Test
 noErrorButPreviousTest =
     test "report that all is fine when there are no errors but some have been fixed"
         (\() ->
-            [ ( { path = "src/FileA.elm"
-                , source = """module FileA exposing (a)
+            [ { path = Reporter.FilePath "src/FileA.elm"
+              , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
-                }
-              , []
-              )
-            , ( { path = "src/FileB.elm"
-                , source = """module FileB exposing (a)
+              , errors = []
+              }
+            , { path = Reporter.FilePath "src/FileB.elm"
+              , source = Reporter.Source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
-                }
-              , []
-              )
+              , errors = []
+              }
             ]
                 |> Reporter.formatReport True
                 |> expect
@@ -71,30 +67,29 @@ singleErrorTest : Test
 singleErrorTest =
     test "report a single error in a file"
         (\() ->
-            [ ( { path = "src/FileA.elm"
-                , source = """module FileA exposing (a)
+            [ { path = Reporter.FilePath "src/FileA.elm"
+              , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
-                }
-              , [ { ruleName = "NoDebug"
-                  , message = "Do not use Debug"
-                  , details =
-                        [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
-                        , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
-                        ]
-                  , range =
-                        { start = { row = 2, column = 5 }
-                        , end = { row = 2, column = 10 }
-                        }
-                  , hasFix = False
-                  }
-                ]
-              )
-            , ( { path = "src/FileB.elm"
-                , source = """module FileB exposing (a)
+              , errors =
+                    [ { ruleName = "NoDebug"
+                      , message = "Do not use Debug"
+                      , details =
+                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                            ]
+                      , range =
+                            { start = { row = 2, column = 5 }
+                            , end = { row = 2, column = 10 }
+                            }
+                      , hasFix = False
+                      }
+                    ]
+              }
+            , { path = Reporter.FilePath "src/FileB.elm"
+              , source = Reporter.Source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
-                }
-              , []
-              )
+              , errors = []
+              }
             ]
                 |> Reporter.formatReport False
                 |> expect
@@ -140,37 +135,36 @@ multipleErrorsTests =
                         , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
                         ]
                 in
-                [ ( { path = "src/FileA.elm"
-                    , source = """module FileA exposing (a)
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1
 b = foo <| Debug.log "other debug" 1"""
-                    }
-                  , [ { ruleName = "NoDebug"
-                      , message = "Do not use Debug"
-                      , details = details
-                      , range =
-                            { start = { row = 2, column = 5 }
-                            , end = { row = 2, column = 10 }
-                            }
-                      , hasFix = False
-                      }
-                    , { ruleName = "NoDebug"
-                      , message = "Do not use Debug"
-                      , details = details
-                      , range =
-                            { start = { row = 3, column = 12 }
-                            , end = { row = 3, column = 17 }
-                            }
-                      , hasFix = False
-                      }
-                    ]
-                  )
-                , ( { path = "src/FileB.elm"
-                    , source = """module FileB exposing (a)
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , message = "Do not use Debug"
+                          , details = details
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , hasFix = False
+                          }
+                        , { ruleName = "NoDebug"
+                          , message = "Do not use Debug"
+                          , details = details
+                          , range =
+                                { start = { row = 3, column = 12 }
+                                , end = { row = 3, column = 17 }
+                                }
+                          , hasFix = False
+                          }
+                        ]
+                  }
+                , { path = Reporter.FilePath "src/FileB.elm"
+                  , source = Reporter.Source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
-                    }
-                  , []
-                  )
+                  , errors = []
+                  }
                 ]
                     |> Reporter.formatReport False
                     |> expect
@@ -232,60 +226,60 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
             )
         , test "report errors in multiple file"
             (\() ->
-                [ ( { path = "src/FileA.elm"
-                    , source = """module FileA exposing (a)
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
-                    }
-                  , [ { ruleName = "NoDebug"
-                      , message = "Do not use Debug"
-                      , details =
-                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
-                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
-                            ]
-                      , range =
-                            { start = { row = 2, column = 5 }
-                            , end = { row = 2, column = 10 }
-                            }
-                      , hasFix = False
-                      }
-                    ]
-                  )
-                , ( { path = "src/FileB.elm"
-                    , source = """module FileB exposing (a)
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , hasFix = False
+                          }
+                        ]
+                  }
+                , { path = Reporter.FilePath "src/FileB.elm"
+                  , source = Reporter.Source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
-                    }
-                  , [ { ruleName = "NoDebug"
-                      , message = "Do not use Debug"
-                      , details =
-                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
-                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
-                            ]
-                      , range =
-                            { start = { row = 2, column = 5 }
-                            , end = { row = 2, column = 10 }
-                            }
-                      , hasFix = False
-                      }
-                    ]
-                  )
-                , ( { path = "src/FileC.elm"
-                    , source = """module FileC exposing (a)
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , hasFix = False
+                          }
+                        ]
+                  }
+                , { path = Reporter.FilePath "src/FileC.elm"
+                  , source = Reporter.Source """module FileC exposing (a)
 a = Debug.log "debug" 1"""
-                    }
-                  , [ { ruleName = "NoDebug"
-                      , message = "Do not use Debug"
-                      , details =
-                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
-                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
-                            ]
-                      , range =
-                            { start = { row = 2, column = 5 }
-                            , end = { row = 2, column = 10 }
-                            }
-                      , hasFix = False
-                      }
-                    ]
-                  )
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , hasFix = False
+                          }
+                        ]
+                  }
                 ]
                     |> Reporter.formatReport False
                     |> expect
@@ -397,24 +391,24 @@ fixAvailableTest =
     describe "Fixing mention"
         [ test "should mention a fix is available when the error provides one"
             (\() ->
-                [ ( { path = "src/FileA.elm"
-                    , source = """module FileA exposing (a)
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
-                    }
-                  , [ { ruleName = "NoDebug"
-                      , message = "Do not use Debug"
-                      , details =
-                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
-                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
-                            ]
-                      , range =
-                            { start = { row = 2, column = 5 }
-                            , end = { row = 2, column = 10 }
-                            }
-                      , hasFix = True
-                      }
-                    ]
-                  )
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , hasFix = True
+                          }
+                        ]
+                  }
                 ]
                     |> Reporter.formatReport False
                     |> expect

@@ -26,27 +26,27 @@ suite =
                         , hasFix = True
                         }
 
-                    changedFiles : List { path : String, source : String, fixedSource : String, errors : List Error }
+                    changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Error }
                     changedFiles =
-                        [ { path = "src/FileA.elm"
-                          , source = """module FileA exposing (a)
+                        [ { path = Reporter.FilePath "src/FileA.elm"
+                          , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1
 other=lines
 other2=lines2
 """
-                          , fixedSource = """module FileA exposing (a)
+                          , fixedSource = Reporter.Source """module FileA exposing (a)
 a = 1
 other=lines
 other2=lines2
 """
                           , errors = [ error ]
                           }
-                        , { path = "src/FileB.elm"
-                          , source = """module FileB exposing (b)
+                        , { path = Reporter.FilePath "src/FileB.elm"
+                          , source = Reporter.Source """module FileB exposing (b)
 b = Debug.log "debug" someOther
 someOther=lines
 """
-                          , fixedSource = """module FileB exposing (b)
+                          , fixedSource = Reporter.Source """module FileB exposing (b)
 b = someOther
 someOther=lines
 """

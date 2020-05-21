@@ -504,7 +504,7 @@ reportOrFix model =
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
     let
-        errors : List { path : String, source : Reporter.Source, errors : List Reporter.Error }
+        errors : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
         errors =
             fromReviewErrors model.project model.reviewErrors
     in
@@ -560,12 +560,18 @@ fixOneByOne model =
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
-                    { path = file.path, source = file.source }
+                    { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
                     (fromReviewError error)
-                    fixedSource
+                    (Reporter.Source fixedSource)
                     |> encodeReport
                 )
-              , ( "changedFiles", Encode.list encodeChangedFile [ { path = file.path, source = fixedSource } ] )
+              , ( "changedFiles"
+                , Encode.list encodeChangedFile
+                    [ { path = Reporter.FilePath file.path
+                      , source = Reporter.Source fixedSource
+                      }
+                    ]
+                )
               , ( "error", Encode.string <| Rule.errorMessage error )
               ]
                 |> Encode.object
@@ -586,13 +592,13 @@ fixAll model =
 
                 diffs ->
                     let
-                        changedFiles : List { path : String, source : String, fixedSource : String, errors : List Reporter.Error }
+                        changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
                         changedFiles =
                             List.map
                                 (\{ path, source, fixedSource } ->
-                                    { path = path
-                                    , source = source
-                                    , fixedSource = fixedSource
+                                    { path = Reporter.FilePath path
+                                    , source = Reporter.Source source
+                                    , fixedSource = Reporter.Source fixedSource
                                     , errors =
                                         Dict.get path newModel.fixAllErrors
                                             |> Maybe.withDefault []
@@ -629,11 +635,18 @@ fixAll model =
             )
 
 
-encodeChangedFile : { path : String, source : String } -> Encode.Value
+encodeChangedFile : { path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
 encodeChangedFile changedFile =
+    let
+        (Reporter.FilePath path) =
+            changedFile.path
+
+        (Reporter.Source source) =
+            changedFile.source
+    in
     Encode.object
-        [ ( "path", Encode.string changedFile.path )
-        , ( "source", Encode.string changedFile.source )
+        [ ( "path", Encode.string path )
+        , ( "source", Encode.string source )
         ]
 
 
@@ -796,7 +809,7 @@ diff before after =
         []
 
 
-fromReviewErrors : Project -> List Rule.ReviewError -> List { path : String, source : Reporter.Source, errors : List Reporter.Error }
+fromReviewErrors : Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
 fromReviewErrors project errors =
     let
         files : List { path : String, source : String }
@@ -824,7 +837,7 @@ fromReviewErrors project errors =
     files
         |> List.map
             (\file ->
-                { path = file.path
+                { path = Reporter.FilePath file.path
                 , source = Reporter.Source file.source
                 , errors =
                     errors

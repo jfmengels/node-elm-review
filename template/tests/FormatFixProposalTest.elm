@@ -28,17 +28,17 @@ suite =
 
                     file : File
                     file =
-                        { path = "src/FileA.elm"
-                        , source = """module FileA exposing (a)
+                        { path = Reporter.FilePath "src/FileA.elm"
+                        , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1
 other=lines
 other2=lines2
 """
                         }
 
-                    fixedSource : String
+                    fixedSource : Reporter.Source
                     fixedSource =
-                        """module FileA exposing (a)
+                        Reporter.Source """module FileA exposing (a)
 a = 1
 other=lines
 other2=lines2
@@ -107,8 +107,8 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
                     file : File
                     file =
-                        { path = "src/Some/File.elm"
-                        , source = """module Some.File exposing (a)
+                        { path = Reporter.FilePath "src/Some/File.elm"
+                        , source = Reporter.Source """module Some.File exposing (a)
 a =
     1
 
@@ -117,9 +117,9 @@ b =
 """
                         }
 
-                    fixedSource : String
+                    fixedSource : Reporter.Source
                     fixedSource =
-                        """module Some.File exposing (a)
+                        Reporter.Source """module Some.File exposing (a)
 
 
 b =

@@ -1,5 +1,5 @@
 module Elm.Review.Reporter exposing
-    ( Error, File, Source(..), TextContent
+    ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), formatReport
     , formatFixProposal, formatFixProposals
     )
@@ -9,7 +9,7 @@ module Elm.Review.Reporter exposing
 
 # Types
 
-@docs Error, File, Source, TextContent
+@docs Error, File, FilePath, Source, TextContent
 
 
 # Report
@@ -48,16 +48,25 @@ type alias Error =
 
 -}
 type alias File =
-    { path : String
-    , source : String
+    { path : FilePath
+    , source : Source
     }
 
 
 type alias FileWithError =
-    { path : String
+    { path : FilePath
     , source : Source
     , errors : List Error
     }
+
+
+type FilePath
+    = FilePath String
+
+
+filePath : FilePath -> String
+filePath (FilePath str) =
+    str
 
 
 type Source
@@ -117,7 +126,8 @@ formatReport errorsHaveBeenFixedPreviously files =
 
     else
         [ files
-            |> List.sortBy .path
+            |> List.filter (.errors >> List.isEmpty >> not)
+            |> List.sortBy (.path >> filePath)
             |> formatReports
         , [ Text.from "\n" ]
         , if hasFixableErrors files then
@@ -151,7 +161,7 @@ formatReportForFileWithExtract mode file =
 
         header : Text
         header =
-            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ file.path))
+            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ filePath file.path))
                 |> Text.from
                 |> Text.inBlue
     in
@@ -405,8 +415,8 @@ formatReports files =
                 ]
 
 
-fileSeparator : String -> String -> List Text
-fileSeparator pathAbove pathBelow =
+fileSeparator : FilePath -> FilePath -> List Text
+fileSeparator (FilePath pathAbove) (FilePath pathBelow) =
     [ Text.from <| "\n\n" ++ String.repeat (73 - String.length pathAbove) " "
     , (pathAbove ++ "  ↑")
         ++ "\n====o======================================================================o===="
@@ -424,14 +434,14 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single errorin a nice human-readable way.
 -}
-formatFixProposal : File -> Error -> String -> List TextContent
+formatFixProposal : File -> Error -> Source -> List TextContent
 formatFixProposal file error fixedSource =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
                 Fixing
                 { path = file.path
-                , source = Source file.source
+                , source = file.source
                 , errors = [ error ]
                 }
             , [ "I think I can fix this. Here is my proposal:"
@@ -447,7 +457,7 @@ formatFixProposal file error fixedSource =
 
 {-| Reports the proposal for the fix-all changes in a nice human-readable way.
 -}
-formatFixProposals : List { path : String, source : String, fixedSource : String, errors : List Error } -> List TextContent
+formatFixProposals : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error } -> List TextContent
 formatFixProposals changedFiles =
     let
         headerText : String
@@ -467,7 +477,7 @@ formatFixProposals changedFiles =
                 :: List.concatMap
                     (\file ->
                         [ Text.from "\n  "
-                        , "- " ++ file.path |> Text.from |> Text.inYellow
+                        , "- " ++ filePath file.path |> Text.from |> Text.inYellow
                         ]
                     )
                     changedFiles
@@ -485,7 +495,7 @@ formatFixProposals changedFiles =
         |> List.map Text.toRecord
 
 
-formatFileDiffs : List { path : String, source : String, fixedSource : String, errors : List Error } -> List Text
+formatFileDiffs : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error } -> List Text
 formatFileDiffs changedFiles =
     case changedFiles of
         [] ->
@@ -503,9 +513,9 @@ formatFileDiffs changedFiles =
                 ]
 
 
-formatFileDiff : { path : String, source : String, fixedSource : String, errors : List Error } -> List Text
+formatFileDiff : { path : FilePath, source : Source, fixedSource : Source, errors : List Error } -> List Text
 formatFileDiff file =
-    [ [ (" " ++ file.path)
+    [ [ (" " ++ filePath file.path)
             |> String.padLeft 80 '-'
             |> Text.from
             |> Text.inBlue
@@ -517,8 +527,8 @@ formatFileDiff file =
         |> Text.join "\n\n"
 
 
-diff : String -> String -> List Text
-diff before after =
+diff : Source -> Source -> List Text
+diff (Source before) (Source after) =
     Diff.diffLines before after
         |> addLineNumbers
         |> List.map extractValueFromChange

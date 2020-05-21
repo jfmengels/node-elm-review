@@ -47,18 +47,12 @@ formatWithColors : List TextContent -> String
 formatWithColors textList =
     textList
         |> List.map
-            (\{ str, color, backgroundColor } ->
-                case ( color, backgroundColor ) of
-                    ( Just color_, Just backgroundColor_ ) ->
-                        "[" ++ str ++ "](" ++ colorToString color_ ++ "-br-" ++ colorToString backgroundColor_ ++ ")"
-
-                    ( Nothing, Just backgroundColor_ ) ->
-                        "[" ++ str ++ "](bg-" ++ colorToString backgroundColor_ ++ ")"
-
-                    ( Just color_, Nothing ) ->
+            (\{ str, color } ->
+                case color of
+                    Just color_ ->
                         "[" ++ str ++ "](" ++ colorToString color_ ++ ")"
 
-                    ( Nothing, Nothing ) ->
+                    Nothing ->
                         str
             )
         |> String.join ""
