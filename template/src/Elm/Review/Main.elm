@@ -504,26 +504,45 @@ reportOrFix model =
 makeReport : Model -> ( Model, Cmd msg )
 makeReport model =
     let
-        errors : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-        errors =
-            fromReviewErrors model.project model.reviewErrors
+        errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+        errorsByFile =
+            groupErrorsByFile model.project model.reviewErrors
     in
     ( model
-    , [ ( "success", Encode.bool <| List.isEmpty errors )
+    , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
       , case model.reportMode of
             HumanReadable ->
                 ( "report"
-                , errors
+                , errorsByFile
+                    |> List.map
+                        (\file ->
+                            { path = file.path
+                            , source = file.source
+                            , errors = List.map fromReviewError file.errors
+                            }
+                        )
                     |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
                     |> encodeReport
                 )
 
             Json ->
-                ( "json", Encode.list encodeError model.reviewErrors )
+                ( "json", Encode.list encodeErrorByFile errorsByFile )
       ]
         |> Encode.object
         |> reviewReport
     )
+
+
+encodeErrorByFile : { a | path : Reporter.FilePath, errors : List Rule.ReviewError } -> Encode.Value
+encodeErrorByFile file =
+    let
+        (Reporter.FilePath path) =
+            file.path
+    in
+    Encode.object
+        [ ( "path", Encode.string path )
+        , ( "errors", Encode.list encodeError file.errors )
+        ]
 
 
 encodeError : Rule.ReviewError -> Encode.Value
@@ -531,7 +550,6 @@ encodeError error =
     Encode.object
         [ ( "message", Encode.string <| Rule.errorMessage error )
         , ( "ruleName", Encode.string <| Rule.errorRuleName error )
-        , ( "filePath", Encode.string <| Rule.errorFilePath error )
         , ( "details", Encode.list Encode.string <| Rule.errorDetails error )
         , ( "region", encodeRange <| Rule.errorRange error )
         ]
@@ -809,8 +827,8 @@ diff before after =
         []
 
 
-fromReviewErrors : Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-fromReviewErrors project errors =
+groupErrorsByFile : Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+groupErrorsByFile project errors =
     let
         files : List { path : String, source : String }
         files =
@@ -839,10 +857,7 @@ fromReviewErrors project errors =
             (\file ->
                 { path = Reporter.FilePath file.path
                 , source = Reporter.Source file.source
-                , errors =
-                    errors
-                        |> List.filter (\error -> file.path == Rule.errorFilePath error)
-                        |> List.map fromReviewError
+                , errors = List.filter (\error -> file.path == Rule.errorFilePath error) errors
                 }
             )
         |> List.filter (\file -> not (List.isEmpty file.errors))
