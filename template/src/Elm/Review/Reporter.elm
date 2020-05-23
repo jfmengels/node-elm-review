@@ -269,40 +269,45 @@ compareRange a b =
 codeExtract : Source -> Range -> List Text
 codeExtract source =
     let
-        getRowAtLine_ : Int -> String
+        getRowAtLine_ : Int -> Int -> String
         getRowAtLine_ =
             getRowAtLine source
     in
-    \({ start, end } as range) ->
-        if range.start == range.end then
+    \{ start, end } ->
+        let
+            maxLineNumberLength : Int
+            maxLineNumberLength =
+                lengthOfLineNumber (end.row + 1)
+        in
+        if start == end then
             []
 
         else if start.row == end.row then
             List.concat
-                [ [ Text.from <| getRowAtLine_ (start.row - 2)
-                  , Text.from <| getRowAtLine_ (start.row - 1)
+                [ [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 2)
+                  , Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 1)
                   ]
                 , underlineError (start.row - 1) { start = start.column, end = end.column }
-                , [ Text.from <| getRowAtLine_ end.row ]
+                , [ Text.from <| getRowAtLine_ maxLineNumberLength end.row ]
                 ]
 
         else
             let
                 startLine : String
                 startLine =
-                    getRowAtLine_ (start.row - 1)
+                    getRowAtLine_ maxLineNumberLength (start.row - 1)
 
                 linesBetweenStartAndEnd : List String
                 linesBetweenStartAndEnd =
                     List.range start.row (end.row - 2)
-                        |> List.map getRowAtLine_
+                        |> List.map (getRowAtLine_ maxLineNumberLength)
 
                 endLine : String
                 endLine =
-                    getRowAtLine_ (end.row - 1)
+                    getRowAtLine_ maxLineNumberLength (end.row - 1)
             in
             List.concat
-                [ [ Text.from <| getRowAtLine_ (start.row - 2)
+                [ [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 2)
                   , Text.from <| startLine
                   ]
                 , underlineError
@@ -327,7 +332,7 @@ codeExtract source =
                     { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber (end.row - 1)) endLine
                     , end = String.length endLine - offsetBecauseOfLineNumber (end.row - 1)
                     }
-                , [ Text.from <| getRowAtLine_ end.row ]
+                , [ Text.from <| getRowAtLine_ maxLineNumberLength end.row ]
                 ]
 
 
@@ -340,7 +345,7 @@ getIndexOfFirstNonSpace offset string =
         |> (\n -> n - offset + 1)
 
 
-getRowAtLine : Source -> Int -> String
+getRowAtLine : Source -> Int -> Int -> String
 getRowAtLine (Source source) =
     let
         lines : Array String
@@ -349,12 +354,11 @@ getRowAtLine (Source source) =
                 |> String.lines
                 |> Array.fromList
     in
-    \rowIndex ->
+    \maxLineNumberLength rowIndex ->
         case Array.get rowIndex lines of
             Just line ->
                 if String.trim line /= "" then
-                    (line ++ "\n")
-                        |> prependWithLineNumber rowIndex
+                    lineNumberPrefix maxLineNumberLength rowIndex ++ (line ++ "\n")
 
                 else
                     ""
@@ -363,9 +367,20 @@ getRowAtLine (Source source) =
                 ""
 
 
-prependWithLineNumber : Int -> String -> String
-prependWithLineNumber rowIndex line =
-    String.fromInt (rowIndex + 1) ++ "| " ++ line
+lineNumberPrefix : Int -> Int -> String
+lineNumberPrefix maxLineNumberLength rowIndex =
+    ((rowIndex + 1)
+        |> String.fromInt
+        |> String.padLeft maxLineNumberLength ' '
+    )
+        ++ "| "
+
+
+lengthOfLineNumber : Int -> Int
+lengthOfLineNumber lineNumber =
+    lineNumber
+        |> String.fromInt
+        |> String.length
 
 
 underlineError : Int -> { start : Int, end : Int } -> List Text
@@ -537,17 +552,36 @@ diff (Source before) (Source after) =
 
 addLineNumbers : List (Diff.Change String) -> List (Diff.Change Text)
 addLineNumbers changes =
+    let
+        maxLineNumberLength : Int
+        maxLineNumberLength =
+            List.foldl
+                (\change lineNumber ->
+                    case change of
+                        Diff.NoChange _ ->
+                            lineNumber + 1
+
+                        Diff.Removed _ ->
+                            lineNumber + 1
+
+                        Diff.Added str ->
+                            lineNumber
+                )
+                0
+                changes
+                |> lengthOfLineNumber
+    in
     List.foldl
         (\change ( lineNumber, diffLines ) ->
             case change of
                 Diff.NoChange str ->
-                    ( lineNumber + 1, Diff.NoChange (Text.from <| prependWithLineNumber lineNumber str) :: diffLines )
+                    ( lineNumber + 1, Diff.NoChange (Text.from <| lineNumberPrefix maxLineNumberLength lineNumber ++ str) :: diffLines )
 
                 Diff.Removed str ->
                     let
                         line : Text
                         line =
-                            prependWithLineNumber lineNumber str
+                            (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
                                 |> Text.from
                                 |> Text.inRed
                     in
@@ -557,7 +591,7 @@ addLineNumbers changes =
                     let
                         line : Text
                         line =
-                            prependWithLineNumber lineNumber str
+                            (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
                                 |> Text.from
                                 |> Text.inGreen
                     in
