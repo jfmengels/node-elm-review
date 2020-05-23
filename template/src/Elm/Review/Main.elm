@@ -887,17 +887,17 @@ encodeReport texts =
 
 encodeReportPart : Reporter.TextContent -> Encode.Value
 encodeReportPart { str, color } =
-    Encode.object
-        [ ( "string", Encode.string str )
-        , ( "color"
-          , case color of
-                Just ( red, green, blue ) ->
-                    Encode.list Encode.int [ red, green, blue ]
+    case color of
+        Just ( red, green, blue ) ->
+            Encode.object
+                [ ( "str", Encode.string str )
+                , ( "color"
+                  , Encode.list Encode.int [ red, green, blue ]
+                  )
+                ]
 
-                Nothing ->
-                    Encode.null
-          )
-        ]
+        Nothing ->
+            Encode.string str
 
 
 

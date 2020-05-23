@@ -176,6 +176,7 @@ errorSeparator =
 formatIndividualError : Source -> Error -> List TextContent
 formatIndividualError source error =
     formatErrorWithExtract Reviewing source error
+        |> Text.simplify
         |> List.map Text.toRecord
 
 
