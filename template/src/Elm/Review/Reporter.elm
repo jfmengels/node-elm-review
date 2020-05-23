@@ -1,6 +1,6 @@
 module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
-    , Mode(..), formatReport
+    , Mode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
     )
 
@@ -14,7 +14,7 @@ module Elm.Review.Reporter exposing
 
 # Report
 
-@docs Mode, formatReport
+@docs Mode, formatReport, formatIndividualError
 
 
 # Fix
@@ -171,6 +171,12 @@ formatReportForFileWithExtract mode file =
 errorSeparator : String
 errorSeparator =
     "\n\n" ++ String.repeat 80 "─" ++ "\n\n"
+
+
+formatIndividualError : Source -> Error -> List TextContent
+formatIndividualError source error =
+    formatErrorWithExtract Reviewing source error
+        |> List.map Text.toRecord
 
 
 formatErrorWithExtract : Mode -> Source -> Error -> List Text

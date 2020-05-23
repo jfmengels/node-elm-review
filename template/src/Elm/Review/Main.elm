@@ -510,10 +510,10 @@ makeReport model =
     in
     ( model
     , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
-      , case model.reportMode of
+      , ( "report"
+        , case model.reportMode of
             HumanReadable ->
-                ( "report"
-                , errorsByFile
+                errorsByFile
                     |> List.map
                         (\file ->
                             { path = file.path
@@ -523,17 +523,17 @@ makeReport model =
                         )
                     |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
                     |> encodeReport
-                )
 
             Json ->
-                ( "json", Encode.list encodeErrorByFile errorsByFile )
+                Encode.list encodeErrorByFile errorsByFile
+        )
       ]
         |> Encode.object
         |> reviewReport
     )
 
 
-encodeErrorByFile : { a | path : Reporter.FilePath, errors : List Rule.ReviewError } -> Encode.Value
+encodeErrorByFile : { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
 encodeErrorByFile file =
     let
         (Reporter.FilePath path) =
@@ -541,17 +541,18 @@ encodeErrorByFile file =
     in
     Encode.object
         [ ( "path", Encode.string path )
-        , ( "errors", Encode.list encodeError file.errors )
+        , ( "errors", Encode.list (encodeError file.source) file.errors )
         ]
 
 
-encodeError : Rule.ReviewError -> Encode.Value
-encodeError error =
+encodeError : Reporter.Source -> Rule.ReviewError -> Encode.Value
+encodeError source error =
     Encode.object
         [ ( "message", Encode.string <| Rule.errorMessage error )
         , ( "ruleName", Encode.string <| Rule.errorRuleName error )
         , ( "details", Encode.list Encode.string <| Rule.errorDetails error )
         , ( "region", encodeRange <| Rule.errorRange error )
+        , ( "formatted", encodeReport (Reporter.formatIndividualError source (fromReviewError error)) )
         ]
 
 
