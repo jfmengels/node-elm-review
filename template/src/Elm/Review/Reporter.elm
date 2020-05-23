@@ -577,39 +577,56 @@ addLineNumbers changes =
                 0
                 changes
                 |> lengthOfLineNumber
+
+        ( _, unchangedLines, diffLines ) =
+            List.foldl
+                (\change ( lineNumber, previousUnchangedLines, accDiffLines ) ->
+                    case change of
+                        Diff.NoChange str ->
+                            ( lineNumber + 1, Diff.NoChange (Text.from <| lineNumberPrefix maxLineNumberLength lineNumber ++ str) :: previousUnchangedLines, accDiffLines )
+
+                        Diff.Removed str ->
+                            let
+                                line : Text
+                                line =
+                                    (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
+                                        |> Text.from
+                                        |> Text.inRed
+                            in
+                            ( lineNumber + 1, [], Diff.Removed line :: (removeUnchangedLines previousUnchangedLines ++ accDiffLines) )
+
+                        Diff.Added str ->
+                            let
+                                line : Text
+                                line =
+                                    (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
+                                        |> Text.from
+                                        |> Text.inGreen
+                            in
+                            ( lineNumber, [], Diff.Added line :: (removeUnchangedLines previousUnchangedLines ++ accDiffLines) )
+                )
+                ( 0, [], [] )
+                changes
     in
-    List.foldl
-        (\change ( lineNumber, diffLines ) ->
-            case change of
-                Diff.NoChange str ->
-                    ( lineNumber + 1, Diff.NoChange (Text.from <| lineNumberPrefix maxLineNumberLength lineNumber ++ str) :: diffLines )
-
-                Diff.Removed str ->
-                    let
-                        line : Text
-                        line =
-                            (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
-                                |> Text.from
-                                |> Text.inRed
-                    in
-                    ( lineNumber + 1, Diff.Removed line :: diffLines )
-
-                Diff.Added str ->
-                    let
-                        line : Text
-                        line =
-                            (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
-                                |> Text.from
-                                |> Text.inGreen
-                    in
-                    ( lineNumber, Diff.Added line :: diffLines )
-        )
-        ( 0, [] )
-        changes
-        |> Tuple.second
+    (unchangedLines ++ diffLines)
         |> dropNonInterestingUnchangedLines
         |> List.reverse
         |> dropNonInterestingUnchangedLines
+
+
+removeUnchangedLines : List (Diff.Change Text) -> List (Diff.Change Text)
+removeUnchangedLines list =
+    if List.length list >= 4 then
+        List.take 1 list
+            ++ Diff.NoChange (Text.from "    ...")
+            :: (list
+                    |> List.reverse
+                    |> List.take 1
+                    |> List.reverse
+               )
+
+    else
+        list
 
 
 extractValueFromChange : Diff.Change a -> a
