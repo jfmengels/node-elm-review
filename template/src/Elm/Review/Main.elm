@@ -10,7 +10,7 @@ import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Review.Fix as Fix exposing (FixResult)
+import Review.Fix as Fix exposing (Fix, FixResult)
 import Review.Project as Project exposing (Project, ProjectModule)
 import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
@@ -109,9 +109,9 @@ type AwaitingConfirmation
 
 
 type FixMode
-    = DontFix
-    | Fix
-    | FixAll
+    = Mode_DontFix
+    | Mode_Fix
+    | Mode_FixAll
 
 
 type ReportMode
@@ -128,7 +128,7 @@ init flags =
                     ( decodedFlags, Cmd.none )
 
                 Err _ ->
-                    ( { fixMode = DontFix, reportMode = HumanReadable }
+                    ( { fixMode = Mode_DontFix, reportMode = HumanReadable }
                     , abort <| "Problem decoding the flags when running the elm-review runner"
                     )
     in
@@ -161,13 +161,13 @@ decodeFix =
             (\fixMode ->
                 case fixMode of
                     "dontfix" ->
-                        Decode.succeed DontFix
+                        Decode.succeed Mode_DontFix
 
                     "fix" ->
-                        Decode.succeed Fix
+                        Decode.succeed Mode_Fix
 
                     "fixAll" ->
-                        Decode.succeed FixAll
+                        Decode.succeed Mode_FixAll
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
@@ -491,13 +491,13 @@ runReview model =
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
     case model.fixMode of
-        DontFix ->
+        Mode_DontFix ->
             makeReport model
 
-        Fix ->
+        Mode_Fix ->
             fixOneByOne model
 
-        FixAll ->
+        Mode_FixAll ->
             fixAll model
 
 
@@ -547,12 +547,28 @@ encodeErrorByFile file =
 
 encodeError : Reporter.Source -> Rule.ReviewError -> Encode.Value
 encodeError source error =
+    [ Just ( "message", Encode.string <| Rule.errorMessage error )
+    , Just ( "ruleName", Encode.string <| Rule.errorRuleName error )
+    , Just ( "details", Encode.list Encode.string <| Rule.errorDetails error )
+    , Just ( "region", encodeRange <| Rule.errorRange error )
+    , Rule.errorFixes error
+        |> Maybe.map (encodeFixes >> Tuple.pair "fix")
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError source (fromReviewError error)) )
+    ]
+        |> List.filterMap identity
+        |> Encode.object
+
+
+encodeFixes : List Fix -> Encode.Value
+encodeFixes fixes =
+    Encode.list (Fix.toRecord >> encodeFix) fixes
+
+
+encodeFix : { range : Range, replacement : String } -> Encode.Value
+encodeFix { range, replacement } =
     Encode.object
-        [ ( "message", Encode.string <| Rule.errorMessage error )
-        , ( "ruleName", Encode.string <| Rule.errorRuleName error )
-        , ( "details", Encode.list Encode.string <| Rule.errorDetails error )
-        , ( "region", encodeRange <| Rule.errorRange error )
-        , ( "formatted", encodeReport (Reporter.formatIndividualError source (fromReviewError error)) )
+        [ ( "range", encodeRange range )
+        , ( "str", Encode.string replacement )
         ]
 
 
