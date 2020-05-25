@@ -690,10 +690,11 @@ applyAllFixes model =
                 Nothing
 
             else
-                { model | project = newProject }
-                    |> addFixedErrorForFile file.path error
-                    |> runReview
-                    |> applyAllFixes
+                applyAllFixes
+                    ({ model | project = newProject }
+                        |> addFixedErrorForFile file.path error
+                        |> runReview
+                    )
 
         Nothing ->
             Just model
