@@ -593,7 +593,7 @@ addLineNumbers changes =
                                         |> Text.from
                                         |> Text.inRed
                             in
-                            ( lineNumber + 1, [], Diff.Removed line :: (removeUnchangedLines previousUnchangedLines ++ accDiffLines) )
+                            ( lineNumber + 1, [], Diff.Removed line :: (removeUnchangedLines maxLineNumberLength previousUnchangedLines ++ accDiffLines) )
 
                         Diff.Added str ->
                             let
@@ -603,7 +603,7 @@ addLineNumbers changes =
                                         |> Text.from
                                         |> Text.inGreen
                             in
-                            ( lineNumber, [], Diff.Added line :: (removeUnchangedLines previousUnchangedLines ++ accDiffLines) )
+                            ( lineNumber, [], Diff.Added line :: (removeUnchangedLines maxLineNumberLength previousUnchangedLines ++ accDiffLines) )
                 )
                 ( 0, [], [] )
                 changes
@@ -614,11 +614,11 @@ addLineNumbers changes =
         |> dropNonInterestingUnchangedLines
 
 
-removeUnchangedLines : List (Diff.Change Text) -> List (Diff.Change Text)
-removeUnchangedLines list =
+removeUnchangedLines : Int -> List (Diff.Change Text) -> List (Diff.Change Text)
+removeUnchangedLines maxLineNumberLength list =
     if List.length list >= 4 then
         List.take 1 list
-            ++ Diff.NoChange (Text.from "    ...")
+            ++ Diff.NoChange (Text.from <| String.repeat (maxLineNumberLength + 1) "·")
             :: (list
                     |> List.reverse
                     |> List.take 1
