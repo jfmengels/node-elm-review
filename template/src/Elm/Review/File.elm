@@ -1,11 +1,11 @@
-module Elm.Review.File exposing (encode, decode)
+module Elm.Review.File exposing (decode)
 
 {-| Represents an Elm file.
 
 
 # Decoding
 
-@docs encode, decode
+@docs decode
 
 -}
 
@@ -28,11 +28,3 @@ decode =
             , Decode.succeed Nothing
             ]
         )
-
-
-encode : { file | path : String, source : String } -> Encode.Value
-encode file =
-    Encode.object
-        [ ( "path", Encode.string file.path )
-        , ( "source", Encode.string file.source )
-        ]
