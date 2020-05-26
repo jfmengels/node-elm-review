@@ -510,7 +510,7 @@ makeReport model =
     in
     ( model
     , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
-      , ( "report"
+      , ( "errors"
         , case model.reportMode of
             HumanReadable ->
                 errorsByFile
