@@ -129,7 +129,7 @@ init flags =
 
                 Err _ ->
                     ( { fixMode = Mode_DontFix, reportMode = HumanReadable }
-                    , abort <| "Problem decoding the flags when running the elm-review runner"
+                    , abort <| "Problem decoding the flags when running the elm-review runner."
                     )
     in
     ( { rules = config
