@@ -29,8 +29,6 @@ This will help the CLI by not trying several paths before succeeding. If you don
 If you are unsure that these paths are correct, then maybe omit these, as the CLI
 will not attempt to fallback to other paths.
 
-Note: At the moment, we are reformatting a file with `elm-format` **after** is has been saved to the file system. This is not ideal, and I'd love help with improving that.
-
 ## Format of the JSON
 
 If you desire to get the output of the CLI as JSON, you can run with `--report=json`. The output will look like what the following sections describe.
