@@ -5,7 +5,6 @@ var elmBinaryName = "elm";
 var fs = require("fs");
 var path = require("path");
 var temp = require("temp").track();
-var findAllDependencies = require("find-elm-dependencies").findAllDependencies;
 
 var defaultOptions = {
   spawn: spawn,
@@ -79,17 +78,6 @@ function compilerErrorToString(err, pathToElm) {
     return JSON.stringify(err.message);
   } else {
     return "Exception thrown when attempting to run Elm compiler " + JSON.stringify(pathToElm);
-  }
-}
-
-function compileSync(sources, options) {
-  var optionsWithDefaults = prepareOptions(options, options.spawn || spawn.sync);
-  var pathToElm = options.pathToElm || elmBinaryName;
-
-  try {
-    return runCompiler(sources, optionsWithDefaults, pathToElm);
-  } catch (err) {
-    throw compilerErrorToString(err, pathToElm);
   }
 }
 
@@ -193,11 +181,7 @@ function compilerArgsFromOptions(options) {
 }
 
 module.exports = {
-  compile: compile,
-  compileSync: compileSync,
-  compileWorker: require("./worker")(compile),
+  compile,
   compileToString: compileToString,
   compileToStringSync: compileToStringSync,
-  findAllDependencies: findAllDependencies,
-  _prepareProcessArgs: prepareProcessArgs
 };
