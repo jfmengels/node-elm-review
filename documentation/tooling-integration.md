@@ -7,7 +7,7 @@ environment than a user's terminal, like editors or GitHub actions.
 
 ### Namespacing
 
-If it is possible for your tool to run at the same time as an anrelated `elm-review` CLI run (e.g. an editor), then I'd like you to spawn the CLI using the `--namespace <unique-name-for-your-tool>` (please don't make it look like a semantic version number, to facilitate removing this later on if it happens to be a bad idea).
+If it is possible for your tool to run at the same time as an unrelated `elm-review` CLI run (e.g. an editor), then I'd like you to spawn the CLI using the `--namespace <unique-name-for-your-tool>` (please don't make it look like a semantic version number, to facilitate removing this later on if it happens to be a bad idea).
 
 The CLI creates a bunch of cache inside `elm-stuff/generated-code/jfmengels/elm-review/<namespace>/<CLI version>/` with `cli` as the default `namespace`, including
 - `file-cache/`: Caching of the file's ASTs.
