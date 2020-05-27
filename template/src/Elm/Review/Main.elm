@@ -548,7 +548,7 @@ encodeErrorByFile file =
 encodeError : Reporter.Source -> Rule.ReviewError -> Encode.Value
 encodeError source error =
     [ Just ( "message", Encode.string <| Rule.errorMessage error )
-    , Just ( "ruleName", Encode.string <| Rule.errorRuleName error )
+    , Just ( "rule", Encode.string <| Rule.errorRuleName error )
     , Just ( "details", Encode.list Encode.string <| Rule.errorDetails error )
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
