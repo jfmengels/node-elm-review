@@ -1,7 +1,6 @@
 'use strict';
 
 var spawn = require("cross-spawn");
-var _ = require("lodash");
 var elmBinaryName = "elm";
 var fs = require("fs");
 var path = require("path");
@@ -22,7 +21,7 @@ var defaultOptions = {
   optimize: undefined,
 };
 
-var supportedOptions = _.keys(defaultOptions);
+var supportedOptions = Object.keys(defaultOptions);
 
 function prepareSources(sources) {
   if (!(sources instanceof Array || typeof sources === "string")) {
@@ -33,7 +32,7 @@ function prepareSources(sources) {
 }
 
 function prepareOptions(options, spawnFn) {
-  return _.defaults({ spawn: spawnFn }, options, defaultOptions);
+  return Object.assign({}, defaultOptions, options, { spawn: spawnFn });
 }
 
 function prepareProcessArgs(sources, options) {
@@ -44,8 +43,8 @@ function prepareProcessArgs(sources, options) {
 }
 
 function prepareProcessOpts(options) {
-  var env = _.merge({ LANG: 'en_US.UTF-8' }, process.env);
-  return _.merge({ env: env, stdio: "inherit", cwd: options.cwd }, options.processOpts);
+  var env = Object.assign({ LANG: 'en_US.UTF-8' }, process.env);
+  return Object.assign({ env: env, stdio: "inherit", cwd: options.cwd }, options.processOpts);
 
 }
 
@@ -162,33 +161,30 @@ function compileToStringSync(sources, options) {
   return fs.readFileSync(file.path, { encoding: "utf8" });
 }
 
+function flatten(array) {
+  return array.reduce((res, element) => res.concat(element), [])
+}
+
 // Converts an object of key/value pairs to an array of arguments suitable
 // to be passed to child_process.spawn for elm-make.
 function compilerArgsFromOptions(options) {
-  return _.flatten(_.map(options, function (value, opt) {
+  return flatten(Object.entries(options).map(function ([opt, value]) {
     if (value) {
       switch (opt) {
+        case "spawn": return [];
+        case "cwd": return [];
+        case "pathToElm": return [];
         case "help": return ["--help"];
         case "output": return ["--output", value];
         case "report": return ["--report", value];
         case "debug": return ["--debug"];
+        case "verbose": return [];
+        case "processOpts": return [];
         case "docs": return ["--docs", value];
         case "optimize": return ["--optimize"];
-        case "runtimeOptions": return [].concat(["+RTS"], value, ["-RTS"]);
+        case "runtimeOptions": return ["+RTS", ...value, "-RTS"];
         default:
-          if (supportedOptions.indexOf(opt) === -1) {
-            if (opt === "yes") {
-              throw new Error('node-elm-compiler received the `yes` option, but that was removed in Elm 0.19. Try re-running without passing the `yes` option.');
-            } else if (opt === "warn") {
-              throw new Error('node-elm-compiler received the `warn` option, but that was removed in Elm 0.19. Try re-running without passing the `warn` option.');
-            } else if (opt === "pathToMake") {
-              throw new Error('node-elm-compiler received the `pathToMake` option, but that was renamed to `pathToElm` in Elm 0.19. Try re-running after renaming the parameter to `pathToElm`.');
-            } else {
-              throw new Error('node-elm-compiler was given an unrecognized Elm compiler option: ' + opt);
-            }
-          }
-
-          return [];
+          throw new Error('node-elm-compiler was given an unrecognized Elm compiler option: ' + opt);
       }
     } else {
       return [];
