@@ -23,6 +23,7 @@
     "bin/",
     "lib/",
     "build/",
+    "vendor/",
     "template/src/**/*.elm",
     "template/elm.json",
     "DefaultReviewConfig.elm"
@@ -33,7 +34,6 @@
     "elm-review",
     "lint",
     "linter",
-    "elm-lint",
     "check",
     "cli"
   ],
