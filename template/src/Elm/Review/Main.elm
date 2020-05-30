@@ -36,6 +36,9 @@ port collectReadme : (Decode.Value -> msg) -> Sub msg
 port collectDependencies : (Decode.Value -> msg) -> Sub msg
 
 
+port collectLinks : (Decode.Value -> msg) -> Sub msg
+
+
 port cacheFile : Encode.Value -> Cmd msg
 
 
@@ -87,6 +90,7 @@ main =
 type alias Model =
     { rules : List Rule
     , project : Project
+    , links : Dict String String
     , fixMode : FixMode
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
@@ -134,6 +138,7 @@ init flags =
     in
     ( { rules = config
       , project = Project.new
+      , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = fixMode
       , reportMode = reportMode
@@ -201,6 +206,7 @@ type Msg
     | ReceivedElmJson Decode.Value
     | ReceivedReadme Decode.Value
     | ReceivedDependencies Decode.Value
+    | ReceivedLinks Decode.Value
     | GotRequestToReview
     | UserConfirmedFix Decode.Value
     | RequestedToKnowIfAFixConfirmationIsExpected
@@ -316,6 +322,14 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        ReceivedLinks json ->
+            case Decode.decodeValue (Decode.dict Decode.string) json of
+                Err _ ->
+                    ( model, Cmd.none )
+
+                Ok links ->
+                    ( { model | links = links }, Cmd.none )
 
         GotRequestToReview ->
             { model
@@ -929,6 +943,7 @@ subscriptions =
         , collectElmJson ReceivedElmJson
         , collectReadme ReceivedReadme
         , collectDependencies ReceivedDependencies
+        , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
         , userConfirmedFix UserConfirmedFix
         , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
