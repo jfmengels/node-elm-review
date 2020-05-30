@@ -31,7 +31,7 @@ will not attempt to fallback to other paths.
 
 ## Format of the JSON
 
-If you desire to get the output of the CLI as JSON, you can run with `--report=json`. The output will look like what the following sections describe.
+If you desire to get the output of the CLI as JSON, you can run with `--report=json`. This flag became available in version `2.1.0` of the CLI, which in turns requires version `2.1.0 <= x < 3.0.0` of the `jfmengels/elm-review` package. The output of this report is detailed below.
 
 ### Review errors
 
