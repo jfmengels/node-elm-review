@@ -539,7 +539,7 @@ makeReport model =
                     |> encodeReport
 
             Json ->
-                Encode.list encodeErrorByFile errorsByFile
+                Encode.list (encodeErrorByFile model.links) errorsByFile
         )
       ]
         |> Encode.object
@@ -547,22 +547,33 @@ makeReport model =
     )
 
 
-encodeErrorByFile : { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
-encodeErrorByFile file =
+encodeErrorByFile : Dict String String -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
+encodeErrorByFile links file =
     let
         (Reporter.FilePath path) =
             file.path
     in
     Encode.object
         [ ( "path", Encode.string path )
-        , ( "errors", Encode.list (encodeError file.source) file.errors )
+        , ( "errors", Encode.list (encodeError links file.source) file.errors )
         ]
 
 
-encodeError : Reporter.Source -> Rule.ReviewError -> Encode.Value
-encodeError source error =
+encodeError : Dict String String -> Reporter.Source -> Rule.ReviewError -> Encode.Value
+encodeError links source error =
+    let
+        ruleName : String
+        ruleName =
+            Rule.errorRuleName error
+    in
     [ Just ( "message", Encode.string <| Rule.errorMessage error )
-    , Just ( "rule", Encode.string <| Rule.errorRuleName error )
+    , Just ( "rule", Encode.string ruleName )
+    , case Dict.get ruleName links of
+        Just link ->
+            Just ( "ruleLink", Encode.string link )
+
+        Nothing ->
+            Nothing
     , Just ( "details", Encode.list Encode.string <| Rule.errorDetails error )
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
