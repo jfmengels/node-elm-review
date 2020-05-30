@@ -34,6 +34,7 @@ to this type.
 -}
 type alias Error =
     { ruleName : String
+    , ruleLink : Maybe String
     , message : String
     , details : List String
     , range : Range
@@ -222,6 +223,7 @@ formatErrorTitle mode error =
     [ fixIcon
     , Text.from error.ruleName
         |> Text.inRed
+        |> Text.withLink error.ruleLink
     , Text.from <| ": " ++ error.message
     ]
 

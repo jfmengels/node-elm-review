@@ -532,7 +532,7 @@ makeReport model =
                         (\file ->
                             { path = file.path
                             , source = file.source
-                            , errors = List.map fromReviewError file.errors
+                            , errors = List.map (fromReviewError model.links) file.errors
                             }
                         )
                     |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
@@ -561,27 +561,23 @@ encodeErrorByFile links file =
 
 encodeError : Dict String String -> Reporter.Source -> Rule.ReviewError -> Encode.Value
 encodeError links source error =
-    let
-        ruleName : String
-        ruleName =
-            Rule.errorRuleName error
-    in
     [ Just ( "message", Encode.string <| Rule.errorMessage error )
-    , Just ( "rule", Encode.string ruleName )
-    , case Dict.get ruleName links of
-        Just link ->
-            Just ( "ruleLink", Encode.string link )
-
-        Nothing ->
-            Nothing
+    , Just ( "rule", Encode.string <| Rule.errorRuleName error )
+    , linkToRule links error
+        |> Maybe.map (Encode.string >> Tuple.pair "ruleLink")
     , Just ( "details", Encode.list Encode.string <| Rule.errorDetails error )
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError source (fromReviewError error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError source (fromReviewError links error)) )
     ]
         |> List.filterMap identity
         |> Encode.object
+
+
+linkToRule : Dict String String -> Rule.ReviewError -> Maybe String
+linkToRule links error =
+    Dict.get (Rule.errorRuleName error) links
 
 
 encodeFixes : List Fix -> Encode.Value
@@ -621,7 +617,7 @@ fixOneByOne model =
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
                     { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
-                    (fromReviewError error)
+                    (fromReviewError model.links error)
                     (Reporter.Source fixedSource)
                     |> encodeReport
                 )
@@ -746,7 +742,7 @@ addFixedErrorForFile path error model =
     let
         errorsForFile : List Reporter.Error
         errorsForFile =
-            fromReviewError error
+            fromReviewError model.links error
                 :: (Dict.get path model.fixAllErrors
                         |> Maybe.withDefault []
                    )
@@ -906,9 +902,10 @@ groupErrorsByFile project errors =
         |> List.filter (\file -> not (List.isEmpty file.errors))
 
 
-fromReviewError : Rule.ReviewError -> Reporter.Error
-fromReviewError error =
+fromReviewError : Dict String String -> Rule.ReviewError -> Reporter.Error
+fromReviewError links error =
     { ruleName = Rule.errorRuleName error
+    , ruleLink = linkToRule links error
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
@@ -928,18 +925,23 @@ encodeReport texts =
 
 
 encodeReportPart : Reporter.TextContent -> Encode.Value
-encodeReportPart { str, color } =
-    case color of
-        Just ( red, green, blue ) ->
-            Encode.object
-                [ ( "str", Encode.string str )
-                , ( "color"
-                  , Encode.list Encode.int [ red, green, blue ]
-                  )
-                ]
+encodeReportPart { str, color, href } =
+    if color == Nothing && href == Nothing then
+        Encode.string str
 
-        Nothing ->
-            Encode.string str
+    else
+        [ Just ( "str", Encode.string str )
+        , Maybe.map
+            (\( red, green, blue ) ->
+                [ red, green, blue ]
+                    |> Encode.list Encode.int
+                    |> Tuple.pair "color"
+            )
+            color
+        , Maybe.map (Encode.string >> Tuple.pair "href") href
+        ]
+            |> List.filterMap identity
+            |> Encode.object
 
 
 

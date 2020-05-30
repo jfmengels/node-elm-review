@@ -2,6 +2,7 @@ module Elm.Review.Text exposing
     ( Text, TextContent
     , from
     , inBlue, inRed, inYellow, inGreen
+    , withLink
     , join, simplify
     , toRecord
     )
@@ -30,6 +31,7 @@ module Elm.Review.Text exposing
 # Modifiers
 
 @docs inBlue, inRed, inYellow, inGreen
+@docs withLink
 
 
 # Working with lists
@@ -55,6 +57,7 @@ type Text
 type alias TextContent =
     { str : String
     , color : Maybe ( Int, Int, Int )
+    , href : Maybe String
     }
 
 
@@ -69,6 +72,7 @@ from value =
     Text
         { str = value
         , color = Nothing
+        , href = Nothing
         }
 
 
@@ -94,6 +98,11 @@ inYellow (Text text) =
 inGreen : Text -> Text
 inGreen (Text text) =
     Text { text | color = Just ( 0, 128, 0 ) }
+
+
+withLink : Maybe String -> Text -> Text
+withLink maybeLink (Text text) =
+    Text { text | href = maybeLink }
 
 
 
@@ -124,8 +133,13 @@ simplifyHelp previousTexts lastText chunks =
             Text lastText :: previousTexts
 
         (Text newLastText) :: restOfChunks ->
-            if lastText.color == newLastText.color then
-                simplifyHelp previousTexts { str = lastText.str ++ newLastText.str, color = lastText.color } restOfChunks
+            if lastText.color == newLastText.color && lastText.href == newLastText.href then
+                simplifyHelp previousTexts
+                    { str = lastText.str ++ newLastText.str
+                    , color = lastText.color
+                    , href = lastText.href
+                    }
+                    restOfChunks
 
             else
                 simplifyHelp (Text lastText :: previousTexts) newLastText restOfChunks

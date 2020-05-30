@@ -72,6 +72,7 @@ singleErrorTest =
 a = Debug.log "debug" 1"""
               , errors =
                     [ { ruleName = "NoDebug"
+                      , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                       , message = "Do not use Debug"
                       , details =
                             [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
@@ -141,6 +142,7 @@ a = Debug.log "debug" 1
 b = foo <| Debug.log "other debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                           , message = "Do not use Debug"
                           , details = details
                           , range =
@@ -150,6 +152,7 @@ b = foo <| Debug.log "other debug" 1"""
                           , hasFix = False
                           }
                         , { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                           , message = "Do not use Debug"
                           , details = details
                           , range =
@@ -231,6 +234,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                           , message = "Do not use Debug"
                           , details =
                                 [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
@@ -249,6 +253,7 @@ a = Debug.log "debug" 1"""
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                           , message = "Do not use Debug"
                           , details =
                                 [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
@@ -267,6 +272,7 @@ a = Debug.log "debug" 1"""
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                           , message = "Do not use Debug"
                           , details =
                                 [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
@@ -396,6 +402,7 @@ fixAvailableTest =
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                           , message = "Do not use Debug"
                           , details =
                                 [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."

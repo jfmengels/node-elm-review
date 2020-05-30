@@ -14,6 +14,7 @@ suite =
                     error : Error
                     error =
                         { ruleName = "NoDebug"
+                        , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
                         , message = "Do not use Debug"
                         , details =
                             [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
@@ -95,7 +96,8 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                 let
                     error : Error
                     error =
-                        { ruleName = "SomeRuleName"
+                        { ruleName = "Some.Rule.Name"
+                        , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/Some-Rule-Name"
                         , message = "Some message"
                         , details = [ "Some details" ]
                         , range =
@@ -131,7 +133,7 @@ b =
                         { withoutColors =
                             """-- ELM-REVIEW ERROR ------------------------------------------ src/Some/File.elm
 
-SomeRuleName: Some message
+Some.Rule.Name: Some message
 
 1| module Some.File exposing (a)
 2| a =
@@ -152,7 +154,7 @@ I think I can fix this. Here is my proposal:
                         , withColors =
                             """[-- ELM-REVIEW ERROR ------------------------------------------ src/Some/File.elm](51-187-200)
 
-[SomeRuleName](255-0-0): Some message
+[Some.Rule.Name](255-0-0): Some message
 
 1| module Some.File exposing (a)
 2| a =
