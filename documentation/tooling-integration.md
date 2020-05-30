@@ -46,6 +46,7 @@ If the process ran without any hitches, you should get something like the follow
       "errors": [
         {
           "rule": "NoUnused.Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.0/NoUnused-Variables",
           "message": "Top-level variable `fjoziejf` is not used",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
@@ -115,13 +116,21 @@ If the process ran without any hitches, you should get something like the follow
   - `path`: The relative path to the file for which the (sibling) errors are reported.
   - `errors`: The array of errors that `elm-review` found for this file. The following describe each item in the array.
     - `rule`: The name of the rule that reported this error.
+    - `ruleLink` (optional): **(Since 2.1.2)** The link to the rule's documentation on the Elm package website, if the rule is not a local one.
     - `message`: A short description of the error. If you show a summary of the errors, this is what you will want to show, along with `rule`.
     - `details`: A longer description, providing more details about the error and often a description of how to resolve it. Every string in this array of strings corresponds to a paragraph.
     - `region`: The region in which this error occurred. The `line` and `column` values start from `1`, not `0`.
     - `fix` (optional): A list of fixes/edits to automatically solve the errors. Each "edit" describes a range (1-based) in the source code to replace, and what to replace it by. If `str` is empty, it means we are removing code, if the `start` and `end` are the same, we are inserting code, otherwise we are modifying code.
     In the CLI, these are applied one-by-one, starting from the ones that are near the end of the file. When applying them, the CLI makes sure that there are no overlapping ranges and that the fix results in an Elm file without syntax errors. These are all steps that you need to do yourself at the moment.
     (Proposal to be discussed: maybe the CLI can be spawned with this fix data and apply its own algorithm, to avoid you having to do all this work?)
-    - `formatted`: An array of strings and objects that represent the full human-readable error that would be shown to the user. The simple strings have no special formatting, and the objects have a `color` of the form `[<0-255>, <0-255>, <0-255>]`. In future releases, more formatting options like `bold` could be added, but they are not here at this moment.
+    - `formatted`: An array of strings and/or objects that represent the full human-readable error that would be shown to the user. The simple strings have no special formatting, and the objects have several optional fields:
+      - `str`: The string to display
+      - `color` (optional): Represents the f the form `[<0-255>, <0-255>, <0-255>]`
+      - `href` (optional): A URL link
+
+      That is it at the moment, but maybe fields like `bold` will appear later. If you fail to understand/decode the field, it is probably best to ignore it and just display the string without styling.
+
+
 
 
 ### CLI errors
