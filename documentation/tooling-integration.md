@@ -3,6 +3,10 @@
 This is information dedicated to people who want to use the `elm-review` CLI in a different
 environment than a user's terminal, like editors or GitHub actions.
 
+## The name
+
+The name of the project is `elm-review`, not Elm Review.
+
 ## Things I expect you to do
 
 ### Namespacing
