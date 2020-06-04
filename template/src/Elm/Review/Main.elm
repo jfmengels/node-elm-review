@@ -66,6 +66,9 @@ port fixConfirmationStatus : Bool -> Cmd msg
 port abort : String -> Cmd msg
 
 
+port abortWithDetails : { title : String, message : String } -> Cmd msg
+
+
 
 -- PROGRAM
 
@@ -95,6 +98,7 @@ type alias Model =
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
     , errorsHaveBeenFixedPreviously : Bool
+    , ignoreProblematicDependencies : Bool
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
@@ -126,13 +130,13 @@ type ReportMode
 init : Flags -> ( Model, Cmd msg )
 init flags =
     let
-        ( { fixMode, reportMode }, cmd ) =
+        ( { fixMode, reportMode, ignoreProblematicDependencies }, cmd ) =
             case Decode.decodeValue decodeFlags flags of
                 Ok decodedFlags ->
                     ( decodedFlags, Cmd.none )
 
                 Err _ ->
-                    ( { fixMode = Mode_DontFix, reportMode = HumanReadable }
+                    ( { fixMode = Mode_DontFix, reportMode = HumanReadable, ignoreProblematicDependencies = False }
                     , abort <| "Problem decoding the flags when running the elm-review runner."
                     )
     in
@@ -147,16 +151,25 @@ init flags =
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
       , fixAllErrors = Dict.empty
+      , ignoreProblematicDependencies = ignoreProblematicDependencies
       }
     , cmd
     )
 
 
-decodeFlags : Decode.Decoder { fixMode : FixMode, reportMode : ReportMode }
+type alias DecodedFlags =
+    { fixMode : FixMode
+    , reportMode : ReportMode
+    , ignoreProblematicDependencies : Bool
+    }
+
+
+decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.map2 (\fixMode reportMode -> { fixMode = fixMode, reportMode = reportMode })
+    Decode.map3 DecodedFlags
         (Decode.field "fixMode" decodeFix)
         (Decode.field "report" decodeReportMode)
+        (Decode.field "ignoreProblematicDependencies" Decode.bool)
 
 
 decodeFix : Decode.Decoder FixMode
@@ -303,13 +316,47 @@ update msg model =
                         (Decode.field "name" Decode.string)
                         (Decode.field "elmJson" Elm.Project.decoder)
                         (Decode.field "docsJson" <| Decode.list Elm.Docs.decoder)
+
+                dependenciesDecoder : Decode.Decoder (List Dependency)
+                dependenciesDecoder =
+                    if model.ignoreProblematicDependencies then
+                        Decode.list
+                            (Decode.oneOf
+                                [ Decode.map Just dependencyDecoder
+                                , Decode.succeed Nothing
+                                ]
+                            )
+                            |> Decode.map (List.filterMap identity)
+
+                    else
+                        Decode.list dependencyDecoder
             in
-            case Decode.decodeValue (Decode.list dependencyDecoder) json of
+            case Decode.decodeValue dependenciesDecoder json of
                 Err decodeError ->
                     ( model
-                    , abort <|
-                        "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
-                            ++ Decode.errorToString decodeError
+                    , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
+                        abortWithDetails
+                            { title = "FOUND PROBLEMATIC DEPENDENCIES"
+                            , message =
+                                """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
+
+    elm-review --ignore-problematic-dependencies
+
+This will ignore the problematic dependencies, and can GIVE YOU INCORRECT RESULTS! This is a temporary measure.
+
+If I am mistaken about the nature of problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
+
+"""
+                                    ++ Decode.errorToString decodeError
+                            }
+
+                      else
+                        abortWithDetails
+                            { title = "PROBLEM READING DEPENDENCIES"
+                            , message =
+                                "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
+                                    ++ Decode.errorToString decodeError
+                            }
                     )
 
                 Ok dependencies ->
@@ -961,3 +1008,12 @@ subscriptions =
         , userConfirmedFix UserConfirmedFix
         , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
         ]
+
+
+
+-- UTILS
+
+
+ansiCyan : String -> String
+ansiCyan text =
+    String.join "" [ "\u{001B}[36m", text, "\u{001B}[39m" ]
