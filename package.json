@@ -47,6 +47,7 @@
     "space": 2,
     "prettier": true,
     "rules": {
+      "max-params": "off",
       "promise/prefer-await-to-then": "off",
       "unicorn/no-fn-reference-in-iterator": "off"
     }
