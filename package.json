@@ -26,7 +26,7 @@
     "vendor/",
     "template/src/**/*.elm",
     "template/elm.json",
-    "DefaultReviewConfig.elm"
+    "review-config-templates/"
   ],
   "keywords": [
     "elm",
@@ -35,7 +35,8 @@
     "lint",
     "linter",
     "check",
-    "cli"
+    "cli",
+    "AST"
   ],
   "author": "Jeroen Engels",
   "license": "BSD-3-Clause",

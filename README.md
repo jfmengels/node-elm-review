@@ -20,9 +20,11 @@ npm install -g elm-review
 ## Usage
 
 ```bash
-elm-review --help  # Print the help
-elm-review init    # Create an empty review configuration
-elm-review         # Review your project
+elm-review --help       # Print the help
+elm-review              # Review your project
+elm-review init         # Create an empty review configuration
+elm-review new-package  # Create a new project containing elm-review rules
+                        # aimed at being published on the Elm package registry
 ```
 
 ## Configuration
