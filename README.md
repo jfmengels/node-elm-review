@@ -25,6 +25,8 @@ elm-review              # Review your project
 elm-review init         # Create an empty review configuration
 elm-review new-package  # Create a new project containing elm-review rules
                         # aimed at being published on the Elm package registry
+elm-review new-rule     # Create an empty new rule to get started.
+                        # Very helpful for projects created with new-package
 ```
 
 ## Configuration
