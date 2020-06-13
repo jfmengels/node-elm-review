@@ -114,13 +114,13 @@ formatReport errorsHaveBeenFixedPreviously files =
             totalNumberOfErrors files
     in
     if errorsHaveBeenFixedPreviously && numberOfErrors == 0 then
-        "I found no more problems while reviewing!\n"
+        "I found no more problems while reviewing!"
             |> Text.from
             |> Text.toRecord
             |> List.singleton
 
     else if numberOfErrors == 0 then
-        "I found no problems while reviewing!\n"
+        "I found no problems while reviewing!"
             |> Text.from
             |> Text.toRecord
             |> List.singleton
@@ -136,7 +136,6 @@ formatReport errorsHaveBeenFixedPreviously files =
             , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
                 |> Text.from
                 |> Text.inBlue
-            , Text.from "\n"
             ]
 
           else
