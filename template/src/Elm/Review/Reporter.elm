@@ -112,6 +112,12 @@ formatReport errorsHaveBeenFixedPreviously files =
         numberOfErrors : Int
         numberOfErrors =
             totalNumberOfErrors files
+
+        filesWithErrors : List FileWithError
+        filesWithErrors =
+            files
+                |> List.filter (.errors >> List.isEmpty >> not)
+                |> List.sortBy (.path >> filePath)
     in
     if errorsHaveBeenFixedPreviously && numberOfErrors == 0 then
         "I found no more problems while reviewing!"
@@ -126,24 +132,39 @@ formatReport errorsHaveBeenFixedPreviously files =
             |> List.singleton
 
     else
-        [ files
-            |> List.filter (.errors >> List.isEmpty >> not)
-            |> List.sortBy (.path >> filePath)
-            |> formatReports
+        [ formatReports filesWithErrors
         , [ Text.from "\n" ]
         , if hasFixableErrors files then
-            [ Text.from "\n\n"
+            [ Text.from "\n"
             , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
                 |> Text.from
                 |> Text.inBlue
+            , Text.from "\n"
             ]
 
           else
             []
+        , [ Text.from "\nI found "
+          , pluralize numberOfErrors "error" |> Text.from |> Text.inRed
+          , Text.from " in "
+          , pluralize (List.length filesWithErrors) "file" |> Text.from |> Text.inYellow
+          , Text.from "."
+          ]
         ]
             |> List.concat
             |> Text.simplify
             |> List.map Text.toRecord
+
+
+pluralize : Int -> String -> String
+pluralize n word =
+    (String.fromInt n ++ " " ++ word)
+        ++ (if n > 1 then
+                "s"
+
+            else
+                ""
+           )
 
 
 formatReportForFileWithExtract : Mode -> FileWithError -> List Text
