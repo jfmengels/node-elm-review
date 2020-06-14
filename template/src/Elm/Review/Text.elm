@@ -112,7 +112,7 @@ withLink maybeLink (Text text) =
 join : String -> List (List Text) -> List Text
 join sep chunks =
     List.intersperse [ from sep ] chunks
-        |> List.concatMap identity
+        |> List.concat
 
 
 simplify : List Text -> List Text

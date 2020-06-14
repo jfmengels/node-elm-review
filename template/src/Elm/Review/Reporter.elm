@@ -213,13 +213,13 @@ formatErrorWithExtract mode source error =
             List.map Text.from error.details
                 |> List.intersperse (Text.from "\n\n")
     in
-    [ formatErrorTitle mode error
-    , codeExtract_
-    , details_
-    ]
-        |> List.filter (List.isEmpty >> not)
-        |> List.intersperse [ Text.from "\n\n" ]
-        |> List.concat
+    List.concat
+        [ formatErrorTitle mode error
+        , [ Text.from "\n\n" ]
+        , codeExtract_
+        , [ Text.from "\n" ]
+        , details_
+        ]
 
 
 formatErrorTitle : Mode -> Error -> List Text
