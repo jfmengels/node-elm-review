@@ -175,29 +175,33 @@ pluralize n word =
 
 formatReportForFileWithExtract : DetailsMode -> Mode -> FileWithError -> List Text
 formatReportForFileWithExtract detailsMode mode file =
-    let
-        formattedErrors : List (List Text)
-        formattedErrors =
-            file.errors
-                |> List.sortWith compareErrorPositions
-                |> List.map (formatErrorWithExtract detailsMode mode file.source)
-
-        prefix : String
-        prefix =
-            "-- ELM-REVIEW ERROR "
-
-        header : Text
-        header =
-            (prefix ++ String.padLeft (80 - String.length prefix) '-' (" " ++ filePath file.path))
-                |> Text.from
-                |> Text.inBlue
-    in
-    header :: Text.from "\n\n" :: Text.join errorSeparator formattedErrors
+    file.errors
+        |> List.sortWith compareErrorPositions
+        |> List.indexedMap
+            (\index error ->
+                Text.join "\n\n"
+                    [ [ header (index == 0) file.path ]
+                    , formatErrorWithExtract detailsMode mode file.source error
+                    ]
+            )
+        |> Text.join "\n\n"
 
 
-errorSeparator : String
-errorSeparator =
-    "\n\n" ++ String.repeat 80 "─" ++ "\n\n"
+firstErrorPrefix : String
+firstErrorPrefix =
+    "-- ELM-REVIEW ERROR -"
+
+
+header : Bool -> FilePath -> Text
+header isFirstError (FilePath filePath_) =
+    if isFirstError then
+        (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' (" " ++ filePath_))
+            |> Text.from
+            |> Text.inBlue
+
+    else
+        ("────" ++ String.padLeft 76 '─' (" " ++ filePath_))
+            |> Text.from
 
 
 formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
@@ -237,8 +241,8 @@ formatErrorWithExtract detailsMode mode source error =
 formatErrorTitle : Mode -> Error -> List Text
 formatErrorTitle mode error =
     let
-        fixIcon : Text
-        fixIcon =
+        fixPrefix : Text
+        fixPrefix =
             case mode of
                 Reviewing ->
                     if error.hasFix then
@@ -252,7 +256,7 @@ formatErrorTitle mode error =
                 Fixing ->
                     Text.from ""
     in
-    [ fixIcon
+    [ fixPrefix
     , Text.from error.ruleName
         |> Text.inRed
         |> Text.withLink error.ruleLink
@@ -526,8 +530,8 @@ formatFixProposals changedFiles =
         headerText =
             "-- ELM-REVIEW FIX-ALL PROPOSAL "
 
-        header : Text
-        header =
+        fixAllHeader : Text
+        fixAllHeader =
             headerText
                 |> String.padRight 80 '-'
                 |> Text.from
@@ -546,7 +550,7 @@ formatFixProposals changedFiles =
 
         body : List Text
         body =
-            [ [ header ]
+            [ [ fixAllHeader ]
             , filesListing
             , [ Text.from "Here is how the code would change if you applied each fix." ]
             , formatFileDiffs changedFiles
