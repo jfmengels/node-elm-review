@@ -479,7 +479,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-Errors marked with (fix) can be fixed automatically by running `elm-review --fix`.
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
 
 I found 1 error in 1 file."""
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
@@ -494,7 +494,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-[Errors marked with (fix) can be fixed automatically by running `elm-review --fix`.](51-187-200)
+[Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](51-187-200)
 
 I found [1 error](255-0-0) in [1 file](255-255-0)."""
                         }

@@ -141,7 +141,7 @@ formatReport detailsMode errorsHaveBeenFixedPreviously files =
             |> Just
         , if hasFixableErrors files then
             Just
-                [ "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
+                [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
                     |> Text.from
                     |> Text.inBlue
                 ]
