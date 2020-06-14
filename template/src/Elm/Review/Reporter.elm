@@ -1,6 +1,6 @@
 module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
-    , Mode(..), formatReport, formatIndividualError
+    , Mode(..), DetailsMode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
     )
 
@@ -14,7 +14,7 @@ module Elm.Review.Reporter exposing
 
 # Report
 
-@docs Mode, formatReport, formatIndividualError
+@docs Mode, DetailsMode, formatReport, formatIndividualError
 
 
 # Fix
@@ -104,10 +104,15 @@ type Mode
     | Fixing
 
 
+type DetailsMode
+    = WithDetails
+    | WithoutDetails
+
+
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Bool -> List FileWithError -> List TextContent
-formatReport errorsHaveBeenFixedPreviously files =
+formatReport : DetailsMode -> Bool -> List FileWithError -> List TextContent
+formatReport detailsMode errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -132,26 +137,27 @@ formatReport errorsHaveBeenFixedPreviously files =
             |> List.singleton
 
     else
-        [ formatReports filesWithErrors
-        , [ Text.from "\n" ]
+        [ formatReports detailsMode filesWithErrors
+            |> Just
         , if hasFixableErrors files then
-            [ Text.from "\n"
-            , "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
-                |> Text.from
-                |> Text.inBlue
-            , Text.from "\n"
-            ]
+            Just
+                [ "Errors marked with (fix) can be fixed automatically by running `elm-review --fix`."
+                    |> Text.from
+                    |> Text.inBlue
+                ]
 
           else
-            []
-        , [ Text.from "\nI found "
+            Nothing
+        , [ Text.from "I found "
           , pluralize numberOfErrors "error" |> Text.from |> Text.inRed
           , Text.from " in "
           , pluralize (List.length filesWithErrors) "file" |> Text.from |> Text.inYellow
           , Text.from "."
           ]
+            |> Just
         ]
-            |> List.concat
+            |> List.filterMap identity
+            |> Text.join "\n\n"
             |> Text.simplify
             |> List.map Text.toRecord
 
@@ -167,14 +173,14 @@ pluralize n word =
            )
 
 
-formatReportForFileWithExtract : Mode -> FileWithError -> List Text
-formatReportForFileWithExtract mode file =
+formatReportForFileWithExtract : DetailsMode -> Mode -> FileWithError -> List Text
+formatReportForFileWithExtract detailsMode mode file =
     let
         formattedErrors : List (List Text)
         formattedErrors =
             file.errors
                 |> List.sortWith compareErrorPositions
-                |> List.map (formatErrorWithExtract mode file.source)
+                |> List.map (formatErrorWithExtract detailsMode mode file.source)
 
         prefix : String
         prefix =
@@ -194,15 +200,15 @@ errorSeparator =
     "\n\n" ++ String.repeat 80 "─" ++ "\n\n"
 
 
-formatIndividualError : Source -> Error -> List TextContent
-formatIndividualError source error =
-    formatErrorWithExtract Reviewing source error
+formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
+formatIndividualError detailsMode source error =
+    formatErrorWithExtract detailsMode Reviewing source error
         |> Text.simplify
         |> List.map Text.toRecord
 
 
-formatErrorWithExtract : Mode -> Source -> Error -> List Text
-formatErrorWithExtract mode source error =
+formatErrorWithExtract : DetailsMode -> Mode -> Source -> Error -> List Text
+formatErrorWithExtract detailsMode mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -210,14 +216,20 @@ formatErrorWithExtract mode source error =
 
         details_ : List Text
         details_ =
-            List.map Text.from error.details
-                |> List.intersperse (Text.from "\n\n")
+            case detailsMode of
+                WithDetails ->
+                    Text.from "\n\n"
+                        :: (List.map Text.from error.details
+                                |> List.intersperse (Text.from "\n\n")
+                           )
+
+                WithoutDetails ->
+                    []
     in
     List.concat
         [ formatErrorTitle mode error
         , [ Text.from "\n\n" ]
         , codeExtract_
-        , [ Text.from "\n" ]
         , details_
         ]
 
@@ -301,6 +313,14 @@ codeExtract source =
         getRowAtLine_ : Int -> Int -> String
         getRowAtLine_ =
             getRowAtLine source
+
+        rowEmpty : String -> List Text
+        rowEmpty line =
+            if String.isEmpty line then
+                []
+
+            else
+                [ Text.from line ]
     in
     \{ start, end } ->
         let
@@ -312,13 +332,13 @@ codeExtract source =
             []
 
         else if start.row == end.row then
-            List.concat
-                [ [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 2)
-                  , Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 1)
-                  ]
-                , underlineError (start.row - 1) { start = start.column, end = end.column }
-                , [ Text.from <| getRowAtLine_ maxLineNumberLength end.row ]
-                ]
+            [ rowEmpty <| getRowAtLine_ maxLineNumberLength (start.row - 2)
+            , [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 1) ]
+            , underlineError (start.row - 1) { start = start.column, end = end.column }
+            , rowEmpty <| getRowAtLine_ maxLineNumberLength end.row
+            ]
+                |> List.filter (\line -> not (List.isEmpty line))
+                |> Text.join "\n"
 
         else
             let
@@ -335,10 +355,9 @@ codeExtract source =
                 endLine =
                     getRowAtLine_ maxLineNumberLength (end.row - 1)
             in
-            List.concat
-                [ [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 2)
-                  , Text.from <| startLine
-                  ]
+            Text.join "\n"
+                [ [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 2) ]
+                , [ Text.from <| startLine ]
                 , underlineError
                     (start.row - 1)
                     { start = start.column
@@ -355,7 +374,7 @@ codeExtract source =
                                     , end = String.length line - offsetBecauseOfLineNumber lineNumber
                                     }
                         )
-                , [ Text.from <| endLine ]
+                , [ Text.from endLine ]
                 , underlineError
                     (end.row - 1)
                     { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber (end.row - 1)) endLine
@@ -387,7 +406,7 @@ getRowAtLine (Source source) =
         case Array.get rowIndex lines of
             Just line ->
                 if String.trim line /= "" then
-                    lineNumberPrefix maxLineNumberLength rowIndex ++ (line ++ "\n")
+                    lineNumberPrefix maxLineNumberLength rowIndex ++ line
 
                 else
                     ""
@@ -418,7 +437,6 @@ underlineError lineNumber { start, end } =
     , String.repeat (end - start) "^"
         |> Text.from
         |> Text.inRed
-    , Text.from "\n"
     ]
 
 
@@ -442,20 +460,20 @@ hasFixableErrors files =
     List.any (.errors >> List.any .hasFix) files
 
 
-formatReports : List FileWithError -> List Text
-formatReports files =
+formatReports : DetailsMode -> List FileWithError -> List Text
+formatReports detailsMode files =
     case files of
         [] ->
             []
 
         [ file ] ->
-            formatReportForFileWithExtract Reviewing file
+            formatReportForFileWithExtract detailsMode Reviewing file
 
         firstFile :: secondFile :: restOfFiles ->
             List.concat
-                [ formatReportForFileWithExtract Reviewing firstFile
+                [ formatReportForFileWithExtract detailsMode Reviewing firstFile
                 , fileSeparator firstFile.path secondFile.path
-                , formatReports (secondFile :: restOfFiles)
+                , formatReports detailsMode (secondFile :: restOfFiles)
                 ]
 
 
@@ -478,11 +496,11 @@ fileSeparator (FilePath pathAbove) (FilePath pathBelow) =
 
 {-| Reports a fix proposal for a single errorin a nice human-readable way.
 -}
-formatFixProposal : File -> Error -> Source -> List TextContent
-formatFixProposal file error fixedSource =
+formatFixProposal : DetailsMode -> File -> Error -> Source -> List TextContent
+formatFixProposal detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
-            [ formatReportForFileWithExtract
+            [ formatReportForFileWithExtract detailsMode
                 Fixing
                 { path = file.path
                 , source = file.source

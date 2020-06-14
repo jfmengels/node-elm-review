@@ -95,6 +95,7 @@ type alias Model =
     , project : Project
     , links : Dict String String
     , fixMode : FixMode
+    , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
     , errorsHaveBeenFixedPreviously : Bool
@@ -130,13 +131,17 @@ type ReportMode
 init : Flags -> ( Model, Cmd msg )
 init flags =
     let
-        ( { fixMode, reportMode, ignoreProblematicDependencies }, cmd ) =
+        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies }, cmd ) =
             case Decode.decodeValue decodeFlags flags of
                 Ok decodedFlags ->
                     ( decodedFlags, Cmd.none )
 
-                Err _ ->
-                    ( { fixMode = Mode_DontFix, reportMode = HumanReadable, ignoreProblematicDependencies = False }
+                Err error ->
+                    ( { fixMode = Mode_DontFix
+                      , reportMode = HumanReadable
+                      , detailsMode = Reporter.WithoutDetails
+                      , ignoreProblematicDependencies = False
+                      }
                     , abort <| "Problem decoding the flags when running the elm-review runner."
                     )
     in
@@ -145,6 +150,7 @@ init flags =
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = fixMode
+      , detailsMode = detailsMode
       , reportMode = reportMode
       , reviewErrors = []
       , errorsHaveBeenFixedPreviously = False
@@ -159,6 +165,7 @@ init flags =
 
 type alias DecodedFlags =
     { fixMode : FixMode
+    , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
     }
@@ -166,8 +173,9 @@ type alias DecodedFlags =
 
 decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.map3 DecodedFlags
+    Decode.map4 DecodedFlags
         (Decode.field "fixMode" decodeFix)
+        (Decode.field "detailsMode" decodeDetailsMode)
         (Decode.field "report" decodeReportMode)
         (Decode.field "ignoreProblematicDependencies" Decode.bool)
 
@@ -189,6 +197,23 @@ decodeFix =
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
+            )
+
+
+decodeDetailsMode : Decode.Decoder Reporter.DetailsMode
+decodeDetailsMode =
+    Decode.string
+        |> Decode.andThen
+            (\detailsMode ->
+                case detailsMode of
+                    "with-details" ->
+                        Decode.succeed Reporter.WithDetails
+
+                    "without-details" ->
+                        Decode.succeed Reporter.WithoutDetails
+
+                    _ ->
+                        Decode.fail <| "I could not understand the following details mode: " ++ detailsMode
             )
 
 
@@ -582,11 +607,11 @@ makeReport model =
                             , errors = List.map (fromReviewError model.links) file.errors
                             }
                         )
-                    |> Reporter.formatReport model.errorsHaveBeenFixedPreviously
+                    |> Reporter.formatReport model.detailsMode model.errorsHaveBeenFixedPreviously
                     |> encodeReport
 
             Json ->
-                Encode.list (encodeErrorByFile model.links) errorsByFile
+                Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
         )
       ]
         |> Encode.object
@@ -594,20 +619,20 @@ makeReport model =
     )
 
 
-encodeErrorByFile : Dict String String -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
-encodeErrorByFile links file =
+encodeErrorByFile : Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
+encodeErrorByFile links detailsMode file =
     let
         (Reporter.FilePath path) =
             file.path
     in
     Encode.object
         [ ( "path", Encode.string path )
-        , ( "errors", Encode.list (encodeError links file.source) file.errors )
+        , ( "errors", Encode.list (encodeError links detailsMode file.source) file.errors )
         ]
 
 
-encodeError : Dict String String -> Reporter.Source -> Rule.ReviewError -> Encode.Value
-encodeError links source error =
+encodeError : Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
+encodeError links detailsMode source error =
     [ Just ( "message", Encode.string <| Rule.errorMessage error )
     , Just ( "rule", Encode.string <| Rule.errorRuleName error )
     , linkToRule links error
@@ -616,7 +641,7 @@ encodeError links source error =
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError source (fromReviewError links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError links error)) )
     ]
         |> List.filterMap identity
         |> Encode.object
@@ -663,6 +688,7 @@ fixOneByOne model =
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
+                    model.detailsMode
                     { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
                     (fromReviewError model.links error)
                     (Reporter.Source fixedSource)

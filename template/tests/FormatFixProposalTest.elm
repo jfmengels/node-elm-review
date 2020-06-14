@@ -45,7 +45,7 @@ other=lines
 other2=lines2
 """
                 in
-                Reporter.formatFixProposal file error fixedSource
+                Reporter.formatFixProposal Reporter.WithDetails file error fixedSource
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -126,7 +126,7 @@ b =
     a
 """
                 in
-                Reporter.formatFixProposal file error fixedSource
+                Reporter.formatFixProposal Reporter.WithDetails file error fixedSource
                     |> expect
                         { withoutColors =
                             """-- ELM-REVIEW ERROR ------------------------------------------ src/Some/File.elm

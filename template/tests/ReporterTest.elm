@@ -14,6 +14,7 @@ suite =
         , singleErrorTest
         , multipleErrorsTests
         , fixAvailableTest
+        , singleCompactErrorTest
         ]
 
 
@@ -32,7 +33,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport False
+                |> Reporter.formatReport Reporter.WithDetails False
                 |> expect
                     { withoutColors = "I found no problems while reviewing!"
                     , withColors = "I found no problems while reviewing!"
@@ -55,7 +56,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport True
+                |> Reporter.formatReport Reporter.WithDetails True
                 |> expect
                     { withoutColors = "I found no more problems while reviewing!"
                     , withColors = "I found no more problems while reviewing!"
@@ -92,7 +93,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport False
+                |> Reporter.formatReport Reporter.WithDetails False
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -118,6 +119,59 @@ I found 1 error in 1 file."""
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+I found [1 error](255-0-0) in [1 file](255-255-0)."""
+                    }
+        )
+
+
+singleCompactErrorTest : Test
+singleCompactErrorTest =
+    test "report a single error in a file in compact mode"
+        (\() ->
+            [ { path = Reporter.FilePath "src/FileA.elm"
+              , source = Reporter.Source """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+              , errors =
+                    [ { ruleName = "NoDebug"
+                      , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                      , message = "Do not use Debug"
+                      , details =
+                            [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                            , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                            ]
+                      , range =
+                            { start = { row = 2, column = 5 }
+                            , end = { row = 2, column = 10 }
+                            }
+                      , hasFix = False
+                      }
+                    ]
+              }
+            , { path = Reporter.FilePath "src/FileB.elm"
+              , source = Reporter.Source """module FileB exposing (a)
+a = Debug.log "debug" 1"""
+              , errors = []
+              }
+            ]
+                |> Reporter.formatReport Reporter.WithoutDetails False
+                |> expect
+                    { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
+
+NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+I found 1 error in 1 file."""
+                    , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
+
+[NoDebug](255-0-0): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](255-0-0)
 
 I found [1 error](255-0-0) in [1 file](255-255-0)."""
                     }
@@ -169,7 +223,7 @@ a = Debug.log "debug" 1"""
                   , errors = []
                   }
                 ]
-                    |> Reporter.formatReport False
+                    |> Reporter.formatReport Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -285,7 +339,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 ]
-                    |> Reporter.formatReport False
+                    |> Reporter.formatReport Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
@@ -411,7 +465,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 ]
-                    |> Reporter.formatReport False
+                    |> Reporter.formatReport Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
 
