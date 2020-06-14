@@ -142,7 +142,7 @@ init flags =
                       , detailsMode = Reporter.WithoutDetails
                       , ignoreProblematicDependencies = False
                       }
-                    , abort <| "Problem decoding the flags when running the elm-review runner."
+                    , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
     in
     ( { rules = config
