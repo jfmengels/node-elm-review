@@ -180,7 +180,7 @@ formatReportForFileWithExtract detailsMode mode file =
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
-                    [ [ header (index == 0) file.path ]
+                    [ [ header (index == 0) file.path error.range ]
                     , formatErrorWithExtract detailsMode mode file.source error
                     ]
             )
@@ -192,15 +192,20 @@ firstErrorPrefix =
     "-- ELM-REVIEW ERROR -"
 
 
-header : Bool -> FilePath -> Text
-header isFirstError (FilePath filePath_) =
+header : Bool -> FilePath -> Range -> Text
+header isFirstError (FilePath filePath_) range =
+    let
+        position : String
+        position =
+            " " ++ filePath_ ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
+    in
     if isFirstError then
-        (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' (" " ++ filePath_))
+        (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' position)
             |> Text.from
             |> Text.inBlue
 
     else
-        ("────" ++ String.padLeft 76 '─' (" " ++ filePath_))
+        ("────" ++ String.padLeft 76 '─' position)
             |> Text.from
 
 

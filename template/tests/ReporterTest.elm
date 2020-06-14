@@ -95,7 +95,7 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport Reporter.WithDetails False
                 |> expect
-                    { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
+                    { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
 NoDebug: Do not use Debug
 
@@ -108,7 +108,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found 1 error in 1 file."""
-                    , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
+                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -156,7 +156,7 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport Reporter.WithoutDetails False
                 |> expect
-                    { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
+                    { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
 NoDebug: Do not use Debug
 
@@ -165,7 +165,7 @@ NoDebug: Do not use Debug
        ^^^^^
 
 I found 1 error in 1 file."""
-                    , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
+                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -225,7 +225,7 @@ a = Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport Reporter.WithDetails False
                     |> expect
-                        { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
 NoDebug: Do not use Debug
 
@@ -238,7 +238,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-────────────────────────────────────────────────────────────────── src/FileA.elm
+───────────────────────────────────────────────────────────── src/FileA.elm:3:12
 
 NoDebug: Do not use Debug
 
@@ -251,7 +251,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found 2 errors in 1 file."""
-                        , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -264,7 +264,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-────────────────────────────────────────────────────────────────── src/FileA.elm
+───────────────────────────────────────────────────────────── src/FileA.elm:3:12
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -341,7 +341,7 @@ a = Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport Reporter.WithDetails False
                     |> expect
-                        { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
 NoDebug: Do not use Debug
 
@@ -358,7 +358,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
     ↓  src/FileB.elm
 
 
--- ELM-REVIEW ERROR ---------------------------------------------- src/FileB.elm
+-- ELM-REVIEW ERROR ------------------------------------------ src/FileB.elm:2:5
 
 NoDebug: Do not use Debug
 
@@ -375,7 +375,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
     ↓  src/FileC.elm
 
 
--- ELM-REVIEW ERROR ---------------------------------------------- src/FileC.elm
+-- ELM-REVIEW ERROR ------------------------------------------ src/FileC.elm:2:5
 
 NoDebug: Do not use Debug
 
@@ -388,7 +388,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found 3 errors in 3 files."""
-                        , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -405,7 +405,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
     ↓  src/FileB.elm](255-0-0)
 
 
-[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileB.elm](51-187-200)
+[-- ELM-REVIEW ERROR ------------------------------------------ src/FileB.elm:2:5](51-187-200)
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -422,7 +422,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
     ↓  src/FileC.elm](255-0-0)
 
 
-[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileC.elm](51-187-200)
+[-- ELM-REVIEW ERROR ------------------------------------------ src/FileC.elm:2:5](51-187-200)
 
 [NoDebug](255-0-0): Do not use Debug
 
@@ -467,7 +467,7 @@ a = Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport Reporter.WithDetails False
                     |> expect
-                        { withoutColors = """-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
 (fix) NoDebug: Do not use Debug
 
@@ -482,7 +482,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 Errors marked with (fix) can be fixed automatically by running `elm-review --fix`.
 
 I found 1 error in 1 file."""
-                        , withColors = """[-- ELM-REVIEW ERROR ---------------------------------------------- src/FileA.elm](51-187-200)
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
 
 [(fix) ](51-187-200)[NoDebug](255-0-0): Do not use Debug
 
