@@ -1,6 +1,6 @@
 {
   "name": "elm-review",
-  "version": "2.2.0-beta2",
+  "version": "2.2.0",
   "description": "Run elm-review from Node.js",
   "engines": {
     "node": ">=10.0.0"
