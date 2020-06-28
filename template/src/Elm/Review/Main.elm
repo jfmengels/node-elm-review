@@ -1034,12 +1034,3 @@ subscriptions =
         , userConfirmedFix UserConfirmedFix
         , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
         ]
-
-
-
--- UTILS
-
-
-ansiCyan : String -> String
-ansiCyan text =
-    String.join "" [ "\u{001B}[36m", text, "\u{001B}[39m" ]
