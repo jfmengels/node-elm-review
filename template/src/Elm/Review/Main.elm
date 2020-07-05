@@ -633,8 +633,8 @@ encodeErrorByFile links detailsMode file =
 
 encodeError : Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
 encodeError links detailsMode source error =
-    [ Just ( "message", Encode.string <| Rule.errorMessage error )
-    , Just ( "rule", Encode.string <| Rule.errorRuleName error )
+    [ Just ( "rule", Encode.string <| Rule.errorRuleName error )
+    , Just ( "message", Encode.string <| Rule.errorMessage error )
     , linkToRule links error
         |> Maybe.map (Encode.string >> Tuple.pair "ruleLink")
     , Just ( "details", Encode.list Encode.string <| Rule.errorDetails error )
