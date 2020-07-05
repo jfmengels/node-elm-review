@@ -56,7 +56,7 @@ type Text
 
 type alias TextContent =
     { str : String
-    , color : Maybe ( Int, Int, Int )
+    , color : Maybe String
     , href : Maybe String
     }
 
@@ -82,22 +82,22 @@ from value =
 
 inBlue : Text -> Text
 inBlue (Text text) =
-    Text { text | color = Just ( 51, 187, 200 ) }
+    Text { text | color = Just "#33BBC8" }
 
 
 inRed : Text -> Text
 inRed (Text text) =
-    Text { text | color = Just ( 255, 0, 0 ) }
+    Text { text | color = Just "#FF0000" }
 
 
 inYellow : Text -> Text
 inYellow (Text text) =
-    Text { text | color = Just ( 255, 255, 0 ) }
+    Text { text | color = Just "#FFFF00" }
 
 
 inGreen : Text -> Text
 inGreen (Text text) =
-    Text { text | color = Just ( 0, 128, 0 ) }
+    Text { text | color = Just "#008000" }
 
 
 withLink : Maybe String -> Text -> Text

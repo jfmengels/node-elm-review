@@ -91,38 +91,38 @@ Applied from the fixes for the following errors:
 3| b = someOther
 3| someOther=lines
 """
-                        , withColors = """[-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------](51-187-200)
+                        , withColors = """[-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------](#33BBC8)
 
 I found fixable errors for the following files:
-  [- src/FileA.elm](255-255-0)
-  [- src/FileB.elm](255-255-0)
+  [- src/FileA.elm](#FFFF00)
+  [- src/FileB.elm](#FFFF00)
 
 Here is how the code would change if you applied each fix.
 
-[------------------------------------------------------------------ src/FileA.elm](51-187-200)
+[------------------------------------------------------------------ src/FileA.elm](#33BBC8)
 
 Applied from the fixes for the following errors:
-  [NoDebug](255-0-0): Do not use Debug
+  [NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
-[2| a = Debug.log "debug" 1](255-0-0)
-[3| a = 1](0-128-0)
+[2| a = Debug.log "debug" 1](#FF0000)
+[3| a = 1](#008000)
 3| other=lines
 
 
                                                             [src/FileA.elm  ↑
 ====o======================================================================o====
-    ↓  src/FileB.elm](255-0-0)
+    ↓  src/FileB.elm](#FF0000)
 
 
-[------------------------------------------------------------------ src/FileB.elm](51-187-200)
+[------------------------------------------------------------------ src/FileB.elm](#33BBC8)
 
 Applied from the fixes for the following errors:
-  [NoDebug](255-0-0): Do not use Debug
+  [NoDebug](#FF0000): Do not use Debug
 
 1| module FileB exposing (b)
-[2| b = Debug.log "debug" someOther](255-0-0)
-[3| b = someOther](0-128-0)
+[2| b = Debug.log "debug" someOther](#FF0000)
+[3| b = someOther](#008000)
 3| someOther=lines
 """
                         }

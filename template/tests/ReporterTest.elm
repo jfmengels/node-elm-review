@@ -108,19 +108,19 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found 1 error in 1 file."""
-                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
+                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I found [1 error](255-0-0) in [1 file](255-255-0)."""
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                     }
         )
 
@@ -165,15 +165,15 @@ NoDebug: Do not use Debug
        ^^^^^
 
 I found 1 error in 1 file."""
-                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
+                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 
-I found [1 error](255-0-0) in [1 file](255-255-0)."""
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                     }
         )
 
@@ -251,13 +251,13 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found 2 errors in 1 file."""
-                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 3| b = foo <| Debug.log "other debug" 1
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
@@ -266,17 +266,17 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 ───────────────────────────────────────────────────────────── src/FileA.elm:3:12
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 2| a = Debug.log "debug" 1
 3| b = foo <| Debug.log "other debug" 1
-              [^^^^^](255-0-0)
+              [^^^^^](#FF0000)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I found [2 errors](255-0-0) in [1 file](255-255-0)."""
+I found [2 errors](#FF0000) in [1 file](#FFFF00)."""
                         }
             )
         , test "report errors in multiple files"
@@ -388,13 +388,13 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found 3 errors in 3 files."""
-                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
@@ -402,16 +402,16 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
                                                             [src/FileA.elm  ↑
 ====o======================================================================o====
-    ↓  src/FileB.elm](255-0-0)
+    ↓  src/FileB.elm](#FF0000)
 
 
-[-- ELM-REVIEW ERROR ------------------------------------------ src/FileB.elm:2:5](51-187-200)
+[-- ELM-REVIEW ERROR ------------------------------------------ src/FileB.elm:2:5](#33BBC8)
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileB exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
@@ -419,22 +419,22 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
                                                             [src/FileB.elm  ↑
 ====o======================================================================o====
-    ↓  src/FileC.elm](255-0-0)
+    ↓  src/FileC.elm](#FF0000)
 
 
-[-- ELM-REVIEW ERROR ------------------------------------------ src/FileC.elm:2:5](51-187-200)
+[-- ELM-REVIEW ERROR ------------------------------------------ src/FileC.elm:2:5](#33BBC8)
 
-[NoDebug](255-0-0): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileC exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I found [3 errors](255-0-0) in [3 files](255-255-0)."""
+I found [3 errors](#FF0000) in [3 files](#FFFF00)."""
                         }
             )
         ]
@@ -482,21 +482,21 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
 
 I found 1 error in 1 file."""
-                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](51-187-200)
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
-[(fix) ](51-187-200)[NoDebug](255-0-0): Do not use Debug
+[(fix) ](#33BBC8)[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-       [^^^^^](255-0-0)
+       [^^^^^](#FF0000)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-[Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](51-187-200)
+[Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 
-I found [1 error](255-0-0) in [1 file](255-255-0)."""
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                         }
             )
         ]

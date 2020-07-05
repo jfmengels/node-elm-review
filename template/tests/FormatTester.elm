@@ -24,7 +24,7 @@ Two assertions will be made:
                 formatFunction someInput
                     |> FormatTester.expect
                         { withoutColors = "some highlighted text with background and with both"
-                        , withColors = "some [highlighted](255-0-0) text with [background](bg-16-16-16) and with [both](255-255-255-bg-16-16-16)"
+                        , withColors = "some [highlighted](#FF0000) text with [background](bg-16-16-16) and with [both](255-255-255-bg-16-16-16)"
                         }
 
 -}
@@ -50,14 +50,9 @@ formatWithColors textList =
             (\{ str, color } ->
                 case color of
                     Just color_ ->
-                        "[" ++ str ++ "](" ++ colorToString color_ ++ ")"
+                        "[" ++ str ++ "](" ++ color_ ++ ")"
 
                     Nothing ->
                         str
             )
         |> String.join ""
-
-
-colorToString : ( Int, Int, Int ) -> String
-colorToString ( r, g, b ) =
-    String.fromInt r ++ "-" ++ String.fromInt g ++ "-" ++ String.fromInt b

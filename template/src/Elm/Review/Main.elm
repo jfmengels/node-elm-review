@@ -1017,13 +1017,7 @@ encodeReportPart { str, color, href } =
 
     else
         [ Just ( "str", Encode.string str )
-        , Maybe.map
-            (\( red, green, blue ) ->
-                [ red, green, blue ]
-                    |> Encode.list Encode.int
-                    |> Tuple.pair "color"
-            )
-            color
+        , Maybe.map (Encode.string >> Tuple.pair "color") color
         , Maybe.map (Encode.string >> Tuple.pair "href") href
         ]
             |> List.filterMap identity

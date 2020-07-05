@@ -46,34 +46,34 @@ If the process ran without any hitches, you should get something like the follow
   "type": "review-errors",
   "errors": [
     {
-      "path": "src/Review/Exceptions.elm",
+      "path": "src/Some/File.elm",
       "errors": [
         {
           "rule": "NoUnused.Variables",
           "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.0/NoUnused-Variables",
-          "message": "Top-level variable `fjoziejf` is not used",
+          "message": "Top-level variable `unusedVariable` is not used",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
           "region": {
             "start": {
-              "line": 19,
+              "line": 49,
               "column": 1
             },
             "end": {
-              "line": 19,
-              "column": 9
+              "line": 49,
+              "column": 15
             }
           },
           "fix": [
             {
               "range": {
                 "start": {
-                  "line": 19,
+                  "line": 49,
                   "column": 1
                 },
                 "end": {
-                  "line": 20,
+                  "line": 51,
                   "column": 1
                 }
               },
@@ -83,30 +83,18 @@ If the process ran without any hitches, you should get something like the follow
           "formatted": [
             {
               "str": "(fix) ",
-              "color": [
-                51,
-                187,
-                200
-              ]
+              "color": "#33BBC8"
             },
             {
               "str": "NoUnused.Variables",
-              "color": [
-                255,
-                0,
-                0
-              ]
+              "color": "#FF0000"
             },
-            ": Top-level variable `fjoziejf` is not used\n\n19| fjoziejf=1\n    ",
+            ": Top-level variable `unusedVariable` is not used\n\n49| unusedVariable =\n    ",
             {
-              "str": "^^^^^^^^",
-              "color": [
-                255,
-                0,
-                0
-              ]
+              "str": "^^^^^^^^^^^^^^",
+              "color": "#FF0000"
             },
-            "\n20| type Exceptions\n\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
+            "\n50|      1\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
           ]
         }
       ]
@@ -127,14 +115,18 @@ If the process ran without any hitches, you should get something like the follow
     - `fix` (optional): A list of fixes/edits to automatically solve the errors. Each "edit" describes a range (1-based) in the source code to replace, and what to replace it by. If `str` is empty, it means we are removing code, if the `start` and `end` are the same, we are inserting code, otherwise we are modifying code.
     In the CLI, these are applied one-by-one, starting from the ones that are near the end of the file. When applying them, the CLI makes sure that there are no overlapping ranges and that the fix results in an Elm file without syntax errors. These are all steps that you need to do yourself at the moment.
     (Proposal to be discussed: maybe the CLI can be spawned with this fix data and apply its own algorithm, to avoid you having to do all this work?)
-    - `formatted`: An array of strings and/or objects that represent the full human-readable error that would be shown to the user. The simple strings have no special formatting, and the objects have several optional fields:
-      - `str`: The string to display
-      - `color` (optional): Represents the f the form `[<0-255>, <0-255>, <0-255>]`
-      - `href` (optional): A URL link
-
-      That is it at the moment, but maybe fields like `bold` will appear later. If you fail to understand/decode the field, it is probably best to ignore it and just display the string without styling.
+    - `formatted`: An array of "chunks" that represent the full human-readable error that would be shown to the user. Chunks are described [below](#chunk).
 
 
+#### Chunk
+
+A chunk represents a (un)stylized piece of the full human-readable error that would be shown to the user. It can be either a simple string, in which case there is no special formatting, or it can be an object with several optional fields::
+  - `str`: The string to display
+  - `color` (optional): Represents the color of the string, as a hex color string (`#33BBC8"`) or as a named color (`red`, `yellow`).
+  - `href` (optional): A URL link
+
+
+That is it at the moment, but  fields like `bold` will appear later. If you fail to understand/decode the field, it is probably best to ignore it and just display the string without styling and to report an issue.
 
 
 ### CLI errors
@@ -155,7 +147,7 @@ In that case, we (should) still report errors as JSON, with the following format
 - `type`: Equal to `"error"` when things are unexpected
 - `path`: The relative path to a file we could trace the problem to, or to a default one. This is in a lot of cases using a default value, because we are not able to pinpoint to a specific file. Also the default file might not exist, which may be the cause of the error.
 - `message`: The helpful description of the problem. This is meant for humans to read, but colors have been removed and it has been trimmed. You may wish to remove the line-breaks maybe? In the future, it may become an array like the `formatted` message for review errors.
-- `stack`: The original JavaScript runtime stacktrace. Only sent if you run with `--debug`.
+- `stack` (optional): The original JavaScript runtime stacktrace. Only sent if you run with `--debug`.
 
 ## Things that may help you
 
