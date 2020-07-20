@@ -22,7 +22,7 @@ function runCommandAndCompareTo {
     fi
 }
 
-function record {
+function runAndRecord {
     args=$1
     file=$2
     $cmd $args > "$file"
@@ -31,11 +31,19 @@ function record {
 if [ "$1" == "record" ]
 then
   cd project-with-errors
-  record "" "test-result-snapshot.txt"
+  rm -r elm-stuff
+  runAndRecord "" "regular-run-snapshot.txt"
+  runAndRecord "--report=json" "json-report-snapshot.txt"
+  runAndRecord "--debug" "debug-mode-snapshot.txt"
+  runAndRecord "--debug" "debug-mode-second-run-snapshot.txt"
   exit 0
 else
-  echo -e '\e[33m-- Testing the run\e[0m\n'
+  echo -e '\e[33m-- Testing runs\e[0m\n'
   cd project-with-errors
-  runCommandAndCompareTo "Regular run" "" "test-result-snapshot.txt"
+  rm -r elm-stuff
+  runCommandAndCompareTo "Regular run" "" "regular-run-snapshot.txt"
+  runCommandAndCompareTo "With JSON report" "--report=json" "json-report-snapshot.txt"
+  runCommandAndCompareTo "With debug mode" "--debug" "debug-mode-snapshot.txt"
+  runCommandAndCompareTo "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
   exit 0
 fi

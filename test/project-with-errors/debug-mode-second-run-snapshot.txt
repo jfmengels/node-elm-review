@@ -1,0 +1,30 @@
+Review application is already built. Using /home/jeroen/dev/node-elm-review/test/project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/2.2.6/review-applications/87e1bde965737391324a0f24fcb1415f-debug.js
+Reviewing the following files:
+ - /home/jeroen/dev/node-elm-review/test/project-with-errors/src/Main.elm
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:10:11
+
+(fix) NoUnused.Variables: Imported variable `span` is not used
+
+ 9|           -- span is unused
+10|         , span
+             ^^^^
+11|         , text
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+────────────────────────────────────────────────────────────── src/Main.elm:28:7
+
+NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is not
+used.
+
+27|     | Decrement
+28|     | UnusedCustomType
+          ^^^^^^^^^^^^^^^^
+
+This type constructor is never used. It might be handled everywhere it might
+appear, but there is no location where this value actually gets created.
+
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+I found 2 errors in 1 file.
