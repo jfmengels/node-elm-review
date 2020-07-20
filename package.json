@@ -12,7 +12,7 @@
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-init": "echo '\n\n---------------- Testing initializing a project\n'; rm -rf test-init && mkdir test-init && cd test-init && echo Y | elm init && echo Y | ../bin/elm-review init",
     "test-run": "(cd test/ && ./run.sh)",
-    "test-run-record": "(cd test/project-with-errors ; ../../bin/elm-review > test-result-snapshot.txt ; exit 0)"
+    "test-run-record": "(cd test/ && ./run.sh record)"
   },
   "repository": {
     "type": "git",

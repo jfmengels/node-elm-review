@@ -1,8 +1,4 @@
 #!/bin/bash
-echo -e '\e[33m-- Testing the run\e[0m\n'
-
-cd project-with-errors
-
 cmd="../../bin/elm-review"
 
 function runCommandAndCompareTo {
@@ -26,4 +22,20 @@ function runCommandAndCompareTo {
     fi
 }
 
-runCommandAndCompareTo "Regular run" "" "test-result-snapshot.txt"
+function record {
+    args=$1
+    file=$2
+    $cmd $args > "$file"
+}
+
+if [ "$1" == "record" ]
+then
+  cd project-with-errors
+  record "" "test-result-snapshot.txt"
+  exit 0
+else
+  echo -e '\e[33m-- Testing the run\e[0m\n'
+  cd project-with-errors
+  runCommandAndCompareTo "Regular run" "" "test-result-snapshot.txt"
+  exit 0
+fi
