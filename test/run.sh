@@ -42,7 +42,8 @@ fi
 cd project-with-errors
 rm -rf elm-stuff
 $test "Regular run" "" "regular-run-snapshot.txt"
-$test "With JSON report" "--report=json" "json-report-snapshot.txt"
 $test "With debug mode" "--debug" "debug-mode-snapshot.txt"
 $test "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
+$test "With debug and JSON report" "--debug --report=json" "json-debug-report-snapshot.txt"
+$test "With JSON report" "--report=json" "json-report-snapshot.txt"
 exit 0
