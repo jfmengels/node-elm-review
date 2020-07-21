@@ -9,9 +9,11 @@ function runCommandAndCompareToSnapshot {
     TITLE=$1
     ARGS=$2
     FILE=$3
+
+    echo -ne "- $TITLE: \e[34m elm-review $ARGS\e[0m"
     if [ ! -f "$SNAPSHOTS/$FILE" ]
     then
-      echo -e "\e[31mThere is no snapshot recording for \e[33m$FILE\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
+      echo -e "\n  \e[31mThere is no snapshot recording for \e[33m$FILE\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
       exit 1
     fi
 
@@ -19,7 +21,7 @@ function runCommandAndCompareToSnapshot {
     DIFF=$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")
     if [ "$DIFF" != "" ]
     then
-        echo -e "\e[31mTest \"$TITLE\" resulted in a different output than expected:\e[0m"
+        echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
         echo -e "\n    \e[31mExpected:\e[0m\n"
         cat $FILE
         echo -e "\n    \e[31mbut got:\e[0m\n"
@@ -28,7 +30,7 @@ function runCommandAndCompareToSnapshot {
         echo -e $DIFF
         exit 1
     else
-      echo -e "\e[92m$TITLE: OK\e[0m"
+      echo -e "  \e[92mOK\e[0m"
     fi
 }
 
