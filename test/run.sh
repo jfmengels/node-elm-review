@@ -72,4 +72,3 @@ $createTest "With debug and JSON report" \
 $createTest "With JSON report" \
             "--report=json" \
             "json-report-snapshot.txt"
-exit 0
