@@ -1,41 +1,42 @@
 #!/bin/bash
 
-cmd="../../bin/elm-review"
+CWD=$(pwd)
+CMD="$CWD/../bin/elm-review"
+TMP="$CWD/tmp"
+SNAPSHOTS="$CWD/snapshots"
 
 function runCommandAndCompareToSnapshot {
-    title=$1
-    args=$2
-    file=$3
-    mkdir -p "elm-stuff"
-
-    if [ ! -f "$file" ]
+    TITLE=$1
+    ARGS=$2
+    FILE=$3
+    if [ ! -f "$SNAPSHOTS/$FILE" ]
     then
-      echo -e "\e[31mThere is no snapshot recording for \e[33m$file\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
+      echo -e "\e[31mThere is no snapshot recording for \e[33m$FILE\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
       exit 1
     fi
 
-    $cmd $args > "elm-stuff/$file"
-    DIFF=$(diff "elm-stuff/$file" $file || exit 1)
+    $CMD $ARGS > "$TMP/$FILE"
+    DIFF=$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")
     if [ "$DIFF" != "" ]
     then
-        echo -e "\e[31mTest \"$title\" resulted in a different output than expected:\e[0m"
+        echo -e "\e[31mTest \"$TITLE\" resulted in a different output than expected:\e[0m"
         echo -e "\n    \e[31mExpected:\e[0m\n"
-        cat $file
+        cat $FILE
         echo -e "\n    \e[31mbut got:\e[0m\n"
-        cat "elm-stuff/$file"
+        cat "$TMP/$FILE"
         echo -e "\n    \e[31mHere is the difference:\e[0m\n"
         echo -e $DIFF
         exit 1
     else
-      echo -e "\e[92m$title: OK\e[0m"
+      echo -e "\e[92m$TITLE: OK\e[0m"
     fi
 }
 
 function runAndRecord {
-    title=$1
-    args=$2
-    file=$3
-    $cmd $args > "$file"
+    TITLE=$1
+    ARGS=$2
+    FILE=$3
+    $CMD $ARGS > "$SNAPSHOTS/$FILE"
 }
 
 if [ "$1" == "record" ]
@@ -46,11 +47,27 @@ else
   echo -e '\e[33m-- Testing runs\e[0m'
 fi
 
+rm -rf $TMP
+mkdir -p $TMP
+
 cd project-with-errors
-rm -rf elm-stuff
-$createTest "Regular run" "" "regular-run-snapshot.txt"
-$createTest "With debug mode" "--debug" "debug-mode-snapshot.txt"
-$createTest "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
-$createTest "With debug and JSON report" "--debug --report=json" "json-debug-report-snapshot.txt"
-$createTest "With JSON report" "--report=json" "json-report-snapshot.txt"
+$createTest "Regular run from inside the project" \
+            "" \
+            "regular-run-snapshot.txt"
+
+$createTest "With debug mode" \
+            "--debug" \
+            "debug-mode-snapshot.txt"
+
+$createTest "With debug mode (second run)" \
+            "--debug" \
+            "debug-mode-second-run-snapshot.txt"
+
+$createTest "With debug and JSON report" \
+            "--debug --report=json" \
+            "json-debug-report-snapshot.txt"
+
+$createTest "With JSON report" \
+            "--report=json" \
+            "json-report-snapshot.txt"
 exit 0
