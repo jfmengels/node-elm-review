@@ -68,10 +68,6 @@ $createTest "With debug mode" \
             "--debug" \
             "debug-mode-snapshot.txt"
 
-$createTest "With debug mode (second run)" \
-            "--debug" \
-            "debug-mode-second-run-snapshot.txt"
-
 $createTest "With debug and JSON report" \
             "--debug --report=json" \
             "json-debug-report-snapshot.txt"
