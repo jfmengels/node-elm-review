@@ -57,6 +57,13 @@ $createTest "Regular run from inside the project" \
             "" \
             "regular-run-snapshot.txt"
 
+# cd ..
+# # This is failing at the moment
+# $createTest "Regular run using --elmjson and --config" \
+#             "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
+#             "regular-run-snapshot.txt"
+# exit 0
+
 $createTest "With debug mode" \
             "--debug" \
             "debug-mode-snapshot.txt"
