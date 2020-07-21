@@ -2,7 +2,7 @@
 
 cmd="../../bin/elm-review"
 
-function runCommandAndCompareTo {
+function runCommandAndCompareToSnapshot {
     title=$1
     args=$2
     file=$3
@@ -25,27 +25,24 @@ function runCommandAndCompareTo {
 }
 
 function runAndRecord {
-    args=$1
-    file=$2
+    title=$1
+    args=$2
+    file=$3
     $cmd $args > "$file"
 }
 
 if [ "$1" == "record" ]
 then
-  cd project-with-errors
-  rm -rf elm-stuff
-  runAndRecord "" "regular-run-snapshot.txt"
-  runAndRecord "--report=json" "json-report-snapshot.txt"
-  runAndRecord "--debug" "debug-mode-snapshot.txt"
-  runAndRecord "--debug" "debug-mode-second-run-snapshot.txt"
-  exit 0
+  test=runAndRecord
 else
+  test=runCommandAndCompareToSnapshot
   echo -e '\e[33m-- Testing runs\e[0m'
-  cd project-with-errors
-  rm -rf elm-stuff
-  runCommandAndCompareTo "Regular run" "" "regular-run-snapshot.txt"
-  runCommandAndCompareTo "With JSON report" "--report=json" "json-report-snapshot.txt"
-  runCommandAndCompareTo "With debug mode" "--debug" "debug-mode-snapshot.txt"
-  runCommandAndCompareTo "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
-  exit 0
 fi
+
+cd project-with-errors
+rm -rf elm-stuff
+$test "Regular run" "" "regular-run-snapshot.txt"
+$test "With JSON report" "--report=json" "json-report-snapshot.txt"
+$test "With debug mode" "--debug" "debug-mode-snapshot.txt"
+$test "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
+exit 0
