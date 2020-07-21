@@ -7,8 +7,15 @@ function runCommandAndCompareToSnapshot {
     args=$2
     file=$3
     mkdir -p "elm-stuff"
+
+    if [ ! -f "$file" ]
+    then
+      echo -e "\e[31mThere is no snapshot recording for \e[33m$file\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
+      exit 1
+    fi
+
     $cmd $args > "elm-stuff/$file"
-    DIFF=$(diff "elm-stuff/$file" $file)
+    DIFF=$(diff "elm-stuff/$file" $file || exit 1)
     if [ "$DIFF" != "" ]
     then
         echo -e "\e[31mTest \"$title\" resulted in a different output than expected:\e[0m"
@@ -33,17 +40,17 @@ function runAndRecord {
 
 if [ "$1" == "record" ]
 then
-  test=runAndRecord
+  createTest=runAndRecord
 else
-  test=runCommandAndCompareToSnapshot
+  createTest=runCommandAndCompareToSnapshot
   echo -e '\e[33m-- Testing runs\e[0m'
 fi
 
 cd project-with-errors
 rm -rf elm-stuff
-$test "Regular run" "" "regular-run-snapshot.txt"
-$test "With debug mode" "--debug" "debug-mode-snapshot.txt"
-$test "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
-$test "With debug and JSON report" "--debug --report=json" "json-debug-report-snapshot.txt"
-$test "With JSON report" "--report=json" "json-report-snapshot.txt"
+$createTest "Regular run" "" "regular-run-snapshot.txt"
+$createTest "With debug mode" "--debug" "debug-mode-snapshot.txt"
+$createTest "With debug mode (second run)" "--debug" "debug-mode-second-run-snapshot.txt"
+$createTest "With debug and JSON report" "--debug --report=json" "json-debug-report-snapshot.txt"
+$createTest "With JSON report" "--report=json" "json-report-snapshot.txt"
 exit 0
