@@ -49,13 +49,13 @@ function createTestCaseInMultipleScenariis {
         "$ARGS" \
         "$FILE.txt"
     $createTest "$TITLE (debug)" \
-        "$ARGS --debug" \
+        "$ARGS --debug-FOR-TESTS" \
         "$FILE-debug.txt"
     $createTest "$TITLE (JSON)" \
         "$ARGS --report=json" \
         "$FILE-json.txt"
     $createTest "$TITLE (debug+JSON)" \
-        "$ARGS --debug --report=json" \
+        "$ARGS --debug-FOR-TESTS --report=json" \
         "$FILE-debug-json.txt"
 }
 
