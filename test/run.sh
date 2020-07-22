@@ -133,6 +133,11 @@ createTestCaseInMultipleScenariis \
     "--template jfmengels/unknown-repo-123#some-branch" \
     "remote-configuration-unknown-with-branch"
 
+createTestCaseInMultipleScenariis \
+    "Using remote GitHub configuration with a non-existing branch and commit" \
+    "--template jfmengels/review-unused#unknown-branch" \
+    "remote-configuration-with-unknown-branch"
+
 cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \

@@ -1,0 +1,14 @@
+-- BRANCH OR COMMIT NOT FOUND --------------------------------------------------
+
+I found the jfmengels/review-unused repository on GitHub,
+but I could not find the branch or commit unknown-branch.
+Check the spelling and make sure it has been pushed.
+Error: I found the jfmengels/review-unused repository on GitHub,
+but I could not find the branch or commit unknown-branch.
+Check the spelling and make sure it has been pushed.
+    at <local-path>/lib/build.js:220:17
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at async buildFromGitHubTemplate (<local-path>/lib/build.js:140:18)
+    at async Object.build (<local-path>/lib/build.js:65:5)
+    at async runElmReview (<local-path>/lib/main.js:46:42)
+

@@ -3,5 +3,5 @@
   "title": "REPOSITORY NOT FOUND",
   "path": "elm.json",
   "message": "I could not find the jfmengels/unknown-repo-123 repository on GitHub.\nCheck the spelling and make sure it is a public repository, as I can't work\nwith private ones at the moment.",
-  "stack": "Error: I could not find the jfmengels/unknown-repo-123 repository on GitHub.\nCheck the spelling and make sure it is a public repository, as I can't work\nwith private ones at the moment.\n    at <local-path>/lib/build.js:212:17\n    at processTicksAndRejections (internal/process/task_queues.js:93:5)\n    at async getLatestCommitForReference (<local-path>/lib/build.js:228:7)\n    at async buildFromGitHubTemplate (<local-path>/lib/build.js:140:18)\n    at async Object.build (<local-path>/lib/build.js:65:5)\n    at async runElmReview (<local-path>/lib/main.js:46:42)"
+  "stack": "Error: I could not find the jfmengels/unknown-repo-123 repository on GitHub.\nCheck the spelling and make sure it is a public repository, as I can't work\nwith private ones at the moment.\n    at <local-path>/lib/build.js:220:17\n    at processTicksAndRejections (internal/process/task_queues.js:93:5)\n    at async buildFromGitHubTemplate (<local-path>/lib/build.js:140:18)\n    at async Object.build (<local-path>/lib/build.js:65:5)\n    at async runElmReview (<local-path>/lib/main.js:46:42)"
 }
