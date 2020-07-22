@@ -140,6 +140,11 @@ createTestSuiteWithDifferentReportFormats \
     "--template jfmengels/review-unused#unknown-branch" \
     "remote-configuration-with-unknown-branch"
 
+createTestSuiteWithDifferentReportFormats \
+    "Using remote GitHub configuration with existing repo but that does not contain template folder" \
+    "--template jfmengels/node-elm-review" \
+    "remote-configuration-with-absent-folder"
+
 cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
