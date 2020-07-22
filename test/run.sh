@@ -10,14 +10,14 @@ function runCommandAndCompareToSnapshot {
     local ARGS=$2
     local FILE=$3
 
-    echo -ne "- $TITLE: \e[34m elm-review $ARGS\e[0m"
+    echo -ne "- $TITLE: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
     if [ ! -f "$SNAPSHOTS/$FILE" ]
     then
       echo -e "\n  \e[31mThere is no snapshot recording for \e[33m$FILE\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
       exit 1
     fi
 
-    $CMD $ARGS > "$TMP/$FILE"
+    $CMD --FOR-TESTS $ARGS > "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
@@ -37,8 +37,8 @@ function runAndRecord {
     local TITLE=$1
     local ARGS=$2
     local FILE=$3
-    echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review $ARGS\e[0m"
-    $CMD $ARGS > "$SNAPSHOTS/$FILE"
+    echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
+    $CMD --FOR-TESTS $ARGS > "$SNAPSHOTS/$FILE"
 }
 
 function createTestCaseInMultipleScenariis {
@@ -49,13 +49,13 @@ function createTestCaseInMultipleScenariis {
         "$ARGS" \
         "$FILE.txt"
     $createTest "$TITLE (debug)" \
-        "$ARGS --debug-FOR-TESTS" \
+        "$ARGS --debug" \
         "$FILE-debug.txt"
     $createTest "$TITLE (JSON)" \
         "$ARGS --report=json" \
         "$FILE-json.txt"
     $createTest "$TITLE (debug+JSON)" \
-        "$ARGS --debug-FOR-TESTS --report=json" \
+        "$ARGS --debug --report=json" \
         "$FILE-debug-json.txt"
 }
 
@@ -89,7 +89,7 @@ createTestCaseInMultipleScenariis \
 
 $createTest \
     "Running with --version" \
-    "--version --debug-FOR-TESTS" \
+    "--version" \
     "version.txt"
 
 # Help

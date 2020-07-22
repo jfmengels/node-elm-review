@@ -1,4 +1,4 @@
-You are using elm-review 2.2.6.
+You are using elm-review <version>.
 
     elm-review <zero-or-more-files-or-directories>
         Analyzes your project, and lists the locations where patterns forbidden
