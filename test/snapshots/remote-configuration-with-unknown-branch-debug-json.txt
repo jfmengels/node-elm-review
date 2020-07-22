@@ -1,7 +1,0 @@
-{
-  "type": "error",
-  "title": "BRANCH OR COMMIT NOT FOUND",
-  "path": "elm.json",
-  "message": "I found the jfmengels/review-unused repository on GitHub,\nbut I could not find the branch or commit unknown-branch.\nCheck the spelling and make sure it has been pushed.",
-  "stack": "Error: I found the jfmengels/review-unused repository on GitHub,\nbut I could not find the branch or commit unknown-branch.\nCheck the spelling and make sure it has been pushed.\n    at <local-path>/lib/build.js:220:17\n    at processTicksAndRejections (internal/process/task_queues.js:93:5)\n    at async buildFromGitHubTemplate (<local-path>/lib/build.js:140:18)\n    at async Object.build (<local-path>/lib/build.js:65:5)\n    at async runElmReview (<local-path>/lib/main.js:46:42)"
-}

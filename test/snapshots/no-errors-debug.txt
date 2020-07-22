@@ -1,6 +1,0 @@
-Starting review application build
-Compiling review application
-Finished review application build
-Reviewing the following files:
- - src/Main.elm
-I found no problems while reviewing!

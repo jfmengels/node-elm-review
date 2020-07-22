@@ -41,22 +41,24 @@ function runAndRecord {
     $CMD --FOR-TESTS $ARGS > "$SNAPSHOTS/$FILE"
 }
 
-function createTestCaseInMultipleScenariis {
+function createExtensiveTestSuite {
+    local TITLE=$1
+    local ARGS=$2
+    local FILE=$3
+    createTestSuiteWithDifferentReportFormats "$TITLE" "$ARGS" "$FILE"
+    createTestSuiteWithDifferentReportFormats "$TITLE (debug)" "$ARGS --debug" "$FILE-debug"
+}
+
+function createTestSuiteWithDifferentReportFormats {
     local TITLE=$1
     local ARGS=$2
     local FILE=$3
     $createTest "$TITLE" \
         "$ARGS" \
         "$FILE.txt"
-    $createTest "$TITLE (debug)" \
-        "$ARGS --debug" \
-        "$FILE-debug.txt"
     $createTest "$TITLE (JSON)" \
         "$ARGS --report=json" \
         "$FILE-json.txt"
-    $createTest "$TITLE (debug+JSON)" \
-        "$ARGS --debug --report=json" \
-        "$FILE-debug-json.txt"
 }
 
 rm -r $TMP \
@@ -106,12 +108,12 @@ $createTest \
 # Review
 
 cd project-with-errors
-createTestCaseInMultipleScenariis \
+createExtensiveTestSuite \
     "Regular run from inside the project" \
     "" \
     "simple-run"
 
-createTestCaseInMultipleScenariis \
+createTestSuiteWithDifferentReportFormats \
     "Running using other configuration (without errors)" \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
@@ -123,17 +125,17 @@ $createTest \
     "--template jfmengels/review-unused#example" \
     "remote-configuration.txt"
 
-createTestCaseInMultipleScenariis \
+createTestSuiteWithDifferentReportFormats \
     "Using unknown remote GitHub configuration" \
     "--template jfmengels/unknown-repo-123" \
     "remote-configuration-unknown"
 
-createTestCaseInMultipleScenariis \
+createTestSuiteWithDifferentReportFormats \
     "Using unknown remote GitHub configuration with a branch" \
     "--template jfmengels/unknown-repo-123#some-branch" \
     "remote-configuration-unknown-with-branch"
 
-createTestCaseInMultipleScenariis \
+createTestSuiteWithDifferentReportFormats \
     "Using remote GitHub configuration with a non-existing branch and commit" \
     "--template jfmengels/review-unused#unknown-branch" \
     "remote-configuration-with-unknown-branch"
