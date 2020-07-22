@@ -123,6 +123,11 @@ $createTest \
     "--template jfmengels/review-unused#example" \
     "remote-configuration.txt"
 
+createTestCaseInMultipleScenariis \
+    "Using unknown remote GitHub configuration" \
+    "--template jfmengels/unknown-repo-123" \
+    "remote-configuration-unknown"
+
 cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \

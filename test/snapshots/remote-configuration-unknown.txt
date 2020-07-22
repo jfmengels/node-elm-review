@@ -1,0 +1,6 @@
+-- REPOSITORY NOT FOUND --------------------------------------------------------
+
+I could not find the jfmengels/unknown-repo-123 repository on GitHub.
+Check the spelling and make sure it is a public repository, as I can't work
+with private ones at the moment.
+
