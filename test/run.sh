@@ -9,7 +9,6 @@ function runCommandAndCompareToSnapshot {
     local TITLE=$1
     local ARGS=$2
     local FILE=$3
-    echo "$FILE"
 
     echo -ne "- $TITLE: \e[34m elm-review $ARGS\e[0m"
     if [ ! -f "$SNAPSHOTS/$FILE" ]
@@ -24,7 +23,7 @@ function runCommandAndCompareToSnapshot {
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
         echo -e "\n    \e[31mExpected:\e[0m\n"
-        cat $FILE
+        cat "$SNAPSHOTS/$FILE"
         echo -e "\n    \e[31mbut got:\e[0m\n"
         cat "$TMP/$FILE"
         echo -e "\n    \e[31mHere is the difference:\e[0m\n"
@@ -73,6 +72,8 @@ else
   createTest=runCommandAndCompareToSnapshot
   echo -e '\e[33m-- Testing runs\e[0m'
 fi
+
+# Review
 
 cd project-with-errors
 createTestCaseInMultipleScenariis \
