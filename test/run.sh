@@ -85,6 +85,13 @@ createTestCaseInMultipleScenariis \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
 
+# Version
+
+$createTest \
+    "Running with --version" \
+    "--version --debug-FOR-TESTS" \
+    "version.txt"
+
 # Help
 
 $createTest \

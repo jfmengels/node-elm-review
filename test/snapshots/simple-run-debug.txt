@@ -1,4 +1,4 @@
-Review application is already built. Using elm-stuff/generated-code/jfmengels/elm-review/cli/2.2.6/review-applications/87e1bde965737391324a0f24fcb1415f-debug.js
+Review application is already built. Using elm-stuff/generated-code/jfmengels/elm-review/cli/<version>/review-applications/87e1bde965737391324a0f24fcb1415f-debug.js
 Reviewing the following files:
  - src/Main.elm
 -- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:10:11
