@@ -73,19 +73,6 @@ else
   echo -e '\e[33m-- Testing runs\e[0m'
 fi
 
-# Review
-
-cd project-with-errors
-createTestCaseInMultipleScenariis \
-    "Regular run from inside the project" \
-    "" \
-    "simple-run"
-
-createTestCaseInMultipleScenariis \
-    "Running using other script (without errors)" \
-    "--config ../config-that-triggers-no-errors" \
-    "no-errors"
-
 # Version
 
 $createTest \
@@ -115,9 +102,22 @@ $createTest \
     "new-rule --help" \
     "help-new-rule.txt"
 
-# cd ..
+
+# Review
+
+cd project-with-errors
+createTestCaseInMultipleScenariis \
+    "Regular run from inside the project" \
+    "" \
+    "simple-run"
+
+createTestCaseInMultipleScenariis \
+    "Running using other script (without errors)" \
+    "--config ../config-that-triggers-no-errors" \
+    "no-errors"
+
+cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
 #             "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
 #             "regular-run-snapshot"
-# exit 0
