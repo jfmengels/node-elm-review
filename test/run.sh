@@ -122,7 +122,7 @@ createTestSuiteWithDifferentReportFormats \
 
 $createTest \
     "Running using remote GitHub configuration" \
-    "--template jfmengels/review-unused#example" \
+    "--template jfmengels/review-unused/example#example" \
     "remote-configuration.txt"
 
 createTestSuiteWithDifferentReportFormats \

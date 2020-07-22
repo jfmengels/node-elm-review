@@ -1,7 +1,7 @@
 -- TEMPLATE ELM.JSON NOT FOUND -------------------------------------------------
 
 I found the jfmengels/node-elm-review repository on GitHub,
-but I could not find a example/elm.json file in it.
+but I could not find a elm.json file in it.
 
 I need this file to determine the rest of the configuration.
 
