@@ -80,6 +80,11 @@ createTestCaseInMultipleScenariis \
     "" \
     "simple-run"
 
+createTestCaseInMultipleScenariis \
+    "Running using other script (without errors)" \
+    "--config ../config-that-triggers-no-errors" \
+    "no-errors"
+
 # cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
