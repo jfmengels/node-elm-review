@@ -78,7 +78,7 @@ cd project-with-errors
 createTestCaseInMultipleScenariis \
     "Regular run from inside the project" \
     "" \
-    "regular-run-snapshot"
+    "simple-run"
 
 # cd ..
 # # This is failing at the moment
