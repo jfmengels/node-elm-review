@@ -17,7 +17,7 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    $CMD --FOR-TESTS $ARGS > "$TMP/$FILE"
+    $CMD --FOR-TESTS $ARGS &> "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
