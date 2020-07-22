@@ -1,0 +1,22 @@
+The init command helps getting started with elm-review’s configuration.
+
+    elm-review init
+        It will ask permission to create several files:
+        - review/elm.json in which you may add dependencies with review rules.
+        - review/src/ReviewConfig.elm to define your configuration.
+
+        After the files have been created, it will provide links to get you
+        started.
+
+You can customize the init command with the following flags:
+
+    --config <path-to-review-directory>
+        Create the configuration files in the specified directory instead of in
+        the review/ directory.
+
+    --compiler <path-to-elm>
+        Specify the path to the elm compiler.
+        The elm compiler is used to know the version of the compiler to write
+        down in the review/elm.json file’s `elm-version` field. Use this if you
+        have multiple versions of the elm compiler on your device.
+

@@ -85,6 +85,28 @@ createTestCaseInMultipleScenariis \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
 
+# Help
+
+$createTest \
+    "Running with --help" \
+    "--help" \
+    "help-main.txt"
+
+$createTest \
+    "Running init with --help" \
+    "init --help" \
+    "help-init.txt"
+
+$createTest \
+    "Running new-package with --help" \
+    "new-package --help" \
+    "help-new-package.txt"
+
+$createTest \
+    "Running new-rule with --help" \
+    "new-rule --help" \
+    "help-new-rule.txt"
+
 # cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
