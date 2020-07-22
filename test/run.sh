@@ -36,8 +36,10 @@ function runCommandAndCompareToSnapshot {
 }
 
 function runAndRecord {
+    local TITLE=$1
     local ARGS=$2
     local FILE=$3
+    echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review $ARGS\e[0m"
     $CMD $ARGS > "$SNAPSHOTS/$FILE"
 }
 
