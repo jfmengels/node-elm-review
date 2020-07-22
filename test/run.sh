@@ -112,9 +112,16 @@ createTestCaseInMultipleScenariis \
     "simple-run"
 
 createTestCaseInMultipleScenariis \
-    "Running using other script (without errors)" \
+    "Running using other configuration (without errors)" \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
+
+# Review with remote configuration
+
+$createTest \
+    "Running using remote GitHub configuration" \
+    "--template jfmengels/review-unused#example" \
+    "remote-configuration.txt"
 
 cd ..
 # # This is failing at the moment
