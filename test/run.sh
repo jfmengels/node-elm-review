@@ -41,15 +41,6 @@ function runAndRecord {
     $CMD $ARGS > "$SNAPSHOTS/$FILE"
 }
 
-if [ "$1" == "record" ]
-then
-  createTest=runAndRecord
-else
-  createTest=runCommandAndCompareToSnapshot
-  echo -e '\e[33m-- Testing runs\e[0m'
-fi
-
-
 function createTestCaseInMultipleScenariis {
     local TITLE=$1
     local ARGS=$2
@@ -70,6 +61,16 @@ function createTestCaseInMultipleScenariis {
 
 rm -rf $TMP
 mkdir -p $TMP
+
+if [ "$1" == "record" ]
+then
+  createTest=runAndRecord
+  rm -rf $SNAPSHOTS
+  mkdir -p $SNAPSHOTS
+else
+  createTest=runCommandAndCompareToSnapshot
+  echo -e '\e[33m-- Testing runs\e[0m'
+fi
 
 cd project-with-errors
 createTestCaseInMultipleScenariis \
