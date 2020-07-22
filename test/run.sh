@@ -6,9 +6,10 @@ TMP="$CWD/tmp"
 SNAPSHOTS="$CWD/snapshots"
 
 function runCommandAndCompareToSnapshot {
-    TITLE=$1
-    ARGS=$2
-    FILE=$3
+    local TITLE=$1
+    local ARGS=$2
+    local FILE=$3
+    echo "$FILE"
 
     echo -ne "- $TITLE: \e[34m elm-review $ARGS\e[0m"
     if [ ! -f "$SNAPSHOTS/$FILE" ]
@@ -18,7 +19,7 @@ function runCommandAndCompareToSnapshot {
     fi
 
     $CMD $ARGS > "$TMP/$FILE"
-    DIFF=$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")
+    local DIFF=$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")
     if [ "$DIFF" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
@@ -35,9 +36,8 @@ function runCommandAndCompareToSnapshot {
 }
 
 function runAndRecord {
-    TITLE=$1
-    ARGS=$2
-    FILE=$3
+    local ARGS=$2
+    local FILE=$3
     $CMD $ARGS > "$SNAPSHOTS/$FILE"
 }
 
@@ -49,29 +49,37 @@ else
   echo -e '\e[33m-- Testing runs\e[0m'
 fi
 
+
+function createTestCaseInMultipleScenariis {
+    local TITLE=$1
+    local ARGS=$2
+    local FILE=$3
+    $createTest "$TITLE" \
+        "$ARGS" \
+        "$FILE.txt"
+    $createTest "$TITLE (debug)" \
+        "$ARGS --debug" \
+        "$FILE-debug.txt"
+    $createTest "$TITLE (JSON)" \
+        "$ARGS --report=json" \
+        "$FILE-json.txt"
+    $createTest "$TITLE (debug+JSON)" \
+        "$ARGS --debug --report=json" \
+        "$FILE-debug-json.txt"
+}
+
 rm -rf $TMP
 mkdir -p $TMP
 
 cd project-with-errors
-$createTest "Regular run from inside the project" \
-            "" \
-            "regular-run-snapshot.txt"
+createTestCaseInMultipleScenariis \
+    "Regular run from inside the project" \
+    "" \
+    "regular-run-snapshot"
 
 # cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
 #             "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
-#             "regular-run-snapshot.txt"
+#             "regular-run-snapshot"
 # exit 0
-
-$createTest "With debug mode" \
-            "--debug" \
-            "debug-mode-snapshot.txt"
-
-$createTest "With debug and JSON report" \
-            "--debug --report=json" \
-            "json-debug-report-snapshot.txt"
-
-$createTest "With JSON report" \
-            "--report=json" \
-            "json-report-snapshot.txt"
