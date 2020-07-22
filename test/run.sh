@@ -18,8 +18,7 @@ function runCommandAndCompareToSnapshot {
     fi
 
     $CMD $ARGS > "$TMP/$FILE"
-    local DIFF=$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")
-    if [ "$DIFF" != "" ]
+    if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
         echo -e "\n    \e[31mExpected:\e[0m\n"
@@ -27,7 +26,7 @@ function runCommandAndCompareToSnapshot {
         echo -e "\n    \e[31mbut got:\e[0m\n"
         cat "$TMP/$FILE"
         echo -e "\n    \e[31mHere is the difference:\e[0m\n"
-        echo -e $DIFF
+        diff "$TMP/$FILE" "$SNAPSHOTS/$FILE"
         exit 1
     else
       echo -e "  \e[92mOK\e[0m"
