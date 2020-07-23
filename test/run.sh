@@ -141,6 +141,11 @@ $createTest \
     "--template jfmengels/node-elm-review/test/config-that-triggers-no-errors" \
     "remote-configuration-no-errors.txt"
 
+$createTest \
+    "Running using remote GitHub configuration without a path to the config" \
+    "--template jfmengels/test-node-elm-review" \
+    "remote-configuration-no-path.txt"
+
 createTestSuiteWithDifferentReportFormats \
     "Using unknown remote GitHub configuration" \
     "--template jfmengels/unknown-repo-123" \

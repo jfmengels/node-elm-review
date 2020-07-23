@@ -1,0 +1,10 @@
+-- ELM-REVIEW ERROR ------------------------------------------- src/Main.elm:1:1
+
+Testing.It.Works: It works!
+
+1| module Main exposing (main)
+   ^^^^^^
+
+Good job! You have successfully run elm-review.
+
+I found 1 error in 1 file.
