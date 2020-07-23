@@ -17,7 +17,7 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    $CMD --FOR-TESTS $ARGS &> "$TMP/$FILE"
+    $CMD --github-auth jfmengels:908091827648956acd5c445b28463a445a4c6876 --FOR-TESTS $ARGS &> "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
@@ -38,7 +38,7 @@ function runAndRecord {
     local ARGS=$2
     local FILE=$3
     echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
-    $CMD --FOR-TESTS $ARGS > "$SNAPSHOTS/$FILE"
+    $CMD --github-auth jfmengels:908091827648956acd5c445b28463a445a4c6876 --FOR-TESTS $ARGS > "$SNAPSHOTS/$FILE"
 }
 
 function createExtensiveTestSuite {
