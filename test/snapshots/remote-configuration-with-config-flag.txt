@@ -1,0 +1,6 @@
+-- INCOMPATIBLE FLAGS ----------------------------------------------------------
+
+You used both --config and --template, but these flags can't be used together.
+
+Please remove one of them and try re-running.
+

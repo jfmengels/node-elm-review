@@ -176,6 +176,11 @@ createTestSuiteWithDifferentReportFormats \
     "--template jfmengels/node-elm-review/test/config-for-outdated-elm-review" \
     "remote-with-outdated-elm-review"
 
+createTestSuiteWithDifferentReportFormats \
+    "Using both --config and --template" \
+    "--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review" \
+    "remote-configuration-with-config-flag"
+
 cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
