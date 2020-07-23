@@ -1,0 +1,6 @@
+-- UNSUPPORTED ELM-REVIEW VERSION ----------------------------------------------
+
+The template uses an unsupported version of jfmengels/elm-review. It is using v2.0.0, but I need it to be 2.1.0 <= v < 3.0.0.
+
+Please inform the template author and kindly ask him to update his configuration, or make a pull request to help them out.
+

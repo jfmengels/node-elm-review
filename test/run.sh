@@ -155,6 +155,16 @@ createTestSuiteWithDifferentReportFormats \
     "--template jfmengels/node-elm-review" \
     "remote-configuration-with-absent-folder"
 
+createTestSuiteWithDifferentReportFormats \
+    "Using a remote configuration with a missing direct elm-review dependency" \
+    "--template jfmengels/node-elm-review/test/config-without-elm-review" \
+    "remote-without-elm-review"
+
+createTestSuiteWithDifferentReportFormats \
+    "Using a remote configuration with an outdated elm-review" \
+    "--template jfmengels/node-elm-review/test/config-for-outdated-elm-review" \
+    "remote-with-outdated-elm-review"
+
 cd ..
 # # This is failing at the moment
 # $createTest "Regular run using --elmjson and --config" \
