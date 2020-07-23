@@ -118,6 +118,11 @@ createTestSuiteWithDifferentReportFormats \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
 
+createTestSuiteWithDifferentReportFormats \
+    "Using a configuration with an outdated elm-review package" \
+    "--config ../config-for-outdated-elm-review" \
+    "outdated-version"
+
 # Review with remote configuration
 
 $createTest \
