@@ -1,1 +1,6 @@
-{"type":"error","title":"TEMPLATE ELM.JSON NOT FOUND","path":"elm.json","message":"I found the jfmengels/node-elm-review repository on GitHub,\nbut I could not find a elm.json file in it.\n\nI need this file to determine the rest of the configuration."}
+{
+  "type": "error",
+  "title": "TEMPLATE ELM.JSON NOT FOUND",
+  "path": "elm.json",
+  "message": "I found the jfmengels/node-elm-review repository on GitHub,\nbut I could not find a elm.json file in it.\n\nI need this file to determine the rest of the configuration."
+}
