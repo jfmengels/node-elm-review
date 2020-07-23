@@ -62,7 +62,8 @@ function createTestSuiteWithDifferentReportFormats {
 }
 
 rm -r $TMP \
-      project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/review-applications/
+      project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/review-applications/ \
+      project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/remote-templates/
 mkdir -p $TMP
 
 if [ "$1" == "record" ]
