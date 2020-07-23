@@ -119,6 +119,11 @@ createTestSuiteWithDifferentReportFormats \
     "no-errors"
 
 createTestSuiteWithDifferentReportFormats \
+    "Using a configuration with a missing direct elm-review dependency" \
+    "--config ../config-without-elm-review" \
+    "without-elm-review"
+
+createTestSuiteWithDifferentReportFormats \
     "Using a configuration with an outdated elm-review package" \
     "--config ../config-for-outdated-elm-review" \
     "outdated-version"
