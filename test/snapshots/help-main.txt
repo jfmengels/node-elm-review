@@ -35,6 +35,14 @@ You can customize the review command with the following flags:
         Use the review configuration in the specified directory instead of the
         one found in the current directory or one of its parents.
 
+    --template <author>/<repo>[path-to-the-config-folder][#branch-or-commit]
+        Use the review configuration from a GitHub repository. You can use this
+        to try out elm-review, a configuration or a single rule.
+        This flag requires Internet access, even after the first run.
+        Examples:
+          - elm-review --template author/review-configuration
+          - elm-review --template jfmengels/review-unused/example#master
+
     --compiler <path-to-elm>
         Specify the path to the elm compiler.
 
