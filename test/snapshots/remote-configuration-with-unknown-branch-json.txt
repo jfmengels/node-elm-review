@@ -1,6 +1,6 @@
 {
   "type": "error",
   "title": "BRANCH OR COMMIT NOT FOUND",
-  "path": "elm.json",
+  "path": "review/elm.json",
   "message": "I found the jfmengels/review-unused repository on GitHub,\nbut I could not find the branch or commit unknown-branch.\nCheck the spelling and make sure it has been pushed."
 }
