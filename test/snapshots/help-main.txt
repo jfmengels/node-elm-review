@@ -23,6 +23,10 @@ You are using elm-review <version>.
 
 You can customize the review command with the following flags:
 
+    --rules <rule1,rule2,...>
+        Run with a subsection of the rules in the configuration. Specify them
+        by their name, and separate them by commas.
+
     --watch
         Re-run elm-review automatically when your project changes.
         You can use --watch and --fix together.
