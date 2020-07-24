@@ -271,6 +271,16 @@ checkFolderContents $NEW_PACKAGE_NAME_FOR_NEW_RULE
 
 cd $CWD/project-with-errors
 
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Filter rules" \
+    "--rules NoUnused.Variables" \
+    "filter-rules"
+
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Filter unknown rule" \
+    "--rules NoUnused.Unknown" \
+    "filter-unknown-rule"
+
 # Review with remote configuration
 
 $createTest "$CMD" \
