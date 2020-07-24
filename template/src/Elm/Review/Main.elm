@@ -7,6 +7,7 @@ import Elm.Review.AstCodec as AstCodec
 import Elm.Review.File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
+import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import Json.Decode as Decode
@@ -148,14 +149,22 @@ init flags =
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
 
-        rules : List Rule
-        rules =
+        ( rules, filterNames ) =
             case rulesFilter of
                 Just rulesToEnable ->
-                    List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) config
+                    let
+                        ruleNames : Set String
+                        ruleNames =
+                            List.map Rule.ruleName config
+                                |> Set.fromList
+                    in
+                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) config
+                    , Set.diff rulesToEnable ruleNames
+                        |> Set.toList
+                    )
 
                 Nothing ->
-                    config
+                    ( config, [] )
     in
     ( { rules = rules
       , project = Project.new
@@ -183,9 +192,44 @@ I recommend you take a look at the following documents:
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
             }
 
+      else if not (List.isEmpty filterNames) then
+        abortWithDetails
+            (unknownRulesFilterMessage
+                { ruleNames =
+                    List.map Rule.ruleName config
+                        |> Set.fromList
+                        |> Set.toList
+                , filterNames = filterNames
+                }
+            )
+
       else
         cmd
     )
+
+
+unknownRulesFilterMessage : { ruleNames : List String, filterNames : List String } -> { title : String, message : String }
+unknownRulesFilterMessage { ruleNames, filterNames } =
+    let
+        unknownRulesMessage : String
+        unknownRulesMessage =
+            filterNames
+                |> List.map (\filterName -> "- " ++ filterName ++ ". Did you mean:\n  - " ++ String.join "\n  - " (closestNames ruleNames filterName))
+                |> String.join "\n\n"
+    in
+    { title = "UNKNOWN FILTERED RULE(S)"
+    , message =
+        """You requested to only run several rules, but I could not find some of them.
+
+""" ++ unknownRulesMessage
+    }
+
+
+closestNames : List String -> String -> List String
+closestNames names name =
+    names
+        |> List.sortBy (Levenshtein.distance name)
+        |> List.take 3
 
 
 type alias DecodedFlags =
