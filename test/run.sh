@@ -120,6 +120,11 @@ createTestSuiteWithDifferentReportFormats \
     "no-errors"
 
 createTestSuiteWithDifferentReportFormats \
+    "Using an empty configuration" \
+    "--config ../config-empty" \
+    "config-empty"
+
+createTestSuiteWithDifferentReportFormats \
     "Using a configuration with a missing direct elm-review dependency" \
     "--config ../config-without-elm-review" \
     "without-elm-review"

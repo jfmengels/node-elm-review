@@ -159,7 +159,20 @@ init flags =
       , fixAllErrors = Dict.empty
       , ignoreProblematicDependencies = ignoreProblematicDependencies
       }
-    , cmd
+    , if List.isEmpty config then
+        -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
+        abortWithDetails
+            { title = "CONFIGURATION IS EMPTY"
+            , message =
+                """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
+
+I recommend you take a look at the following documents:
+  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
+  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
+            }
+
+      else
+        cmd
     )
 
 
