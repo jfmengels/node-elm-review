@@ -14,6 +14,13 @@ You can customize the init command with the following flags:
         Create the configuration files in the specified directory instead of in
         the review/ directory.
 
+    --template <author>/<repo>[path-to-the-config-folder][#branch-or-commit]
+        Copy the review configuration from a GitHub repository, at the root or
+        in a folder.
+        Examples:
+          - elm-review init --template author/review-configuration
+          - elm-review init --template jfmengels/review-unused/example#master
+
     --compiler <path-to-elm>
         Specify the path to the elm compiler.
         The elm compiler is used to know the version of the compiler to write
