@@ -17,16 +17,57 @@ npm install elm-review --save-dev
 npm install -g elm-review
 ```
 
+See [below](#try-it-out) if you want to try it out without installing it.
+
 ## Usage
 
 ```bash
-elm-review --help       # Print the help
-elm-review              # Review your project
-elm-review init         # Create an empty review configuration
-elm-review new-package  # Create a new project containing elm-review rules
-                        # aimed at being published on the Elm package registry
-elm-review new-rule     # Create an empty new rule to get started.
-                        # Very helpful for projects created with new-package
+# Print the help
+elm-review --help       
+
+# Review your project
+elm-review              
+
+# Create an empty review configuration
+elm-review init         
+
+# Create a new project containing elm-review rules
+# aimed at being published on the Elm package registry
+elm-review new-package  
+
+# Create an empty new rule to get started.
+# Very helpful for projects created with new-package
+elm-review new-rule     
+```
+
+## Try it out
+
+You can try `elm-review` out without setting up anything!
+
+First of all, if you have `node` installed, it comes with `npx`, which lets you run `elm-review` without installing it by prepending the command by `npx`, like `npx elm-review`. It is a bit slower and requires Internet access, but it's useful to try it out.
+
+You can also run a configuration you found on GitHub, using the `--template` flag. Even if you already have a configuration, you can use this to try out the rules from a new package before adding them to your configuration.
+For instance, if you want to find and remove the dead code in your project, you can use the [example configuration](https://github.com/jfmengels/review-unused/tree/master/example) from the [`jfmengels/review-unused` package](https://package.elm-lang.org/packages/jfmengels/review-unused/latest/).
+
+```bash
+npx elm-review --template jfmengels/review-unused/example
+
+# You can even use the configuration to fix all the errors that can be auto-fixed.
+npx elm-review --template jfmengels/review-unused/example --fix-all
+```
+
+If you are happy with the configuration, you can base your own configuration off of it, and then edit it:
+
+```bash
+npx elm-review init --template jfmengels/review-unused/example
+```
+
+I **highly** recommend [reading this section on when to enable rules](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/#when-to-write-or-enable-a-rule) in your configuration though.
+
+You can use the same mechanic to try out a single rule before adding the dependency to your existing configuration and adding it to your configuration.
+
+```bash
+npx elm-review --template jfmengels/review-unused/example --rules NoUnused.Variables
 ```
 
 ## Configuration
