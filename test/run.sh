@@ -38,7 +38,7 @@ function runAndRecord {
     local ARGS=$2
     local FILE=$3
     echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
-    $CMD --FOR-TESTS $ARGS > "$SNAPSHOTS/$FILE"
+    $CMD --FOR-TESTS $ARGS &> "$SNAPSHOTS/$FILE"
 }
 
 function createExtensiveTestSuite {

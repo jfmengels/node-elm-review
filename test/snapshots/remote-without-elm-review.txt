@@ -1,3 +1,4 @@
+- Fetching template information
 -- MISSING ELM-REVIEW DEPENDENCY -----------------------------------------------
 
 The template's configuration does not include jfmengels/elm-review in its direct dependencies.

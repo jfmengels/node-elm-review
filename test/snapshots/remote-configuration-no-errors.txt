@@ -1,1 +1,3 @@
+- Fetching template information
+✔ Build finished! Now reviewing your project...
 I found no problems while reviewing!
