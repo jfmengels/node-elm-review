@@ -4,6 +4,7 @@ CWD=$(pwd)
 CMD="$CWD/../bin/elm-review"
 TMP="$CWD/tmp"
 SNAPSHOTS="$CWD/snapshots"
+IS_REVIEWING=("$1" != "record")
 
 function runCommandAndCompareToSnapshot {
     local LOCAL_COMMAND=$1
@@ -65,6 +66,21 @@ function createTestSuiteWithDifferentReportFormats {
         "$TITLE (JSON)" \
         "$ARGS --report=json" \
         "$FILE-json.txt"
+}
+
+function checkFolderContents {
+  if [ $IS_REVIEWING ]
+  then
+    echo -n "  Checking generated files are the same"
+    if [ "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/")" != "" ]
+    then
+        echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
+        echo "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/")"
+        exit 1
+    else
+      echo -e "  \e[92mOK\e[0m"
+    fi
+  fi
 }
 
 rm -r $TMP \
@@ -130,18 +146,7 @@ $createTest "echo Y | $CMD" \
     "init" \
     "init.txt"
 
-if [ "$1" != "record" ]
-then
-  echo -n "  Checking generated files are the same"
-  if [ "$(diff -rq "$TMP/$INIT_PROJECT_NAME/" "$SNAPSHOTS/$INIT_PROJECT_NAME/")" != "" ]
-  then
-      echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
-      echo "$(diff -rq "$TMP/$INIT_PROJECT_NAME/" "$SNAPSHOTS/$INIT_PROJECT_NAME/")"
-      exit 1
-  else
-    echo -e "  \e[92mOK\e[0m"
-  fi
-fi
+checkFolderContents $INIT_PROJECT_NAME
 
 # Review
 
@@ -188,18 +193,7 @@ $createTest "$CMD" \
     "new-package --prefill some-author,$NEW_PACKAGE_NAME,BSD-3-Clause No.Doing.Foo" \
     "new-package.txt"
 
-if [ "$1" != "record" ]
-then
-  echo -n "  Checking generated files are the same"
-  if [ "$(diff -rq "$TMP/$NEW_PACKAGE_NAME/" "$SNAPSHOTS/$NEW_PACKAGE_NAME/")" != "" ]
-  then
-      echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
-      echo "$(diff -rq "$TMP/$NEW_PACKAGE_NAME/" "$SNAPSHOTS/$NEW_PACKAGE_NAME/")"
-      exit 1
-  else
-    echo -e "  \e[92mOK\e[0m"
-  fi
-fi
+checkFolderContents $NEW_PACKAGE_NAME
 
 # new-rule (DEPENDS ON PREVIOUS STEP!)
 
@@ -211,20 +205,7 @@ $createTest "$CMD" \
     "new-rule SomeRule" \
     "new-rule.txt"
 
-cd $CWD
-
-if [ "$1" != "record" ]
-then
-  echo -n "  Checking generated files are the same"
-  if [ "$(diff -rq "$TMP/$NEW_PACKAGE_NAME_FOR_NEW_RULE/" "$SNAPSHOTS/$NEW_PACKAGE_NAME_FOR_NEW_RULE/")" != "" ]
-  then
-      echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
-      echo "$(diff -rq "$TMP/$NEW_PACKAGE_NAME_FOR_NEW_RULE/" "$SNAPSHOTS/$NEW_PACKAGE_NAME_FOR_NEW_RULE/")"
-      exit 1
-  else
-    echo -e "  \e[92mOK\e[0m"
-  fi
-fi
+checkFolderContents $NEW_PACKAGE_NAME_FOR_NEW_RULE
 
 cd $CWD/project-with-errors
 
