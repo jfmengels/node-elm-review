@@ -134,6 +134,38 @@ createTestSuiteWithDifferentReportFormats \
     "--config ../config-for-outdated-elm-review" \
     "outdated-version"
 
+# new-package
+
+if [ "$1" == "record" ]
+then
+  cd $SNAPSHOTS
+  rm -r elm-review-something
+else
+  cd $TMP/
+fi
+
+$createTest \
+    "Creating a new package" \
+    "new-package --prefill some-author,elm-review-something,BSD-3-Clause No.Doing.Foo --debug" \
+    "new-package.txt"
+
+cd $CWD
+
+if [ "$1" == "record" ]
+then
+  echo "do nothing TODO"
+else
+  if [ "$(diff -rq "$TMP/elm-review-something/" "$SNAPSHOTS/elm-review-something/")" != "" ]
+  then
+      echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
+      echo "$(diff -rq "$TMP/elm-review-something/" "$SNAPSHOTS/elm-review-something/")"
+      exit 1
+  else
+    echo -e "  \e[92mOK\e[0m"
+  fi
+  mkdir -p tmp/
+  cd tmp/
+fi
 # Review with remote configuration
 
 $createTest \

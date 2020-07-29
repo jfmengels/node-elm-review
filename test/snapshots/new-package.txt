@@ -1,0 +1,26 @@
+Adding elm.json
+Adding package.json
+Adding README
+Adding rule - No.Doing.Foo
+Adding .gitignore
+Adding GitHub Actions
+Adding LICENSE npx license BSD-3-Clause
+Adding elm-review configuration
+Here is what you still need to do:
+
+1 Install the npm dependencies
+
+    npm install    or    yarn
+
+2. Initialize Git in your repository
+
+git init
+git add --all
+git commit --message="Initialize project"
+
+When you create this repository on GitHub, consider adding the elm-review topic to the repository.
+
+3. Search and replace all the REPLACEME in the different files I have created by something relevant to your project or rules.
+
+4. Implement your rules!
+
