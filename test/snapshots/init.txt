@@ -1,0 +1,9 @@
+[?25l[2K[1G[36m?[39m [1mWould you like me to create elm.json and src/ReviewConfig.elm inside review?[22m [90m›[39m [90m(Y/n)[39m[2K[1G[2K[1G[32m✔[39m [1mWould you like me to create elm.json and src/ReviewConfig.elm inside review?[22m [90m…[39m yes
+[?25hAll done! I have created a review project at review/ for you.
+
+You can now define your review configuration by editing review/src/ReviewConfig.elm.
+
+I recommend you take a look at the following documents:
+  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
+  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule
+

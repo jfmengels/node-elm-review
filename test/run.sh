@@ -6,9 +6,10 @@ TMP="$CWD/tmp"
 SNAPSHOTS="$CWD/snapshots"
 
 function runCommandAndCompareToSnapshot {
-    local TITLE=$1
-    local ARGS=$2
-    local FILE=$3
+    local LOCAL_COMMAND=$1
+    local TITLE=$2
+    local ARGS=$3
+    local FILE=$4
 
     echo -ne "- $TITLE: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
     if [ ! -f "$SNAPSHOTS/$FILE" ]
@@ -17,7 +18,7 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    $CMD --FOR-TESTS $ARGS &> "$TMP/$FILE"
+    eval "$LOCAL_COMMAND --FOR-TESTS $ARGS &> \"$TMP/$FILE\""
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
@@ -34,29 +35,34 @@ function runCommandAndCompareToSnapshot {
 }
 
 function runAndRecord {
-    local TITLE=$1
-    local ARGS=$2
-    local FILE=$3
+    local LOCAL_COMMAND=$1
+    local TITLE=$2
+    local ARGS=$3
+    local FILE=$4
     echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
-    $CMD --FOR-TESTS $ARGS &> "$SNAPSHOTS/$FILE"
+    eval "$LOCAL_COMMAND --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\""
 }
 
 function createExtensiveTestSuite {
-    local TITLE=$1
-    local ARGS=$2
-    local FILE=$3
-    createTestSuiteWithDifferentReportFormats "$TITLE" "$ARGS" "$FILE"
-    createTestSuiteWithDifferentReportFormats "$TITLE (debug)" "$ARGS --debug" "$FILE-debug"
+    local LOCAL_COMMAND=$1
+    local TITLE=$2
+    local ARGS=$3
+    local FILE=$4
+    createTestSuiteWithDifferentReportFormats "$LOCAL_COMMAND" "$TITLE" "$ARGS" "$FILE"
+    createTestSuiteWithDifferentReportFormats "$LOCAL_COMMAND" "$TITLE (debug)" "$ARGS --debug" "$FILE-debug"
 }
 
 function createTestSuiteWithDifferentReportFormats {
-    local TITLE=$1
-    local ARGS=$2
-    local FILE=$3
-    $createTest "$TITLE" \
+    local LOCAL_COMMAND=$1
+    local TITLE=$2
+    local ARGS=$3
+    local FILE=$4
+    $createTest "$LOCAL_COMMAND" \
+        "$TITLE" \
         "$ARGS" \
         "$FILE.txt"
-    $createTest "$TITLE (JSON)" \
+    $createTest "$LOCAL_COMMAND" \
+        "$TITLE (JSON)" \
         "$ARGS --report=json" \
         "$FILE-json.txt"
 }
@@ -78,58 +84,89 @@ fi
 
 # Version
 
-$createTest \
+$createTest "$CMD" \
     "Running with --version" \
     "--version" \
     "version.txt"
 
 # Help
 
-$createTest \
+$createTest "$CMD" \
     "Running with --help" \
     "--help" \
     "help-main.txt"
 
-$createTest \
+$createTest "$CMD" \
     "Running init with --help" \
     "init --help" \
     "help-init.txt"
 
-$createTest \
+$createTest "$CMD" \
     "Running new-package with --help" \
     "new-package --help" \
     "help-new-package.txt"
 
-$createTest \
+$createTest "$CMD" \
     "Running new-rule with --help" \
     "new-rule --help" \
     "help-new-rule.txt"
 
+# init
+
+INIT_PROJECT_NAME="init-project"
+
+if [ "$1" == "record" ]
+then
+  mkdir -p "$SNAPSHOTS/$INIT_PROJECT_NAME"
+  cd "$SNAPSHOTS/$INIT_PROJECT_NAME"
+else
+  mkdir -p "$TMP/$INIT_PROJECT_NAME"
+  cd "$TMP/$INIT_PROJECT_NAME"
+fi
+
+echo Y | npx --no-install elm init
+$createTest "echo Y | $CMD" \
+    "Init a new configuration" \
+    "init" \
+    "init.txt"
+
+if [ "$1" != "record" ]
+then
+  echo -n "  Checking generated files are the same"
+  if [ "$(diff -rq "$TMP/$INIT_PROJECT_NAME/" "$SNAPSHOTS/$INIT_PROJECT_NAME/")" != "" ]
+  then
+      echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
+      echo "$(diff -rq "$TMP/$INIT_PROJECT_NAME/" "$SNAPSHOTS/$INIT_PROJECT_NAME/")"
+      exit 1
+  else
+    echo -e "  \e[92mOK\e[0m"
+  fi
+fi
 
 # Review
 
-cd project-with-errors
-createExtensiveTestSuite \
+cd $CWD/project-with-errors
+createExtensiveTestSuite "$CMD" \
     "Regular run from inside the project" \
     "" \
     "simple-run"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Running using other configuration (without errors)" \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using an empty configuration" \
     "--config ../config-empty" \
     "config-empty"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration with a missing direct elm-review dependency" \
     "--config ../config-without-elm-review" \
     "without-elm-review"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration with an outdated elm-review package" \
     "--config ../config-for-outdated-elm-review" \
     "outdated-version"
@@ -146,7 +183,7 @@ fi
 NEW_PACKAGE_NAME="elm-review-something"
 NEW_PACKAGE_NAME_FOR_NEW_RULE="$NEW_PACKAGE_NAME-for-new-rule"
 
-$createTest \
+$createTest "$CMD" \
     "Creating a new package" \
     "new-package --prefill some-author,$NEW_PACKAGE_NAME,BSD-3-Clause No.Doing.Foo" \
     "new-package.txt"
@@ -164,12 +201,12 @@ then
   fi
 fi
 
-# new-rule
+# new-rule (DEPENDS ON PREVIOUS STEP!)
 
 cp -r $NEW_PACKAGE_NAME $NEW_PACKAGE_NAME_FOR_NEW_RULE
 cd $NEW_PACKAGE_NAME_FOR_NEW_RULE
 
-$createTest \
+$createTest "$CMD" \
     "Creating a new rule" \
     "new-rule SomeRule" \
     "new-rule.txt"
@@ -193,52 +230,52 @@ cd $CWD/project-with-errors
 
 # Review with remote configuration
 
-$createTest \
+$createTest "$CMD" \
     "Running using remote GitHub configuration" \
     "--template jfmengels/review-unused/example#example" \
     "remote-configuration.txt"
 
-$createTest \
+$createTest "$CMD" \
     "Running using remote GitHub configuration (no errors)" \
     "--template jfmengels/node-elm-review/test/config-that-triggers-no-errors" \
     "remote-configuration-no-errors.txt"
 
-$createTest \
+$createTest "$CMD" \
     "Running using remote GitHub configuration without a path to the config" \
     "--template jfmengels/test-node-elm-review" \
     "remote-configuration-no-path.txt"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using unknown remote GitHub configuration" \
     "--template jfmengels/unknown-repo-123" \
     "remote-configuration-unknown"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using unknown remote GitHub configuration with a branch" \
     "--template jfmengels/unknown-repo-123#some-branch" \
     "remote-configuration-unknown-with-branch"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using remote GitHub configuration with a non-existing branch and commit" \
     "--template jfmengels/review-unused#unknown-branch" \
     "remote-configuration-with-unknown-branch"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using remote GitHub configuration with existing repo but that does not contain template folder" \
     "--template jfmengels/node-elm-review" \
     "remote-configuration-with-absent-folder"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a remote configuration with a missing direct elm-review dependency" \
     "--template jfmengels/node-elm-review/test/config-without-elm-review" \
     "remote-without-elm-review"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a remote configuration with an outdated elm-review" \
     "--template jfmengels/node-elm-review/test/config-for-outdated-elm-review" \
     "remote-with-outdated-elm-review"
 
-createTestSuiteWithDifferentReportFormats \
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using both --config and --template" \
     "--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review" \
     "remote-configuration-with-config-flag"
