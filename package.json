@@ -8,10 +8,8 @@
   "scripts": {
     "flow": "flow",
     "build": "./build.sh",
-    "test": "npm run build && npm run elm-tests && xo && npm run flow && npm run -s test-run && npm run -s test-init && npm run -s test-remote-init",
+    "test": "npm run build && npm run elm-tests && xo && npm run flow && npm run -s test-run",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
-    "test-init": "echo '\n\n---------------- Testing initializing a project\n'; rm -rf test-init && mkdir test-init && cd test-init && echo Y | elm init && echo Y | ../bin/elm-review init",
-    "test-remote-init": "echo '\n\n---------------- Testing initializing a project from a remote config\n'; rm -rf test-init && mkdir test-init && cd test-init && echo Y | elm init && echo Y | ../bin/elm-review init --template jfmengels/test-node-elm-review",
     "test-run": "(cd test/ && ./run.sh)",
     "test-run-record": "(cd test/ && ./run.sh record)"
   },
