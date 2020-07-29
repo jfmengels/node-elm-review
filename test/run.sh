@@ -138,34 +138,59 @@ createTestSuiteWithDifferentReportFormats \
 
 if [ "$1" == "record" ]
 then
-  cd $SNAPSHOTS
-  rm -r elm-review-something
+  cd $SNAPSHOTS/
 else
   cd $TMP/
 fi
 
+NEW_PACKAGE_NAME="elm-review-something"
+NEW_PACKAGE_NAME_FOR_NEW_RULE="$NEW_PACKAGE_NAME-for-new-rule"
+
 $createTest \
     "Creating a new package" \
-    "new-package --prefill some-author,elm-review-something,BSD-3-Clause No.Doing.Foo --debug" \
+    "new-package --prefill some-author,$NEW_PACKAGE_NAME,BSD-3-Clause No.Doing.Foo" \
     "new-package.txt"
 
-cd $CWD
-
-if [ "$1" == "record" ]
+if [ "$1" != "record" ]
 then
-  echo "do nothing TODO"
-else
-  if [ "$(diff -rq "$TMP/elm-review-something/" "$SNAPSHOTS/elm-review-something/")" != "" ]
+  echo -n "  Checking generated files are the same"
+  if [ "$(diff -rq "$TMP/$NEW_PACKAGE_NAME/" "$SNAPSHOTS/$NEW_PACKAGE_NAME/")" != "" ]
   then
       echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
-      echo "$(diff -rq "$TMP/elm-review-something/" "$SNAPSHOTS/elm-review-something/")"
+      echo "$(diff -rq "$TMP/$NEW_PACKAGE_NAME/" "$SNAPSHOTS/$NEW_PACKAGE_NAME/")"
       exit 1
   else
     echo -e "  \e[92mOK\e[0m"
   fi
-  mkdir -p tmp/
-  cd tmp/
 fi
+
+# new-rule
+
+cp -r $NEW_PACKAGE_NAME $NEW_PACKAGE_NAME_FOR_NEW_RULE
+cd $NEW_PACKAGE_NAME_FOR_NEW_RULE
+
+$createTest \
+    "Creating a new rule" \
+    "new-rule SomeRule" \
+    "new-rule.txt"
+
+cd $CWD
+
+if [ "$1" != "record" ]
+then
+  echo -n "  Checking generated files are the same"
+  if [ "$(diff -rq "$TMP/$NEW_PACKAGE_NAME_FOR_NEW_RULE/" "$SNAPSHOTS/$NEW_PACKAGE_NAME_FOR_NEW_RULE/")" != "" ]
+  then
+      echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
+      echo "$(diff -rq "$TMP/$NEW_PACKAGE_NAME_FOR_NEW_RULE/" "$SNAPSHOTS/$NEW_PACKAGE_NAME_FOR_NEW_RULE/")"
+      exit 1
+  else
+    echo -e "  \e[92mOK\e[0m"
+  fi
+fi
+
+cd $CWD/project-with-errors
+
 # Review with remote configuration
 
 $createTest \
