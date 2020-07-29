@@ -4,7 +4,7 @@ CWD=$(pwd)
 CMD="$CWD/../bin/elm-review"
 TMP="$CWD/tmp"
 SNAPSHOTS="$CWD/snapshots"
-IS_REVIEWING=("$1" != "record")
+SUBCOMMAND="$1"
 
 function runCommandAndCompareToSnapshot {
     local LOCAL_COMMAND=$1
@@ -69,7 +69,7 @@ function createTestSuiteWithDifferentReportFormats {
 }
 
 function checkFolderContents {
-  if [ $IS_REVIEWING ]
+  if [ "$SUBCOMMAND" != "record" ]
   then
     echo -n "  Checking generated files are the same"
     if [ "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/")" != "" ]
@@ -80,6 +80,17 @@ function checkFolderContents {
     else
       echo -e "  \e[92mOK\e[0m"
     fi
+  fi
+}
+
+function createAndGoIntoFolder {
+  if [ "$SUBCOMMAND" != "record" ]
+  then
+    mkdir -p "$TMP/$1"
+    cd "$TMP/$1"
+  else
+    mkdir -p "$SNAPSHOTS/$1"
+    cd "$SNAPSHOTS/$1"
   fi
 }
 
@@ -131,22 +142,29 @@ $createTest "$CMD" \
 
 INIT_PROJECT_NAME="init-project"
 
-if [ "$1" == "record" ]
-then
-  mkdir -p "$SNAPSHOTS/$INIT_PROJECT_NAME"
-  cd "$SNAPSHOTS/$INIT_PROJECT_NAME"
-else
-  mkdir -p "$TMP/$INIT_PROJECT_NAME"
-  cd "$TMP/$INIT_PROJECT_NAME"
-fi
+createAndGoIntoFolder $INIT_PROJECT_NAME
 
-echo Y | npx --no-install elm init
+echo Y | npx --no-install elm init > /dev/null
 $createTest "echo Y | $CMD" \
     "Init a new configuration" \
     "init" \
     "init.txt"
 
 checkFolderContents $INIT_PROJECT_NAME
+
+# init with template
+
+INIT_TEMPLATE_PROJECT_NAME="init-template-project"
+
+createAndGoIntoFolder $INIT_TEMPLATE_PROJECT_NAME
+
+echo Y | npx --no-install elm init > /dev/null
+$createTest "echo Y | $CMD" \
+    "Init a new configuration using a template" \
+    "init --template jfmengels/review-unused/example" \
+    "init-template.txt"
+
+checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
 
 # Review
 
