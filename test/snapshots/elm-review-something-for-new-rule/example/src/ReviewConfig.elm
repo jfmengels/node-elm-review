@@ -13,9 +13,11 @@ when inside the directory containing this file.
 
 import No.Doing.Foo
 import Review.Rule exposing (Rule)
+import SomeRule
 
 
 config : List Rule
 config =
     [ No.Doing.Foo.rule
+    , SomeRule.rule
     ]
