@@ -23,5 +23,7 @@ When you create this repository on GitHub, consider adding the elm-review topic 
 
 3. Search and replace all the REPLACEME in the different files I have created by something relevant to your project or rules.
 
-4. Implement your rules!
+4. At all times, make sure that your example configuration is working.
+
+5. Implement your rules!
 

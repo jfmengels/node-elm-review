@@ -31,7 +31,16 @@ import Review.Rule as Rule exposing (Rule)
 ## When (not) to enable this rule
 
 This rule is useful when REPLACEME.
-THis rule is not useful when REPLACEME.
+This rule is not useful when REPLACEME.
+
+
+## Try it out
+
+You can try this rule out by running the following command:
+
+```bash
+elm-review --template some-author/elm-review-something/example --rules No.Doing.Foo
+```
 
 -}
 rule : Rule
