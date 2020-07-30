@@ -1,6 +1,7 @@
 Adding elm.json
 Adding package.json
 Adding README
+Adding example folder
 Adding rule - No.Doing.Foo
 Adding .gitignore
 Adding GitHub Actions
