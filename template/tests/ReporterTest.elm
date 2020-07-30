@@ -35,8 +35,8 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport Reporter.WithDetails False
                 |> expect
-                    { withoutColors = "I found no problems while reviewing!"
-                    , withColors = "I found no problems while reviewing!"
+                    { withoutColors = "I found no errors!"
+                    , withColors = "I found no errors!"
                     }
         )
 
@@ -58,8 +58,8 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport Reporter.WithDetails True
                 |> expect
-                    { withoutColors = "I found no more problems while reviewing!"
-                    , withColors = "I found no more problems while reviewing!"
+                    { withoutColors = "I found no more errors!"
+                    , withColors = "I found no more errors!"
                     }
         )
 

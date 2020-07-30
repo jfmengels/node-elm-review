@@ -124,17 +124,18 @@ formatReport detailsMode errorsHaveBeenFixedPreviously files =
                 |> List.filter (.errors >> List.isEmpty >> not)
                 |> List.sortBy (.path >> filePath)
     in
-    if errorsHaveBeenFixedPreviously && numberOfErrors == 0 then
-        "I found no more problems while reviewing!"
-            |> Text.from
-            |> Text.toRecord
-            |> List.singleton
+    if numberOfErrors == 0 then
+        if errorsHaveBeenFixedPreviously then
+            "I found no more errors!"
+                |> Text.from
+                |> Text.toRecord
+                |> List.singleton
 
-    else if numberOfErrors == 0 then
-        "I found no problems while reviewing!"
-            |> Text.from
-            |> Text.toRecord
-            |> List.singleton
+        else
+            "I found no errors!"
+                |> Text.from
+                |> Text.toRecord
+                |> List.singleton
 
     else
         [ formatReports detailsMode filesWithErrors
