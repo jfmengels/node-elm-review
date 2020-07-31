@@ -1,0 +1,29 @@
+-- DEBUG IN CONFIGURATION ------------------------------------------------------
+
+You are using the Debug module in your configuration or rules, but I am
+compiling in optimized mode. Either remove those uses or run elm-review with
+--debug.
+
+-- DEBUG REMNANTS --------------------------------------------------------------
+
+There are uses of the `Debug` module in the following modules:
+
+    ReviewConfig
+
+But the --optimize flag only works if all `Debug` functions are removed!
+
+Note: The issue is that --optimize strips out info needed by `Debug` functions.
+Here are two examples:
+
+    (1) It shortens record field names. This makes the generated JavaScript is
+    smaller, but `Debug.toString` cannot know the real field names anymore.
+
+    (2) Values like `type Height = Height Float` are unboxed. This reduces
+    allocation, but it also means that `Debug.toString` cannot tell if it is
+    looking at a `Height` or `Float` value.
+
+There are a few other cases like that, and it will be much worse once we start
+inlining code. That optimization could move `Debug.log` and `Debug.todo` calls,
+resulting in unpredictable behavior. I hope that clarifies why this restriction
+exists!
+

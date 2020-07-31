@@ -206,6 +206,21 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "--config ../config-for-outdated-elm-review" \
     "outdated-version"
 
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Using an configuration which fails due to unknown module" \
+    "--config ../config-error-unknown-module" \
+    "config-error-unknown-module"
+
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Using an configuration which fails due to syntax error" \
+    "--config ../config-syntax-error" \
+    "config-syntax-error"
+
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Using an configuration which fails due to debug remnants" \
+    "--config ../config-error-debug" \
+    "config-error-debug"
+
 # new-package
 
 if [ "$1" == "record" ]

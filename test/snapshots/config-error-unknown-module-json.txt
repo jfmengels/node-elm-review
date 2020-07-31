@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "title": "UNEXPECTED ERROR",
+  "path": "../config-error-unknown-module/elm.json",
+  "message": "I ran into an unexpected error. Please open an issue at the following link:\n  https://github.com/jfmengels/node-elm-review/issues/new\n\nPlease include this error message and as much detail as you can provide. If you\ncan, please provide a setup that makes it easy to reproduce the error. That will\nmake it much easier to fix the issue.\n\nBelow is the error that was encountered.\n--------------------------------------------------------------------------------\nTypeError [ERR_INVALID_ARG_TYPE]: The \"to\" argument must be of type string. Received undefined\n    at validateString (internal/validators.js:121:11)\n    at Object.relative (path.js:1054:5)\n    at Object.anonymizePath [as path] (<local-path>/lib/anonymize.js:26:32)\n    at Object.report (<local-path>/lib/error-message.js:19:50)\n    at ChildProcess.<anonymous> (<local-path>/lib/build.js:303:26)\n    at ChildProcess.emit (events.js:314:20)\n    at maybeClose (internal/child_process.js:1051:16)\n    at Process.ChildProcess._handle.onexit (internal/child_process.js:287:5)"
+}
