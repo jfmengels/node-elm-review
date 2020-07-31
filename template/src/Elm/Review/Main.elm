@@ -674,7 +674,7 @@ encodeFix : { range : Range, replacement : String } -> Encode.Value
 encodeFix { range, replacement } =
     Encode.object
         [ ( "range", encodeRange range )
-        , ( "str", Encode.string replacement )
+        , ( "string", Encode.string replacement )
         ]
 
 

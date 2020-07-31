@@ -36,7 +36,7 @@ Reviewing the following files:
                   "column": 15
                 }
               },
-              "str": ""
+              "string": ""
             }
           ],
           "formatted": [
