@@ -77,21 +77,21 @@ If the process ran without any hitches, you should get something like the follow
                   "column": 1
                 }
               },
-              "str": ""
+              "string": ""
             }
           ],
           "formatted": [
             {
-              "str": "(fix) ",
+              "string": "(fix) ",
               "color": "#33BBC8"
             },
             {
-              "str": "NoUnused.Variables",
+              "string": "NoUnused.Variables",
               "color": "#FF0000"
             },
             ": Top-level variable `unusedVariable` is not used\n\n49| unusedVariable =\n    ",
             {
-              "str": "^^^^^^^^^^^^^^",
+              "string": "^^^^^^^^^^^^^^",
               "color": "#FF0000"
             },
             "\n50|      1\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
@@ -121,9 +121,11 @@ If the process ran without any hitches, you should get something like the follow
 #### Chunk
 
 A chunk represents a (un)stylized piece of the full human-readable error that would be shown to the user. It can be either a simple string, in which case there is no special formatting, or it can be an object with several optional fields::
-  - `str`: The string to display
-  - `color` (optional): Represents the color of the string, as a hex color string (`#33BBC8"`) or as a named color (`red`, `yellow`).
-  - `href` (optional): A URL link
+  - `string`: The string to display
+  - `color` (optional): Represents the color of the string, as a hex color string (`#33BBC8"`) or as a named color (`red`, `YELLOW`).
+  - `href` (optional): A URL link.
+  - `bold` (optional): If true, then the string should appear bold.
+  - `underline` (optional): If true, then the string should be underlined.
 
 
 That is it at the moment, but  fields like `bold` will appear later. If you fail to understand/decode the field, it is probably best to ignore it and just display the string without styling and to report an issue.

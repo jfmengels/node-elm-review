@@ -1016,7 +1016,7 @@ encodeReportPart { str, color, href } =
         Encode.string str
 
     else
-        [ Just ( "str", Encode.string str )
+        [ Just ( "string", Encode.string str )
         , Maybe.map (Encode.string >> Tuple.pair "color") color
         , Maybe.map (Encode.string >> Tuple.pair "href") href
         ]
