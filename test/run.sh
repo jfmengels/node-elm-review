@@ -68,6 +68,11 @@ function createTestSuiteWithDifferentReportFormats {
         "$FILE-json.txt"
 }
 
+function initElmProject {
+  echo Y | npx --no-install elm init > /dev/null
+  echo -e 'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n' > src/Main.elm
+}
+
 function checkFolderContents {
   if [ "$SUBCOMMAND" != "record" ]
   then
@@ -144,7 +149,7 @@ INIT_PROJECT_NAME="init-project"
 
 createAndGoIntoFolder $INIT_PROJECT_NAME
 
-echo Y | npx --no-install elm init > /dev/null
+initElmProject
 $createTest "echo Y | $CMD" \
     "Init a new configuration" \
     "init" \
@@ -158,7 +163,7 @@ INIT_TEMPLATE_PROJECT_NAME="init-template-project"
 
 createAndGoIntoFolder $INIT_TEMPLATE_PROJECT_NAME
 
-echo Y | npx --no-install elm init > /dev/null
+initElmProject
 $createTest "echo Y | $CMD" \
     "Init a new configuration using a template" \
     "init --template jfmengels/review-unused/example" \
