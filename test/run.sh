@@ -179,6 +179,13 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
 
+cd $CWD
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Regular run using --elmjson and --config" \
+    "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
+    "run-with-elmjson-flag"
+cd $CWD/project-with-errors
+
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using an empty configuration" \
     "--config ../config-empty" \
@@ -278,9 +285,3 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using both --config and --template" \
     "--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review" \
     "remote-configuration-with-config-flag"
-
-cd ..
-# # This is failing at the moment
-# $createTest "Regular run using --elmjson and --config" \
-#             "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
-#             "regular-run-snapshot"
