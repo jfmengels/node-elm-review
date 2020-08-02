@@ -27,7 +27,6 @@ build/Release
 node_modules
 elm-stuff
 tmp
-test-init
 build/
 
 # Editors
