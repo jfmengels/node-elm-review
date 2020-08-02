@@ -148,8 +148,11 @@ In that case, we (should) still report errors as JSON, with the following format
 
 - `type`: Equal to `"error"` when things are unexpected
 - `path`: The relative path to a file we could trace the problem to, or to a default one. This is in a lot of cases using a default value, because we are not able to pinpoint to a specific file. Also the default file might not exist, which may be the cause of the error.
-- `message`: The helpful description of the problem. This is meant for humans to read, but colors have been removed and it has been trimmed. You may wish to remove the line-breaks maybe? In the future, it may become an array like the `formatted` message for review errors.
+- `message`: The helpful description of the problem. This is meant for humans to read, but colors have been removed and it has been trimmed. You may wish to remove the line-breaks maybe?
+  *NOTE that* in the future, it will become an array like the `formatted` message for review errors. This is so that compiler errors will be able to be integrated here. At the moment, the message is not all that helpful. Help appreciated on this topic.
 - `stack` (optional): The original JavaScript runtime stacktrace. Only sent if you run with `--debug`.
+
+You should only have to listen to the CLI's standard output (`stdout`), and should not have to listen to the standard error output (`stderr`).
 
 ## Things that may help you
 
