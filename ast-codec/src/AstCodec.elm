@@ -46,8 +46,8 @@ range =
 node : Codec e a -> Codec e (Node a)
 node codec =
     S.customType
-        (\encoder (Node range_ value) ->
-            encoder range_ value
+        (\encoder (Node a b) ->
+            encoder a b
         )
         |> S.variant2 Node range codec
         |> S.finishCustomType
@@ -91,8 +91,8 @@ expression =
                 OperatorApplication a b c d ->
                     e2 a b c d
 
-                FunctionOrValue moduleName string ->
-                    e3 moduleName string
+                FunctionOrValue a b ->
+                    e3 a b
 
                 IfBlock a b c ->
                     e4 a b c
