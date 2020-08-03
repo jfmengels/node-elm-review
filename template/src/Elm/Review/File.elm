@@ -9,6 +9,7 @@ module Elm.Review.File exposing (decode)
 
 -}
 
+import AstCodec
 import Elm.Syntax.File
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -24,7 +25,18 @@ decode =
         (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
         (Decode.oneOf
-            [ Decode.field "ast" (Elm.Syntax.File.decoder |> Decode.map Just)
+            [ Decode.field "ast"
+                (Decode.string
+                    |> Decode.andThen
+                        (\text ->
+                            case AstCodec.decode text of
+                                Ok file ->
+                                    Decode.succeed (Just file)
+
+                                Err _ ->
+                                    Decode.succeed Nothing
+                        )
+                )
             , Decode.succeed Nothing
             ]
         )

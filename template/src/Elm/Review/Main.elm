@@ -1,5 +1,6 @@
 port module Elm.Review.Main exposing (main)
 
+import AstCodec
 import Dict exposing (Dict)
 import Elm.Docs
 import Elm.Project
@@ -493,7 +494,7 @@ cacheFileRequest project source =
         Just { ast } ->
             Encode.object
                 [ ( "source", Encode.string source )
-                , ( "ast", Elm.Syntax.File.encode ast )
+                , ( "ast", AstCodec.encode ast |> Encode.string )
                 ]
 
         Nothing ->
@@ -510,7 +511,7 @@ sendFileToBeCached project source =
         Just { ast } ->
             Encode.object
                 [ ( "source", Encode.string source )
-                , ( "ast", Elm.Syntax.File.encode ast )
+                , ( "ast", AstCodec.encode ast |> Encode.string )
                 ]
                 |> cacheFile
 
