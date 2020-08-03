@@ -1,5 +1,6 @@
 port module ParseMain exposing (main)
 
+import AstCodec
 import Dependencies
 import Elm.Parser as Parser
 import Elm.Processing
@@ -34,7 +35,7 @@ type Msg
 update : Msg -> () -> ( (), Cmd Msg )
 update (GotFile source) () =
     parseSource source
-        |> Result.map Elm.Syntax.File.encode
+        |> Result.map (AstCodec.encode >> Encode.string)
         |> Result.withDefault Encode.null
         |> parseResult
         |> Tuple.pair ()
