@@ -1,5 +1,6 @@
 module AstCodec exposing (decode, encode)
 
+import Bitwise
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Exposing exposing (ExposedType, Exposing(..), TopLevelExpose(..))
 import Elm.Syntax.Expression exposing (CaseBlock, Expression(..), Function, FunctionImplementation, Lambda, LetBlock, LetDeclaration(..), RecordSetter)
@@ -27,12 +28,23 @@ decode data =
     S.decodeFromString file data
 
 
+locationMask : Int
+locationMask =
+    2 ^ 16 - 1
+
+
+{-| The column value can't be larger than 2^16 - 1. I sort of remember Evan saying in #core-coordination that the compiler also has this restriction.
+-}
 location : Codec e Location
 location =
-    S.record Location
-        |> S.field .row S.int
-        |> S.field .column S.int
-        |> S.finishRecord
+    S.int
+        |> S.map
+            (\int ->
+                { row = Bitwise.shiftRightBy 16 int
+                , column = Bitwise.and int locationMask
+                }
+            )
+            (\{ row, column } -> Bitwise.or (row * (2 ^ 16)) column)
 
 
 range : Codec e Range
