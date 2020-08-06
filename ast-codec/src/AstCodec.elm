@@ -91,79 +91,79 @@ infixDirection =
 expression : Codec DecodeError Expression
 expression =
     S.customType
-        (\e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12 e13 e14 e15 e16 e17 e18 e19 e20 e21 e22 e23 value ->
+        (\application unit operatorApplication functionOrValue ifBlock prefixOperator operator integer hex floatable negation literal charExpr tuple parenthesized letExpr caseExpr lambdaExpr record listExpr recordAccess recordAccessFunction recordUpdateExpr glsl value ->
             case value of
                 Application a ->
-                    e0 a
+                    application a
 
                 UnitExpr ->
-                    e1
+                    unit
 
                 OperatorApplication a b c d ->
-                    e2 a b c d
+                    operatorApplication a b c d
 
                 FunctionOrValue a b ->
-                    e3 a b
+                    functionOrValue a b
 
                 IfBlock a b c ->
-                    e4 a b c
+                    ifBlock a b c
 
                 PrefixOperator a ->
-                    e5 a
+                    prefixOperator a
 
                 Operator a ->
-                    e6 a
+                    operator a
 
                 Integer a ->
-                    e7 a
+                    integer a
 
                 Hex a ->
-                    e8 a
+                    hex a
 
                 Floatable a ->
-                    e9 a
+                    floatable a
 
                 Negation a ->
-                    e10 a
+                    negation a
 
                 Literal a ->
-                    e11 a
+                    literal a
 
                 CharLiteral a ->
-                    e12 a
+                    charExpr a
 
                 TupledExpression a ->
-                    e13 a
+                    tuple a
 
                 ParenthesizedExpression a ->
-                    e14 a
+                    parenthesized a
 
                 LetExpression a ->
-                    e15 a
+                    letExpr a
 
                 CaseExpression a ->
-                    e16 a
+                    caseExpr a
 
                 LambdaExpression a ->
-                    e17 a
+                    lambdaExpr a
 
                 RecordExpr a ->
-                    e18 a
+                    record a
 
                 ListExpr a ->
-                    e19 a
+                    listExpr a
 
                 RecordAccess a b ->
-                    e20 a b
+                    recordAccess a b
 
                 RecordAccessFunction a ->
-                    e21 a
+                    recordAccessFunction a
 
                 RecordUpdateExpression a b ->
-                    e22 a b
+                    recordUpdateExpr a b
 
                 GLSLExpression a ->
-                    e23 a
+                    glsl a
         )
         |> S.variant1 Application (S.list (node lazyExpression))
         |> S.variant0 UnitExpr
