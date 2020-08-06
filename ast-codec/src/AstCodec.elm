@@ -55,12 +55,13 @@ range =
 
 node : Codec e a -> Codec e (Node a)
 node codec =
-    S.customType
-        (\encoder (Node a b) ->
-            encoder a b
-        )
-        |> S.variant2 Node range codec
-        |> S.finishCustomType
+    S.record (\a b c d e -> Node { start = { row = a, column = b }, end = { row = c, column = d } } e)
+        |> S.field (\(Node range_ _) -> range_.start.row) S.int
+        |> S.field (\(Node range_ _) -> range_.start.column) S.int
+        |> S.field (\(Node range_ _) -> range_.end.row) S.int
+        |> S.field (\(Node range_ _) -> range_.end.column) S.int
+        |> S.field (\(Node _ a) -> a) codec
+        |> S.finishRecord
 
 
 char : Codec DecodeError Char
