@@ -14,17 +14,28 @@ import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.TypeAlias exposing (TypeAlias)
 import Elm.Syntax.TypeAnnotation exposing (RecordDefinition, TypeAnnotation(..))
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Serialize as S exposing (Codec)
 
 
-encode : File -> String
+encode : File -> Encode.Value
 encode file_ =
-    S.encodeToString file file_
+    S.encodeToJson file file_
 
 
-decode : String -> Result (S.Error DecodeError) File
-decode data =
-    S.decodeFromString file data
+decode : Decode.Decoder File
+decode =
+    Decode.value
+        |> Decode.andThen
+            (\data ->
+                case S.decodeFromJson file data of
+                    Ok res ->
+                        Decode.succeed res
+
+                    Err _ ->
+                        Decode.fail "Not a valid file"
+            )
 
 
 location : Codec e Location

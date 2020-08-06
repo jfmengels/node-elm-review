@@ -35,7 +35,7 @@ type Msg
 update : Msg -> () -> ( (), Cmd Msg )
 update (GotFile source) () =
     parseSource source
-        |> Result.map (AstCodec.encode >> Encode.string)
+        |> Result.map AstCodec.encode
         |> Result.withDefault Encode.null
         |> parseResult
         |> Tuple.pair ()

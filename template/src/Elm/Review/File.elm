@@ -26,16 +26,10 @@ decode =
         (Decode.field "source" Decode.string)
         (Decode.oneOf
             [ Decode.field "ast"
-                (Decode.string
-                    |> Decode.andThen
-                        (\text ->
-                            case AstCodec.decode text of
-                                Ok file ->
-                                    Decode.succeed (Just file)
-
-                                Err _ ->
-                                    Decode.succeed Nothing
-                        )
+                (Decode.oneOf
+                    [ AstCodec.decode |> Decode.map Just
+                    , Decode.succeed Nothing
+                    ]
                 )
             , Decode.succeed Nothing
             ]

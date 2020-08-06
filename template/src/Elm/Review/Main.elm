@@ -494,7 +494,7 @@ cacheFileRequest project source =
         Just { ast } ->
             Encode.object
                 [ ( "source", Encode.string source )
-                , ( "ast", AstCodec.encode ast |> Encode.string )
+                , ( "ast", AstCodec.encode ast )
                 ]
 
         Nothing ->
@@ -511,7 +511,7 @@ sendFileToBeCached project source =
         Just { ast } ->
             Encode.object
                 [ ( "source", Encode.string source )
-                , ( "ast", AstCodec.encode ast |> Encode.string )
+                , ( "ast", AstCodec.encode ast )
                 ]
                 |> cacheFile
 
