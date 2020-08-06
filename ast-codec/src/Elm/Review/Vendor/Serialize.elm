@@ -72,7 +72,26 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Regex exposing (Regex)
 import Set exposing (Set)
-import Toop exposing (T4(..), T5(..), T6(..), T7(..), T8(..))
+
+
+type T4 a b c d
+    = T4 a b c d
+
+
+type T5 a b c d e
+    = T5 a b c d e
+
+
+type T6 a b c d e f
+    = T6 a b c d e f
+
+
+type T7 a b c d e f g
+    = T7 a b c d e f g
+
+
+type T8 a b c d e f g h
+    = T8 a b c d e f g h
 
 
 
