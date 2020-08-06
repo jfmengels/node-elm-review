@@ -91,13 +91,10 @@ infixDirection =
 expression : Codec DecodeError Expression
 expression =
     S.customType
-        (\application unit operatorApplication functionOrValue ifBlock prefixOperator operator integer hex floatable negation literal charExpr tuple parenthesized letExpr caseExpr lambdaExpr record listExpr recordAccess recordAccessFunction recordUpdateExpr glsl value ->
+        (\application operatorApplication functionOrValue integer floatable literal tuple parenthesized record listExpr unit ifBlock prefixOperator hex negation charExpr letExpr caseExpr lambdaExpr recordAccess recordAccessFunction recordUpdateExpr glsl operator value ->
             case value of
                 Application a ->
                     application a
-
-                UnitExpr ->
-                    unit
 
                 OperatorApplication a b c d ->
                     operatorApplication a b c d
@@ -105,38 +102,41 @@ expression =
                 FunctionOrValue a b ->
                     functionOrValue a b
 
-                IfBlock a b c ->
-                    ifBlock a b c
-
-                PrefixOperator a ->
-                    prefixOperator a
-
-                Operator a ->
-                    operator a
-
                 Integer a ->
                     integer a
-
-                Hex a ->
-                    hex a
 
                 Floatable a ->
                     floatable a
 
-                Negation a ->
-                    negation a
-
                 Literal a ->
                     literal a
-
-                CharLiteral a ->
-                    charExpr a
 
                 TupledExpression a ->
                     tuple a
 
                 ParenthesizedExpression a ->
                     parenthesized a
+
+                RecordExpr a ->
+                    record a
+
+                ListExpr a ->
+                    listExpr a
+
+                UnitExpr ->
+                    unit
+
+                PrefixOperator a ->
+                    prefixOperator a
+
+                Hex a ->
+                    hex a
+
+                Negation a ->
+                    negation a
+
+                CharLiteral a ->
+                    charExpr a
 
                 LetExpression a ->
                     letExpr a
@@ -147,11 +147,8 @@ expression =
                 LambdaExpression a ->
                     lambdaExpr a
 
-                RecordExpr a ->
-                    record a
-
-                ListExpr a ->
-                    listExpr a
+                IfBlock a b c ->
+                    ifBlock a b c
 
                 RecordAccess a b ->
                     recordAccess a b
@@ -164,31 +161,36 @@ expression =
 
                 GLSLExpression a ->
                     glsl a
+
+                Operator a ->
+                    operator a
         )
         |> S.variant1 Application (S.list (node lazyExpression))
-        |> S.variant0 UnitExpr
         |> S.variant4 OperatorApplication S.string infixDirection (node lazyExpression) (node lazyExpression)
         |> S.variant2 FunctionOrValue (S.list S.string) S.string
-        |> S.variant3 IfBlock (node lazyExpression) (node lazyExpression) (node lazyExpression)
-        |> S.variant1 PrefixOperator S.string
-        |> S.variant1 Operator S.string
         |> S.variant1 Integer S.int
-        |> S.variant1 Hex S.int
         |> S.variant1 Floatable S.float
-        |> S.variant1 Negation (node lazyExpression)
         |> S.variant1 Literal S.string
-        |> S.variant1 CharLiteral char
         |> S.variant1 TupledExpression (S.list (node lazyExpression))
         |> S.variant1 ParenthesizedExpression (node lazyExpression)
+        |> S.variant1 RecordExpr (S.list (node recordSetter))
+        |> S.variant1 ListExpr (S.list (node lazyExpression))
+        -- The expressions above should be the top 10 used expressions, in order
+        -- to have them take a single less character in the resulting JSON
+        |> S.variant0 UnitExpr
+        |> S.variant3 IfBlock (node lazyExpression) (node lazyExpression) (node lazyExpression)
+        |> S.variant1 PrefixOperator S.string
+        |> S.variant1 Hex S.int
+        |> S.variant1 Negation (node lazyExpression)
+        |> S.variant1 CharLiteral char
         |> S.variant1 LetExpression letBlock
         |> S.variant1 CaseExpression caseBlock
         |> S.variant1 LambdaExpression lambda
-        |> S.variant1 RecordExpr (S.list (node recordSetter))
-        |> S.variant1 ListExpr (S.list (node lazyExpression))
         |> S.variant2 RecordAccess (node lazyExpression) (node S.string)
         |> S.variant1 RecordAccessFunction S.string
         |> S.variant2 RecordUpdateExpression (node S.string) (S.list (node recordSetter))
         |> S.variant1 GLSLExpression S.string
+        |> S.variant1 Operator S.string
         |> S.finishCustomType
 
 
