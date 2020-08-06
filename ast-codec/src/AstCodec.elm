@@ -38,19 +38,18 @@ decode =
             )
 
 
-location : Codec e Location
-location =
-    S.record Location
-        |> S.field .row S.int
-        |> S.field .column S.int
-        |> S.finishRecord
-
-
 range : Codec e Range
 range =
-    S.record Range
-        |> S.field .start location
-        |> S.field .end location
+    S.record
+        (\startRow startColumn endRow endColumn ->
+            { start = { row = startRow, column = startColumn }
+            , end = { row = endRow, column = endColumn }
+            }
+        )
+        |> S.field (.start >> .row) S.int
+        |> S.field (.start >> .column) S.int
+        |> S.field (.end >> .row) S.int
+        |> S.field (.end >> .column) S.int
         |> S.finishRecord
 
 
