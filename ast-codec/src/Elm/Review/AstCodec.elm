@@ -1,5 +1,6 @@
 module Elm.Review.AstCodec exposing (decode, encode)
 
+import Elm.Review.Vendor.Serialize as S exposing (Codec)
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Exposing exposing (ExposedType, Exposing(..), TopLevelExpose(..))
 import Elm.Syntax.Expression exposing (CaseBlock, Expression(..), Function, FunctionImplementation, Lambda, LetBlock, LetDeclaration(..), RecordSetter)
@@ -16,7 +17,6 @@ import Elm.Syntax.TypeAlias exposing (TypeAlias)
 import Elm.Syntax.TypeAnnotation exposing (RecordDefinition, TypeAnnotation(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Serialize as S exposing (Codec)
 
 
 encode : File -> Encode.Value
