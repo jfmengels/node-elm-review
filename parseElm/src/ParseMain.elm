@@ -1,6 +1,6 @@
 port module ParseMain exposing (main)
 
-import AstCodec
+import Elm.Review.AstCodec as AstCodec
 import Dependencies
 import Elm.Parser as Parser
 import Elm.Processing

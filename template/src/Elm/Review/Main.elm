@@ -1,6 +1,6 @@
 port module Elm.Review.Main exposing (main)
 
-import AstCodec
+import Elm.Review.AstCodec as AstCodec
 import Dict exposing (Dict)
 import Elm.Docs
 import Elm.Project

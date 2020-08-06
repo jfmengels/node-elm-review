@@ -9,7 +9,7 @@ module Elm.Review.File exposing (decode)
 
 -}
 
-import AstCodec
+import Elm.Review.AstCodec as AstCodec
 import Elm.Syntax.File
 import Json.Decode as Decode
 import Json.Encode as Encode

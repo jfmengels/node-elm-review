@@ -1,4 +1,4 @@
-module AstCodec exposing (decode, encode)
+module Elm.Review.AstCodec exposing (decode, encode)
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Exposing exposing (ExposedType, Exposing(..), TopLevelExpose(..))
