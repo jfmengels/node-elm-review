@@ -6,6 +6,17 @@ TMP="$CWD/tmp"
 SNAPSHOTS="$CWD/snapshots"
 SUBCOMMAND="$1"
 
+# If you get errors like rate limit exceeded, you can run these tests
+# with "GITHUB-AUTH=gitHubUserName:token"
+# Follow this guide: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
+# to create an API token, and give it access to public repositories.
+if [ -z "${GITHUB_AUTH}" ]
+then
+  AUTH=""
+else
+  AUTH=" --github-auth $GITHUB_AUTH"
+fi
+
 function runCommandAndCompareToSnapshot {
     local LOCAL_COMMAND=$1
     local TITLE=$2
@@ -19,7 +30,7 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    eval "$LOCAL_COMMAND --FOR-TESTS $ARGS &> \"$TMP/$FILE\""
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$TMP/$FILE\""
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
@@ -41,7 +52,7 @@ function runAndRecord {
     local ARGS=$3
     local FILE=$4
     echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
-    eval "$LOCAL_COMMAND --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\""
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\""
 }
 
 function createExtensiveTestSuite {
