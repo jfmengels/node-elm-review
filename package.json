@@ -65,6 +65,7 @@
     "fs-extra": "^9.0.0",
     "glob": "^7.1.4",
     "got": "^10.7.0",
+    "lz4": "git+https://github.com/pierrec/node-lz4.git#76f347f60ba276d876dee20f0fe1d4092ad0177b",
     "minimist": "^1.2.0",
     "ora": "^4.0.5",
     "prompts": "^2.2.1",
