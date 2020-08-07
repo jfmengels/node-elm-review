@@ -1,7 +1,7 @@
 module Elm.Review.Vendor.Serialize exposing
-    ( encodeToJson, decodeFromJson, encodeToBytes, decodeFromBytes, encodeToString, decodeFromString
+    ( encodeToJson, decodeFromJson
     , Codec, Error(..)
-    , string, bool, float, int, unit, bytes, byte
+    , string, bool, float, int, unit
     , maybe, list, array, dict, set, tuple, triple, result, enum
     , RecordCodec, record, field, finishRecord
     , CustomTypeCodec, customType, variant0, variant1, variant2, variant3, variant4, variant5, variant6, variant7, variant8, finishCustomType, VariantEncoder
@@ -63,14 +63,9 @@ Here's some advice when choosing:
 -}
 
 import Array exposing (Array)
-import Base64
-import Bytes
-import Bytes.Decode as BD
-import Bytes.Encode as BE
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
-import Regex exposing (Regex)
 import Set exposing (Set)
 
 
@@ -102,9 +97,7 @@ type T8 a b c d e f g h
 -}
 type Codec e a
     = Codec
-        { encoder : a -> BE.Encoder
-        , decoder : Decoder (Result (Error e) a)
-        , jsonEncoder : a -> JE.Value
+        { jsonEncoder : a -> JE.Value
         , jsonDecoder : JD.Decoder (Result (Error e) a)
         }
 
@@ -131,72 +124,11 @@ version =
     1
 
 
-
--- DECODE
-
-
-{-| Describes how to turn a sequence of bytes into a nice Elm value.
--}
-type alias Decoder a =
-    BD.Decoder a
-
-
-endian : Bytes.Endianness
-endian =
-    Bytes.BE
-
-
-{-| Extracts the `Decoder` contained inside the `Codec`.
--}
-getDecoder : Codec e a -> Decoder (Result (Error e) a)
-getDecoder (Codec m) =
-    m.decoder
-
-
 {-| Extracts the json `Decoder` contained inside the `Codec`.
 -}
 getJsonDecoder : Codec e a -> JD.Decoder (Result (Error e) a)
 getJsonDecoder (Codec m) =
     m.jsonDecoder
-
-
-{-| Run a `Codec` to turn a sequence of bytes into an Elm value.
--}
-decodeFromBytes : Codec e a -> Bytes.Bytes -> Result (Error e) a
-decodeFromBytes codec bytes_ =
-    let
-        decoder =
-            BD.unsignedInt8
-                |> BD.andThen
-                    (\value ->
-                        if value <= 0 then
-                            Err DataCorrupted |> BD.succeed
-
-                        else if value == version then
-                            getDecoder codec
-
-                        else
-                            Err SerializerOutOfDate |> BD.succeed
-                    )
-    in
-    case BD.decode decoder bytes_ of
-        Just value ->
-            value
-
-        Nothing ->
-            Err DataCorrupted
-
-
-{-| Run a `Codec` to turn a String encoded with `encodeToString` into an Elm value.
--}
-decodeFromString : Codec e a -> String -> Result (Error e) a
-decodeFromString codec base64 =
-    case decode base64 of
-        Just bytes_ ->
-            decodeFromBytes codec bytes_
-
-        Nothing ->
-            Err DataCorrupted
 
 
 {-| Run a `Codec` to turn a json value encoded with `encodeToJson` into an Elm value.
@@ -226,52 +158,8 @@ decodeFromJson codec json =
             Err DataCorrupted
 
 
-decode : String -> Maybe Bytes.Bytes
-decode base64text =
-    let
-        replaceChar rematch =
-            case rematch.match of
-                "-" ->
-                    "+"
-
-                _ ->
-                    "/"
-
-        strlen =
-            String.length base64text
-    in
-    if strlen == 0 then
-        BE.encode (BE.sequence []) |> Just
-
-    else
-        let
-            hanging =
-                modBy 4 strlen
-
-            ilen =
-                if hanging == 0 then
-                    0
-
-                else
-                    4 - hanging
-        in
-        Regex.replace replaceFromUrl replaceChar (base64text ++ String.repeat ilen "=") |> Base64.toBytes
-
-
-replaceFromUrl : Regex
-replaceFromUrl =
-    Regex.fromString "[-_]" |> Maybe.withDefault Regex.never
-
-
 
 -- ENCODE
-
-
-{-| Extracts the encoding function contained inside the `Codec`.
--}
-getEncoder : Codec e a -> a -> BE.Encoder
-getEncoder (Codec m) =
-    m.encoder
 
 
 {-| Extracts the json encoding function contained inside the `Codec`.
@@ -279,32 +167,6 @@ getEncoder (Codec m) =
 getJsonEncoder : Codec e a -> a -> JE.Value
 getJsonEncoder (Codec m) =
     m.jsonEncoder
-
-
-{-| Convert an Elm value into a sequence of bytes.
--}
-encodeToBytes : Codec e a -> a -> Bytes.Bytes
-encodeToBytes codec value =
-    BE.sequence
-        [ BE.unsignedInt8 version
-        , value |> getEncoder codec
-        ]
-        |> BE.encode
-
-
-{-| Convert an Elm value into a string. This string contains only url safe characters, so you can do the following:
-
-    import Serlialize as S
-
-    myUrl =
-        "www.mywebsite.com/?data=" ++ S.encodeToString S.float 1234
-
-and not risk generating an invalid url.
-
--}
-encodeToString : Codec e a -> a -> String
-encodeToString codec =
-    encodeToBytes codec >> replaceBase64Chars
 
 
 {-| Convert an Elm value into json data.
@@ -318,43 +180,17 @@ encodeToJson codec value =
         ]
 
 
-replaceBase64Chars : Bytes.Bytes -> String
-replaceBase64Chars =
-    let
-        replaceChar rematch =
-            case rematch.match of
-                "+" ->
-                    "-"
-
-                "/" ->
-                    "_"
-
-                _ ->
-                    ""
-    in
-    Base64.fromBytes >> Maybe.withDefault "" >> Regex.replace replaceForUrl replaceChar
-
-
-replaceForUrl : Regex
-replaceForUrl =
-    Regex.fromString "[\\+/=]" |> Maybe.withDefault Regex.never
-
-
 
 -- BASE
 
 
 build :
-    (a -> BE.Encoder)
-    -> Decoder (Result (Error e) a)
-    -> (a -> JE.Value)
+    (a -> JE.Value)
     -> JD.Decoder (Result (Error e) a)
     -> Codec e a
-build encoder_ decoder_ jsonEncoder jsonDecoder =
+build jsonEncoder jsonDecoder =
     Codec
-        { encoder = encoder_
-        , decoder = decoder_
-        , jsonEncoder = jsonEncoder
+        { jsonEncoder = jsonEncoder
         , jsonDecoder = jsonDecoder
         }
 
@@ -364,16 +200,6 @@ build encoder_ decoder_ jsonEncoder jsonDecoder =
 string : Codec e String
 string =
     build
-        (\text ->
-            BE.sequence
-                [ BE.unsignedInt32 endian (BE.getStringWidth text)
-                , BE.string text
-                ]
-        )
-        (BD.unsignedInt32 endian
-            |> BD.andThen
-                (\charCount -> BD.string charCount |> BD.map Ok)
-        )
         JE.string
         (JD.string |> JD.map Ok)
 
@@ -383,28 +209,6 @@ string =
 bool : Codec e Bool
 bool =
     build
-        (\value ->
-            case value of
-                True ->
-                    BE.unsignedInt8 1
-
-                False ->
-                    BE.unsignedInt8 0
-        )
-        (BD.unsignedInt8
-            |> BD.map
-                (\value ->
-                    case value of
-                        0 ->
-                            Ok False
-
-                        1 ->
-                            Ok True
-
-                        _ ->
-                            Err DataCorrupted
-                )
-        )
         JE.bool
         (JD.bool |> JD.map Ok)
 
@@ -414,8 +218,6 @@ bool =
 int : Codec e Int
 int =
     build
-        (toFloat >> BE.float64 endian)
-        (BD.float64 endian |> BD.map (round >> Ok))
         JE.int
         (JD.int |> JD.map Ok)
 
@@ -425,49 +227,8 @@ int =
 float : Codec e Float
 float =
     build
-        (BE.float64 endian)
-        (BD.float64 endian |> BD.map Ok)
         JE.float
         (JD.float |> JD.map Ok)
-
-
-{-| Codec for serializing a `Char`
--}
-char : Codec e Char
-char =
-    let
-        charEncode text =
-            BE.sequence
-                [ BE.unsignedInt32 endian (String.length text)
-                , BE.string text
-                ]
-    in
-    build
-        (String.fromChar >> charEncode)
-        (BD.unsignedInt32 endian
-            |> BD.andThen (\charCount -> BD.string charCount)
-            |> BD.map
-                (\text ->
-                    case String.toList text |> List.head of
-                        Just char_ ->
-                            Ok char_
-
-                        Nothing ->
-                            Err DataCorrupted
-                )
-        )
-        (String.fromChar >> JE.string)
-        (JD.string
-            |> JD.map
-                (\text ->
-                    case String.toList text |> List.head of
-                        Just char_ ->
-                            Ok char_
-
-                        Nothing ->
-                            Err DataCorrupted
-                )
-        )
 
 
 
@@ -511,11 +272,6 @@ maybe justCodec =
 list : Codec e a -> Codec e (List a)
 list codec =
     build
-        (listEncode (getEncoder codec))
-        (BD.unsignedInt32 endian
-            |> BD.andThen
-                (\length -> BD.loop ( length, [] ) (listStep (getDecoder codec)))
-        )
         (JE.list (getJsonEncoder codec))
         (JD.list (getJsonDecoder codec)
             |> JD.map
@@ -534,42 +290,6 @@ list codec =
                     (Ok [])
                 )
         )
-
-
-isError : Result e a -> Bool
-isError result_ =
-    case result_ of
-        Ok _ ->
-            False
-
-        Err _ ->
-            True
-
-
-listEncode : (a -> BE.Encoder) -> List a -> BE.Encoder
-listEncode encoder_ list_ =
-    list_
-        |> List.map encoder_
-        |> (::) (BE.unsignedInt32 endian (List.length list_))
-        |> BE.sequence
-
-
-listStep : BD.Decoder (Result (Error e) a) -> ( Int, List a ) -> Decoder (BD.Step ( Int, List a ) (Result (Error e) (List a)))
-listStep decoder_ ( n, xs ) =
-    if n <= 0 then
-        BD.succeed (BD.Done (xs |> List.reverse |> Ok))
-
-    else
-        BD.map
-            (\x ->
-                case x of
-                    Ok ok ->
-                        BD.Loop ( n - 1, ok :: xs )
-
-                    Err err ->
-                        BD.Done (Err err)
-            )
-            decoder_
 
 
 {-| Codec for serializing an `Array`
@@ -609,8 +329,6 @@ set codec =
 unit : Codec e ()
 unit =
     build
-        (always (BE.sequence []))
-        (BD.succeed (Ok ()))
         (\_ -> JE.int 0)
         (JD.succeed (Ok ()))
 
@@ -668,76 +386,6 @@ result errorCodec valueCodec =
         |> finishCustomType
 
 
-{-| Codec for serializing [`Bytes`](https://package.elm-lang.org/packages/elm/bytes/latest/).
-This is useful in combination with `mapValid` for encoding and decoding data using some specialized format.
-
-    import Image exposing (Image)
-    import Serialize as S
-
-    imageCodec : S.Codec String Image
-    imageCodec =
-        S.bytes
-            |> S.mapValid
-                (Image.decode >> Result.fromMaybe "Failed to decode PNG image.")
-                Image.toPng
-
--}
-bytes : Codec e Bytes.Bytes
-bytes =
-    build
-        (\bytes_ ->
-            BE.sequence
-                [ BE.unsignedInt32 endian (Bytes.width bytes_)
-                , BE.bytes bytes_
-                ]
-        )
-        (BD.unsignedInt32 endian |> BD.andThen (\length -> BD.bytes length |> BD.map Ok))
-        (replaceBase64Chars >> JE.string)
-        (JD.string
-            |> JD.map
-                (\text ->
-                    case decode text of
-                        Just bytes_ ->
-                            Ok bytes_
-
-                        Nothing ->
-                            Err DataCorrupted
-                )
-        )
-
-
-{-| Codec for serializing an integer ranging from 0 to 255.
-This is useful if you have a small integer you want to serialize and not use up a lot of space.
-
-    import Serialize as S
-
-    type alias Color =
-        { red : Int
-        , green : Int
-        , blue : Int
-        }
-
-    color : S.Codec Color
-    color =
-        Color.record Color
-            |> S.field .red byte
-            |> S.field .green byte
-            |> S.field .blue byte
-            |> S.finishRecord
-
-**Warning:** values greater than 255 or less than 0 will wrap around.
-So if you encode -1 you'll get back 255 and if you encode 257 you'll get back 2.
-
--}
-byte : Codec e Int
-byte =
-    build
-        BE.unsignedInt8
-        (BD.unsignedInt8 |> BD.map Ok)
-        (modBy 256 >> JE.int)
-        (JD.int |> JD.map Ok)
-
-
 {-| A codec for serializing an item from a list of possible items.
 If you try to encode an item that isn't in the list then the first item is defaulted to.
 
@@ -780,8 +428,6 @@ enum defaultItem items =
                 getAt (index - 1) items |> Maybe.withDefault defaultItem |> Ok
     in
     build
-        (getIndex >> BE.unsignedInt32 endian)
-        (BD.unsignedInt32 endian |> BD.map getItem)
         (getIndex >> JE.int)
         (JD.int |> JD.map getItem)
 
@@ -826,9 +472,7 @@ findIndexHelp index predicate list_ =
 -}
 type RecordCodec e a b
     = RecordCodec
-        { encoder : a -> List BE.Encoder
-        , decoder : Decoder (Result (Error e) b)
-        , jsonEncoder : a -> List JE.Value
+        { jsonEncoder : a -> List JE.Value
         , jsonDecoder : JD.Decoder (Result (Error e) b)
         , fieldIndex : Int
         }
@@ -855,9 +499,7 @@ type RecordCodec e a b
 record : b -> RecordCodec e a b
 record ctor =
     RecordCodec
-        { encoder = \_ -> []
-        , decoder = BD.succeed (Ok ctor)
-        , jsonEncoder = \_ -> []
+        { jsonEncoder = \_ -> []
         , jsonDecoder = JD.succeed (Ok ctor)
         , fieldIndex = 0
         }
@@ -868,23 +510,7 @@ record ctor =
 field : (a -> f) -> Codec e f -> RecordCodec e a (f -> b) -> RecordCodec e a b
 field getter codec (RecordCodec recordCodec) =
     RecordCodec
-        { encoder = \v -> (getEncoder codec <| getter v) :: recordCodec.encoder v
-        , decoder =
-            BD.map2
-                (\f x ->
-                    case ( f, x ) of
-                        ( Ok fOk, Ok xOk ) ->
-                            fOk xOk |> Ok
-
-                        ( Err err, _ ) ->
-                            Err err
-
-                        ( _, Err err ) ->
-                            Err err
-                )
-                recordCodec.decoder
-                (getDecoder codec)
-        , jsonEncoder = \v -> (getJsonEncoder codec <| getter v) :: recordCodec.jsonEncoder v
+        { jsonEncoder = \v -> (getJsonEncoder codec <| getter v) :: recordCodec.jsonEncoder v
         , jsonDecoder =
             JD.map2
                 (\f x ->
@@ -909,9 +535,7 @@ field getter codec (RecordCodec recordCodec) =
 finishRecord : RecordCodec e a a -> Codec e a
 finishRecord (RecordCodec codec) =
     Codec
-        { encoder = codec.encoder >> List.reverse >> BE.sequence
-        , decoder = codec.decoder
-        , jsonEncoder = codec.jsonEncoder >> List.reverse >> JE.list identity
+        { jsonEncoder = codec.jsonEncoder >> List.reverse >> JE.list identity
         , jsonDecoder = codec.jsonDecoder
         }
 
@@ -924,9 +548,7 @@ finishRecord (RecordCodec codec) =
 -}
 type CustomTypeCodec a e match v
     = CustomTypeCodec
-        { match : match
-        , jsonMatch : match
-        , decoder : Int -> Decoder (Result (Error e) v) -> Decoder (Result (Error e) v)
+        { jsonMatch : match
         , jsonDecoder : Int -> JD.Decoder (Result (Error e) v) -> JD.Decoder (Result (Error e) v)
         , idCounter : Int
         }
@@ -967,9 +589,7 @@ You need to pass a pattern matching function, see the FAQ for details.
 customType : match -> CustomTypeCodec { youNeedAtLeastOneVariant : () } e match value
 customType match =
     CustomTypeCodec
-        { match = match
-        , jsonMatch = match
-        , decoder = \_ -> identity
+        { jsonMatch = match
         , jsonDecoder = \_ -> identity
         , idCounter = 0
         }
@@ -977,39 +597,22 @@ customType match =
 
 {-| -}
 type VariantEncoder
-    = VariantEncoder ( BE.Encoder, JE.Value )
+    = VariantEncoder ( (), JE.Value )
 
 
 variant :
-    ((List BE.Encoder -> VariantEncoder) -> a)
-    -> ((List JE.Value -> VariantEncoder) -> a)
-    -> Decoder (Result (Error error) v)
+    ((List JE.Value -> VariantEncoder) -> a)
     -> JD.Decoder (Result (Error error) v)
     -> CustomTypeCodec z error (a -> b) v
     -> CustomTypeCodec () error b v
-variant matchPiece matchJsonPiece decoderPiece jsonDecoderPiece (CustomTypeCodec am) =
+variant matchJsonPiece jsonDecoderPiece (CustomTypeCodec am) =
     let
-        enc : List BE.Encoder -> VariantEncoder
-        enc v =
-            ( BE.unsignedInt16 endian am.idCounter :: v |> BE.sequence
-            , JE.null
-            )
-                |> VariantEncoder
-
         jsonEnc : List JE.Value -> VariantEncoder
         jsonEnc v =
-            ( BE.sequence []
+            ( ()
             , JE.int am.idCounter :: v |> JE.list identity
             )
                 |> VariantEncoder
-
-        decoder_ : Int -> Decoder (Result (Error error) v) -> Decoder (Result (Error error) v)
-        decoder_ tag orElse =
-            if tag == am.idCounter then
-                decoderPiece
-
-            else
-                am.decoder tag orElse
 
         jsonDecoder_ : Int -> JD.Decoder (Result (Error error) v) -> JD.Decoder (Result (Error error) v)
         jsonDecoder_ tag orElse =
@@ -1020,9 +623,7 @@ variant matchPiece matchJsonPiece decoderPiece jsonDecoderPiece (CustomTypeCodec
                 am.jsonDecoder tag orElse
     in
     CustomTypeCodec
-        { match = am.match <| matchPiece enc
-        , jsonMatch = am.jsonMatch <| matchJsonPiece jsonEnc
-        , decoder = decoder_
+        { jsonMatch = am.jsonMatch <| matchJsonPiece jsonEnc
         , jsonDecoder = jsonDecoder_
         , idCounter = am.idCounter + 1
         }
@@ -1034,8 +635,6 @@ variant0 : v -> CustomTypeCodec z e (VariantEncoder -> a) v -> CustomTypeCodec (
 variant0 ctor =
     variant
         (\c -> c [])
-        (\c -> c [])
-        (BD.succeed (Ok ctor))
         (JD.succeed (Ok ctor))
 
 
@@ -1050,15 +649,9 @@ variant1 ctor m1 =
     variant
         (\c v ->
             c
-                [ getEncoder m1 v
-                ]
-        )
-        (\c v ->
-            c
                 [ getJsonEncoder m1 v
                 ]
         )
-        (BD.map (result1 ctor) (getDecoder m1))
         (JD.map (result1 ctor) (JD.index 1 (getJsonDecoder m1)))
 
 
@@ -1083,21 +676,10 @@ variant2 :
 variant2 ctor m1 m2 =
     variant
         (\c v1 v2 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            ]
-                |> c
-        )
-        (\c v1 v2 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             ]
                 |> c
-        )
-        (BD.map2
-            (result2 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
         )
         (JD.map2
             (result2 ctor)
@@ -1131,24 +713,11 @@ variant3 :
 variant3 ctor m1 m2 m3 =
     variant
         (\c v1 v2 v3 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            , getEncoder m3 v3
-            ]
-                |> c
-        )
-        (\c v1 v2 v3 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             , getJsonEncoder m3 v3
             ]
                 |> c
-        )
-        (BD.map3
-            (result3 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
-            (getDecoder m3)
         )
         (JD.map3
             (result3 ctor)
@@ -1187,27 +756,12 @@ variant4 :
 variant4 ctor m1 m2 m3 m4 =
     variant
         (\c v1 v2 v3 v4 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            , getEncoder m3 v3
-            , getEncoder m4 v4
-            ]
-                |> c
-        )
-        (\c v1 v2 v3 v4 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             , getJsonEncoder m3 v3
             , getJsonEncoder m4 v4
             ]
                 |> c
-        )
-        (BD.map4
-            (result4 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
-            (getDecoder m3)
-            (getDecoder m4)
         )
         (JD.map4
             (result4 ctor)
@@ -1251,15 +805,6 @@ variant5 :
 variant5 ctor m1 m2 m3 m4 m5 =
     variant
         (\c v1 v2 v3 v4 v5 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            , getEncoder m3 v3
-            , getEncoder m4 v4
-            , getEncoder m5 v5
-            ]
-                |> c
-        )
-        (\c v1 v2 v3 v4 v5 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             , getJsonEncoder m3 v3
@@ -1267,14 +812,6 @@ variant5 ctor m1 m2 m3 m4 m5 =
             , getJsonEncoder m5 v5
             ]
                 |> c
-        )
-        (BD.map5
-            (result5 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
-            (getDecoder m3)
-            (getDecoder m4)
-            (getDecoder m5)
         )
         (JD.map5
             (result5 ctor)
@@ -1322,16 +859,6 @@ variant6 :
 variant6 ctor m1 m2 m3 m4 m5 m6 =
     variant
         (\c v1 v2 v3 v4 v5 v6 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            , getEncoder m3 v3
-            , getEncoder m4 v4
-            , getEncoder m5 v5
-            , getEncoder m6 v6
-            ]
-                |> c
-        )
-        (\c v1 v2 v3 v4 v5 v6 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             , getJsonEncoder m3 v3
@@ -1340,17 +867,6 @@ variant6 ctor m1 m2 m3 m4 m5 m6 =
             , getJsonEncoder m6 v6
             ]
                 |> c
-        )
-        (BD.map5
-            (result6 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
-            (getDecoder m3)
-            (getDecoder m4)
-            (BD.map2 Tuple.pair
-                (getDecoder m5)
-                (getDecoder m6)
-            )
         )
         (JD.map5
             (result6 ctor)
@@ -1406,17 +922,6 @@ variant7 :
 variant7 ctor m1 m2 m3 m4 m5 m6 m7 =
     variant
         (\c v1 v2 v3 v4 v5 v6 v7 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            , getEncoder m3 v3
-            , getEncoder m4 v4
-            , getEncoder m5 v5
-            , getEncoder m6 v6
-            , getEncoder m7 v7
-            ]
-                |> c
-        )
-        (\c v1 v2 v3 v4 v5 v6 v7 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             , getJsonEncoder m3 v3
@@ -1426,20 +931,6 @@ variant7 ctor m1 m2 m3 m4 m5 m6 m7 =
             , getJsonEncoder m7 v7
             ]
                 |> c
-        )
-        (BD.map5
-            (result7 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
-            (getDecoder m3)
-            (BD.map2 Tuple.pair
-                (getDecoder m4)
-                (getDecoder m5)
-            )
-            (BD.map2 Tuple.pair
-                (getDecoder m6)
-                (getDecoder m7)
-            )
         )
         (JD.map5
             (result7 ctor)
@@ -1502,18 +993,6 @@ variant8 :
 variant8 ctor m1 m2 m3 m4 m5 m6 m7 m8 =
     variant
         (\c v1 v2 v3 v4 v5 v6 v7 v8 ->
-            [ getEncoder m1 v1
-            , getEncoder m2 v2
-            , getEncoder m3 v3
-            , getEncoder m4 v4
-            , getEncoder m5 v5
-            , getEncoder m6 v6
-            , getEncoder m7 v7
-            , getEncoder m8 v8
-            ]
-                |> c
-        )
-        (\c v1 v2 v3 v4 v5 v6 v7 v8 ->
             [ getJsonEncoder m1 v1
             , getJsonEncoder m2 v2
             , getJsonEncoder m3 v3
@@ -1524,23 +1003,6 @@ variant8 ctor m1 m2 m3 m4 m5 m6 m7 m8 =
             , getJsonEncoder m8 v8
             ]
                 |> c
-        )
-        (BD.map5
-            (result8 ctor)
-            (getDecoder m1)
-            (getDecoder m2)
-            (BD.map2 Tuple.pair
-                (getDecoder m3)
-                (getDecoder m4)
-            )
-            (BD.map2 Tuple.pair
-                (getDecoder m5)
-                (getDecoder m6)
-            )
-            (BD.map2 Tuple.pair
-                (getDecoder m7)
-                (getDecoder m8)
-            )
         )
         (JD.map5
             (result8 ctor)
@@ -1597,13 +1059,6 @@ result8 ctor v1 v2 ( v3, v4 ) ( v5, v6 ) ( v7, v8 ) =
 finishCustomType : CustomTypeCodec () e (a -> VariantEncoder) a -> Codec e a
 finishCustomType (CustomTypeCodec am) =
     build
-        (am.match >> (\(VariantEncoder ( a, _ )) -> a))
-        (BD.unsignedInt16 endian
-            |> BD.andThen
-                (\tag ->
-                    am.decoder tag (BD.succeed (Err DataCorrupted))
-                )
-        )
         (am.jsonMatch >> (\(VariantEncoder ( _, a )) -> a))
         (JD.index 0 JD.int
             |> JD.andThen
@@ -1651,8 +1106,6 @@ map fromBytes_ toBytes_ codec =
 mapHelper : (Result (Error e) a -> Result (Error e) b) -> (b -> a) -> Codec e a -> Codec e b
 mapHelper fromBytes_ toBytes_ codec =
     build
-        (\v -> toBytes_ v |> getEncoder codec)
-        (getDecoder codec |> BD.map fromBytes_)
         (\v -> toBytes_ v |> getJsonEncoder codec)
         (getJsonDecoder codec |> JD.map fromBytes_)
 
@@ -1687,18 +1140,6 @@ I recommend writing tests for Codecs that use `mapValid` to make sure you get ba
 mapValid : (a -> Result e b) -> (b -> a) -> Codec e a -> Codec e b
 mapValid fromBytes_ toBytes_ codec =
     build
-        (\v -> toBytes_ v |> getEncoder codec)
-        (getDecoder codec
-            |> BD.map
-                (\value ->
-                    case value of
-                        Ok ok ->
-                            fromBytes_ ok |> Result.mapError CustomError
-
-                        Err err ->
-                            Err err
-                )
-        )
         (\v -> toBytes_ v |> getJsonEncoder codec)
         (getJsonDecoder codec
             |> JD.map
@@ -1718,8 +1159,6 @@ mapValid fromBytes_ toBytes_ codec =
 mapError : (e1 -> e2) -> Codec e1 a -> Codec e2 a
 mapError mapFunc codec =
     build
-        (getEncoder codec)
-        (getDecoder codec |> BD.map (mapErrorHelper mapFunc))
         (getJsonEncoder codec)
         (getJsonDecoder codec |> JD.map (mapErrorHelper mapFunc))
 
@@ -1773,7 +1212,5 @@ Be careful here, and test your codecs using elm-test with larger inputs than you
 lazy : (() -> Codec e a) -> Codec e a
 lazy f =
     build
-        (\value -> getEncoder (f ()) value)
-        (BD.succeed () |> BD.andThen (\() -> getDecoder (f ())))
         (\value -> getJsonEncoder (f ()) value)
         (JD.succeed () |> JD.andThen (\() -> getJsonDecoder (f ())))
