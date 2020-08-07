@@ -25,12 +25,7 @@ decode =
         (Decode.field "path" Decode.string)
         (Decode.field "source" Decode.string)
         (Decode.oneOf
-            [ Decode.field "ast"
-                (Decode.oneOf
-                    [ AstCodec.decode |> Decode.map Just
-                    , Decode.succeed Nothing
-                    ]
-                )
+            [ Decode.field "ast" (AstCodec.decode |> Decode.map Just)
             , Decode.succeed Nothing
             ]
         )
