@@ -88,10 +88,10 @@ function checkFolderContents {
   if [ "$SUBCOMMAND" != "record" ]
   then
     echo -n "  Checking generated files are the same"
-    if [ "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/")" != "" ]
+    if [ "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
-        echo "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/")"
+        echo "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff")"
         exit 1
     else
       echo -e "  \e[92mOK\e[0m"
