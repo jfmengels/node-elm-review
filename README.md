@@ -167,3 +167,8 @@ Your custom rules, unless you want to share them in the Elm package registry, sh
 ## Tooling integration
 
 If you are interested in using `elm-review` inside a different environment than a terminal (like editors, CI, other Elm tools, ...), check out the documentation for [tooling integration](./documentation/tooling-integration.md).
+
+
+## Thanks
+
+Thanks to @MartinSStewart for working on reducing the file cache size (and therefore speeding up the whole execution).
