@@ -114,7 +114,7 @@ rm -r $TMP \
       project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/review-applications/ \
       project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/remote-templates/
 mkdir -p $TMP
-npm run build
+npm run build > /dev/null
 
 if [ "$1" == "record" ]
 then
