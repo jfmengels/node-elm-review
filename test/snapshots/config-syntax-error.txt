@@ -4,7 +4,7 @@ An error occurred while compiling your configuration for elm-review. I need your
 configuration to compile in order to know how to analyze your files. Hopefully
 the compiler error below will help you figure out how to fix it.
 
--- UNEXPECTED SQUARE BRACKET - /home/jeroen/dev/node-elm-review/test/config-syntax-error/src/ReviewConfig.elm
+-- UNEXPECTED SQUARE BRACKET - <local-path>/config-syntax-error/src/ReviewConfig.elm
 
 I ran into an unexpected square bracket:
 

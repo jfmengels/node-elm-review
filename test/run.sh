@@ -17,6 +17,8 @@ else
   AUTH=" --github-auth $GITHUB_AUTH"
 fi
 
+ESCAPED_PWD=$(echo $CWD | sed 's_/_\\/_g')
+
 function runCommandAndCompareToSnapshot {
     local LOCAL_COMMAND=$1
     local TITLE=$2
@@ -31,6 +33,7 @@ function runCommandAndCompareToSnapshot {
     fi
 
     eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$TMP/$FILE\""
+    sed -i "s/$ESCAPED_PWD/<local-path>/" "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
@@ -53,6 +56,7 @@ function runAndRecord {
     local FILE=$4
     echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
     eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\""
+    sed -i "s/$ESCAPED_PWD/<local-path>/" "$SNAPSHOTS/$FILE"
 }
 
 function createExtensiveTestSuite {

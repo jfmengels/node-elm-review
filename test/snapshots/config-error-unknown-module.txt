@@ -5,7 +5,7 @@ dependencies that contain the rules you wished to enable? If so, run elm install
 with the package name from inside
 <local-path>/test/config-error-unknown-module.
 
--- MODULE NOT FOUND - /home/jeroen/dev/node-elm-review/test/config-error-unknown-module/src/ReviewConfig.elm
+-- MODULE NOT FOUND - <local-path>/config-error-unknown-module/src/ReviewConfig.elm
 
 You are trying to import a `Unknown.Module` module:
 
