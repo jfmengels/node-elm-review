@@ -1,4 +1,5 @@
 - Fetching template information
+✖ Fetching template information
 -- TEMPLATE ELM.JSON NOT FOUND -------------------------------------------------
 
 I found the jfmengels/node-elm-review repository on GitHub,

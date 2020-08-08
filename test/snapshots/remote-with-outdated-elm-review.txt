@@ -1,4 +1,5 @@
 - Fetching template information
+✖ Fetching template information
 -- UNSUPPORTED ELM-REVIEW VERSION ----------------------------------------------
 
 The template uses an unsupported version of jfmengels/elm-review. It is using v1.0.0, but I need it to be 2.1.0 <= v < 3.0.0.

@@ -1,4 +1,5 @@
 - Fetching template information
+✖ Fetching template information
 -- BRANCH OR COMMIT NOT FOUND --------------------------------------------------
 
 I found the jfmengels/review-unused repository on GitHub,
