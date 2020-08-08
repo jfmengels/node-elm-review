@@ -1,9 +1,9 @@
 port module Elm.Review.Main exposing (main)
 
-import Elm.Review.AstCodec as AstCodec
 import Dict exposing (Dict)
 import Elm.Docs
 import Elm.Project
+import Elm.Review.AstCodec as AstCodec
 import Elm.Review.File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
