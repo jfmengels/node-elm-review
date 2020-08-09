@@ -12,6 +12,8 @@ when inside the directory containing this file.
 -}
 
 import Documentation.ReadmeLinksPointToCurrentVersion
+import NoDebug.Log
+import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoForbiddenWords
 import NoImportingEverything
@@ -25,12 +27,15 @@ import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
-import Review.Rule exposing (Rule)
+import Review.Rule as Rule exposing (Rule)
 
 
 config : List Rule
 config =
     [ Documentation.ReadmeLinksPointToCurrentVersion.rule
+    , NoDebug.Log.rule
+    , NoDebug.TodoOrToString.rule
+        |> Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoExposingEverything.rule
     , NoForbiddenWords.rule [ "REPLACEME" ]
     , NoImportingEverything.rule []
