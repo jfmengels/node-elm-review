@@ -49,9 +49,11 @@
     "space": 2,
     "prettier": true,
     "rules": {
+      "complexity": "off",
       "max-params": "off",
       "promise/prefer-await-to-then": "off",
-      "unicorn/no-fn-reference-in-iterator": "off"
+      "unicorn/no-fn-reference-in-iterator": "off",
+      "unicorn/no-reduce": "off"
     }
   },
   "dependencies": {
@@ -80,6 +82,6 @@
     "eslint": "^6.2.2",
     "flow-bin": "^0.122.0",
     "uglify-js": "^3.9.1",
-    "xo": "^0.30.0"
+    "xo": "^0.33.0"
   }
 }
