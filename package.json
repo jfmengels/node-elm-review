@@ -40,6 +40,7 @@
     "AST"
   ],
   "author": "Jeroen Engels",
+  "funding": "https://github.com/sponsors/jfmengels",
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/jfmengels/node-elm-review/issues"
