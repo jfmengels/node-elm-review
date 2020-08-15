@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test": "elm make --docs=docs.json && elm-format src/ tests/ --validate && elm-test && elm-review",
+    "test": "elm make --docs=docs.json && elm-format src/ tests/ --validate && elm-test && elm-review && npm run package-tests -s",
+    "package-tests": "node elm-review-package-tests/run-examples.js",
     "review": "elm-review",
     "preview-docs": "elm-doc-preview"
   },
@@ -9,7 +10,9 @@
     "elm-doc-preview": "^5.0.3",
     "elm-format": "0.8.3",
     "elm-review": "^2.3.0-beta.3",
-    "elm-test": "0.19.1-revision2"
+    "elm-test": "0.19.1-revision2",
+    "glob": "7.1.6",
+    "fs-extra": "9.0.0"
   },
   "license": "BSD-3-Clause"
 }
