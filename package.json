@@ -21,13 +21,14 @@
     "elm-review": "bin/elm-review"
   },
   "files": [
+    "ast-codec/src/**/*.elm",
+    "ast-codec/elm.json",
     "bin/",
     "lib/",
     "build/",
+    "review-config-templates/",
     "vendor/",
-    "template/src/**/*.elm",
-    "template/elm.json",
-    "review-config-templates/"
+    "template/src/**/*.elm"
   ],
   "keywords": [
     "elm",
