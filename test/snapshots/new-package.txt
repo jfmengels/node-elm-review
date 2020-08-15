@@ -18,6 +18,8 @@
 ✔ Adding LICENSE
 - Adding elm-review configuration
 ✔ Adding elm-review configuration
+- Adding maintenance scripts
+✔ Adding maintenance scripts
 Here is what you still need to do:
 
 1 Install the npm dependencies
