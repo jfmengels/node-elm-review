@@ -76,15 +76,15 @@ function parseExecOutput(error) {
 }
 
 function red(text) {
-  return "\033[31m" + text + "\033[39m"
+  return '\u001B[31m' + text + '\u001B[39m';
 }
 
 function green(text) {
-  return "\033[32m" + text + "\033[39m"
+  return '\u001B[32m' + text + '\u001B[39m';
 }
 
 function yellow(text) {
-  return "\033[33m" + text + "\033[39m"
+  return '\u001B[33m' + text + '\u001B[39m';
 }
 
 function success(config) {
