@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const path = require('path');
+const Ansi = require('./helpers/ansi');
 const {execSync} = require('child_process');
 const {
   findPreviewConfigurations,
@@ -36,12 +37,12 @@ function checkThatExampleCompiles(exampleConfiguration) {
       // successfully, which is all we care about in this test.
       if (output.type !== 'review-errors') {
         console.log(
-          `${red('✖')} ${yellow(
+          `${Ansi.red('✖')} ${Ansi.yellow(
             `${path.relative(root, exampleConfiguration)}/`
           )} does not compile`
         );
         console.log(
-          `Please run ${yellow(
+          `Please run ${Ansi.yellow(
             `npx elm-review --config ${exampleConfiguration}/`
           )} and make the necessary changes to make it compile.`
         );
@@ -52,7 +53,7 @@ function checkThatExampleCompiles(exampleConfiguration) {
       return;
     } catch {
       console.log(
-        `An error occurred while trying to check whether the ${yellow(
+        `An error occurred while trying to check whether the ${Ansi.yellow(
           path.relative(root, exampleConfiguration)
         )} configuration compiles.`
       );
@@ -73,18 +74,6 @@ function parseExecOutput(error) {
   }
 }
 
-function red(text) {
-  return '\u001B[31m' + text + '\u001B[39m';
-}
-
-function green(text) {
-  return '\u001B[32m' + text + '\u001B[39m';
-}
-
-function yellow(text) {
-  return '\u001B[33m' + text + '\u001B[39m';
-}
-
 function success(config) {
-  console.log(`${green('✔')} ${path.relative(root, config)}/ compiles`);
+  console.log(`${Ansi.green('✔')} ${path.relative(root, config)}/ compiles`);
 }
