@@ -22,7 +22,9 @@ const exampleConfigurations = glob
   })
   .map(path.dirname);
 
-exampleConfigurations.forEach((exampleConfiguration) => {
+exampleConfigurations.forEach(checkThatExampleCompiles);
+
+function checkThatExampleCompiles(exampleConfiguration) {
   try {
     execSync(`npx elm-review --config ${exampleConfiguration} --report=json`, {
       encoding: 'utf8',
@@ -62,7 +64,7 @@ exampleConfigurations.forEach((exampleConfiguration) => {
       process.exit(1);
     }
   }
-});
+}
 
 // HELPERS
 

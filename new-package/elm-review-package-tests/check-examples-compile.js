@@ -22,7 +22,9 @@ const exampleConfigurations = glob
   })
   .map(path.dirname);
 
-exampleConfigurations.forEach((exampleConfiguration) => {
+exampleConfigurations.forEach(checkThatExampleCompiles);
+
+function checkThatExampleCompiles(exampleConfiguration) {
   try {
     execSync(`npx elm-review --config ${exampleConfiguration} --report=json`, {
       encoding: 'utf8',
@@ -62,7 +64,7 @@ exampleConfigurations.forEach((exampleConfiguration) => {
       process.exit(1);
     }
   }
-});
+}
 
 // HELPERS
 
@@ -76,15 +78,15 @@ function parseExecOutput(error) {
 }
 
 function red(text) {
-  return "\033[31m" + text + "\033[39m"
+  return '\u001B[31m' + text + '\u001B[39m';
 }
 
 function green(text) {
-  return "\033[32m" + text + "\033[39m"
+  return '\u001B[32m' + text + '\u001B[39m';
 }
 
 function yellow(text) {
-  return "\033[33m" + text + "\033[39m"
+  return '\u001B[33m' + text + '\u001B[39m';
 }
 
 function success(config) {

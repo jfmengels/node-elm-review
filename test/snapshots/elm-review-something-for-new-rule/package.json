@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "elm make --docs=docs.json && elm-format src/ tests/ --validate && elm-test && elm-review && npm run package-tests -s",
-    "package-tests": "node elm-review-package-tests/run-examples.js",
+    "package-tests": "node elm-review-package-tests/check-examples-compile.js",
     "review": "elm-review",
     "preview-docs": "elm-doc-preview"
   },
