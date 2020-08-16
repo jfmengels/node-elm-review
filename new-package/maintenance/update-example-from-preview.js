@@ -1,25 +1,27 @@
 #!/usr/bin/env node
 
 const path = require('path');
-const glob = require('glob');
 const fs = require('fs-extra');
-const root = path.dirname(__dirname);
+const root = path.resolve(__dirname, '..');
 const packageElmJson = require(`${root}/elm.json`);
+const {
+  findPreviewConfigurations
+} = require('../elm-review-package-tests/helpers/find-configurations');
+
+if (require.main === module) {
+  copyPreviewsToExamples();
+} else {
+  module.exports = copyPreviewsToExamples;
+}
 
 // Find all elm.json files
 
-const previewElmJsonFiles = glob.sync(
-  makePathOsAgnostic(`${root}/preview*/**/elm.json`),
-  {
-    nocase: true,
-    ignore: ['**/elm-stuff/**'],
-    nodir: false
-  }
-);
+function copyPreviewsToExamples() {
+  const previewFolders = findPreviewConfigurations();
+  previewFolders.forEach(copyPreviewToExample);
+}
 
-const previewFolders = previewElmJsonFiles.map(path.dirname);
-
-previewFolders.forEach((pathToPreviewFolder) => {
+function copyPreviewToExample(pathToPreviewFolder) {
   const pathToExampleFolder = `${pathToPreviewFolder}/`.replace(
     /preview/g,
     'example'
@@ -38,10 +40,4 @@ previewFolders.forEach((pathToPreviewFolder) => {
   );
   elmJson.dependencies.direct[packageElmJson.name] = packageElmJson.version;
   fs.writeJsonSync(pathToElmJson, elmJson, {spaces: 4});
-});
-
-// HELPERS
-
-function makePathOsAgnostic(path_) {
-  return path_.replace(/.:/, '').replace(/\\/g, '/');
 }

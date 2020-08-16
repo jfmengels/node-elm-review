@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
 const path = require('path');
-const glob = require('glob');
 const {execSync} = require('child_process');
+const {
+  findPreviewConfigurations,
+  findExampleAndPreviewConfigurations
+} = require('./helpers/find-configurations');
 
 const root = path.dirname(__dirname);
 const packageElmJson = require(`${root}/elm.json`);
@@ -11,16 +14,9 @@ const hasBeenPublished = false || packageElmJson.version !== '1.0.0';
 
 // Find all elm.json files
 
-const globPattern = hasBeenPublished
-  ? `${root}/@(example|preview)*/**/elm.json`
-  : `${root}/preview*/**/elm.json`;
-const exampleConfigurations = glob
-  .sync(makePathOsAgnostic(globPattern), {
-    nocase: true,
-    ignore: ['**/elm-stuff/**'],
-    nodir: false
-  })
-  .map(path.dirname);
+const exampleConfigurations = hasBeenPublished
+  ? findExampleAndPreviewConfigurations()
+  : findPreviewConfigurations();
 
 exampleConfigurations.forEach(checkThatExampleCompiles);
 
@@ -91,8 +87,4 @@ function yellow(text) {
 
 function success(config) {
   console.log(`${green('✔')} ${path.relative(root, config)}/ compiles`);
-}
-
-function makePathOsAgnostic(path_) {
-  return path_.replace(/.:/, '').replace(/\\/g, '/');
 }
