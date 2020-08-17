@@ -31,7 +31,7 @@ function checkThatExampleCompiles(exampleConfiguration) {
     success(exampleConfiguration);
   } catch (error) {
     try {
-      const output = parseExecOutput(error);
+      const output = JSON.parse(error.stdout);
       // We don't care whether there were any reported errors.
       // If the root type is not "error", then the configuration compiled
       // successfully, which is all we care about in this test.
@@ -60,17 +60,6 @@ and make the necessary changes to make it compile.`
       console.error(error);
       process.exit(1);
     }
-  }
-}
-
-// HELPERS
-
-function parseExecOutput(error) {
-  // TODO Only parse stdout once we release the next version
-  try {
-    return JSON.parse(error.stderr);
-  } catch {
-    return JSON.parse(error.stdout);
   }
 }
 
