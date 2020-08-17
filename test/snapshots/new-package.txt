@@ -20,23 +20,10 @@
 ✔ Adding maintenance scripts
 - Adding maintenance scripts
 ✔ Adding maintenance scripts
-Here is what you still need to do:
 
-1 Install the npm dependencies
+All done! ✔
 
-    npm install    or    yarn
+I created a maintenance/MAINTENANCE.md file which you should read in order to learn what the next steps are, and generally how to manage the project.
 
-2. Initialize Git in your repository
-
-    git init
-    git add --all
-    git commit --message="Initialize project"
-
-When you create this repository on GitHub, consider adding the elm-review topic to the repository.
-
-3. Search and replace all the REPLACEME in the different files I have created by something relevant to your project or rules.
-
-4. At all times, make sure that your example configuration is working.
-
-5. Implement your rules!
+I hope you'll enjoy working with elm-review! ❤️
 
