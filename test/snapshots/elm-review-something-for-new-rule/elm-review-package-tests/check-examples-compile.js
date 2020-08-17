@@ -10,8 +10,10 @@ const {
 
 const root = path.dirname(__dirname);
 const packageElmJson = require(`${root}/elm.json`);
+const packageJson = require(`${root}/package.json`);
 
-const hasBeenPublished = false || packageElmJson.version !== '1.0.0';
+const hasBeenPublished =
+  packageJson.published || packageElmJson.version !== '1.0.0';
 
 // Find all elm.json files
 

@@ -14,5 +14,6 @@
     "glob": "7.1.6",
     "fs-extra": "9.0.0"
   },
+  "published": false,
   "license": "BSD-3-Clause"
 }
