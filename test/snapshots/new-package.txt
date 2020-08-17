@@ -4,8 +4,6 @@
 ✔ Adding package.json
 - Adding README
 ✔ Adding README
-- Adding example folder
-✔ Adding example folder
 - Adding preview folder
 ✔ Adding preview folder
 - Adding rule - No.Doing.Foo
@@ -30,9 +28,9 @@ Here is what you still need to do:
 
 2. Initialize Git in your repository
 
-git init
-git add --all
-git commit --message="Initialize project"
+    git init
+    git add --all
+    git commit --message="Initialize project"
 
 When you create this repository on GitHub, consider adding the elm-review topic to the repository.
 

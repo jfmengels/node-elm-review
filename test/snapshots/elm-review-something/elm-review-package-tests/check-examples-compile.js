@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
 const path = require('path');
-const glob = require('glob');
+const Ansi = require('./helpers/ansi');
 const {execSync} = require('child_process');
+const {
+  findPreviewConfigurations,
+  findExampleAndPreviewConfigurations
+} = require('./helpers/find-configurations');
 
 const root = path.dirname(__dirname);
 const packageElmJson = require(`${root}/elm.json`);
@@ -11,16 +15,9 @@ const hasBeenPublished = false || packageElmJson.version !== '1.0.0';
 
 // Find all elm.json files
 
-const globPattern = hasBeenPublished
-  ? `${root}/@(example|preview)*/**/elm.json`
-  : `${root}/preview*/**/elm.json`;
-const exampleConfigurations = glob
-  .sync(makePathOsAgnostic(globPattern), {
-    nocase: true,
-    ignore: ['**/elm-stuff/**'],
-    nodir: false
-  })
-  .map(path.dirname);
+const exampleConfigurations = hasBeenPublished
+  ? findExampleAndPreviewConfigurations()
+  : findPreviewConfigurations();
 
 exampleConfigurations.forEach(checkThatExampleCompiles);
 
@@ -40,12 +37,12 @@ function checkThatExampleCompiles(exampleConfiguration) {
       // successfully, which is all we care about in this test.
       if (output.type !== 'review-errors') {
         console.log(
-          `${red('✖')} ${yellow(
+          `${Ansi.red('✖')} ${Ansi.yellow(
             `${path.relative(root, exampleConfiguration)}/`
           )} does not compile`
         );
         console.log(
-          `Please run ${yellow(
+          `Please run ${Ansi.yellow(
             `npx elm-review --config ${exampleConfiguration}/`
           )} and make the necessary changes to make it compile.`
         );
@@ -56,7 +53,7 @@ function checkThatExampleCompiles(exampleConfiguration) {
       return;
     } catch {
       console.log(
-        `An error occurred while trying to check whether the ${yellow(
+        `An error occurred while trying to check whether the ${Ansi.yellow(
           path.relative(root, exampleConfiguration)
         )} configuration compiles.`
       );
@@ -77,22 +74,6 @@ function parseExecOutput(error) {
   }
 }
 
-function red(text) {
-  return '\u001B[31m' + text + '\u001B[39m';
-}
-
-function green(text) {
-  return '\u001B[32m' + text + '\u001B[39m';
-}
-
-function yellow(text) {
-  return '\u001B[33m' + text + '\u001B[39m';
-}
-
 function success(config) {
-  console.log(`${green('✔')} ${path.relative(root, config)}/ compiles`);
-}
-
-function makePathOsAgnostic(path_) {
-  return path_.replace(/.:/, '').replace(/\\/g, '/');
+  console.log(`${Ansi.green('✔')} ${path.relative(root, config)}/ compiles`);
 }
