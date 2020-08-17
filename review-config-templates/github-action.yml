@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check that examples are up to date
+        run: node elm-review-package-tests/check-examples-were-updated.js
+
       # Runs a single command using the runners shell
       - name: Elm Publish
         uses: dillonkearns/elm-publish-action@master
