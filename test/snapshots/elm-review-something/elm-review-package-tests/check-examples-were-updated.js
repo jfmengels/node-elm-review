@@ -18,11 +18,11 @@ updateExamplesFromPreview();
 
 const postCheckGitStatus = execSync('git status --porcelain').toString().trim();
 if (postCheckGitStatus !== '') {
-  console.error('\u001B[31m✖\u001B[39m Your examples need to be updated.');
+  console.error('\u001B[31m✖\u001B[39m Your examples were not up to date.');
   console.log(
-    `Please run ${Ansi.yellow(
-      'node maintenance/update-examples-from-preview.js'
-    )}`
+    `Please commit the changes I made. If you see this message from GitHub Actions, then run
+    ${Ansi.yellow('node maintenance/update-example-from-preview.js')}
+to update your examples.`
   );
   process.exit(1);
 }

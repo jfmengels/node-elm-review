@@ -42,9 +42,9 @@ function checkThatExampleCompiles(exampleConfiguration) {
           )} does not compile`
         );
         console.log(
-          `Please run ${Ansi.yellow(
-            `npx elm-review --config ${exampleConfiguration}/`
-          )} and make the necessary changes to make it compile.`
+          `Please run
+    ${Ansi.yellow(`npx elm-review --config ${exampleConfiguration}/`)}
+and make the necessary changes to make it compile.`
         );
         process.exit(1);
       }
