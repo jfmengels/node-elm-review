@@ -14,7 +14,6 @@ module.exports = {
 function findPreviewConfigurations() {
   return glob
     .sync(`${root}/preview*/**/elm.json`, {
-      nocase: true,
       ignore: ['**/elm-stuff/**'],
       nodir: true
     })
@@ -24,7 +23,6 @@ function findPreviewConfigurations() {
 function findExampleAndPreviewConfigurations() {
   return glob
     .sync(`${root}/@(example|preview)*/**/elm.json`, {
-      nocase: true,
       ignore: ['**/elm-stuff/**'],
       nodir: true
     })
