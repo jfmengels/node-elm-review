@@ -2,7 +2,7 @@
 
 const Ansi = require('./helpers/ansi');
 const {execSync} = require('child_process');
-const updateExamplesFromPreview = require('../maintenance/update-example-from-preview');
+const updateExamplesFromPreview = require('../maintenance/update-examples-from-preview');
 
 const preCheckGitStatus = execSync('git status --porcelain').toString().trim();
 if (preCheckGitStatus !== '') {
@@ -21,7 +21,7 @@ if (postCheckGitStatus !== '') {
   console.error('\u001B[31m✖\u001B[39m Your examples were not up to date.');
   console.log(
     `Please commit the changes I made. If you see this message from GitHub Actions, then run
-    ${Ansi.yellow('node maintenance/update-example-from-preview.js')}
+    ${Ansi.yellow('node maintenance/update-examples-from-preview.js')}
 to update your examples.`
   );
   process.exit(1);
