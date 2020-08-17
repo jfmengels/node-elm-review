@@ -1,7 +1,7 @@
 {
     "type": "package",
     "name": "some-author/elm-review-something",
-    "summary": "Provides elm-review rules to REPLACEME",
+    "summary": "",
     "license": "BSD-3-Clause",
     "version": "1.0.0",
     "exposed-modules": [
