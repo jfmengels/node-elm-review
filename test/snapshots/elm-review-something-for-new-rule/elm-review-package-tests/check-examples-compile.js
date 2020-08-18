@@ -41,7 +41,7 @@ function checkThatExampleCompiles(exampleConfiguration) {
         console.log(
           `${Ansi.red('✖')} ${Ansi.yellow(
             `${path.relative(root, exampleConfiguration)}/`
-          )} does not compile`
+          )} does not compile.`
         );
         console.log(
           `Please run
