@@ -50,7 +50,7 @@ If the process ran without any hitches, you should get something like the follow
       "errors": [
         {
           "rule": "NoUnused.Variables",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.0/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.0.1/NoUnused-Variables",
           "message": "Top-level variable `unusedVariable` is not used",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."

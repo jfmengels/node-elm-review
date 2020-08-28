@@ -275,7 +275,7 @@ cd $CWD/project-with-errors
 
 $createTest "$CMD" \
     "Running using remote GitHub configuration" \
-    "--template jfmengels/review-unused/example#example" \
+    "--template jfmengels/elm-review-unused/example" \
     "remote-configuration.txt"
 
 $createTest "$CMD" \
@@ -300,7 +300,7 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using remote GitHub configuration with a non-existing branch and commit" \
-    "--template jfmengels/review-unused#unknown-branch" \
+    "--template jfmengels/elm-review-unused/example#unknown-branch" \
     "remote-configuration-with-unknown-branch"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \

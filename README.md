@@ -47,19 +47,19 @@ You can try `elm-review` out without setting up anything!
 First of all, if you have `node` installed, it comes with `npx`, which lets you run `elm-review` without installing it by prepending the command by `npx`, like `npx elm-review`. It is a bit slower and requires Internet access, but it's useful to try it out.
 
 You can also run a configuration you found on GitHub, using the `--template` flag. Even if you already have a configuration, you can use this to try out the rules from a new package before adding them to your configuration.
-For instance, if you want to find and remove the dead code in your project, you can use the [example configuration](https://github.com/jfmengels/review-unused/tree/master/example) from the [`jfmengels/review-unused` package](https://package.elm-lang.org/packages/jfmengels/review-unused/latest/).
+For instance, if you want to find and remove the dead code in your project, you can use the [example configuration](https://github.com/jfmengels/elm-review-unused/tree/master/example) from the [`jfmengels/elm-review-unused` package](https://package.elm-lang.org/packages/jfmengels/elm-review-unused/latest/).
 
 ```bash
-npx elm-review --template jfmengels/review-unused/example
+npx elm-review --template jfmengels/elm-review-unused/example
 
 # You can even use the configuration to fix all the errors that can be auto-fixed.
-npx elm-review --template jfmengels/review-unused/example --fix-all
+npx elm-review --template jfmengels/elm-review-unused/example --fix-all
 ```
 
 If you are happy with the configuration, you can base your own configuration off of it, and then edit it:
 
 ```bash
-npx elm-review init --template jfmengels/review-unused/example
+npx elm-review init --template jfmengels/elm-review-unused/example
 ```
 
 I **highly** recommend [reading this section on when to enable rules](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/#when-to-write-or-enable-a-rule) in your configuration though.
@@ -67,7 +67,7 @@ I **highly** recommend [reading this section on when to enable rules](https://pa
 You can use the same mechanic to try out a single rule before adding the dependency to your existing configuration and adding it to your configuration.
 
 ```bash
-npx elm-review --template jfmengels/review-unused/example --rules NoUnused.Variables
+npx elm-review --template jfmengels/elm-review-unused/example --rules NoUnused.Variables
 ```
 
 ## Configuration

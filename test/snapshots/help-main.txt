@@ -40,8 +40,8 @@ You can customize the review command with the following flags:
         to try out elm-review, a configuration or a single rule.
         This flag requires Internet access, even after the first run.
         Examples:
-          - elm-review --template author/review-configuration
-          - elm-review --template jfmengels/review-unused/example#master
+          - elm-review --template author/elm-review-configuration
+          - elm-review --template jfmengels/elm-review-unused/example#master
 
     --compiler <path-to-elm>
         Specify the path to the elm compiler.
