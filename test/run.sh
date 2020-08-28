@@ -183,7 +183,7 @@ createAndGoIntoFolder $INIT_TEMPLATE_PROJECT_NAME
 initElmProject
 $createTest "echo Y | $CMD" \
     "Init a new configuration using a template" \
-    "init --template jfmengels/review-unused/example" \
+    "init --template jfmengels/elm-review-unused/example" \
     "init-template.txt"
 
 checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
