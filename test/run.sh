@@ -220,7 +220,7 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration with an outdated elm-review package" \
-    "--config ../config-for-outdated-elm-review" \
+    "--config ../config-for-outdated-elm-review-version" \
     "outdated-version"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
@@ -315,8 +315,18 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a remote configuration with an outdated elm-review" \
-    "--template jfmengels/node-elm-review/test/config-for-outdated-elm-review" \
-    "remote-with-outdated-elm-review"
+    "--template jfmengels/node-elm-review/test/config-for-outdated-elm-review-version" \
+    "remote-with-outdated-elm-review-version"
+
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Using a remote configuration with an salvageable (outdated but compatible) elm-review" \
+    "--template jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version" \
+    "remote-with-outdated-but-salvageable-elm-review-version"
+
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Using a remote configuration with unparsable elm.json" \
+    "--template jfmengels/node-elm-review/test/config-unparsable-elmjson" \
+    "remote-configuration-with-unparsable-elmjson"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using both --config and --template" \
