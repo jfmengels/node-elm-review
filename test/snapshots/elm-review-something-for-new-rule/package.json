@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "elm make --docs=docs.json && elm-format src/ tests/ --validate && elm-test && elm-review && npm run package-tests -s",
-    "package-tests": "node elm-review-package-tests/check-examples-compile.js",
+    "package-tests": "node elm-review-package-tests/check-previews-compile.js",
     "review": "elm-review",
     "preview-docs": "elm-doc-preview"
   },
@@ -14,6 +14,5 @@
     "glob": "7.1.6",
     "fs-extra": "9.0.0"
   },
-  "published": false,
   "license": "BSD-3-Clause"
 }

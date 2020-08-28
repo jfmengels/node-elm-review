@@ -103,8 +103,6 @@ git push --tags origin $(git_main_branch)
 elm publish
 ```
 
-After the initial release, please **don't forget** to set the `published` field in the `package.json` to `true`. This will add the checks that make sure that the example configurations are always valid to the test suite.
-
 ### Successive releases
 
 Contrary to the initial release, the CI will automatically try to publish a new version of the package when the version in the `elm.json` is bumped. There is **no need** to add the Git tag or to run `elm publish` yourself! More details [here](https://github.com/dillonkearns/elm-publish-action).

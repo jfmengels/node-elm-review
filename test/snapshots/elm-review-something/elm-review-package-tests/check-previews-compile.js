@@ -3,25 +3,13 @@
 const path = require('path');
 const Ansi = require('./helpers/ansi');
 const {execSync} = require('child_process');
-const {
-  findPreviewConfigurations,
-  findExampleAndPreviewConfigurations
-} = require('./helpers/find-configurations');
+const {findPreviewConfigurations} = require('./helpers/find-configurations');
 
 const root = path.dirname(__dirname);
-const packageElmJson = require(`${root}/elm.json`);
-const packageJson = require(`${root}/package.json`);
-
-const hasBeenPublished =
-  packageJson.published || packageElmJson.version !== '1.0.0';
 
 // Find all elm.json files
 
-const exampleConfigurations = hasBeenPublished
-  ? findExampleAndPreviewConfigurations()
-  : findPreviewConfigurations();
-
-exampleConfigurations.forEach(checkThatExampleCompiles);
+findPreviewConfigurations().forEach(checkThatExampleCompiles);
 
 function checkThatExampleCompiles(exampleConfiguration) {
   try {
