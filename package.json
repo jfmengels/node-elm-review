@@ -58,7 +58,10 @@
   "xo": {
     "space": 2,
     "prettier": true,
-    "globals": [ "test", "expect" ],
+    "globals": [
+      "test",
+      "expect"
+    ],
     "rules": {
       "complexity": "off",
       "max-params": "off",
@@ -71,6 +74,7 @@
     "chalk": "^4.0.0",
     "chokidar": "^3.5.2",
     "cross-spawn": "^7.0.3",
+    "elm-optimize-level-2": "^0.2.3",
     "elm-tooling": "^1.6.0",
     "fast-levenshtein": "^3.0.0",
     "find-up": "^4.1.0",
