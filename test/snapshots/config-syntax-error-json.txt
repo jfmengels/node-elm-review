@@ -1,7 +1,1 @@
-{
-  "type": "error",
-  "title": "CONFIGURATION COMPILATION ERROR",
-  "message": [
-    "An error occurred while compiling your configuration for elm-review. I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n{\"type\":\"compile-errors\",\"errors\":[{\"path\":\"<local-path>/test/config-syntax-error/src/ReviewConfig.elm\",\"name\":\"ReviewConfig\",\"problems\":[{\"title\":\"UNEXPECTED SQUARE BRACKET\",\"region\":{\"start\":{\"line\":21,\"column\":5},\"end\":{\"line\":21,\"column\":5}},\"message\":[\"I ran into an unexpected square bracket:\\n\\n21|     ]\\n        \",{\"bold\":false,\"underline\":false,\"color\":\"RED\",\"string\":\"^\"},\"\\nThis ] does not match up with an earlier open square bracket. Try deleting it?\"]}]}]}"
-  ]
-}
+{"type":"compile-errors","errors":[{"path":"<local-path>/config-syntax-error/src/ReviewConfig.elm","name":"ReviewConfig","problems":[{"title":"UNEXPECTED SQUARE BRACKET","region":{"start":{"line":21,"column":5},"end":{"line":21,"column":5}},"message":["I ran into an unexpected square bracket:\n\n21|     ]\n        ",{"bold":false,"underline":false,"color":"RED","string":"^"},"\nThis ] does not match up with an earlier open square bracket. Try deleting it?"]}]}]}
