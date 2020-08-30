@@ -96,6 +96,7 @@ main =
 type alias Model =
     { rules : List Rule
     , project : Project
+    , projectData : Maybe Rule.ProjectData
     , links : Dict String String
     , fixMode : FixMode
     , detailsMode : Reporter.DetailsMode
@@ -168,6 +169,7 @@ init flags =
     in
     ( { rules = rules
       , project = Project.new
+      , projectData = Nothing
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = fixMode
@@ -644,12 +646,13 @@ confirmationDecoder =
 runReview : Model -> Model
 runReview model =
     let
-        ( reviewErrors, rules ) =
-            Rule.review model.rules model.project
+        { errors, rules, projectData } =
+            Rule.reviewV2 model.rules model.projectData model.project
     in
     { model
-        | reviewErrors = reviewErrors
+        | reviewErrors = errors
         , rules = rules
+        , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
     }
 
