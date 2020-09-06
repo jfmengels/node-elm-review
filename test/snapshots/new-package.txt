@@ -18,8 +18,6 @@
 ✔ Adding elm-review configuration
 - Adding maintenance scripts
 ✔ Adding maintenance scripts
-- Adding maintenance scripts
-✔ Adding maintenance scripts
 
 All done! ✔
 
