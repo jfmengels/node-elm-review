@@ -13,7 +13,7 @@
             "jfmengels/elm-review-common": "1.0.1",
             "jfmengels/elm-review-debug": "1.0.1",
             "jfmengels/elm-review-documentation": "1.0.1",
-            "jfmengels/elm-review-unused": "1.1.0",
+            "jfmengels/elm-review-unused": "1.1.2",
             "sparksp/elm-review-forbidden-words": "1.0.1",
             "stil4m/elm-syntax": "7.1.3"
         },
