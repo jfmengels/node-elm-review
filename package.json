@@ -26,6 +26,7 @@
     "bin/",
     "lib/",
     "build/",
+    "new-package/",
     "review-config-templates/",
     "vendor/",
     "template/src/**/*.elm"
