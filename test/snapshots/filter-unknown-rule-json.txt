@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "UNKNOWN FILTERED RULE(S)",
+  "path": "<local-path>/test/project-with-errors/review/elm.json",
+  "message": [
+    "You requested to only run several rules, but I could not find some of them.\n\n- NoUnused.Unknown. Did you mean:\n  - NoUnused.Exports\n  - NoUnused.Modules\n  - NoUnused.Patterns"
+  ]
+}
