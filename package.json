@@ -21,15 +21,15 @@
     "elm-review": "bin/elm-review"
   },
   "files": [
-    "ast-codec/src/**/*.elm",
-    "ast-codec/elm.json",
-    "bin/",
-    "lib/",
-    "build/",
-    "new-package/",
-    "init-templates/",
-    "vendor/",
-    "template/src/**/*.elm"
+    "/ast-codec/src/**/*.elm",
+    "/ast-codec/elm.json",
+    "/bin/",
+    "/lib/",
+    "/build/",
+    "/new-package/**/*.{elm,js,yml,json,md}",
+    "/init-templates/",
+    "/vendor/",
+    "/template/src/**/*.elm"
   ],
   "keywords": [
     "elm",
