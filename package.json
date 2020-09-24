@@ -11,7 +11,8 @@
     "test": "npm run build && npm run elm-tests && xo && npm run flow && npm run -s test-run",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-run": "(cd test/ && ./run.sh)",
-    "test-run-record": "(cd test/ && ./run.sh record)"
+    "test-run-record": "(cd test/ && ./run.sh record)",
+    "prepack": "rm -r ./**/elm-stuff ./**/ElmjutsuDumMyM0DuL3.elm || exit 0 # Does not delete the files when run automatically"
   },
   "repository": {
     "type": "git",
