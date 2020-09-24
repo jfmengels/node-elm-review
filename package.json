@@ -27,7 +27,9 @@
     "/bin/",
     "/lib/",
     "/build/",
-    "/new-package/**/*.{elm,js,yml,json,md}",
+    "/new-package/elm-review-package-tests",
+    "/new-package/github",
+    "/new-package/maintenance",
     "/init-templates/",
     "/vendor/",
     "/template/src/**/*.elm"
