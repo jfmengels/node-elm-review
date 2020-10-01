@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "CONFIGURATION IS EMPTY",
+  "path": "<local-path>/test/config-empty/elm.json",
+  "message": [
+    "Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.\n\nI recommend you take a look at the following documents:\n  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration\n  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"
+  ]
+}

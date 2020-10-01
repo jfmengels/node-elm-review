@@ -106,7 +106,7 @@ If the process ran without any hitches, you should get something like the follow
 - `type`: Equal to `"review-errors"` when the run went well (finding errors or not)
 - `errors`: The array of errors that `elm-review` found. If it is empty, then no errors were found (in a normal run, `elm-review` would then exit with status code 0). The following describe each item in the array.
   - `path`: The relative path to the file for which the (sibling) errors are reported.
-  - `errors`: The array of errors that `elm-review` found for this file. The following describe each item in the array.
+  - `errors`: ("single-error") The array of errors that `elm-review` found for this file. The following describe each item in the array.
     - `rule`: The name of the rule that reported this error.
     - `ruleLink` (optional): **(Since 2.1.2)** The link to the rule's documentation on the Elm package website, if the rule is not a local one.
     - `message`: A short description of the error. If you show a summary of the errors, this is what you will want to show, along with `rule`.
@@ -116,6 +116,17 @@ If the process ran without any hitches, you should get something like the follow
     In the CLI, these are applied one-by-one, starting from the ones that are near the end of the file. When applying them, the CLI makes sure that there are no overlapping ranges and that the fix results in an Elm file without syntax errors. These are all steps that you need to do yourself at the moment.
     (Proposal to be discussed: maybe the CLI can be spawned with this fix data and apply its own algorithm, to avoid you having to do all this work?)
     - `formatted`: An array of "chunks" that represent the full human-readable error that would be shown to the user. Chunks are described [below](#chunk).
+
+### Newline delimited JSON
+
+Alternatively, you can use `--report=ndson` to print each review error on its own line. The report is a list of `"single-error"` (as described above) delimited by a new line, except that the `path` field was added so that information does not become lost.
+
+This can be useful to send `elm-review` errors to logging/monitoring services.
+
+```
+{"path":"src/Main.elm","rule":"NoUnused.Variables","message":"Imported variable `span` is not used","ruleLink":"https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Variables","details":["You should either use this value somewhere, or remove it at the location I pointed at."],"region":{"start":{"line":10,"column":11},"end":{"line":10,"column":15}},"fix":[{"range":{"start":{"line":8,"column":14},"end":{"line":10,"column":15}},"string":""}],"formatted":[{"string":"(fix) ","color":"#33BBC8"},{"string":"NoUnused.Variables","color":"#FF0000","href":"https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Variables"},": Imported variable `span` is not used\n\n 9|           -- span is unused\n10|         , span\n             ",{"string":"^^^^","color":"#FF0000"},"\n11|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."]}
+{"path":"src/Main.elm","rule":"NoUnused.CustomTypeConstructors","message":"Type constructor `UnusedCustomType` is not used.","ruleLink":"https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-CustomTypeConstructors","details":["This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."],"region":{"start":{"line":28,"column":7},"end":{"line":28,"column":23}},"formatted":["",{"string":"NoUnused.CustomTypeConstructors","color":"#FF0000","href":"https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-CustomTypeConstructors"},": Type constructor `UnusedCustomType` is not used.\n\n27|     | Decrement\n28|     | UnusedCustomType\n          ",{"string":"^^^^^^^^^^^^^^^^","color":"#FF0000"},"\n\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."]}
+```
 
 
 #### Chunk

@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "MISSING ELM-REVIEW DEPENDENCY",
+  "path": "<local-path>/test/config-without-elm-review/elm.json",
+  "message": [
+    "<local-path>/test/config-without-elm-review/elm.json does not include jfmengels/elm-review in its direct dependencies.\n\nPlease add it by running elm install jfmengels/elm-review inside\nof <local-path>/test/config-without-elm-review."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "UNSUPPORTED ELM-REVIEW VERSION",
+  "path": "<local-path>/test/project-with-errors/review/elm.json",
+  "message": [
+    "The template uses an unsupported version of jfmengels/elm-review. It is using v1.0.0, but I need it to be 2.3.0 <= v < 3.0.0.\n\nPlease inform the template author and kindly ask him to update his configuration, or make a pull request to help them out."
+  ]
+}

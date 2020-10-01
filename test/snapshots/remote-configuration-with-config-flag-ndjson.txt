@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "INCOMPATIBLE FLAGS",
+  "path": "<local-path>/test/config-that-triggers-no-errors/elm.json",
+  "message": [
+    "You used both --config and --template, but these flags can't be used together.\n\nPlease remove one of them and try re-running."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "MISSING ELM-REVIEW DEPENDENCY",
+  "path": "<local-path>/test/project-with-errors/review/elm.json",
+  "message": [
+    "The template's configuration does not include jfmengels/elm-review in its direct dependencies.\n\nMaybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."
+  ]
+}

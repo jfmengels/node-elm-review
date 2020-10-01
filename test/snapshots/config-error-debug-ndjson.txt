@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "title": "DEBUG IN CONFIGURATION",
+  "message": [
+    "You are using the Debug module in your configuration or rules, but I am compiling in optimized mode. Either remove those uses or run elm-review with --debug.\n\n{\"type\":\"error\",\"path\":null,\"title\":\"DEBUG REMNANTS\",\"message\":[\"There are uses of the `Debug` module in the following modules:\\n\\n    \",{\"bold\":false,\"underline\":false,\"color\":\"RED\",\"string\":\"ReviewConfig\"},\"\\n\\nBut the --optimize flag only works if all `Debug` functions are removed!\\n\\n\",{\"bold\":false,\"underline\":true,\"color\":null,\"string\":\"Note\"},\": The issue is that --optimize strips out info needed by `Debug` functions.\\nHere are two examples:\\n\\n    (1) It shortens record field names. This makes the generated JavaScript is\\n    smaller, but `Debug.toString` cannot know the real field names anymore.\\n\\n    (2) Values like `type Height = Height Float` are unboxed. This reduces\\n    allocation, but it also means that `Debug.toString` cannot tell if it is\\n    looking at a `Height` or `Float` value.\\n\\nThere are a few other cases like that, and it will be much worse once we start\\ninlining code. That optimization could move `Debug.log` and `Debug.todo` calls,\\nresulting in unpredictable behavior. I hope that clarifies why this restriction\\nexists!\"]}"
+  ]
+}
