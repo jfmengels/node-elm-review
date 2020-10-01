@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "REPOSITORY NOT FOUND",
+  "path": "<local-path>/test/project-with-errors/review/elm.json",
+  "message": [
+    "I could not find the jfmengels/unknown-repo-123 repository on GitHub.\nCheck the spelling and make sure it is a public repository, as I can't work\nwith private ones at the moment."
+  ]
+}

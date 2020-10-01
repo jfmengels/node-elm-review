@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "title": "MODULE NOT FOUND",
+  "message": [
+    "A module is missing in your configuration. Maybe you forgot to add some dependencies that contain the rules you wished to enable? If so, run elm install with the package name from inside <local-path>/test/config-error-unknown-module.\n\n{\"type\":\"compile-errors\",\"errors\":[{\"path\":\"<local-path>/test/config-error-unknown-module/src/ReviewConfig.elm\",\"name\":\"ReviewConfig\",\"problems\":[{\"title\":\"MODULE NOT FOUND\",\"region\":{\"start\":{\"line\":15,\"column\":8},\"end\":{\"line\":15,\"column\":22}},\"message\":[\"You are trying to import a `Unknown.Module` module:\\n\\n15| import Unknown.Module\\n           \",{\"bold\":false,\"underline\":false,\"color\":\"RED\",\"string\":\"^^^^^^^^^^^^^^\"},\"\\nI checked the \\\"dependencies\\\" and \\\"source-directories\\\" listed in your elm.json,\\nbut I cannot find it! Maybe it is a typo for one of these names?\\n\\n\",{\"bold\":false,\"underline\":false,\"color\":\"yellow\",\"string\":\"    Elm.Module\\n    Elm.Syntax.Module\\n    Json.Encode\\n    Json.Decode\"},\"\\n\\n\",{\"bold\":false,\"underline\":true,\"color\":null,\"string\":\"Hint\"},\": If it is not a typo, check the \\\"dependencies\\\" and \\\"source-directories\\\" of\\nyour elm.json to make sure all the packages you need are listed there!\"]}]}]}"
+  ]
+}

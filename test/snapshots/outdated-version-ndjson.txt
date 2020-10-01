@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "UNSUPPORTED ELM-REVIEW VERSION",
+  "path": "<local-path>/test/config-for-outdated-elm-review-version/elm.json",
+  "message": [
+    "You are using jfmengels/elm-review v1.0.0, but I need it to be\n2.3.0 <= v < 3.0.0.\n\nPlease upgrade your version by running\nnpx elm-json install jfmengels/elm-review@2 inside\nof <local-path>/test/config-for-outdated-elm-review-version."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "title": "TEMPLATE ELM.JSON PARSING ERROR",
+  "path": "<local-path>/test/project-with-errors/review/elm.json",
+  "message": [
+    "I found the elm.json associated with jfmengels/node-elm-review repository on GitHub,\nbut I encountered a problem when parsing it:\n\nUnexpected token / in JSON at position 137"
+  ]
+}
