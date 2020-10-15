@@ -42,7 +42,7 @@ function runCommandAndCompareToSnapshot {
         echo -e "\n    \e[31mbut got:\e[0m\n"
         cat "$TMP/$FILE"
         echo -e "\n    \e[31mHere is the difference:\e[0m\n"
-        diff "$TMP/$FILE" "$SNAPSHOTS/$FILE"
+        diff -p "$TMP/$FILE" "$SNAPSHOTS/$FILE"
         exit 1
     else
       echo -e "  \e[92mOK\e[0m"
