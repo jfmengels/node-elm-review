@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 CWD=$(pwd)
 CMD="$CWD/../bin/elm-review"
 TMP="$CWD/tmp"
@@ -17,7 +19,7 @@ else
   AUTH=" --github-auth $GITHUB_AUTH"
 fi
 
-ESCAPED_PWD=$(echo $CWD | sed 's_/_\\/_g')
+ESCAPED_PWD=${CWD//\//\\\/}
 
 function runCommandAndCompareToSnapshot {
     local LOCAL_COMMAND=$1
@@ -25,27 +27,27 @@ function runCommandAndCompareToSnapshot {
     local ARGS=$3
     local FILE=$4
 
-    echo -ne "- $TITLE: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
+    echo -ne "- $TITLE: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
     if [ ! -f "$SNAPSHOTS/$FILE" ]
     then
-      echo -e "\n  \e[31mThere is no snapshot recording for \e[33m$FILE\e[31m\nRun \e[33m\n    npm run test-run-record -s\n\e[31mto generate it.\e[0m"
+      echo -e "\n  \x1B[31mThere is no snapshot recording for \x1B[33m$FILE\x1B[31m\nRun \x1B[33m\n    npm run test-run-record -s\n\x1B[31mto generate it.\x1B[0m"
       exit 1
     fi
 
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$TMP/$FILE\""
-    sed -i "s/$ESCAPED_PWD/<local-path>/" "$TMP/$FILE"
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$TMP/$FILE\"" || true
+    sed -i.original "s/$ESCAPED_PWD/<local-path>/" "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
-        echo -e "\e[31m  ERROR\n  I found a different output than expected:\e[0m"
-        echo -e "\n    \e[31mExpected:\e[0m\n"
+        echo -e "\x1B[31m  ERROR\n  I found a different output than expected:\x1B[0m"
+        echo -e "\n    \x1B[31mExpected:\x1B[0m\n"
         cat "$SNAPSHOTS/$FILE"
-        echo -e "\n    \e[31mbut got:\e[0m\n"
+        echo -e "\n    \x1B[31mbut got:\x1B[0m\n"
         cat "$TMP/$FILE"
-        echo -e "\n    \e[31mHere is the difference:\e[0m\n"
+        echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
         diff -p "$TMP/$FILE" "$SNAPSHOTS/$FILE"
         exit 1
     else
-      echo -e "  \e[92mOK\e[0m"
+      echo -e "  \x1B[92mOK\x1B[0m"
     fi
 }
 
@@ -54,9 +56,9 @@ function runAndRecord {
     local TITLE=$2
     local ARGS=$3
     local FILE=$4
-    echo -e "\e[33m- $TITLE\e[0m: \e[34m elm-review --FOR-TESTS $ARGS\e[0m"
+    echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
     eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\""
-    sed -i "s/$ESCAPED_PWD/<local-path>/" "$SNAPSHOTS/$FILE"
+    sed -i.original "s/$ESCAPED_PWD/<local-path>/" "$SNAPSHOTS/$FILE"
 }
 
 function createExtensiveTestSuite {
@@ -98,11 +100,11 @@ function checkFolderContents {
     echo -n "  Checking generated files are the same"
     if [ "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff")" != "" ]
     then
-        echo -e "\e[31m  ERROR\n  The generated files are different:\e[0m"
-        echo "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff")"
+        echo -e "\x1B[31m  ERROR\n  The generated files are different:\x1B[0m"
+        diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff"
         exit 1
     else
-      echo -e "  \e[92mOK\e[0m"
+      echo -e "  \x1B[92mOK\x1B[0m"
     fi
   fi
 }
@@ -118,21 +120,21 @@ function createAndGoIntoFolder {
   fi
 }
 
-rm -r $TMP \
+rm -rf "$TMP" \
       project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/review-applications/ \
       project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/remote-templates/ \
       &> /dev/null
-mkdir -p $TMP
+mkdir -p "$TMP"
 npm run build > /dev/null
 
 if [ "$1" == "record" ]
 then
   createTest=runAndRecord
-  rm -r $SNAPSHOTS &> /dev/null
-  mkdir -p $SNAPSHOTS
+  rm -r "$SNAPSHOTS" &> /dev/null
+  mkdir -p "$SNAPSHOTS"
 else
   createTest=runCommandAndCompareToSnapshot
-  echo -e '\e[33m-- Testing runs\e[0m'
+  echo -e '\x1B[33m-- Testing runs\x1B[0m'
 fi
 
 # Version
@@ -194,7 +196,7 @@ checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
 
 # Review
 
-cd $CWD/project-with-errors
+cd "$CWD/project-with-errors"
 createExtensiveTestSuite "$CMD" \
     "Regular run from inside the project" \
     "" \
@@ -205,12 +207,12 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "--config ../config-that-triggers-no-errors" \
     "no-errors"
 
-cd $CWD
+cd "$CWD"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Regular run using --elmjson and --config" \
     "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
     "run-with-elmjson-flag"
-cd $CWD/project-with-errors
+cd "$CWD/project-with-errors"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using an empty configuration" \
@@ -246,9 +248,9 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
 
 if [ "$1" == "record" ]
 then
-  cd $SNAPSHOTS/
+  cd "$SNAPSHOTS/"
 else
-  cd $TMP/
+  cd "$TMP/"
 fi
 
 NEW_PACKAGE_NAME="elm-review-something"
@@ -273,7 +275,7 @@ $createTest "$CMD" \
 
 checkFolderContents $NEW_PACKAGE_NAME_FOR_NEW_RULE
 
-cd $CWD/project-with-errors
+cd "$CWD/project-with-errors"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Filter rules" \
