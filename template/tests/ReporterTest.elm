@@ -15,6 +15,7 @@ suite =
         , multipleErrorsTests
         , fixAvailableTest
         , singleCompactErrorTest
+        , multilineErrorTest
         ]
 
 
@@ -172,6 +173,65 @@ I found 1 error in 1 file."""
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
        [^^^^^](#FF0000)
+
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+                    }
+        )
+
+
+multilineErrorTest : Test
+multilineErrorTest =
+    test "report a single error spanning multiple lines"
+        (\() ->
+            [ { path = Reporter.FilePath "src/FileA.elm"
+              , source = Reporter.Source """module FileA exposing (a)
+a =
+    floor <|
+        1.5
+            + 2.3
+"""
+              , errors =
+                    [ { ruleName = "NoLeftPizza"
+                      , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoLeftPizza"
+                      , message = "Do not use left pizza"
+                      , details = []
+                      , range =
+                            { start = { row = 3, column = 5 }
+                            , end = { row = 5, column = 17 }
+                            }
+                      , hasFix = False
+                      }
+                    ]
+              }
+            ]
+                |> Reporter.formatReport Reporter.WithoutDetails False
+                |> expect
+                    { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:3:5
+
+NoLeftPizza: Do not use left pizza
+
+2| a =
+3|     floor <|
+       ^^^^^^^^
+4|         1.5
+           ^^^
+5|             + 2.3
+               ^^^^^
+
+
+I found 1 error in 1 file."""
+                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:3:5](#33BBC8)
+
+[NoLeftPizza](#FF0000): Do not use left pizza
+
+2| a =
+3|     floor <|
+       [^^^^^^^^](#FF0000)
+4|         1.5
+           [^^^](#FF0000)
+5|             + 2.3
+               [^^^^^](#FF0000)
+
 
 I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                     }
