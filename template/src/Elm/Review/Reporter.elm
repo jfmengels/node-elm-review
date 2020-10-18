@@ -371,24 +371,25 @@ codeExtract source =
                 , underlineError
                     (start.row - 1)
                     { start = start.column
-                    , end = String.length startLine - offsetBecauseOfLineNumber (start.row - 1)
+                    , end = String.length startLine - offsetBecauseOfLineNumber (start.row - 1) + 1
                     }
                 , linesBetweenStartAndEnd
                     |> List.indexedMap Tuple.pair
                     |> List.concatMap
                         (\( lineNumber, line ) ->
                             Text.from line
+                                :: Text.from "\n"
                                 :: underlineError
                                     lineNumber
                                     { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber lineNumber) line
-                                    , end = String.length line - offsetBecauseOfLineNumber lineNumber
+                                    , end = String.length line - offsetBecauseOfLineNumber lineNumber + 1
                                     }
                         )
                 , [ Text.from endLine ]
                 , underlineError
                     (end.row - 1)
                     { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber (end.row - 1)) endLine
-                    , end = String.length endLine - offsetBecauseOfLineNumber (end.row - 1)
+                    , end = String.length endLine - offsetBecauseOfLineNumber (end.row - 1) + 1
                     }
                 , [ Text.from <| getRowAtLine_ maxLineNumberLength end.row ]
                 ]
