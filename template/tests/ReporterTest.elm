@@ -185,11 +185,17 @@ multilineErrorTest =
         (\() ->
             [ { path = Reporter.FilePath "src/FileA.elm"
               , source = Reporter.Source """module FileA exposing (a)
+
+
 a =
     floor <|
         1.2
+
+
             + 3.4
             + 5.6
+  
+-- end
 """
               , errors =
                     [ { ruleName = "NoLeftPizza"
@@ -197,8 +203,8 @@ a =
                       , message = "Do not use left pizza"
                       , details = []
                       , range =
-                            { start = { row = 3, column = 5 }
-                            , end = { row = 6, column = 17 }
+                            { start = { row = 5, column = 5 }
+                            , end = { row = 10, column = 17 }
                             }
                       , hasFix = False
                       }
@@ -207,36 +213,38 @@ a =
             ]
                 |> Reporter.formatReport Reporter.WithoutDetails False
                 |> expect
-                    { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:3:5
+                    { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:5:5
 
 NoLeftPizza: Do not use left pizza
 
-2| a =
-3|     floor <|
-       ^^^^^^^^
-4|         1.2
-           ^^^
-5|             + 3.4
-               ^^^^^
-6|             + 5.6
-               ^^^^^
-
+ 4| a =
+ 5|     floor <|
+        ^^^^^^^^
+ 6|         1.2
+            ^^^
+ 7| 
+ 8| 
+ 9|             + 3.4
+                ^^^^^
+10|             + 5.6
+                ^^^^^
 
 I found 1 error in 1 file."""
-                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:3:5](#33BBC8)
+                    , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:5:5](#33BBC8)
 
 [NoLeftPizza](#FF0000): Do not use left pizza
 
-2| a =
-3|     floor <|
-       [^^^^^^^^](#FF0000)
-4|         1.2
-           [^^^](#FF0000)
-5|             + 3.4
-               [^^^^^](#FF0000)
-6|             + 5.6
-               [^^^^^](#FF0000)
-
+ 4| a =
+ 5|     floor <|
+        [^^^^^^^^](#FF0000)
+ 6|         1.2
+            [^^^](#FF0000)
+ 7| 
+ 8| 
+ 9|             + 3.4
+                [^^^^^](#FF0000)
+10|             + 5.6
+                [^^^^^](#FF0000)
 
 I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                     }

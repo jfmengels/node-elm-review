@@ -318,112 +318,131 @@ compareRange a b =
 
 
 codeExtract : Source -> Range -> List Text
-codeExtract source =
-    let
-        getRowAtLine_ : Int -> Int -> String
-        getRowAtLine_ =
-            getRowAtLine source
-
-        rowEmpty : String -> List Text
-        rowEmpty line =
-            if String.isEmpty line then
-                []
-
-            else
-                [ Text.from line ]
-    in
-    \{ start, end } ->
-        let
-            maxLineNumberLength : Int
-            maxLineNumberLength =
-                lengthOfLineNumber (end.row + 1)
-        in
-        if start == end then
-            []
-
-        else if start.row == end.row then
-            [ rowEmpty <| getRowAtLine_ maxLineNumberLength (start.row - 2)
-            , [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 1) ]
-            , underlineError (start.row - 1) { start = start.column, end = end.column }
-            , rowEmpty <| getRowAtLine_ maxLineNumberLength end.row
-            ]
-                |> List.filter (\line -> not (List.isEmpty line))
-                |> Text.join "\n"
-
-        else
-            let
-                startLine : String
-                startLine =
-                    getRowAtLine_ maxLineNumberLength (start.row - 1)
-
-                linesBetweenStartAndEnd : List String
-                linesBetweenStartAndEnd =
-                    List.range start.row (end.row - 2)
-                        |> List.map (getRowAtLine_ maxLineNumberLength)
-
-                endLine : String
-                endLine =
-                    getRowAtLine_ maxLineNumberLength (end.row - 1)
-            in
-            Text.join "\n"
-                [ [ Text.from <| getRowAtLine_ maxLineNumberLength (start.row - 2) ]
-                , [ Text.from <| startLine ]
-                , underlineError
-                    (start.row - 1)
-                    { start = start.column
-                    , end = String.length startLine - offsetBecauseOfLineNumber (start.row - 1) + 1
-                    }
-                , linesBetweenStartAndEnd
-                    |> List.indexedMap
-                        (\lineNumber line ->
-                            Text.from line
-                                :: Text.from "\n"
-                                :: underlineError
-                                    lineNumber
-                                    { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber lineNumber) line
-                                    , end = String.length line - offsetBecauseOfLineNumber lineNumber + 1
-                                    }
-                        )
-                    |> Text.join "\n"
-                , [ Text.from endLine ]
-                , underlineError
-                    (end.row - 1)
-                    { start = getIndexOfFirstNonSpace (offsetBecauseOfLineNumber (end.row - 1)) endLine
-                    , end = String.length endLine - offsetBecauseOfLineNumber (end.row - 1) + 1
-                    }
-                , [ Text.from <| getRowAtLine_ maxLineNumberLength end.row ]
-                ]
-
-
-getIndexOfFirstNonSpace : Int -> String -> Int
-getIndexOfFirstNonSpace offset string =
-    string
-        |> String.indexes (String.trim <| String.dropLeft offset string)
-        |> List.head
-        |> Maybe.withDefault 0
-        |> (\n -> n - offset + 1)
-
-
-getRowAtLine : Source -> Int -> Int -> String
-getRowAtLine (Source source) =
+codeExtract (Source source) =
     let
         lines : Array String
         lines =
             source
                 |> String.lines
                 |> Array.fromList
+
+        getRowAtLine : Int -> String
+        getRowAtLine rowIndex =
+            case Array.get rowIndex lines of
+                Just line ->
+                    String.trimRight line
+
+                Nothing ->
+                    ""
     in
-    \maxLineNumberLength rowIndex ->
-        case Array.get rowIndex lines of
-            Just line ->
-                if String.trim line /= "" then
-                    lineNumberPrefix maxLineNumberLength rowIndex ++ line
+    \{ start, end } ->
+        let
+            maxLineNumber : Int
+            maxLineNumber =
+                if String.isEmpty (getRowAtLine (end.row + 1)) then
+                    end.row
 
                 else
-                    ""
+                    end.row + 1
 
-            Nothing ->
-                ""
+            maxLineNumberLength : Int
+            maxLineNumberLength =
+                lengthOfLineNumber maxLineNumber
+
+            gutterLength : Int
+            gutterLength =
+                lineNumberPrefix maxLineNumberLength maxLineNumber |> String.length
+
+            underlineError_ : { start : Int, end : Int } -> List Text
+            underlineError_ =
+                underlineError gutterLength
+
+            getRowWithLineNumber : Int -> String
+            getRowWithLineNumber rowIndex =
+                lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
+
+            getRowWithLineNumberUnlessEmpty : Int -> List Text
+            getRowWithLineNumberUnlessEmpty rowIndex =
+                let
+                    line =
+                        getRowAtLine rowIndex
+                in
+                if String.isEmpty line then
+                    []
+
+                else
+                    [ Text.from (lineNumberPrefix maxLineNumberLength rowIndex ++ line) ]
+        in
+        if start == end then
+            []
+
+        else if start.row == end.row then
+            [ getRowWithLineNumberUnlessEmpty (start.row - 2)
+            , [ Text.from <| getRowWithLineNumber (start.row - 1) ]
+            , underlineError_ { start = start.column, end = end.column }
+            , getRowWithLineNumberUnlessEmpty end.row
+            ]
+                |> List.filter (not << List.isEmpty)
+                |> Text.join "\n"
+
+        else
+            let
+                startLine : Int
+                startLine =
+                    start.row - 1
+
+                linesBetweenStartAndEnd : List Int
+                linesBetweenStartAndEnd =
+                    List.range start.row (end.row - 2)
+
+                endLine : Int
+                endLine =
+                    end.row - 1
+            in
+            [ getRowWithLineNumberUnlessEmpty (startLine - 1)
+            , [ Text.from <| getRowWithLineNumber startLine ]
+            , underlineError_
+                { start = start.column
+                , end = String.length (getRowAtLine startLine) + 1
+                }
+            , linesBetweenStartAndEnd
+                |> List.map
+                    (\middleLine ->
+                        let
+                            line : String
+                            line =
+                                getRowAtLine middleLine
+                        in
+                        if String.isEmpty line then
+                            [ Text.from (getRowWithLineNumber middleLine) ]
+
+                        else
+                            Text.from (getRowWithLineNumber middleLine)
+                                :: Text.from "\n"
+                                :: underlineError_
+                                    { start = getIndexOfFirstNonSpace line + 1
+                                    , end = String.length line + 1
+                                    }
+                    )
+                |> Text.join "\n"
+            , [ Text.from (getRowWithLineNumber endLine) ]
+            , let
+                line =
+                    getRowAtLine endLine
+              in
+              underlineError_
+                { start = getIndexOfFirstNonSpace line + 1
+                , end = String.length line + 1
+                }
+            , getRowWithLineNumberUnlessEmpty (endLine + 1)
+            ]
+                |> List.filter (not << List.isEmpty)
+                |> Text.join "\n"
+
+
+getIndexOfFirstNonSpace : String -> Int
+getIndexOfFirstNonSpace string =
+    String.length string - String.length (String.trimLeft string)
 
 
 lineNumberPrefix : Int -> Int -> String
@@ -443,8 +462,8 @@ lengthOfLineNumber lineNumber =
 
 
 underlineError : Int -> { start : Int, end : Int } -> List Text
-underlineError lineNumber { start, end } =
-    [ Text.from <| String.repeat (offsetBecauseOfLineNumber lineNumber + start - 1) " "
+underlineError gutterLength { start, end } =
+    [ Text.from <| String.repeat (gutterLength + start - 1) " "
     , String.repeat (end - start) "^"
         |> Text.from
         |> Text.inRed
@@ -457,6 +476,7 @@ offsetBecauseOfLineNumber lineNumber =
         |> String.fromInt
         |> String.length
         |> (+) 2
+        |> (*) 0
 
 
 totalNumberOfErrors : List FileWithError -> Int
