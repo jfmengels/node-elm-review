@@ -187,8 +187,9 @@ multilineErrorTest =
               , source = Reporter.Source """module FileA exposing (a)
 a =
     floor <|
-        1.5
-            + 2.3
+        1.2
+            + 3.4
+            + 5.6
 """
               , errors =
                     [ { ruleName = "NoLeftPizza"
@@ -197,7 +198,7 @@ a =
                       , details = []
                       , range =
                             { start = { row = 3, column = 5 }
-                            , end = { row = 5, column = 17 }
+                            , end = { row = 6, column = 17 }
                             }
                       , hasFix = False
                       }
@@ -213,9 +214,11 @@ NoLeftPizza: Do not use left pizza
 2| a =
 3|     floor <|
        ^^^^^^^^
-4|         1.5
+4|         1.2
            ^^^
-5|             + 2.3
+5|             + 3.4
+               ^^^^^
+6|             + 5.6
                ^^^^^
 
 
@@ -227,9 +230,11 @@ I found 1 error in 1 file."""
 2| a =
 3|     floor <|
        [^^^^^^^^](#FF0000)
-4|         1.5
+4|         1.2
            [^^^](#FF0000)
-5|             + 2.3
+5|             + 3.4
+               [^^^^^](#FF0000)
+6|             + 5.6
                [^^^^^](#FF0000)
 
 

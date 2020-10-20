@@ -374,9 +374,8 @@ codeExtract source =
                     , end = String.length startLine - offsetBecauseOfLineNumber (start.row - 1) + 1
                     }
                 , linesBetweenStartAndEnd
-                    |> List.indexedMap Tuple.pair
-                    |> List.concatMap
-                        (\( lineNumber, line ) ->
+                    |> List.indexedMap
+                        (\lineNumber line ->
                             Text.from line
                                 :: Text.from "\n"
                                 :: underlineError
@@ -385,6 +384,7 @@ codeExtract source =
                                     , end = String.length line - offsetBecauseOfLineNumber lineNumber + 1
                                     }
                         )
+                    |> Text.join "\n"
                 , [ Text.from endLine ]
                 , underlineError
                     (end.row - 1)
