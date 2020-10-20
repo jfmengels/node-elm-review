@@ -34,8 +34,8 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$TMP/$FILE\"" || true
-    sed -i.original "s/$ESCAPED_PWD/<local-path>/" "$TMP/$FILE"
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 | \
+        sed "s/$ESCAPED_PWD/<local-path>/" > "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
         echo -e "\x1B[31m  ERROR\n  I found a different output than expected:\x1B[0m"
@@ -57,8 +57,8 @@ function runAndRecord {
     local ARGS=$3
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\"" || true
-    sed -i.original "s/$ESCAPED_PWD/<local-path>/" "$SNAPSHOTS/$FILE"
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 | \
+        sed "s/$ESCAPED_PWD/<local-path>/" > "$SNAPSHOTS/$FILE"
 }
 
 function createExtensiveTestSuite {
