@@ -470,15 +470,6 @@ underlineError gutterLength { start, end } =
     ]
 
 
-offsetBecauseOfLineNumber : Int -> Int
-offsetBecauseOfLineNumber lineNumber =
-    lineNumber
-        |> String.fromInt
-        |> String.length
-        |> (+) 2
-        |> (*) 0
-
-
 totalNumberOfErrors : List FileWithError -> Int
 totalNumberOfErrors files =
     files
