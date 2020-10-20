@@ -57,7 +57,7 @@ function runAndRecord {
     local ARGS=$3
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\""
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS &> \"$SNAPSHOTS/$FILE\"" || true
     sed -i.original "s/$ESCAPED_PWD/<local-path>/" "$SNAPSHOTS/$FILE"
 }
 
@@ -130,7 +130,7 @@ npm run build > /dev/null
 if [ "$1" == "record" ]
 then
   createTest=runAndRecord
-  rm -r "$SNAPSHOTS" &> /dev/null
+  rm -rf "$SNAPSHOTS" &> /dev/null
   mkdir -p "$SNAPSHOTS"
 else
   createTest=runCommandAndCompareToSnapshot
