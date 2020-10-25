@@ -119,7 +119,7 @@ If the process ran without any hitches, you should get something like the follow
 
 ### Newline delimited JSON
 
-Alternatively, you can use `--report=ndson` to print each review error on its own line. The report is a list of `"single-error"` (as described above) delimited by a new line, except that the `path` field was added so that information does not become lost.
+Alternatively, you can use `--report=ndjson` to print each review error on its own line. The report is a list of `"single-error"` (as described above) delimited by a new line, except that the `path` field was added so that information does not become lost.
 
 This can be useful to send `elm-review` errors to logging/monitoring services.
 
