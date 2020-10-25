@@ -124,7 +124,7 @@ type AwaitingConfirmation
 type FixMode
     = Mode_DontFix
     | Mode_Fix
-    | Mode_FixAll
+    | Mode_FixAll Int
 
 
 type ReportMode
@@ -255,7 +255,7 @@ decodeFlags =
 
 decodeFix : Decode.Decoder FixMode
 decodeFix =
-    Decode.string
+    Decode.field "mode" Decode.string
         |> Decode.andThen
             (\fixMode ->
                 case fixMode of
@@ -266,7 +266,8 @@ decodeFix =
                         Decode.succeed Mode_Fix
 
                     "fixAll" ->
-                        Decode.succeed Mode_FixAll
+                        Decode.field "size" Decode.int
+                            |> Decode.map Mode_FixAll
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
@@ -666,8 +667,8 @@ reportOrFix model =
         Mode_Fix ->
             fixOneByOne model
 
-        Mode_FixAll ->
-            fixAll model
+        Mode_FixAll batchSize ->
+            fixAll batchSize model
 
 
 makeReport : Model -> ( Model, Cmd msg )
@@ -794,9 +795,9 @@ fixOneByOne model =
             makeReport model
 
 
-fixAll : Model -> ( Model, Cmd msg )
-fixAll model =
-    case applyAllFixes 2 model of
+fixAll : Int -> Model -> ( Model, Cmd msg )
+fixAll batchSize model =
+    case applyAllFixes batchSize model of
         Just newModel ->
             case diff model.project newModel.project of
                 [] ->
