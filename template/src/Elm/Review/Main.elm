@@ -796,7 +796,7 @@ fixOneByOne model =
 
 fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
-    case applyAllFixes model of
+    case applyAllFixes 2 model of
         Just newModel ->
             case diff model.project newModel.project of
                 [] ->
@@ -862,35 +862,40 @@ encodeChangedFile changedFile =
         ]
 
 
-applyAllFixes : Model -> Maybe Model
-applyAllFixes model =
-    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        Just ( file, error, fixedSource ) ->
-            let
-                newProject : Project
-                newProject =
-                    if Just file.path == Maybe.map .path (Project.readme model.project) then
-                        Project.addReadme { path = file.path, content = fixedSource } model.project
+applyAllFixes : Int -> Model -> Maybe Model
+applyAllFixes count model =
+    if count == 0 then
+        Just model
 
-                    else
-                        Project.addModule { path = file.path, source = fixedSource } model.project
-            in
-            if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
-                -- There is a new module that failed to parse in the
-                -- project when we updated the fixed file. This means
-                -- that our fix introduced a syntactical regression that
-                -- we were not successful in preventing earlier.
-                Nothing
+    else
+        case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
+            Just ( file, error, fixedSource ) ->
+                let
+                    newProject : Project
+                    newProject =
+                        if Just file.path == Maybe.map .path (Project.readme model.project) then
+                            Project.addReadme { path = file.path, content = fixedSource } model.project
 
-            else
-                applyAllFixes
-                    ({ model | project = newProject }
-                        |> addFixedErrorForFile file.path error
-                        |> runReview
-                    )
+                        else
+                            Project.addModule { path = file.path, source = fixedSource } model.project
+                in
+                if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
+                    -- There is a new module that failed to parse in the
+                    -- project when we updated the fixed file. This means
+                    -- that our fix introduced a syntactical regression that
+                    -- we were not successful in preventing earlier.
+                    Nothing
 
-        Nothing ->
-            Just model
+                else
+                    applyAllFixes
+                        (count - 1)
+                        ({ model | project = newProject }
+                            |> addFixedErrorForFile file.path error
+                            |> runReview
+                        )
+
+            Nothing ->
+                Just model
 
 
 addFixedErrorForFile : String -> Rule.ReviewError -> Model -> Model
