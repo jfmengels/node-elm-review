@@ -20,8 +20,27 @@ jobs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v1.4.2
 
-    - name: Install dependencies
+    - name: Cache node_modules
+      id: cache-node_modules
+      uses: actions/cache@v2
+      with:
+        path: cli/example/node_modules
+        key: node_modules-${{ hashFiles('package-lock.json') }}
+
+    - name: Cache ~/.elm
+      uses: actions/cache@v2
+      with:
+        path: ~/.elm
+        key: elm-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
+
+    - name: npm ci
+      if: steps.cache-node_modules.outputs.cache-hit != 'true'
+      env:
+        NO_ELM_TOOLING_INSTALL: 1
       run: npm ci
+
+    - name: elm-tooling install
+      run: npx --no-install elm-tooling install
 
     - name: Run tests
       run: npm test
