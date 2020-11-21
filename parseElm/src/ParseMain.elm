@@ -1,9 +1,9 @@
 port module ParseMain exposing (main)
 
-import Elm.Review.AstCodec as AstCodec
 import Dependencies
 import Elm.Parser as Parser
 import Elm.Processing
+import Elm.Review.AstCodec as AstCodec
 import Elm.Syntax.File exposing (File)
 import Json.Encode as Encode
 
