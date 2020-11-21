@@ -26,18 +26,18 @@ jobs:
       with:
         node-version: 15.x
 
-    - name: Cache node_modules
-      id: cache-node_modules
-      uses: actions/cache@v2
-      with:
-        path: cli/example/node_modules
-        key: node_modules-${{ hashFiles('package-lock.json') }}
-
     - name: Cache ~/.elm
       uses: actions/cache@v2
       with:
         path: ~/.elm
-        key: elm-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
+        key: elm-ubuntu-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
+
+    - name: Cache node_modules
+      id: cache-node_modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: node_modules-ubuntu-${{ hashFiles('package-lock.json') }}
 
     - name: npm ci
       if: steps.cache-node_modules.outputs.cache-hit != 'true'
