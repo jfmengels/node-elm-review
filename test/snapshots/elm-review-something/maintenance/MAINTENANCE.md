@@ -95,7 +95,8 @@ npm test
 
 # Generate the example configurations
 node maintenance/update-examples-from-preview.js
-git commit --all --message '1.0.0'
+git add --all
+git commit --message '1.0.0'
 
 # Commit
 git tag 1.0.0
