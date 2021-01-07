@@ -3,7 +3,8 @@
     "source-directories": [
         "src/",
         "dev-src/",
-        "../ast-codec/src"
+        "../ast-codec/src",
+        "../elm-ts-interop/src"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
