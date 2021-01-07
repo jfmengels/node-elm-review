@@ -1,9 +1,9 @@
-type FromElm = { tag : "Alert"; message : string } | { tag : "SendPresenceHeartbeat" }
+type FromElm = { tag: "Alert"; message: string } | { tag: "SendPresenceHeartbeat" }
 
 type Flags = null
 
-export type JsonObject = {[Key in string]?: JsonValue};
-export interface JsonArray extends Array<JsonValue> {}
+export type JsonObject = { [Key in string]?: JsonValue };
+export interface JsonArray extends Array<JsonValue> { }
 /**
 Matches any valid JSON value.
 Source: https://github.com/sindresorhus/type-fest/blob/master/source/basic.d.ts
@@ -26,5 +26,4 @@ declare const Elm: {
     init(options: { node?: HTMLElement | null; flags: Flags }): ElmApp;
   };
 };
-export { Elm };
-    
+export { Elm, Flags };
