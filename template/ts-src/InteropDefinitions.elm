@@ -17,6 +17,7 @@ interop =
 type FromElm
     = SendPresenceHeartbeat
     | Alert String
+    | SomethingBlue
 
 
 type alias ToElm =
@@ -30,14 +31,18 @@ type alias Flags =
 fromElm : Encoder.Encoder FromElm
 fromElm =
     Encoder.union
-        (\vSendHeartbeat vAlert value ->
+        (\vSendHeartbeat vAlert vSomethingBlue value ->
             case value of
                 SendPresenceHeartbeat ->
                     vSendHeartbeat
 
                 Alert string ->
                     vAlert string
+
+                SomethingBlue ->
+                    vSomethingBlue
         )
         |> Encoder.variant0 "SendPresenceHeartbeat"
         |> Encoder.variantObject "Alert" [ required "message" identity Encoder.string ]
+        |> Encoder.variant0 "SomethingBlue"
         |> Encoder.buildUnion

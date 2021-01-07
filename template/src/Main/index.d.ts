@@ -1,4 +1,4 @@
-type FromElm = { tag: "Alert"; message: string } | { tag: "SendPresenceHeartbeat" }
+type FromElm = { tag: "SomethingBlue" } | { tag: "Alert"; message: string } | { tag: "SendPresenceHeartbeat" }
 
 type Flags = null
 
