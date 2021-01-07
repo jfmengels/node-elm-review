@@ -3,6 +3,7 @@
     "source-directories": [
         "src/",
         "dev-src/",
+        "ts-src/",
         "../ast-codec/src",
         "../elm-ts-interop/src"
     ],
