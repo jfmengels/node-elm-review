@@ -14,5 +14,10 @@ app.ports.interopFromElm.subscribe(fromElm => {
         case "SendPresenceHeartbeat": {
             return "";
         }
+        case "SomethingBlue": {
+            return "Jasmine"
+        }
     }
 })
+
+app.ports.interopToElm.send({})

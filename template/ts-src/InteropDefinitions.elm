@@ -8,7 +8,9 @@ import TsInterop.Encode as Encoder exposing (Encoder, optional, required)
 
 interop : { toElm : Decoder ToElm, fromElm : Encoder FromElm, flags : Decode.Decoder Flags }
 interop =
-    { toElm = Decode.null ()
+    { toElm =
+        Decode.field "field" Decode.int
+            |> Decode.map (\field -> { field = field })
     , fromElm = fromElm
     , flags = Decode.null ()
     }
@@ -21,7 +23,8 @@ type FromElm
 
 
 type alias ToElm =
-    ()
+    { field : Int
+    }
 
 
 type alias Flags =

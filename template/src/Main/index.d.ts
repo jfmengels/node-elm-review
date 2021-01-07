@@ -1,4 +1,5 @@
 type FromElm = { tag: "SomethingBlue" } | { tag: "Alert"; message: string } | { tag: "SendPresenceHeartbeat" }
+type ToElm = { field: number }
 
 type Flags = null
 
@@ -16,7 +17,7 @@ export interface ElmApp {
       subscribe(callback: (fromElm: FromElm) => void): void;
     };
     interopToElm: {
-      send(data: string): void;
+      send(data: ToElm): void;
     };
   };
 }
