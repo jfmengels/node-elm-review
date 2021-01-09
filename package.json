@@ -71,7 +71,7 @@
     "chokidar": "^3.4.0",
     "cross-spawn": "^7.0.3",
     "cross-spawn-promise": "^0.10.2",
-    "elm-tooling": "^0.6.2",
+    "elm-tooling": "^1.0.0",
     "find-up": "^4.1.0",
     "folder-hash": "^3.3.0",
     "fs-extra": "^9.0.0",
