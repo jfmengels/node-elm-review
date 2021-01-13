@@ -29,9 +29,9 @@
     "/bin/",
     "/lib/",
     "/build/",
-    "/new-package/elm-review-package-tests",
-    "/new-package/github",
-    "/new-package/maintenance",
+    "/new-package/elm-review-package-tests/",
+    "/new-package/github/",
+    "/new-package/maintenance/",
     "/init-templates/",
     "/vendor/",
     "/template/src/**/*.elm"
