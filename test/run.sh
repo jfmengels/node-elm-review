@@ -125,7 +125,6 @@ rm -rf "$TMP" \
       project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/remote-templates/ \
       &> /dev/null
 mkdir -p "$TMP"
-npm run build > /dev/null
 
 if [ "$1" == "record" ]
 then
