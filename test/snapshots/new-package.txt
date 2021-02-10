@@ -2,6 +2,8 @@
 ✔ Adding elm.json
 - Adding package.json
 ✔ Adding package.json
+- Adding elm-tooling.json
+✔ Adding elm-tooling.json
 - Adding README
 ✔ Adding README
 - Adding preview folder
