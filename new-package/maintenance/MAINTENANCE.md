@@ -25,6 +25,8 @@ npm install
 yarn
 ```
 
+Note that [`elm-tooling`](https://elm-tooling.github.io/elm-tooling-cli/) takes care of some of the Elm dependencies, notably `elm` and `elm-format`. Their versions are defined in the `elm-tooling.json` file, and are automatically installed through the `postinstall` script/hook in `package.json`.
+
 2. Set up `Git`
 
 ```bash
