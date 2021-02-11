@@ -4,7 +4,7 @@ set -e
 
 CWD=$(pwd)
 CMD="elm-review"
-TMP="$CWD/tmp"
+TMP="$CWD/temporary"
 SNAPSHOTS="$CWD/snapshots"
 SUBCOMMAND="$1"
 
