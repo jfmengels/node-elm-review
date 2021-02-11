@@ -3,7 +3,7 @@
 set -e
 
 CWD=$(pwd)
-CMD="$CWD/../bin/elm-review"
+CMD="elm-review"
 TMP="$CWD/tmp"
 SNAPSHOTS="$CWD/snapshots"
 SUBCOMMAND="$1"
@@ -144,6 +144,11 @@ else
   createTest=runCommandAndCompareToSnapshot
   echo -e '\x1B[33m-- Testing runs\x1B[0m'
 fi
+
+echo "Package path will be"
+PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
+echo "Package path is $PACKAGE_PATH"
+npm install -g $PACKAGE_PATH
 
 # Version
 

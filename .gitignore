@@ -29,6 +29,8 @@ elm-stuff
 tmp
 build/
 
+test/elm-review-*.tgz
+
 # Editors
 .idea/
 ElmjutsuDumMyM0DuL3.elm
