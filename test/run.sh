@@ -121,9 +121,18 @@ function createAndGoIntoFolder {
 }
 
 rm -rf "$TMP" \
-      project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/review-applications/ \
-      project-with-errors/elm-stuff/generated-code/jfmengels/elm-review/cli/*/remote-templates/ \
-      &> /dev/null
+      "$CWD/config-empty/elm-stuff" \
+      "$CWD/config-error-debug/elm-stuff" \
+      "$CWD/config-error-unknown-module/elm-stuff" \
+      "$CWD/config-for-outdated-elm-review-version/elm-stuff" \
+      "$CWD/config-for-salvageable-elm-review-version/elm-stuff" \
+      "$CWD/config-syntax-error/elm-stuff" \
+      "$CWD/config-that-triggers-no-errors/elm-stuff" \
+      "$CWD/config-unparsable-elmjson/elm-stuff" \
+      "$CWD/config-without-elm-review/elm-stuff" \
+      "$CWD/project-using-es2015-module/elm-stuff" \
+      "$CWD/project-with-errors/elm-stuff"
+
 mkdir -p "$TMP"
 
 if [ "$1" == "record" ]

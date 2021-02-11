@@ -1,7 +1,7 @@
 Starting review application build
 Compiling review application
 Finished review application build
-Parser app for elm-syntax v7.1.3 already exists.
+Building parser app for elm-syntax v7.1.3
 Parsing using stil4m/elm-syntax v7.1.3
 Reviewing the following files:
  - src/Main.elm
