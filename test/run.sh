@@ -211,6 +211,13 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Regular run using --elmjson and --config" \
     "--elmjson project-with-errors/elm.json --config project-with-errors/review" \
     "run-with-elmjson-flag"
+
+cd "$CWD/project-using-es2015-module"
+createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Running in a project using ES2015 modules" \
+    "" \
+    "config-es2015-modules"
+
 cd "$CWD/project-with-errors"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
