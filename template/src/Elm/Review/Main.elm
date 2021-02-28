@@ -704,14 +704,20 @@ makeReport model =
 
 encodeErrorByFile : Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
 encodeErrorByFile links detailsMode file =
-    let
-        (Reporter.FilePath path) =
-            file.path
-    in
     Encode.object
-        [ ( "path", Encode.string path )
+        [ ( "path", encodeFilePath file.path )
         , ( "errors", Encode.list (encodeError links detailsMode file.source) file.errors )
         ]
+
+
+encodeFilePath : Reporter.FilePath -> Encode.Value
+encodeFilePath filePath =
+    case filePath of
+        Reporter.FilePath path ->
+            Encode.string path
+
+        Reporter.Global ->
+            Encode.null
 
 
 encodeError : Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
@@ -808,7 +814,12 @@ fixAll model =
                         changedFiles =
                             List.map
                                 (\{ path, source, fixedSource } ->
-                                    { path = Reporter.FilePath path
+                                    { path =
+                                        if path == "GLOBAL ERROR" then
+                                            Reporter.Global
+
+                                        else
+                                            Reporter.FilePath path
                                     , source = Reporter.Source source
                                     , fixedSource = Reporter.Source fixedSource
                                     , errors =
@@ -850,14 +861,11 @@ fixAll model =
 encodeChangedFile : { path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
 encodeChangedFile changedFile =
     let
-        (Reporter.FilePath path) =
-            changedFile.path
-
         (Reporter.Source source) =
             changedFile.source
     in
     Encode.object
-        [ ( "path", Encode.string path )
+        [ ( "path", encodeFilePath changedFile.path )
         , ( "source", Encode.string source )
         ]
 
@@ -1053,7 +1061,12 @@ groupErrorsByFile project errors =
     files
         |> List.map
             (\file ->
-                { path = Reporter.FilePath file.path
+                { path =
+                    if file.path == "GLOBAL ERROR" then
+                        Reporter.Global
+
+                    else
+                        Reporter.FilePath file.path
                 , source = Reporter.Source file.source
                 , errors = List.filter (\error -> file.path == Rule.errorFilePath error) errors
                 }

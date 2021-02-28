@@ -63,11 +63,17 @@ type alias FileWithError =
 
 type FilePath
     = FilePath String
+    | Global
 
 
 filePath : FilePath -> String
-filePath (FilePath str) =
-    str
+filePath path_ =
+    case path_ of
+        FilePath str ->
+            str
+
+        Global ->
+            ""
 
 
 type Source
@@ -194,11 +200,16 @@ firstErrorPrefix =
 
 
 header : Bool -> FilePath -> Range -> Text
-header isFirstError (FilePath filePath_) range =
+header isFirstError filePath_ range =
     let
         position : String
         position =
-            " " ++ filePath_ ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
+            case filePath_ of
+                FilePath str ->
+                    " " ++ str ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
+
+                Global ->
+                    " GLOBAL ERROR"
     in
     if isFirstError then
         (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' position)
@@ -500,12 +511,12 @@ formatReports detailsMode files =
 
 
 fileSeparator : FilePath -> FilePath -> List Text
-fileSeparator (FilePath pathAbove) (FilePath pathBelow) =
-    [ Text.from <| "\n\n" ++ String.repeat (73 - String.length pathAbove) " "
-    , (pathAbove ++ "  ↑")
+fileSeparator pathAbove pathBelow =
+    [ Text.from <| "\n\n" ++ String.repeat (73 - String.length (filePath pathAbove)) " "
+    , (filePath pathAbove ++ "  ↑")
         ++ "\n====o======================================================================o===="
         ++ "\n    ↓  "
-        ++ pathBelow
+        ++ filePath pathBelow
         |> Text.from
         |> Text.inRed
     , Text.from "\n\n\n"
