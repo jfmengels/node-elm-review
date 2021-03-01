@@ -27,12 +27,14 @@ Two assertions will be made:
                         , withColors = "some [highlighted](#FF0000) text with [background](bg-16-16-16) and with [both](255-255-255-bg-16-16-16)"
                         }
 
+For convenience, "$" will be replaced by white-space, in case the editor wants to strip those automatically.
+
 -}
 expect : { withoutColors : String, withColors : String } -> List TextContent -> Expectation
 expect { withoutColors, withColors } =
     Expect.all
-        [ \textList -> Expect.equal withoutColors (formatWithoutColors textList)
-        , \textList -> Expect.equal withColors (formatWithColors textList)
+        [ \textList -> Expect.equal (String.replace "$" " " withoutColors) (formatWithoutColors textList)
+        , \textList -> Expect.equal (String.replace "$" " " withColors) (formatWithColors textList)
         ]
 
 
