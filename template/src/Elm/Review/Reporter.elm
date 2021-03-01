@@ -233,7 +233,12 @@ formatErrorWithExtract detailsMode mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
-            codeExtract source error.range
+            case codeExtract source error.range of
+                [] ->
+                    []
+
+                sourceCodeExtract ->
+                    Text.from "\n\n" :: sourceCodeExtract
 
         details_ : List Text
         details_ =
@@ -249,7 +254,6 @@ formatErrorWithExtract detailsMode mode source error =
     in
     List.concat
         [ formatErrorTitle mode error
-        , [ Text.from "\n\n" ]
         , codeExtract_
         , details_
         ]
