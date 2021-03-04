@@ -145,7 +145,6 @@ else
   echo -e '\x1B[33m-- Testing runs\x1B[0m'
 fi
 
-echo "Package path will be"
 PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
