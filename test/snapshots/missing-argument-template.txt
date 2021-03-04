@@ -1,0 +1,8 @@
+-- INVALID ARGUMENT ------------------------------------------------------------
+
+The --template flag needs more information.
+
+It needs the GitHub repository like:
+
+    --template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit]
+

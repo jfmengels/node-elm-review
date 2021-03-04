@@ -1,0 +1,8 @@
+-- INVALID ARGUMENT ------------------------------------------------------------
+
+The --report flag needs more information.
+
+It needs the report format like:
+
+    --report=<json or ndjson>
+

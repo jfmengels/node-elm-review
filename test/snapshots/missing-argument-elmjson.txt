@@ -1,0 +1,8 @@
+-- INVALID ARGUMENT ------------------------------------------------------------
+
+The --elmjson flag needs more information.
+
+It needs the path to the project's elm.json like:
+
+    --elmjson <path-to-elm.json>
+

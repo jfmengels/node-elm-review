@@ -1,0 +1,8 @@
+-- INVALID ARGUMENT ------------------------------------------------------------
+
+The --config flag needs more information.
+
+It needs the path to the review configuration directory like:
+
+    --config <path-to-review-directory>
+

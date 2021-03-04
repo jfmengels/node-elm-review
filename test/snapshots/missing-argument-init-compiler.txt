@@ -1,0 +1,8 @@
+-- INVALID ARGUMENT ------------------------------------------------------------
+
+The --compiler flag needs more information.
+
+It needs the path to the Elm binary like:
+
+    --compiler <path-to-elm>
+

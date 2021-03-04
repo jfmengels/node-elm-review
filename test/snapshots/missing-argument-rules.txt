@@ -1,0 +1,8 @@
+-- INVALID ARGUMENT ------------------------------------------------------------
+
+The --rules flag needs more information.
+
+It needs the list of rules to enable separated by commas like:
+
+    --rules <rule1,rule2,...>
+
