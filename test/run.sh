@@ -180,9 +180,59 @@ $createTest "$CMD" \
 # Flag errors
 
 $createTest "$CMD" \
-    "Running rules without an argument" \
+    "Running --compiler without an argument" \
+    "--compiler" \
+    "missing-argument-compiler.txt"
+
+$createTest "$CMD" \
+    "Running --config without an argument" \
+    "--config" \
+    "missing-argument-config.txt"
+
+$createTest "$CMD" \
+    "Running --template without an argument" \
+    "--template" \
+    "missing-argument-template.txt"
+
+$createTest "$CMD" \
+    "Running --elmjson without an argument" \
+    "--elmjson" \
+    "missing-argument-elmjson.txt"
+
+$createTest "$CMD" \
+    "Running --report without an argument" \
+    "--report" \
+    "missing-argument-report.txt"
+
+$createTest "$CMD" \
+    "Running --elm-format-path without an argument" \
+    "--elm-format-path" \
+    "missing-argument-elm-format-path.txt"
+
+$createTest "$CMD" \
+    "Running --rules without an argument" \
     "--rules" \
     "missing-argument-rules.txt"
+
+$createTest "$CMD" \
+    "Running init --compiler without an argument" \
+    "--compiler" \
+    "missing-argument-init-compiler.txt"
+
+$createTest "$CMD" \
+    "Running init --config without an argument" \
+    "--config" \
+    "missing-argument-init-config.txt"
+
+$createTest "$CMD" \
+    "Running init --template without an argument" \
+    "--template" \
+    "missing-argument-init-template.txt"
+
+$createTest "$CMD" \
+    "Running new-package --compiler without an argument" \
+    "--compiler" \
+    "missing-argument-new-package-compiler.txt"
 
 # init
 
