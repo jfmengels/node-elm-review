@@ -2,7 +2,8 @@
 
 The --elm-format-path flag needs more information.
 
-It needs the path to the elm-format binary like:
+Here is the documentation for this flag:
 
     --elm-format-path <path-to-elm-format>
+        Specify the path to elm-format.
 

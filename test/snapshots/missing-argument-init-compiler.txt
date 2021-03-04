@@ -2,7 +2,8 @@
 
 The --compiler flag needs more information.
 
-It needs the path to the Elm binary like:
+Here is the documentation for this flag:
 
     --compiler <path-to-elm>
+        Specify the path to the elm compiler.
 
