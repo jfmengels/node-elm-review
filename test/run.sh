@@ -177,6 +177,13 @@ $createTest "$CMD" \
     "new-rule --help" \
     "help-new-rule.txt"
 
+# Flag errors
+
+$createTest "$CMD" \
+    "Running rules without an argument" \
+    "--rules" \
+    "missing-argument-rules.txt"
+
 # init
 
 INIT_PROJECT_NAME="init-project"
