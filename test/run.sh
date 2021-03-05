@@ -181,7 +181,7 @@ $createTest "$CMD" \
 
 $createTest "$CMD" \
     "Running with an unknown flag" \
-    "--unknown" \
+    "--watc" \
     "unknown-flag.txt"
 
 $createTest "$CMD" \
