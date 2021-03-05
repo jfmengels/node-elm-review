@@ -3,6 +3,7 @@
 set -e
 
 CWD=$(pwd)
+PROJECT_ROOT=$(dirname "$CWD")
 CMD="elm-review"
 TMP="$CWD/temporary"
 SNAPSHOTS="$CWD/snapshots"
@@ -19,7 +20,7 @@ else
   AUTH=" --github-auth $GITHUB_AUTH"
 fi
 
-ESCAPED_PWD=${CWD//\//\\\/}
+ESCAPED_PWD=${PROJECT_ROOT//\//\\\/}
 
 function runCommandAndCompareToSnapshot {
     local LOCAL_COMMAND=$1

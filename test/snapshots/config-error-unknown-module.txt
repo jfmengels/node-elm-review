@@ -3,9 +3,9 @@
 A module is missing in your configuration. Maybe you forgot to add some
 dependencies that contain the rules you wished to enable? If so, run elm install
 with the package name from inside
-<local-path>/config-error-unknown-module.
+<local-path>/test/config-error-unknown-module.
 
--- MODULE NOT FOUND - <local-path>/config-error-unknown-module/src/ReviewConfig.elm
+-- MODULE NOT FOUND - <local-path>/test/config-error-unknown-module/src/ReviewConfig.elm
 
 You are trying to import a `Unknown.Module` module:
 
