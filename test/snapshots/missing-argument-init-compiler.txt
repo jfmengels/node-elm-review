@@ -1,4 +1,4 @@
--- INVALID ARGUMENT ------------------------------------------------------------
+-- MISSING FLAG ARGUMENT -------------------------------------------------------
 
 The --compiler flag needs more information.
 

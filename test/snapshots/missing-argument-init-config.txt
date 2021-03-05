@@ -1,4 +1,4 @@
--- INVALID ARGUMENT ------------------------------------------------------------
+-- MISSING FLAG ARGUMENT -------------------------------------------------------
 
 The --config flag needs more information.
 
