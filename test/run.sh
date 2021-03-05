@@ -234,10 +234,14 @@ $createTest "$CMD" \
     "new-package --compiler" \
     "missing-argument-new-package-compiler.txt"
 
+# Temporarily disabling auth because otherwise `--github-auth` would be duplicated
+OLD_AUTH="$AUTH"
+AUTH=""
 $createTest "$CMD" \
     "Running --github-auth with a bad value" \
     "--github-auth=bad" \
     "github-auth-bad-argument.txt"
+AUTH="$OLD_AUTH"
 
 $createTest "$CMD" \
     "Running --report with an unknown value" \
