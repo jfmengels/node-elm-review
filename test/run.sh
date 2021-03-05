@@ -216,22 +216,22 @@ $createTest "$CMD" \
 
 $createTest "$CMD" \
     "Running init --compiler without an argument" \
-    "--compiler" \
+    "init --compiler" \
     "missing-argument-init-compiler.txt"
 
 $createTest "$CMD" \
     "Running init --config without an argument" \
-    "--config" \
+    "init --config" \
     "missing-argument-init-config.txt"
 
 $createTest "$CMD" \
     "Running init --template without an argument" \
-    "--template" \
+    "init --template" \
     "missing-argument-init-template.txt"
 
 $createTest "$CMD" \
     "Running new-package --compiler without an argument" \
-    "--compiler" \
+    "new-package --compiler" \
     "missing-argument-new-package-compiler.txt"
 
 # init
