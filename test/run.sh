@@ -184,6 +184,11 @@ $createTest "$CMD" \
     "--unknown" \
     "unknown-flag.txt"
 
+$createTest "$CMD" \
+    "Running with an unknown shorthand flag" \
+    "-u" \
+    "unknown-shorthand-flag.txt"
+
 # Flag errors
 
 $createTest "$CMD" \
