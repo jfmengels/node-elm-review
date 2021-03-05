@@ -177,6 +177,13 @@ $createTest "$CMD" \
     "new-rule --help" \
     "help-new-rule.txt"
 
+# Unknown flags
+
+$createTest "$CMD" \
+    "Running with an unknown flag" \
+    "--unknown" \
+    "unknown-flag.txt"
+
 # Flag errors
 
 $createTest "$CMD" \
