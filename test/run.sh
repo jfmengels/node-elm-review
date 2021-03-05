@@ -234,6 +234,11 @@ $createTest "$CMD" \
     "new-package --compiler" \
     "missing-argument-new-package-compiler.txt"
 
+$createTest "$CMD" \
+    "Running --report with an unknown value" \
+    "--report=unknown" \
+    "report-unknown-argument.txt"
+
 # init
 
 INIT_PROJECT_NAME="init-project"
