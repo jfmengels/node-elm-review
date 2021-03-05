@@ -235,6 +235,11 @@ $createTest "$CMD" \
     "missing-argument-new-package-compiler.txt"
 
 $createTest "$CMD" \
+    "Running --github-auth with a bad value" \
+    "--github-auth=bad" \
+    "github-auth-bad-argument.txt"
+
+$createTest "$CMD" \
     "Running --report with an unknown value" \
     "--report=unknown" \
     "report-unknown-argument.txt"
