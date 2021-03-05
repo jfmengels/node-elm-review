@@ -239,6 +239,16 @@ $createTest "$CMD" \
     "--report=unknown" \
     "report-unknown-argument.txt"
 
+$createTest "$CMD" \
+    "Running --template with an bad value" \
+    "--template=not-github-repo" \
+    "template-bad-argument.txt"
+
+$createTest "$CMD" \
+    "Running init --template with an bad value" \
+    "init --template=not-github-repo" \
+    "init-template-bad-argument.txt"
+
 # init
 
 INIT_PROJECT_NAME="init-project"
