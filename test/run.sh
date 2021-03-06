@@ -270,6 +270,11 @@ $createTest "$CMD" \
     "init --template=not-github-repo" \
     "init-template-bad-argument.txt"
 
+$createTest "$CMD" \
+    "Using the same flag twice" \
+    "--config a/ --config b/" \
+    "duplicate-flags.txt"
+
 # init
 
 INIT_PROJECT_NAME="init-project"
@@ -392,6 +397,16 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Filter rules" \
     "--rules NoUnused.Variables" \
     "filter-rules"
+
+$createTest "$CMD" \
+    "Filter rules with comma-separated list" \
+    "--rules NoUnused.Variables,NoUnused.Modules" \
+    "filter-rules-comma.txt"
+
+$createTest "$CMD" \
+    "Filter rules with multiple --rules calls" \
+    "--rules NoUnused.Variables --rules NoUnused.Modules" \
+    "filter-rules-multiple-calls.txt"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Filter unknown rule" \
