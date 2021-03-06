@@ -7,7 +7,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `span` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -44,7 +44,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables"
             },
             ": Imported variable `span` is not used\n\n 9|           -- span is unused\n10|         , span\n              ",
             {
@@ -57,7 +57,7 @@
         {
           "rule": "NoUnused.CustomTypeConstructors",
           "message": "Type constructor `UnusedCustomType` is not used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-CustomTypeConstructors",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors",
           "details": [
             "This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
           ],
@@ -76,7 +76,7 @@
             {
               "string": "NoUnused.CustomTypeConstructors",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-CustomTypeConstructors"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors"
             },
             ": Type constructor `UnusedCustomType` is not used.\n\n27|     | Decrement\n28|     | UnusedCustomType\n          ",
             {

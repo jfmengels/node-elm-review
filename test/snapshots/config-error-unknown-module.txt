@@ -15,9 +15,9 @@ I checked the "dependencies" and "source-directories" listed in your elm.json,
 but I cannot find it! Maybe it is a typo for one of these names?
 
     Elm.Module
+    NoUnused.Modules
     Elm.Syntax.Module
     Json.Encode
-    Json.Decode
 
 Hint: If it is not a typo, check the "dependencies" and "source-directories" of
 your elm.json to make sure all the packages you need are listed there!

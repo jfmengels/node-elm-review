@@ -1,6 +1,6 @@
-Review application is already built. Using elm-stuff/generated-code/jfmengels/elm-review/cli/<version>/review-applications/1c44cabafeb71f5b04b3f58c6e66c1b0-debug.js
-Parser app for elm-syntax v7.1.3 already exists.
-Parsing using stil4m/elm-syntax v7.1.3
+Review application is already built. Using elm-stuff/generated-code/jfmengels/elm-review/cli/<version>/review-applications/280085ad06a947e2b4b14c6420d7c2b0-debug.js
+Parser app for elm-syntax v7.2.1 already exists.
+Parsing using stil4m/elm-syntax v7.2.1
 Reviewing the following files:
  - src/Main.elm
  - src/Unused.elm
@@ -13,7 +13,7 @@ Reviewing the following files:
         {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `span` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -50,7 +50,7 @@ Reviewing the following files:
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables"
             },
             ": Imported variable `span` is not used\n\n 9|           -- span is unused\n10|         , span\n              ",
             {
@@ -63,7 +63,7 @@ Reviewing the following files:
         {
           "rule": "NoUnused.CustomTypeConstructors",
           "message": "Type constructor `UnusedCustomType` is not used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-CustomTypeConstructors",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors",
           "details": [
             "This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
           ],
@@ -82,7 +82,7 @@ Reviewing the following files:
             {
               "string": "NoUnused.CustomTypeConstructors",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-CustomTypeConstructors"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors"
             },
             ": Type constructor `UnusedCustomType` is not used.\n\n27|     | Decrement\n28|     | UnusedCustomType\n          ",
             {
@@ -100,7 +100,7 @@ Reviewing the following files:
         {
           "rule": "NoUnused.Modules",
           "message": "Module `Unused` is never used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Modules",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules",
           "details": [
             "This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
           ],
@@ -119,7 +119,7 @@ Reviewing the following files:
             {
               "string": "NoUnused.Modules",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/review-unused/2.1.3/NoUnused-Modules"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules"
             },
             ": Module `Unused` is never used.\n\n1| module Unused exposing (..)\n          ",
             {
