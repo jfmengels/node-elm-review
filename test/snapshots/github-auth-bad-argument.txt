@@ -1,0 +1,13 @@
+-- INVALID FLAG ARGUMENT -------------------------------------------------------
+
+The value bad passed to --github-auth is not a valid one.
+
+Here is the documentation for this flag:
+
+    --github-auth=<github-api-token>
+        To be used along with --template to avoid GitHub rate limiting.
+        Follow https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to create an API token. The API token needs access to public repositories.
+
+        Then use the flag like this:
+          --github-auth=my-user-name:abcdef01234567890
+

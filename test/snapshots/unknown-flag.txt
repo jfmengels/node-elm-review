@@ -1,0 +1,11 @@
+-- UNKNOWN FLAG ----------------------------------------------------------------
+
+I did not recognize this flag:
+
+    watc
+
+Maybe you want one of these instead?
+
+    --watch
+    --help
+

@@ -177,6 +177,99 @@ $createTest "$CMD" \
     "new-rule --help" \
     "help-new-rule.txt"
 
+# Unknown flags
+
+$createTest "$CMD" \
+    "Running with an unknown flag" \
+    "--watc" \
+    "unknown-flag.txt"
+
+$createTest "$CMD" \
+    "Running with an unknown shorthand flag" \
+    "-u" \
+    "unknown-shorthand-flag.txt"
+
+# Flag errors
+
+$createTest "$CMD" \
+    "Running --compiler without an argument" \
+    "--compiler" \
+    "missing-argument-compiler.txt"
+
+$createTest "$CMD" \
+    "Running --config without an argument" \
+    "--config" \
+    "missing-argument-config.txt"
+
+$createTest "$CMD" \
+    "Running --template without an argument" \
+    "--template" \
+    "missing-argument-template.txt"
+
+$createTest "$CMD" \
+    "Running --elmjson without an argument" \
+    "--elmjson" \
+    "missing-argument-elmjson.txt"
+
+$createTest "$CMD" \
+    "Running --report without an argument" \
+    "--report" \
+    "missing-argument-report.txt"
+
+$createTest "$CMD" \
+    "Running --elm-format-path without an argument" \
+    "--elm-format-path" \
+    "missing-argument-elm-format-path.txt"
+
+$createTest "$CMD" \
+    "Running --rules without an argument" \
+    "--rules" \
+    "missing-argument-rules.txt"
+
+$createTest "$CMD" \
+    "Running init --compiler without an argument" \
+    "init --compiler" \
+    "missing-argument-init-compiler.txt"
+
+$createTest "$CMD" \
+    "Running init --config without an argument" \
+    "init --config" \
+    "missing-argument-init-config.txt"
+
+$createTest "$CMD" \
+    "Running init --template without an argument" \
+    "init --template" \
+    "missing-argument-init-template.txt"
+
+$createTest "$CMD" \
+    "Running new-package --compiler without an argument" \
+    "new-package --compiler" \
+    "missing-argument-new-package-compiler.txt"
+
+# Temporarily disabling auth because otherwise `--github-auth` would be duplicated
+OLD_AUTH="$AUTH"
+AUTH=""
+$createTest "$CMD" \
+    "Running --github-auth with a bad value" \
+    "--github-auth=bad" \
+    "github-auth-bad-argument.txt"
+AUTH="$OLD_AUTH"
+
+$createTest "$CMD" \
+    "Running --report with an unknown value" \
+    "--report=unknown" \
+    "report-unknown-argument.txt"
+
+$createTest "$CMD" \
+    "Running --template with a bad value" \
+    "--template=not-github-repo" \
+    "template-bad-argument.txt"
+
+$createTest "$CMD" \
+    "Running init --template with a bad value" \
+    "init --template=not-github-repo" \
+    "init-template-bad-argument.txt"
+
 # init
 
 INIT_PROJECT_NAME="init-project"

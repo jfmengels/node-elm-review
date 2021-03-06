@@ -62,7 +62,7 @@ You can customize the review command with the following flags:
         - Run the compiler in debug mode, allowing you to use Debug statements
           in your configuration and custom rules.
 
-    --report=json, --report=ndjson
+    --report=<json or ndjson>
         Error reports will be in JSON format. json prints a single JSON object
         while ndjson will print one JSON object per error each on a new line.
         The formats are described in this document: https://bit.ly/31F6jzz
