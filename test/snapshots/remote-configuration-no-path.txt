@@ -9,4 +9,18 @@ Testing.It.Works: It works!
 
 Good job! You have successfully run elm-review.
 
-I found 1 error in 1 file.
+src/Main.elm  ↑
+====o======================================================================o====
+↓  src/Unused.elm
+
+
+-- ELM-REVIEW ERROR ----------------------------------------- src/Unused.elm:1:1
+
+Testing.It.Works: It works!
+
+1| module Unused exposing (..)
+   ^^^^^^
+
+Good job! You have successfully run elm-review.
+
+I found 2 errors in 2 files.

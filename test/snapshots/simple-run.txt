@@ -22,6 +22,21 @@ used.
 This type constructor is never used. It might be handled everywhere it might
 appear, but there is no location where this value actually gets created.
 
+src/Main.elm  ↑
+====o======================================================================o====
+↓  src/Unused.elm
+
+
+-- ELM-REVIEW ERROR ----------------------------------------- src/Unused.elm:1:8
+
+NoUnused.Modules: Module `Unused` is never used.
+
+1| module Unused exposing (..)
+          ^^^^^^
+
+This module is never used. You may want to remove it to keep your project clean,
+and maybe detect some unused code in your project.
+
 Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
 
-I found 2 errors in 1 file.
+I found 3 errors in 2 files.
