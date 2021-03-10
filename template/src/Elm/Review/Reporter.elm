@@ -64,6 +64,7 @@ type alias FileWithError =
 type FilePath
     = FilePath String
     | Global
+    | ConfigurationError
 
 
 filePath : FilePath -> String
@@ -73,6 +74,9 @@ filePath path_ =
             str
 
         Global ->
+            ""
+
+        ConfigurationError ->
             ""
 
 
@@ -210,6 +214,9 @@ header isFirstError filePath_ range =
 
                 Global ->
                     " GLOBAL ERROR"
+
+                ConfigurationError ->
+                    " CONFIGURATION ERROR"
     in
     if isFirstError then
         (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' position)

@@ -719,6 +719,9 @@ encodeFilePath filePath =
         Reporter.Global ->
             Encode.null
 
+        Reporter.ConfigurationError ->
+            Encode.null
+
 
 encodeError : Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
 encodeError links detailsMode source error =
@@ -1043,6 +1046,7 @@ groupErrorsByFile project errors =
                     |> Project.modules
                     |> List.map (\file -> { path = file.path, source = file.source })
                 , [ { path = "GLOBAL ERROR", source = "" } ]
+                , [ { path = "CONFIGURATION ERROR", source = "" } ]
                 , case Project.elmJson project of
                     Just { path, raw } ->
                         [ { path = path, source = raw } ]
@@ -1064,6 +1068,9 @@ groupErrorsByFile project errors =
                 { path =
                     if file.path == "GLOBAL ERROR" then
                         Reporter.Global
+
+                    else if file.path == "CONFIGURATION ERROR" then
+                        Reporter.ConfigurationError
 
                     else
                         Reporter.FilePath file.path
