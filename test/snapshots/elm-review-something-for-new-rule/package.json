@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "elm-doc-preview": "^5.0.3",
-    "elm-review": "^2.4.4",
+    "elm-review": "^2.4.5",
     "elm-test": "^0.19.1-revision6",
     "fs-extra": "9.0.0",
     "glob": "7.1.6",
