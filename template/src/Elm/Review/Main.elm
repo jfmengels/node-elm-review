@@ -206,6 +206,9 @@ I recommend you take a look at the following documents:
             )
 
       else
+        -- TODO Report error when there are configuration errors for one of the rules.
+        -- TODO Don't load/parse Elm files if there are configuration errors.
+        -- No clue if that is a problem at the moment already.
         cmd
     )
 
