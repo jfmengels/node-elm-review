@@ -113,23 +113,12 @@ Contrary to the initial release, the CI will automatically try to publish a new 
 Here is a script that you can run to publish your package, which will help you avoid errors showing up at the CI stage.
 
 ```bash
-# Bump the version of the package
-elm bump
-
-# Run elm-review, which will for instance auto-fix like documentation links
-elm-review --fix-all
-
-# Run the tests, fix them if necessary
-npm test
-
-# Update the example configurations to reflect what was previously in the
-# preview configurations
-node maintenance/update-examples-from-preview.js
+npm run elm-bump
 
 # Commit it all
 git add --all
-git commit
+git commit # You'll need to specify a message
 git push origin HEAD
 
-# Now wait for CI to finish
+# Now wait for CI to finish and check that it succeeded
 ```
