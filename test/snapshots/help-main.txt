@@ -70,6 +70,12 @@ You can customize the review command with the following flags:
     --no-details
         Hide the details from error reports for a more compact view.
 
+    --ignore-dirs <dir1,dir2,...>
+        Ignore the reports of all rules for the specified directories.
+
+    --ignore-files <file1,file2,...>
+        Ignore the reports of all rules for the specified files.
+
 If you wish to use automatic fixing, you can use the following flags:
 
     --fix
