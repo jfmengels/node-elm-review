@@ -146,6 +146,7 @@ init flags =
                       , detailsMode = Reporter.WithoutDetails
                       , ignoreProblematicDependencies = False
                       , rulesFilter = Nothing
+                      , ignoredDirs = []
                       }
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
@@ -240,17 +241,19 @@ type alias DecodedFlags =
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
     , rulesFilter : Maybe (Set String)
+    , ignoredDirs : List String
     }
 
 
 decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.map5 DecodedFlags
+    Decode.map6 DecodedFlags
         (Decode.field "fixMode" decodeFix)
         (Decode.field "detailsMode" decodeDetailsMode)
         (Decode.field "report" decodeReportMode)
         (Decode.field "ignoreProblematicDependencies" Decode.bool)
         (Decode.field "rulesFilter" decodeRulesFilter)
+        (Decode.field "ignoredDirs" (Decode.list Decode.string))
 
 
 decodeFix : Decode.Decoder FixMode
