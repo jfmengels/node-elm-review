@@ -156,6 +156,11 @@ $createTest "$CMD" \
   "--ignore-dirs src/Folder/" \
   "ignore-dirs.txt"
 
+$createTest "$CMD" \
+  "Ignore errors on files" \
+  "--ignore-files src/Folder/Unused.elm" \
+  "ignore-files.txt"
+
 exit 0
 
 # Version
