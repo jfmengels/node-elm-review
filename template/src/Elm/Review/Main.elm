@@ -135,7 +135,7 @@ type ReportMode
 init : Flags -> ( Model, Cmd msg )
 init flags =
     let
-        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter }, cmd ) =
+        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter, ignoredDirs }, cmd ) =
             case Decode.decodeValue decodeFlags flags of
                 Ok decodedFlags ->
                     ( decodedFlags, Cmd.none )
@@ -168,7 +168,10 @@ init flags =
                 Nothing ->
                     ( config, [] )
     in
-    ( { rules = rules
+    ( { rules =
+            List.map
+                (Rule.ignoreErrorsForDirectories ignoredDirs)
+                rules
       , project = Project.new
       , projectData = Nothing
       , links = Dict.empty
