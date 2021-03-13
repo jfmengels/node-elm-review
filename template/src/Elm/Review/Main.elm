@@ -135,7 +135,7 @@ type ReportMode
 init : Flags -> ( Model, Cmd msg )
 init flags =
     let
-        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter, ignoredDirs }, cmd ) =
+        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter, ignoredDirs, ignoredFiles }, cmd ) =
             case Decode.decodeValue decodeFlags flags of
                 Ok decodedFlags ->
                     ( decodedFlags, Cmd.none )
@@ -147,6 +147,7 @@ init flags =
                       , ignoreProblematicDependencies = False
                       , rulesFilter = Nothing
                       , ignoredDirs = []
+                      , ignoredFiles = []
                       }
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
@@ -170,7 +171,7 @@ init flags =
     in
     ( { rules =
             List.map
-                (Rule.ignoreErrorsForDirectories ignoredDirs)
+                (Rule.ignoreErrorsForDirectories ignoredDirs >> Rule.ignoreErrorsForFiles ignoredFiles)
                 rules
       , project = Project.new
       , projectData = Nothing
@@ -245,18 +246,20 @@ type alias DecodedFlags =
     , ignoreProblematicDependencies : Bool
     , rulesFilter : Maybe (Set String)
     , ignoredDirs : List String
+    , ignoredFiles : List String
     }
 
 
 decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.map6 DecodedFlags
+    Decode.map7 DecodedFlags
         (Decode.field "fixMode" decodeFix)
         (Decode.field "detailsMode" decodeDetailsMode)
         (Decode.field "report" decodeReportMode)
         (Decode.field "ignoreProblematicDependencies" Decode.bool)
         (Decode.field "rulesFilter" decodeRulesFilter)
         (Decode.field "ignoredDirs" (Decode.list Decode.string))
+        (Decode.field "ignoredFiles" (Decode.list Decode.string))
 
 
 decodeFix : Decode.Decoder FixMode
