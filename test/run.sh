@@ -148,6 +148,16 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
+
+cd "$CWD/project-with-errors"
+
+$createTest "$CMD" \
+  "Ignore errors on directories" \
+  "--ignore-dirs src/Folder/" \
+  "ignore-dirs.txt"
+
+exit 0
+
 # Version
 
 $createTest "$CMD" \
