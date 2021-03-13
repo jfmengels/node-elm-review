@@ -1,11 +1,11 @@
--- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:10:11
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:11:11
 
 (fix) NoUnused.Variables: Imported variable `span` is not used
 
- 9|           -- span is unused
-10|         , span
+10|           -- span is unused
+11|         , span
               ^^^^
-11|         , text
+12|         , text
 
 You should either use this value somewhere, or remove it at the location I
 pointed at.

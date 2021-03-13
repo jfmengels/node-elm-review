@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Folder.Used exposing (one)
 import Html
     exposing
         ( Html
@@ -32,7 +33,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Increment ->
-            { model | count = model.count + 1 }
+            { model | count = model.count + one }
 
         Decrement ->
             { model | count = model.count - 1 }

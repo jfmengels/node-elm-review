@@ -1,5 +1,33 @@
 - Fetching template information
 ✔ Build finished! Now reviewing your project...
+-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:1
+
+Testing.It.Works: It works!
+
+1| module Folder.Unused exposing (..)
+   ^^^^^^
+
+Good job! You have successfully run elm-review.
+
+src/Folder/Unused.elm  ↑
+====o======================================================================o====
+↓  src/Folder/Used.elm
+
+
+-- ELM-REVIEW ERROR ------------------------------------ src/Folder/Used.elm:1:1
+
+Testing.It.Works: It works!
+
+1| module Folder.Used exposing (one)
+   ^^^^^^
+
+Good job! You have successfully run elm-review.
+
+src/Folder/Used.elm  ↑
+====o======================================================================o====
+↓  src/Main.elm
+
+
 -- ELM-REVIEW ERROR ------------------------------------------- src/Main.elm:1:1
 
 Testing.It.Works: It works!
@@ -9,18 +37,4 @@ Testing.It.Works: It works!
 
 Good job! You have successfully run elm-review.
 
-src/Main.elm  ↑
-====o======================================================================o====
-↓  src/Unused.elm
-
-
--- ELM-REVIEW ERROR ----------------------------------------- src/Unused.elm:1:1
-
-Testing.It.Works: It works!
-
-1| module Unused exposing (..)
-   ^^^^^^
-
-Good job! You have successfully run elm-review.
-
-I found 2 errors in 2 files.
+I found 3 errors in 3 files.

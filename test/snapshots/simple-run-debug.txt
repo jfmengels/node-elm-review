@@ -4,46 +4,47 @@ Finished review application build
 Building parser app for elm-syntax v7.2.1
 Parsing using stil4m/elm-syntax v7.2.1
 Reviewing the following files:
+ - src/Folder/Unused.elm
+ - src/Folder/Used.elm
  - src/Main.elm
- - src/Unused.elm
--- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:10:11
+-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
+
+NoUnused.Modules: Module `Folder.Unused` is never used.
+
+1| module Folder.Unused exposing (..)
+          ^^^^^^^^^^^^^
+
+This module is never used. You may want to remove it to keep your project clean,
+and maybe detect some unused code in your project.
+
+src/Folder/Unused.elm  ↑
+====o======================================================================o====
+↓  src/Main.elm
+
+
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:11:11
 
 (fix) NoUnused.Variables: Imported variable `span` is not used
 
- 9|           -- span is unused
-10|         , span
+10|           -- span is unused
+11|         , span
               ^^^^
-11|         , text
+12|         , text
 
 You should either use this value somewhere, or remove it at the location I
 pointed at.
 
-────────────────────────────────────────────────────────────── src/Main.elm:28:7
+────────────────────────────────────────────────────────────── src/Main.elm:29:7
 
 NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is not
 used.
 
-27|     | Decrement
-28|     | UnusedCustomType
+28|     | Decrement
+29|     | UnusedCustomType
           ^^^^^^^^^^^^^^^^
 
 This type constructor is never used. It might be handled everywhere it might
 appear, but there is no location where this value actually gets created.
-
-src/Main.elm  ↑
-====o======================================================================o====
-↓  src/Unused.elm
-
-
--- ELM-REVIEW ERROR ----------------------------------------- src/Unused.elm:1:8
-
-NoUnused.Modules: Module `Unused` is never used.
-
-1| module Unused exposing (..)
-          ^^^^^^
-
-This module is never used. You may want to remove it to keep your project clean,
-and maybe detect some unused code in your project.
 
 Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
 

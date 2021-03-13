@@ -2,6 +2,43 @@
   "type": "review-errors",
   "errors": [
     {
+      "path": "src/Folder/Unused.elm",
+      "errors": [
+        {
+          "rule": "NoUnused.Modules",
+          "message": "Module `Folder.Unused` is never used.",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules",
+          "details": [
+            "This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
+          ],
+          "region": {
+            "start": {
+              "line": 1,
+              "column": 8
+            },
+            "end": {
+              "line": 1,
+              "column": 21
+            }
+          },
+          "formatted": [
+            "",
+            {
+              "string": "NoUnused.Modules",
+              "color": "#FF0000",
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules"
+            },
+            ": Module `Folder.Unused` is never used.\n\n1| module Folder.Unused exposing (..)\n          ",
+            {
+              "string": "^^^^^^^^^^^^^",
+              "color": "#FF0000"
+            },
+            "\n\nThis module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
+          ]
+        }
+      ]
+    },
+    {
       "path": "src/Main.elm",
       "errors": [
         {
@@ -13,11 +50,11 @@
           ],
           "region": {
             "start": {
-              "line": 10,
+              "line": 11,
               "column": 11
             },
             "end": {
-              "line": 10,
+              "line": 11,
               "column": 15
             }
           },
@@ -25,11 +62,11 @@
             {
               "range": {
                 "start": {
-                  "line": 8,
+                  "line": 9,
                   "column": 14
                 },
                 "end": {
-                  "line": 10,
+                  "line": 11,
                   "column": 15
                 }
               },
@@ -46,12 +83,12 @@
               "color": "#FF0000",
               "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables"
             },
-            ": Imported variable `span` is not used\n\n 9|           -- span is unused\n10|         , span\n              ",
+            ": Imported variable `span` is not used\n\n10|           -- span is unused\n11|         , span\n              ",
             {
               "string": "^^^^",
               "color": "#FF0000"
             },
-            "\n11|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
+            "\n12|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
           ]
         },
         {
@@ -63,11 +100,11 @@
           ],
           "region": {
             "start": {
-              "line": 28,
+              "line": 29,
               "column": 7
             },
             "end": {
-              "line": 28,
+              "line": 29,
               "column": 23
             }
           },
@@ -78,49 +115,12 @@
               "color": "#FF0000",
               "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors"
             },
-            ": Type constructor `UnusedCustomType` is not used.\n\n27|     | Decrement\n28|     | UnusedCustomType\n          ",
+            ": Type constructor `UnusedCustomType` is not used.\n\n28|     | Decrement\n29|     | UnusedCustomType\n          ",
             {
               "string": "^^^^^^^^^^^^^^^^",
               "color": "#FF0000"
             },
             "\n\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
-          ]
-        }
-      ]
-    },
-    {
-      "path": "src/Unused.elm",
-      "errors": [
-        {
-          "rule": "NoUnused.Modules",
-          "message": "Module `Unused` is never used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules",
-          "details": [
-            "This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
-          ],
-          "region": {
-            "start": {
-              "line": 1,
-              "column": 8
-            },
-            "end": {
-              "line": 1,
-              "column": 14
-            }
-          },
-          "formatted": [
-            "",
-            {
-              "string": "NoUnused.Modules",
-              "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules"
-            },
-            ": Module `Unused` is never used.\n\n1| module Unused exposing (..)\n          ",
-            {
-              "string": "^^^^^^",
-              "color": "#FF0000"
-            },
-            "\n\nThis module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
           ]
         }
       ]
