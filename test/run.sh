@@ -148,21 +148,6 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
-
-cd "$CWD/project-with-errors"
-
-$createTest "$CMD" \
-  "Ignore errors on directories" \
-  "--ignore-dirs src/Folder/" \
-  "ignore-dirs.txt"
-
-$createTest "$CMD" \
-  "Ignore errors on files" \
-  "--ignore-files src/Folder/Unused.elm" \
-  "ignore-files.txt"
-
-exit 0
-
 # Version
 
 $createTest "$CMD" \
@@ -427,6 +412,16 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Filter unknown rule" \
     "--rules NoUnused.Unknown" \
     "filter-unknown-rule"
+
+$createTest "$CMD" \
+  "Ignore errors on directories" \
+  "--ignore-dirs src/Folder/" \
+  "ignore-dirs.txt"
+
+$createTest "$CMD" \
+  "Ignore errors on files" \
+  "--ignore-files src/Folder/Unused.elm" \
+  "ignore-files.txt"
 
 # Review with remote configuration
 
