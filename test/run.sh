@@ -227,6 +227,16 @@ $createTest "$CMD" \
     "missing-argument-rules.txt"
 
 $createTest "$CMD" \
+    "Running --ignore-dirs without an argument" \
+    "--ignore-dirs" \
+    "missing-argument-ignore-dirs.txt"
+
+$createTest "$CMD" \
+    "Running --ignore-files without an argument" \
+    "--ignore-files" \
+    "missing-argument-ignore-files.txt"
+
+$createTest "$CMD" \
     "Running init --compiler without an argument" \
     "init --compiler" \
     "missing-argument-init-compiler.txt"
@@ -412,6 +422,16 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Filter unknown rule" \
     "--rules NoUnused.Unknown" \
     "filter-unknown-rule"
+
+$createTest "$CMD" \
+  "Ignore errors on directories" \
+  "--ignore-dirs src/Folder/" \
+  "ignore-dirs.txt"
+
+$createTest "$CMD" \
+  "Ignore errors on files" \
+  "--ignore-files src/Folder/Unused.elm" \
+  "ignore-files.txt"
 
 # Review with remote configuration
 
