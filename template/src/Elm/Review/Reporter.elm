@@ -121,8 +121,8 @@ type DetailsMode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : DetailsMode -> Bool -> List FileWithError -> List TextContent
-formatReport detailsMode errorsHaveBeenFixedPreviously files =
+formatReport : Mode -> DetailsMode -> Bool -> List FileWithError -> List TextContent
+formatReport mode detailsMode errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
         numberOfErrors =
