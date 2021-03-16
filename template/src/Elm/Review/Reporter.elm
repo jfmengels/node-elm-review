@@ -289,14 +289,14 @@ formatErrorTitle { originalMode, currentMode } error =
                         case originalMode of
                             OriginallyFixing wasIgnoredError ->
                                 if wasIgnoredError error then
-                                    "(FIX FAILED) "
-                                        |> Text.from
-                                        |> Text.inYellow
-
-                                else
                                     "(fix) "
                                         |> Text.from
                                         |> Text.inBlue
+
+                                else
+                                    "(FIX FAILED) "
+                                        |> Text.from
+                                        |> Text.inYellow
 
                             OriginallyReviewing ->
                                 "(fix) "
