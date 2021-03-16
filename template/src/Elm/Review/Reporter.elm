@@ -282,7 +282,13 @@ formatErrorTitle mode error =
                         Text.from ""
 
                 Fixing ->
-                    Text.from ""
+                    if error.hasFix then
+                        "(FIX FAILED) "
+                            |> Text.from
+                            |> Text.inYellow
+
+                    else
+                        Text.from ""
     in
     [ fixPrefix
     , Text.from error.ruleName
