@@ -27,6 +27,7 @@ module Elm.Review.Reporter exposing
 import Array exposing (Array)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.Vendor.Diff as Diff
+import Set
 
 
 {-| Contents of an error. Convert the errors from
@@ -156,18 +157,49 @@ formatReport originalMode detailsMode errorsHaveBeenFixedPreviously files =
                 |> List.singleton
 
     else
+        let
+            wasIgnored : Error -> Bool
+            wasIgnored =
+                case originalMode of
+                    OriginallyReviewing ->
+                        always True
+
+                    OriginallyFixing wasIgnored_ ->
+                        wasIgnored_
+
+            ( ignoredFixableErrors, invalidFixableErrors ) =
+                List.partition wasIgnored (fixableErrors files)
+        in
         [ formatReports originalMode detailsMode filesWithErrors
             |> Just
-        , case fixableErrors files of
-            [] ->
-                Nothing
+        , if not (List.isEmpty ignoredFixableErrors) then
+            Just
+                [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
+                    |> Text.from
+                    |> Text.inBlue
+                ]
 
-            fixableErrors_ ->
-                Just
-                    [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
-                        |> Text.from
-                        |> Text.inBlue
-                    ]
+          else
+            Nothing
+        , if not (List.isEmpty invalidFixableErrors) then
+            let
+                ruleNames : List String
+                ruleNames =
+                    invalidFixableErrors
+                        |> List.map .ruleName
+                        |> Set.fromList
+                        |> Set.toList
+            in
+            Just
+                [ ("I tried applying some fixes but they failed in ways the author didn't expect. Please let the maintainer(s) of the following rules know:\n- "
+                    ++ String.join "\n- " ruleNames
+                  )
+                    |> Text.from
+                    |> Text.inYellow
+                ]
+
+          else
+            Nothing
         , [ Text.from "I found "
           , pluralize numberOfErrors "error" |> Text.from |> Text.inRed
           , Text.from " in "
