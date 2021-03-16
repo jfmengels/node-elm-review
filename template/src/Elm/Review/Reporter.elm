@@ -185,14 +185,14 @@ pluralize n word =
 
 
 formatReportForFileWithExtract : DetailsMode -> { originalMode : Mode, currentMode : Mode } -> FileWithError -> List Text
-formatReportForFileWithExtract detailsMode { currentMode } file =
+formatReportForFileWithExtract detailsMode modes file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) file.path error.range ]
-                    , formatErrorWithExtract detailsMode currentMode file.source error
+                    , formatErrorWithExtract detailsMode modes file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -230,13 +230,13 @@ header isFirstError filePath_ range =
 
 formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
 formatIndividualError detailsMode source error =
-    formatErrorWithExtract detailsMode Reviewing source error
+    formatErrorWithExtract detailsMode { originalMode = Reviewing, currentMode = Reviewing } source error
         |> Text.simplify
         |> List.map Text.toRecord
 
 
-formatErrorWithExtract : DetailsMode -> Mode -> Source -> Error -> List Text
-formatErrorWithExtract detailsMode mode source error =
+formatErrorWithExtract : DetailsMode -> { originalMode : Mode, currentMode : Mode } -> Source -> Error -> List Text
+formatErrorWithExtract detailsMode modes source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -260,35 +260,36 @@ formatErrorWithExtract detailsMode mode source error =
                     []
     in
     List.concat
-        [ formatErrorTitle mode error
+        [ formatErrorTitle modes error
         , codeExtract_
         , details_
         ]
 
 
-formatErrorTitle : Mode -> Error -> List Text
-formatErrorTitle mode error =
+formatErrorTitle : { originalMode : Mode, currentMode : Mode } -> Error -> List Text
+formatErrorTitle { originalMode, currentMode } error =
     let
         fixPrefix : Text
         fixPrefix =
-            case mode of
-                Reviewing ->
-                    if error.hasFix then
-                        "(fix) "
-                            |> Text.from
-                            |> Text.inBlue
-
-                    else
+            if error.hasFix then
+                case currentMode of
+                    Fixing ->
                         Text.from ""
 
-                Fixing ->
-                    if error.hasFix then
-                        "(FIX FAILED) "
-                            |> Text.from
-                            |> Text.inYellow
+                    Reviewing ->
+                        case originalMode of
+                            Fixing ->
+                                "(FIX FAILED) "
+                                    |> Text.from
+                                    |> Text.inYellow
 
-                    else
-                        Text.from ""
+                            Reviewing ->
+                                "(fix) "
+                                    |> Text.from
+                                    |> Text.inBlue
+
+            else
+                Text.from ""
     in
     [ fixPrefix
     , Text.from error.ruleName
@@ -633,7 +634,7 @@ formatFileDiff file =
             |> Text.inBlue
       ]
     , Text.from "Applied from the fixes for the following errors:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse file.errors)
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle { originalMode = Fixing, currentMode = Fixing } error) (List.reverse file.errors)
     , diff file.source file.fixedSource
     ]
         |> Text.join "\n\n"
