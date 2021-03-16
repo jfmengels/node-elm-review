@@ -709,7 +709,7 @@ makeReport model =
                             , errors = List.map (fromReviewError model.links) file.errors
                             }
                         )
-                    |> Reporter.formatReport model.detailsMode model.errorsHaveBeenFixedPreviously
+                    |> Reporter.formatReport (toReporterMode model.fixMode) model.detailsMode model.errorsHaveBeenFixedPreviously
                     |> encodeReport
 
             Json ->
@@ -719,6 +719,19 @@ makeReport model =
         |> Encode.object
         |> reviewReport
     )
+
+
+toReporterMode : FixMode -> Reporter.Mode
+toReporterMode fixMode =
+    case fixMode of
+        Mode_DontFix ->
+            Reporter.Reviewing
+
+        Mode_Fix ->
+            Reporter.Fixing
+
+        Mode_FixAll ->
+            Reporter.Fixing
 
 
 encodeErrorByFile : Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value

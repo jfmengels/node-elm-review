@@ -184,15 +184,15 @@ pluralize n word =
            )
 
 
-formatReportForFileWithExtract : DetailsMode -> Mode -> FileWithError -> List Text
-formatReportForFileWithExtract detailsMode mode file =
+formatReportForFileWithExtract : DetailsMode -> { originalMode : Mode, currentMode : Mode } -> FileWithError -> List Text
+formatReportForFileWithExtract detailsMode { currentMode } file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) file.path error.range ]
-                    , formatErrorWithExtract detailsMode mode file.source error
+                    , formatErrorWithExtract detailsMode currentMode file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -517,11 +517,11 @@ formatReports originalMode detailsMode files =
             []
 
         [ file ] ->
-            formatReportForFileWithExtract detailsMode Reviewing file
+            formatReportForFileWithExtract detailsMode { originalMode = originalMode, currentMode = Reviewing } file
 
         firstFile :: secondFile :: restOfFiles ->
             List.concat
-                [ formatReportForFileWithExtract detailsMode Reviewing firstFile
+                [ formatReportForFileWithExtract detailsMode { originalMode = originalMode, currentMode = Reviewing } firstFile
                 , fileSeparator firstFile.path secondFile.path
                 , formatReports originalMode detailsMode (secondFile :: restOfFiles)
                 ]
@@ -551,7 +551,7 @@ formatFixProposal detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract detailsMode
-                Fixing
+                { originalMode = Fixing, currentMode = Fixing }
                 { path = file.path
                 , source = file.source
                 , errors = [ error ]
