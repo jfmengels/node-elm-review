@@ -158,15 +158,16 @@ formatReport originalMode detailsMode errorsHaveBeenFixedPreviously files =
     else
         [ formatReports originalMode detailsMode filesWithErrors
             |> Just
-        , if hasFixableErrors files then
-            Just
-                [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
-                    |> Text.from
-                    |> Text.inBlue
-                ]
+        , case fixableErrors files of
+            [] ->
+                Nothing
 
-          else
-            Nothing
+            fixableErrors_ ->
+                Just
+                    [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
+                        |> Text.from
+                        |> Text.inBlue
+                    ]
         , [ Text.from "I found "
           , pluralize numberOfErrors "error" |> Text.from |> Text.inRed
           , Text.from " in "
@@ -520,9 +521,9 @@ totalNumberOfErrors files =
         |> List.length
 
 
-hasFixableErrors : List FileWithError -> Bool
-hasFixableErrors files =
-    List.any (.errors >> List.any .hasFix) files
+fixableErrors : List FileWithError -> List Error
+fixableErrors files =
+    List.concatMap (.errors >> List.filter .hasFix) files
 
 
 formatReports : OriginalMode -> DetailsMode -> List FileWithError -> List Text
