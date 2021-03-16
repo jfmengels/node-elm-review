@@ -148,7 +148,7 @@ formatReport originalMode detailsMode errorsHaveBeenFixedPreviously files =
                 |> List.singleton
 
     else
-        [ formatReports detailsMode filesWithErrors
+        [ formatReports originalMode detailsMode filesWithErrors
             |> Just
         , if hasFixableErrors files then
             Just
@@ -510,8 +510,8 @@ hasFixableErrors files =
     List.any (.errors >> List.any .hasFix) files
 
 
-formatReports : DetailsMode -> List FileWithError -> List Text
-formatReports detailsMode files =
+formatReports : Mode -> DetailsMode -> List FileWithError -> List Text
+formatReports originalMode detailsMode files =
     case files of
         [] ->
             []
@@ -523,7 +523,7 @@ formatReports detailsMode files =
             List.concat
                 [ formatReportForFileWithExtract detailsMode Reviewing firstFile
                 , fileSeparator firstFile.path secondFile.path
-                , formatReports detailsMode (secondFile :: restOfFiles)
+                , formatReports originalMode detailsMode (secondFile :: restOfFiles)
                 ]
 
 
