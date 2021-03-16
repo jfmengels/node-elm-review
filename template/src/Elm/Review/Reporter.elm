@@ -2,6 +2,7 @@ module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
+    , OriginalMode(..)
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -118,7 +119,7 @@ type Mode
 -}
 type OriginalMode
     = OriginallyReviewing
-    | OriginallyFixing (List Error)
+    | OriginallyFixing (Error -> Bool)
 
 
 type DetailsMode
@@ -128,7 +129,7 @@ type DetailsMode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Mode -> DetailsMode -> Bool -> List FileWithError -> List TextContent
+formatReport : OriginalMode -> DetailsMode -> Bool -> List FileWithError -> List TextContent
 formatReport originalMode detailsMode errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
@@ -191,7 +192,7 @@ pluralize n word =
            )
 
 
-formatReportForFileWithExtract : DetailsMode -> { originalMode : Mode, currentMode : Mode } -> FileWithError -> List Text
+formatReportForFileWithExtract : DetailsMode -> { originalMode : OriginalMode, currentMode : Mode } -> FileWithError -> List Text
 formatReportForFileWithExtract detailsMode modes file =
     file.errors
         |> List.sortWith compareErrorPositions
@@ -237,12 +238,12 @@ header isFirstError filePath_ range =
 
 formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
 formatIndividualError detailsMode source error =
-    formatErrorWithExtract detailsMode { originalMode = Reviewing, currentMode = Reviewing } source error
+    formatErrorWithExtract detailsMode { originalMode = OriginallyReviewing, currentMode = Reviewing } source error
         |> Text.simplify
         |> List.map Text.toRecord
 
 
-formatErrorWithExtract : DetailsMode -> { originalMode : Mode, currentMode : Mode } -> Source -> Error -> List Text
+formatErrorWithExtract : DetailsMode -> { originalMode : OriginalMode, currentMode : Mode } -> Source -> Error -> List Text
 formatErrorWithExtract detailsMode modes source error =
     let
         codeExtract_ : List Text
@@ -273,7 +274,7 @@ formatErrorWithExtract detailsMode modes source error =
         ]
 
 
-formatErrorTitle : { originalMode : Mode, currentMode : Mode } -> Error -> List Text
+formatErrorTitle : { originalMode : OriginalMode, currentMode : Mode } -> Error -> List Text
 formatErrorTitle { originalMode, currentMode } error =
     let
         fixPrefix : Text
@@ -285,12 +286,18 @@ formatErrorTitle { originalMode, currentMode } error =
 
                     Reviewing ->
                         case originalMode of
-                            Fixing ->
-                                "(FIX FAILED) "
-                                    |> Text.from
-                                    |> Text.inYellow
+                            OriginallyFixing wasIgnoredError ->
+                                if wasIgnoredError error then
+                                    "(FIX FAILED) "
+                                        |> Text.from
+                                        |> Text.inYellow
 
-                            Reviewing ->
+                                else
+                                    "(fix) "
+                                        |> Text.from
+                                        |> Text.inBlue
+
+                            OriginallyReviewing ->
                                 "(fix) "
                                     |> Text.from
                                     |> Text.inBlue
@@ -518,7 +525,7 @@ hasFixableErrors files =
     List.any (.errors >> List.any .hasFix) files
 
 
-formatReports : Mode -> DetailsMode -> List FileWithError -> List Text
+formatReports : OriginalMode -> DetailsMode -> List FileWithError -> List Text
 formatReports originalMode detailsMode files =
     case files of
         [] ->
@@ -559,7 +566,7 @@ formatFixProposal detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract detailsMode
-                { originalMode = Fixing, currentMode = Fixing }
+                { originalMode = OriginallyFixing (always False), currentMode = Fixing }
                 { path = file.path
                 , source = file.source
                 , errors = [ error ]
@@ -641,7 +648,7 @@ formatFileDiff file =
             |> Text.inBlue
       ]
     , Text.from "Applied from the fixes for the following errors:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle { originalMode = Fixing, currentMode = Fixing } error) (List.reverse file.errors)
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle { originalMode = OriginallyFixing (always False), currentMode = Fixing } error) (List.reverse file.errors)
     , diff file.source file.fixedSource
     ]
         |> Text.join "\n\n"
