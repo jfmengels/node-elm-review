@@ -114,6 +114,13 @@ type Mode
     | Fixing
 
 
+{-| Mode in which `elm-review` is running.
+-}
+type OriginalMode
+    = OriginallyReviewing
+    | OriginallyFixing (List Error)
+
+
 type DetailsMode
     = WithDetails
     | WithoutDetails
