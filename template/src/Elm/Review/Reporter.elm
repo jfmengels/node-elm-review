@@ -326,6 +326,7 @@ formatErrorTitle { originalMode, currentMode } error =
                                         |> Text.inBlue
 
                                 else
+                                    -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
                                     "(FIX FAILED) "
                                         |> Text.from
                                         |> Text.inYellow
