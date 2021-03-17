@@ -326,8 +326,13 @@ formatErrorTitle { originalMode, currentMode } error =
                                         |> Text.inBlue
 
                                 else
+                                    let
+                                        reason : String
+                                        reason =
+                                            "Leads to parsing error"
+                                    in
                                     -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                                    "(FIX FAILED) "
+                                    ("(FIX FAILED: " ++ reason ++ ") ")
                                         |> Text.from
                                         |> Text.inYellow
 
