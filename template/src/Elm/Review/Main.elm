@@ -1007,7 +1007,11 @@ findFix failedFixesDict refusedErrorFixes files errors =
                             Just (Fix.Errored _) ->
                                 -- TODO
                                 -- Ignore error if applying the fix results in a problem
-                                findFix failedFixesDict refusedErrorFixes files restOfErrors
+                                findFix
+                                    failedFixesDict
+                                    refusedErrorFixes
+                                    files
+                                    restOfErrors
 
                             Just (Fix.Successful fixedSource) ->
                                 -- Return error and the result of the fix otherwise
