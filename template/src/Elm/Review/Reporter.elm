@@ -331,8 +331,8 @@ formatErrorWithExtract detailsMode modes source error =
         ]
 
 
-getProblemForFix : Error -> Maybe Review.Fix.Problem
-getProblemForFix error =
+getProblemForFix : String -> Maybe Review.Fix.Problem
+getProblemForFix fixesHash =
     Just (Review.Fix.SourceCodeIsNotValid "foo")
 
 
@@ -348,7 +348,7 @@ formatErrorTitle { originalMode, currentMode } error =
                             Text.from ""
 
                         Reviewing ->
-                            case getProblemForFix error of
+                            case getProblemForFix fixKey of
                                 Nothing ->
                                     "(fix) "
                                         |> Text.from
