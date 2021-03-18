@@ -25,6 +25,7 @@ module Elm.Review.Reporter exposing
 -}
 
 import Array exposing (Array)
+import Dict
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
@@ -333,7 +334,8 @@ formatErrorWithExtract detailsMode modes source error =
 
 getProblemForFix : String -> Maybe Review.Fix.Problem
 getProblemForFix fixesHash =
-    Just (Review.Fix.SourceCodeIsNotValid "foo")
+    Dict.singleton fixesHash (Review.Fix.SourceCodeIsNotValid "foo")
+        |> Dict.get fixesHash
 
 
 formatErrorTitle : { originalMode : OriginalMode, currentMode : Mode } -> Error -> List Text
