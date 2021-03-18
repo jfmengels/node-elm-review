@@ -49,7 +49,7 @@ hashFixes : List Review.Fix.Fix -> String
 hashFixes fixes =
     fixes
         |> List.map (Review.Fix.toRecord >> hashFix)
-        |> String.join ","
+        |> String.join "$$$$$$elm-review$$$$$$"
 
 
 hashFix : { range : Range, replacement : String } -> String
