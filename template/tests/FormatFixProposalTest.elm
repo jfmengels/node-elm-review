@@ -24,7 +24,7 @@ suite =
                             { start = { row = 2, column = 5 }
                             , end = { row = 2, column = 10 }
                             }
-                        , hasFix = True
+                        , fixes = True
                         }
 
                     file : File
@@ -102,7 +102,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                             { start = { row = 2, column = 1 }
                             , end = { row = 2, column = 2 }
                             }
-                        , hasFix = True
+                        , fixes = True
                         }
 
                     file : File

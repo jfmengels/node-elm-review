@@ -24,7 +24,7 @@ suite =
                             { start = { row = 2, column = 5 }
                             , end = { row = 2, column = 10 }
                             }
-                        , hasFix = True
+                        , fixes = True
                         }
 
                     changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Error }

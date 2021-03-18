@@ -1123,7 +1123,7 @@ fromReviewError links error =
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
-    , hasFix = Rule.errorFixes error /= Nothing
+    , fixes = Rule.errorFixes error /= Nothing
     }
 
 
