@@ -41,7 +41,7 @@ type alias Error =
     , message : String
     , details : List String
     , range : Range
-    , fixes : Bool
+    , fixes : Maybe String
     }
 
 
@@ -341,26 +341,27 @@ formatErrorTitle { originalMode, currentMode } error =
     let
         fixPrefix : Text
         fixPrefix =
-            if error.fixes then
-                case currentMode of
-                    Fixing ->
-                        Text.from ""
+            case error.fixes of
+                Just fixKey ->
+                    case currentMode of
+                        Fixing ->
+                            Text.from ""
 
-                    Reviewing ->
-                        case getProblemForFix error of
-                            Nothing ->
-                                "(fix) "
-                                    |> Text.from
-                                    |> Text.inBlue
+                        Reviewing ->
+                            case getProblemForFix error of
+                                Nothing ->
+                                    "(fix) "
+                                        |> Text.from
+                                        |> Text.inBlue
 
-                            Just problem ->
-                                -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                                ("(FIX FAILED: " ++ reasonFromProblem problem ++ ") ")
-                                    |> Text.from
-                                    |> Text.inYellow
+                                Just problem ->
+                                    -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
+                                    ("(FIX FAILED: " ++ reasonFromProblem problem ++ ") ")
+                                        |> Text.from
+                                        |> Text.inYellow
 
-            else
-                Text.from ""
+                Nothing ->
+                    Text.from ""
     in
     [ fixPrefix
     , Text.from error.ruleName
@@ -592,7 +593,7 @@ totalNumberOfErrors files =
 
 fixableErrors : List FileWithError -> List Error
 fixableErrors files =
-    List.concatMap (.errors >> List.filter .fixes) files
+    List.concatMap (.errors >> List.filter (\error -> error.fixes /= Nothing)) files
 
 
 formatReports : OriginalMode -> DetailsMode -> List FileWithError -> List Text

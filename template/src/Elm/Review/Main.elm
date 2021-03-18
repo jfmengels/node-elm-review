@@ -1123,7 +1123,7 @@ fromReviewError links error =
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
-    , fixes = Rule.errorFixes error /= Nothing
+    , fixes = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
     }
 
 
