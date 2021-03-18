@@ -155,8 +155,8 @@ type DetailsMode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Dict String Review.Fix.Problem -> OriginalMode -> DetailsMode -> Bool -> List FileWithError -> List TextContent
-formatReport fixProblemDict originalMode detailsMode errorsHaveBeenFixedPreviously files =
+formatReport : Dict String Review.Fix.Problem -> DetailsMode -> Bool -> List FileWithError -> List TextContent
+formatReport fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
         numberOfErrors =
