@@ -27,6 +27,7 @@ module Elm.Review.Reporter exposing
 import Array exposing (Array)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.Vendor.Diff as Diff
+import Review.Fix
 import Set
 
 
@@ -327,12 +328,12 @@ formatErrorTitle { originalMode, currentMode } error =
 
                                 else
                                     let
-                                        reason : String
-                                        reason =
-                                            "Leads to parsing error"
+                                        problem : Review.Fix.Problem
+                                        problem =
+                                            Review.Fix.SourceCodeIsNotValid "foo"
                                     in
                                     -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                                    ("(FIX FAILED: " ++ reason ++ ") ")
+                                    ("(FIX FAILED: " ++ reasonFromProblem problem ++ ") ")
                                         |> Text.from
                                         |> Text.inYellow
 
@@ -350,6 +351,19 @@ formatErrorTitle { originalMode, currentMode } error =
         |> Text.withLink error.ruleLink
     , Text.from <| ": " ++ error.message
     ]
+
+
+reasonFromProblem : Review.Fix.Problem -> String
+reasonFromProblem problem =
+    case problem of
+        Review.Fix.Unchanged ->
+            "The fix resulted in the same source code."
+
+        Review.Fix.SourceCodeIsNotValid string ->
+            "The fix resulted in invalid Elm code."
+
+        Review.Fix.HasCollisionsInFixRanges ->
+            "The fix was invalid."
 
 
 compareErrorPositions : Error -> Error -> Order
