@@ -25,7 +25,7 @@ module Elm.Review.Reporter exposing
 -}
 
 import Array exposing (Array)
-import Dict
+import Dict exposing (Dict)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
@@ -332,12 +332,6 @@ formatErrorWithExtract detailsMode modes source error =
         ]
 
 
-getProblemForFix : String -> Maybe Review.Fix.Problem
-getProblemForFix fixesHash =
-    Dict.singleton fixesHash (Review.Fix.SourceCodeIsNotValid "foo")
-        |> Dict.get fixesHash
-
-
 formatErrorTitle : { originalMode : OriginalMode, currentMode : Mode } -> Error -> List Text
 formatErrorTitle { originalMode, currentMode } error =
     let
@@ -350,7 +344,7 @@ formatErrorTitle { originalMode, currentMode } error =
                             Text.from ""
 
                         Reviewing ->
-                            case getProblemForFix fixKey of
+                            case Dict.get fixKey (Dict.singleton fixKey (Review.Fix.SourceCodeIsNotValid "foo")) of
                                 Nothing ->
                                     "(fix) "
                                         |> Text.from
