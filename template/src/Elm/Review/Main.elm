@@ -995,9 +995,6 @@ findFix failedFixesDict refusedErrorFixes files errors =
                 case Rule.errorFixes error of
                     Just fixes ->
                         case Dict.get (Rule.errorFilePath error) files of
-                            -- TODO Determine whether there is a fix before trying to get the file
-                            -- then get the file
-                            -- then check whether the fix is applicable
                             Nothing ->
                                 findFix failedFixesDict refusedErrorFixes files restOfErrors
 
