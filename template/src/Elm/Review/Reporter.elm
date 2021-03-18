@@ -41,7 +41,7 @@ type alias Error =
     , message : String
     , details : List String
     , range : Range
-    , fixes : Maybe String
+    , fixesHash : Maybe String
     }
 
 
@@ -341,7 +341,7 @@ formatErrorTitle { originalMode, currentMode } error =
     let
         fixPrefix : Text
         fixPrefix =
-            case error.fixes of
+            case error.fixesHash of
                 Just fixKey ->
                     case currentMode of
                         Fixing ->
@@ -593,7 +593,7 @@ totalNumberOfErrors files =
 
 fixableErrors : List FileWithError -> List Error
 fixableErrors files =
-    List.concatMap (.errors >> List.filter (\error -> error.fixes /= Nothing)) files
+    List.concatMap (.errors >> List.filter (\error -> error.fixesHash /= Nothing)) files
 
 
 formatReports : OriginalMode -> DetailsMode -> List FileWithError -> List Text
