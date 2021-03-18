@@ -5,6 +5,7 @@ import Elm.Docs
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.File
+import Elm.Review.Progress as Progress
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.Vendor.Levenshtein as Levenshtein
@@ -112,6 +113,7 @@ type alias Model =
     -- FIX ALL
     , fixAllResultProject : Project
     , fixAllErrors : Dict String (List Reporter.Error)
+    , logger : Progress.Console
     }
 
 
@@ -135,7 +137,7 @@ type ReportMode
 init : Flags -> ( Model, Cmd msg )
 init flags =
     let
-        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter, ignoredDirs, ignoredFiles }, cmd ) =
+        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter, ignoredDirs, ignoredFiles, logger }, cmd ) =
             case Decode.decodeValue decodeFlags flags of
                 Ok decodedFlags ->
                     ( decodedFlags, Cmd.none )
@@ -148,6 +150,7 @@ init flags =
                       , rulesFilter = Nothing
                       , ignoredDirs = []
                       , ignoredFiles = []
+                      , logger = Progress.dummy
                       }
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
@@ -186,6 +189,7 @@ init flags =
       , errorAwaitingConfirmation = NotAwaiting
       , fixAllErrors = Dict.empty
       , ignoreProblematicDependencies = ignoreProblematicDependencies
+      , logger = logger
       }
     , if List.isEmpty config then
         -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
@@ -247,12 +251,13 @@ type alias DecodedFlags =
     , rulesFilter : Maybe (Set String)
     , ignoredDirs : List String
     , ignoredFiles : List String
+    , logger : Progress.Console
     }
 
 
 decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.map7 DecodedFlags
+    Decode.map8 DecodedFlags
         (Decode.field "fixMode" decodeFix)
         (Decode.field "detailsMode" decodeDetailsMode)
         (Decode.field "report" decodeReportMode)
@@ -260,6 +265,7 @@ decodeFlags =
         (Decode.field "rulesFilter" decodeRulesFilter)
         (Decode.field "ignoredDirs" (Decode.list Decode.string))
         (Decode.field "ignoredFiles" (Decode.list Decode.string))
+        (Decode.field "logger" Progress.decoder)
 
 
 decodeFix : Decode.Decoder FixMode
@@ -676,7 +682,11 @@ reportOrFix model =
             fixOneByOne model
 
         Mode_FixAll ->
-            fixAll model
+            let
+                ( newModel, cmd ) =
+                    fixAll model
+            in
+            ( { newModel | logger = Progress.reset newModel.logger }, cmd )
 
 
 makeReport : Model -> ( Model, Cmd msg )
@@ -923,7 +933,10 @@ addFixedErrorForFile path error model =
                         |> Maybe.withDefault []
                    )
     in
-    { model | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors }
+    { model
+        | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors
+        , logger = Progress.fixWasApplied model.logger
+    }
 
 
 fixableFilesInProject : Project -> Dict String { path : String, source : String }
