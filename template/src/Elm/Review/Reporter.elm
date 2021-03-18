@@ -308,6 +308,11 @@ formatErrorWithExtract detailsMode modes source error =
         ]
 
 
+getProblemForFix : Error -> Maybe Review.Fix.Problem
+getProblemForFix error =
+    Just (Review.Fix.SourceCodeIsNotValid "foo")
+
+
 formatErrorTitle : { originalMode : OriginalMode, currentMode : Mode } -> Error -> List Text
 formatErrorTitle { originalMode, currentMode } error =
     let
@@ -319,7 +324,7 @@ formatErrorTitle { originalMode, currentMode } error =
                         Text.from ""
 
                     Reviewing ->
-                        case Just (Review.Fix.SourceCodeIsNotValid "foo") of
+                        case getProblemForFix error of
                             Nothing ->
                                 "(fix) "
                                     |> Text.from
