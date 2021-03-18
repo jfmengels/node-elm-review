@@ -183,17 +183,17 @@ formatReport fixProblemDict originalMode detailsMode errorsHaveBeenFixedPrevious
 
     else
         let
-            wasIgnored : Error -> Bool
-            wasIgnored =
-                case originalMode of
-                    OriginallyReviewing ->
-                        always True
+            hasFixErrors : Error -> Bool
+            hasFixErrors error =
+                case error.fixesHash of
+                    Just fixesHash ->
+                        Dict.member fixesHash fixProblemDict
 
-                    OriginallyFixing wasIgnored_ ->
-                        wasIgnored_
+                    Nothing ->
+                        False
 
-            ( ignoredFixableErrors, invalidFixableErrors ) =
-                List.partition wasIgnored (fixableErrors files)
+            ( invalidFixableErrors, ignoredFixableErrors ) =
+                List.partition hasFixErrors (fixableErrors files)
         in
         [ formatReports fixProblemDict detailsMode filesWithErrors
             |> Just
