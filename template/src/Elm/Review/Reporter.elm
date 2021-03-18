@@ -321,21 +321,17 @@ formatErrorTitle { originalMode, currentMode } error =
                     Reviewing ->
                         case originalMode of
                             OriginallyFixing wasIgnoredError ->
-                                if wasIgnoredError error then
-                                    "(fix) "
-                                        |> Text.from
-                                        |> Text.inBlue
+                                case Just (Review.Fix.SourceCodeIsNotValid "foo") of
+                                    Nothing ->
+                                        "(fix) "
+                                            |> Text.from
+                                            |> Text.inBlue
 
-                                else
-                                    let
-                                        problem : Review.Fix.Problem
-                                        problem =
-                                            Review.Fix.SourceCodeIsNotValid "foo"
-                                    in
-                                    -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                                    ("(FIX FAILED: " ++ reasonFromProblem problem ++ ") ")
-                                        |> Text.from
-                                        |> Text.inYellow
+                                    Just problem ->
+                                        -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
+                                        ("(FIX FAILED: " ++ reasonFromProblem problem ++ ") ")
+                                            |> Text.from
+                                            |> Text.inYellow
 
                             OriginallyReviewing ->
                                 "(fix) "
