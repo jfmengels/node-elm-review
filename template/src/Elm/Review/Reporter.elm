@@ -45,6 +45,29 @@ type alias Error =
     }
 
 
+hashFixes : List Review.Fix.Fix -> String
+hashFixes fixes =
+    fixes
+        |> List.map (Review.Fix.toRecord >> hashFix)
+        |> String.join ","
+
+
+hashFix : { range : Range, replacement : String } -> String
+hashFix { range, replacement } =
+    hashRange range ++ "-" ++ replacement
+
+
+hashRange : Range -> String
+hashRange range =
+    [ range.start.row
+    , range.start.column
+    , range.end.row
+    , range.end.column
+    ]
+        |> List.map String.fromInt
+        |> String.join "-"
+
+
 {-| Represents a file.
 
   - path is the file path
