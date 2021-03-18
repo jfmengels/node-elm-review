@@ -807,7 +807,7 @@ encodePosition position =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
+    case findFix Dict.empty model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors |> Tuple.second of
         Just { file, error, fixedSource } ->
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
@@ -907,8 +907,8 @@ encodeChangedFile changedFile =
 
 applyAllFixes : Model -> Maybe Model
 applyAllFixes model =
-    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        Just { file, error, fixedSource } ->
+    case findFix Dict.empty model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
+        ( failedFixesDict, Just { file, error, fixedSource } ) ->
             let
                 newProject : Project
                 newProject =
@@ -932,7 +932,7 @@ applyAllFixes model =
                         |> runReview
                     )
 
-        Nothing ->
+        ( failedFixesDict, Nothing ) ->
             Just model
 
 
@@ -970,23 +970,26 @@ fixableFilesInProject project =
 
 
 findFix :
-    RefusedErrorFixes
+    Dict String Fix.Problem
+    -> RefusedErrorFixes
     -> Dict String { path : String, source : String }
     -> List Rule.ReviewError
     ->
-        Maybe
+        ( Dict String Fix.Problem
+        , Maybe
             { file : { path : String, source : String }
             , error : Rule.ReviewError
             , fixedSource : String
             }
-findFix refusedErrorFixes files errors =
+        )
+findFix failedFixesDict refusedErrorFixes files errors =
     case errors of
         [] ->
-            Nothing
+            ( failedFixesDict, Nothing )
 
         error :: restOfErrors ->
             if RefusedErrorFixes.member error refusedErrorFixes then
-                findFix refusedErrorFixes files restOfErrors
+                findFix failedFixesDict refusedErrorFixes files restOfErrors
 
             else
                 case Dict.get (Rule.errorFilePath error) files of
@@ -994,24 +997,27 @@ findFix refusedErrorFixes files errors =
                     -- then get the file
                     -- then check whether the fix is applicable
                     Nothing ->
-                        findFix refusedErrorFixes files restOfErrors
+                        findFix failedFixesDict refusedErrorFixes files restOfErrors
 
                     Just file ->
                         case applyFixFromError error file.source of
                             Nothing ->
-                                findFix refusedErrorFixes files restOfErrors
+                                findFix failedFixesDict refusedErrorFixes files restOfErrors
 
                             Just (Fix.Errored _) ->
+                                -- TODO
                                 -- Ignore error if applying the fix results in a problem
-                                findFix refusedErrorFixes files restOfErrors
+                                findFix failedFixesDict refusedErrorFixes files restOfErrors
 
                             Just (Fix.Successful fixedSource) ->
                                 -- Return error and the result of the fix otherwise
-                                Just
+                                ( failedFixesDict
+                                , Just
                                     { file = { path = file.path, source = file.source }
                                     , error = error
                                     , fixedSource = fixedSource
                                     }
+                                )
 
 
 applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
