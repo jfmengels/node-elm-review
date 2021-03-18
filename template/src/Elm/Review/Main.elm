@@ -555,7 +555,8 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         AwaitingFixAll ->
                             { model | errorAwaitingConfirmation = NotAwaiting }
                                 |> runReview
-                                |> makeReport
+                                -- TODO We should still display the errors that could not be applied here.
+                                |> makeReport Dict.empty
 
                         NotAwaiting ->
                             fixOneByOne model
@@ -676,7 +677,7 @@ reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
     case model.fixMode of
         Mode_DontFix ->
-            makeReport model
+            makeReport Dict.empty model
 
         Mode_Fix ->
             fixOneByOne model
@@ -689,8 +690,8 @@ reportOrFix model =
             ( { newModel | logger = Progress.reset newModel.logger }, cmd )
 
 
-makeReport : Model -> ( Model, Cmd msg )
-makeReport model =
+makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
+makeReport failedFixesDict model =
     let
         errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
         errorsByFile =
@@ -709,7 +710,7 @@ makeReport model =
                             , errors = List.map (fromReviewError model.links) file.errors
                             }
                         )
-                    |> Reporter.formatReport Dict.empty (toOriginalMode model) model.detailsMode model.errorsHaveBeenFixedPreviously
+                    |> Reporter.formatReport failedFixesDict (toOriginalMode model) model.detailsMode model.errorsHaveBeenFixedPreviously
                     |> encodeReport
 
             Json ->
@@ -833,7 +834,7 @@ fixOneByOne model =
             )
 
         Nothing ->
-            makeReport model
+            makeReport Dict.empty model
 
 
 fixAll : Model -> ( Model, Cmd msg )
@@ -842,7 +843,7 @@ fixAll model =
         Just ( failedFixesDict, newModel ) ->
             case diff model.project newModel.project of
                 [] ->
-                    makeReport newModel
+                    makeReport failedFixesDict newModel
 
                 diffs ->
                     let
