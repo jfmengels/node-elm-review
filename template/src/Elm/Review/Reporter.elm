@@ -2,7 +2,7 @@ module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
-    , OriginalMode(..), hashFixes
+    , hashFixes
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -139,13 +139,6 @@ type alias Range =
 type Mode
     = Reviewing
     | Fixing
-
-
-{-| Mode in which `elm-review` is running.
--}
-type OriginalMode
-    = OriginallyReviewing
-    | OriginallyFixing (Error -> Bool)
 
 
 type DetailsMode
