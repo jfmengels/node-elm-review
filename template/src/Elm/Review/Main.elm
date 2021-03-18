@@ -1000,11 +1000,10 @@ findFix failedFixesDict refusedErrorFixes files errors =
 
                             Just file ->
                                 case Fix.fix (Rule.errorTarget error) fixes file.source of
-                                    Fix.Errored _ ->
-                                        -- TODO
+                                    Fix.Errored problem ->
                                         -- Ignore error if applying the fix results in a problem
                                         findFix
-                                            failedFixesDict
+                                            (Dict.insert (Reporter.hashFixes fixes) problem failedFixesDict)
                                             refusedErrorFixes
                                             files
                                             restOfErrors
