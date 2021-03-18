@@ -709,7 +709,7 @@ makeReport model =
                             , errors = List.map (fromReviewError model.links) file.errors
                             }
                         )
-                    |> Reporter.formatReport (toOriginalMode model) model.detailsMode model.errorsHaveBeenFixedPreviously
+                    |> Reporter.formatReport Dict.empty (toOriginalMode model) model.detailsMode model.errorsHaveBeenFixedPreviously
                     |> encodeReport
 
             Json ->
@@ -765,7 +765,7 @@ encodeError links detailsMode source error =
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode source (fromReviewError links error)) )
     ]
         |> List.filterMap identity
         |> Encode.object
@@ -812,6 +812,7 @@ fixOneByOne model =
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
+                    Dict.empty
                     model.detailsMode
                     { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
                     (fromReviewError model.links error)
@@ -837,8 +838,8 @@ fixOneByOne model =
 
 fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
-    case applyAllFixes model of
-        Just newModel ->
+    case applyAllFixes Dict.empty model of
+        Just ( failedFixesDict, newModel ) ->
             case diff model.project newModel.project of
                 [] ->
                     makeReport newModel
@@ -905,10 +906,10 @@ encodeChangedFile changedFile =
         ]
 
 
-applyAllFixes : Model -> Maybe Model
-applyAllFixes model =
-    case findFix Dict.empty model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        ( failedFixesDict, Just { file, error, fixedSource } ) ->
+applyAllFixes : Dict String Fix.Problem -> Model -> Maybe ( Dict String Fix.Problem, Model )
+applyAllFixes failedFixesDict model =
+    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
+        ( newFailedFixesDict, Just { file, error, fixedSource } ) ->
             let
                 newProject : Project
                 newProject =
@@ -927,13 +928,14 @@ applyAllFixes model =
 
             else
                 applyAllFixes
+                    newFailedFixesDict
                     ({ model | project = newProject }
                         |> addFixedErrorForFile file.path error
                         |> runReview
                     )
 
-        ( failedFixesDict, Nothing ) ->
-            Just model
+        ( newFailedFixesDict, Nothing ) ->
+            Just ( newFailedFixesDict, model )
 
 
 addFixedErrorForFile : String -> Rule.ReviewError -> Model -> Model

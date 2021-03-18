@@ -155,8 +155,8 @@ type DetailsMode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : OriginalMode -> DetailsMode -> Bool -> List FileWithError -> List TextContent
-formatReport originalMode detailsMode errorsHaveBeenFixedPreviously files =
+formatReport : Dict String Review.Fix.Problem -> OriginalMode -> DetailsMode -> Bool -> List FileWithError -> List TextContent
+formatReport fixProblemDict originalMode detailsMode errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -195,7 +195,7 @@ formatReport originalMode detailsMode errorsHaveBeenFixedPreviously files =
             ( ignoredFixableErrors, invalidFixableErrors ) =
                 List.partition wasIgnored (fixableErrors files)
         in
-        [ formatReports originalMode detailsMode filesWithErrors
+        [ formatReports fixProblemDict originalMode detailsMode filesWithErrors
             |> Just
         , if not (List.isEmpty ignoredFixableErrors) then
             Just
@@ -250,15 +250,15 @@ pluralize n word =
            )
 
 
-formatReportForFileWithExtract : DetailsMode -> { originalMode : OriginalMode, currentMode : Mode } -> FileWithError -> List Text
-formatReportForFileWithExtract detailsMode modes file =
+formatReportForFileWithExtract : Dict String Review.Fix.Problem -> DetailsMode -> { originalMode : OriginalMode, currentMode : Mode } -> FileWithError -> List Text
+formatReportForFileWithExtract fixProblemDict detailsMode modes file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) file.path error.range ]
-                    , formatErrorWithExtract detailsMode modes file.source error
+                    , formatErrorWithExtract fixProblemDict detailsMode modes file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -294,15 +294,15 @@ header isFirstError filePath_ range =
             |> Text.from
 
 
-formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
-formatIndividualError detailsMode source error =
-    formatErrorWithExtract detailsMode { originalMode = OriginallyReviewing, currentMode = Reviewing } source error
+formatIndividualError : Dict String Review.Fix.Problem -> DetailsMode -> Source -> Error -> List TextContent
+formatIndividualError fixProblemDict detailsMode source error =
+    formatErrorWithExtract fixProblemDict detailsMode { originalMode = OriginallyReviewing, currentMode = Reviewing } source error
         |> Text.simplify
         |> List.map Text.toRecord
 
 
-formatErrorWithExtract : DetailsMode -> { originalMode : OriginalMode, currentMode : Mode } -> Source -> Error -> List Text
-formatErrorWithExtract detailsMode modes source error =
+formatErrorWithExtract : Dict String Review.Fix.Problem -> DetailsMode -> { originalMode : OriginalMode, currentMode : Mode } -> Source -> Error -> List Text
+formatErrorWithExtract fixProblemDict detailsMode modes source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -326,14 +326,14 @@ formatErrorWithExtract detailsMode modes source error =
                     []
     in
     List.concat
-        [ formatErrorTitle modes error
+        [ formatErrorTitle fixProblemDict modes error
         , codeExtract_
         , details_
         ]
 
 
-formatErrorTitle : { originalMode : OriginalMode, currentMode : Mode } -> Error -> List Text
-formatErrorTitle { originalMode, currentMode } error =
+formatErrorTitle : Dict String Review.Fix.Problem -> { originalMode : OriginalMode, currentMode : Mode } -> Error -> List Text
+formatErrorTitle fixProblemsDict { originalMode, currentMode } error =
     let
         fixPrefix : Text
         fixPrefix =
@@ -344,7 +344,7 @@ formatErrorTitle { originalMode, currentMode } error =
                             Text.from ""
 
                         Reviewing ->
-                            case Dict.get fixKey (Dict.singleton fixKey (Review.Fix.SourceCodeIsNotValid "foo")) of
+                            case Dict.get fixKey fixProblemsDict of
                                 Nothing ->
                                     "(fix) "
                                         |> Text.from
@@ -592,20 +592,20 @@ fixableErrors files =
     List.concatMap (.errors >> List.filter (\error -> error.fixesHash /= Nothing)) files
 
 
-formatReports : OriginalMode -> DetailsMode -> List FileWithError -> List Text
-formatReports originalMode detailsMode files =
+formatReports : Dict String Review.Fix.Problem -> OriginalMode -> DetailsMode -> List FileWithError -> List Text
+formatReports fixProblemDict originalMode detailsMode files =
     case files of
         [] ->
             []
 
         [ file ] ->
-            formatReportForFileWithExtract detailsMode { originalMode = originalMode, currentMode = Reviewing } file
+            formatReportForFileWithExtract fixProblemDict detailsMode { originalMode = originalMode, currentMode = Reviewing } file
 
         firstFile :: secondFile :: restOfFiles ->
             List.concat
-                [ formatReportForFileWithExtract detailsMode { originalMode = originalMode, currentMode = Reviewing } firstFile
+                [ formatReportForFileWithExtract fixProblemDict detailsMode { originalMode = originalMode, currentMode = Reviewing } firstFile
                 , fileSeparator firstFile.path secondFile.path
-                , formatReports originalMode detailsMode (secondFile :: restOfFiles)
+                , formatReports fixProblemDict originalMode detailsMode (secondFile :: restOfFiles)
                 ]
 
 
@@ -628,11 +628,12 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single errorin a nice human-readable way.
 -}
-formatFixProposal : DetailsMode -> File -> Error -> Source -> List TextContent
-formatFixProposal detailsMode file error fixedSource =
+formatFixProposal : Dict String Review.Fix.Problem -> DetailsMode -> File -> Error -> Source -> List TextContent
+formatFixProposal fixProblemDict detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
-            [ formatReportForFileWithExtract detailsMode
+            [ formatReportForFileWithExtract fixProblemDict
+                detailsMode
                 { originalMode = OriginallyFixing (always False), currentMode = Fixing }
                 { path = file.path
                 , source = file.source
@@ -715,7 +716,7 @@ formatFileDiff file =
             |> Text.inBlue
       ]
     , Text.from "Applied from the fixes for the following errors:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle { originalMode = OriginallyFixing (always False), currentMode = Fixing } error) (List.reverse file.errors)
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Dict.empty { originalMode = OriginallyFixing (always False), currentMode = Fixing } error) (List.reverse file.errors)
     , diff file.source file.fixedSource
     ]
         |> Text.join "\n\n"
