@@ -1002,11 +1002,8 @@ findFix failedFixesDict refusedErrorFixes files errors =
                                 findFix failedFixesDict refusedErrorFixes files restOfErrors
 
                             Just file ->
-                                case applyFixFromError error file.source of
-                                    Nothing ->
-                                        findFix failedFixesDict refusedErrorFixes files restOfErrors
-
-                                    Just (Fix.Errored _) ->
+                                case Fix.fix (Rule.errorTarget error) fixes file.source of
+                                    Fix.Errored _ ->
                                         -- TODO
                                         -- Ignore error if applying the fix results in a problem
                                         findFix
@@ -1015,7 +1012,7 @@ findFix failedFixesDict refusedErrorFixes files errors =
                                             files
                                             restOfErrors
 
-                                    Just (Fix.Successful fixedSource) ->
+                                    Fix.Successful fixedSource ->
                                         -- Return error and the result of the fix otherwise
                                         ( failedFixesDict
                                         , Just
@@ -1027,13 +1024,6 @@ findFix failedFixesDict refusedErrorFixes files errors =
 
                     Nothing ->
                         findFix failedFixesDict refusedErrorFixes files restOfErrors
-
-
-applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
-applyFixFromError error source =
-    error
-        |> Rule.errorFixes
-        |> Maybe.map (\fixes -> Fix.fix (Rule.errorTarget error) fixes source)
 
 
 type alias FixedFile =
