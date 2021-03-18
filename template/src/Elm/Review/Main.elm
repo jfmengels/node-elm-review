@@ -992,36 +992,41 @@ findFix failedFixesDict refusedErrorFixes files errors =
                 findFix failedFixesDict refusedErrorFixes files restOfErrors
 
             else
-                case Dict.get (Rule.errorFilePath error) files of
-                    -- TODO Determine whether there is a fix before trying to get the file
-                    -- then get the file
-                    -- then check whether the fix is applicable
-                    Nothing ->
-                        findFix failedFixesDict refusedErrorFixes files restOfErrors
-
-                    Just file ->
-                        case applyFixFromError error file.source of
+                case Rule.errorFixes error of
+                    Just fixes ->
+                        case Dict.get (Rule.errorFilePath error) files of
+                            -- TODO Determine whether there is a fix before trying to get the file
+                            -- then get the file
+                            -- then check whether the fix is applicable
                             Nothing ->
                                 findFix failedFixesDict refusedErrorFixes files restOfErrors
 
-                            Just (Fix.Errored _) ->
-                                -- TODO
-                                -- Ignore error if applying the fix results in a problem
-                                findFix
-                                    failedFixesDict
-                                    refusedErrorFixes
-                                    files
-                                    restOfErrors
+                            Just file ->
+                                case applyFixFromError error file.source of
+                                    Nothing ->
+                                        findFix failedFixesDict refusedErrorFixes files restOfErrors
 
-                            Just (Fix.Successful fixedSource) ->
-                                -- Return error and the result of the fix otherwise
-                                ( failedFixesDict
-                                , Just
-                                    { file = { path = file.path, source = file.source }
-                                    , error = error
-                                    , fixedSource = fixedSource
-                                    }
-                                )
+                                    Just (Fix.Errored _) ->
+                                        -- TODO
+                                        -- Ignore error if applying the fix results in a problem
+                                        findFix
+                                            failedFixesDict
+                                            refusedErrorFixes
+                                            files
+                                            restOfErrors
+
+                                    Just (Fix.Successful fixedSource) ->
+                                        -- Return error and the result of the fix otherwise
+                                        ( failedFixesDict
+                                        , Just
+                                            { file = { path = file.path, source = file.source }
+                                            , error = error
+                                            , fixedSource = fixedSource
+                                            }
+                                        )
+
+                    Nothing ->
+                        findFix failedFixesDict refusedErrorFixes files restOfErrors
 
 
 applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
