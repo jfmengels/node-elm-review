@@ -808,7 +808,7 @@ encodePosition position =
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
     case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        Just ( file, error, fixedSource ) ->
+        Just { file, error, fixedSource } ->
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
@@ -908,7 +908,7 @@ encodeChangedFile changedFile =
 applyAllFixes : Model -> Maybe Model
 applyAllFixes model =
     case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        Just ( file, error, fixedSource ) ->
+        Just { file, error, fixedSource } ->
             let
                 newProject : Project
                 newProject =
@@ -969,7 +969,16 @@ fixableFilesInProject project =
     Dict.fromList (( readme.path, readme ) :: moduleFiles)
 
 
-findFix : RefusedErrorFixes -> Dict String { path : String, source : String } -> List Rule.ReviewError -> Maybe ( { path : String, source : String }, Rule.ReviewError, String )
+findFix :
+    RefusedErrorFixes
+    -> Dict String { path : String, source : String }
+    -> List Rule.ReviewError
+    ->
+        Maybe
+            { file : { path : String, source : String }
+            , error : Rule.ReviewError
+            , fixedSource : String
+            }
 findFix refusedErrorFixes files errors =
     case errors of
         [] ->
@@ -998,7 +1007,11 @@ findFix refusedErrorFixes files errors =
 
                             Just (Fix.Successful fixedSource) ->
                                 -- Return error and the result of the fix otherwise
-                                Just ( { path = file.path, source = file.source }, error, fixedSource )
+                                Just
+                                    { file = { path = file.path, source = file.source }
+                                    , error = error
+                                    , fixedSource = fixedSource
+                                    }
 
 
 applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
