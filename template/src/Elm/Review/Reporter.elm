@@ -317,16 +317,40 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
 
                 WithoutDetails ->
                     []
+
+        fixFailMessage : List Text
+        fixFailMessage =
+            case error.fixesHash of
+                Just fixKey ->
+                    case mode of
+                        Fixing ->
+                            []
+
+                        Reviewing ->
+                            case Dict.get fixKey fixProblemDict of
+                                Just problem ->
+                                    [ Text.from "\n\n"
+                                    , ("I failed to apply the automatic fix because " ++ reasonFromProblem problem)
+                                        |> Text.from
+                                        |> Text.inYellow
+                                    ]
+
+                                Nothing ->
+                                    []
+
+                Nothing ->
+                    []
     in
     List.concat
         [ formatErrorTitle fixProblemDict mode error
         , codeExtract_
         , details_
+        , fixFailMessage
         ]
 
 
 formatErrorTitle : Dict String Review.Fix.Problem -> Mode -> Error -> List Text
-formatErrorTitle fixProblemsDict mode error =
+formatErrorTitle fixProblemDict mode error =
     let
         fixPrefix : Text
         fixPrefix =
@@ -337,7 +361,7 @@ formatErrorTitle fixProblemsDict mode error =
                             Text.from ""
 
                         Reviewing ->
-                            case Dict.get fixKey fixProblemsDict of
+                            case Dict.get fixKey fixProblemDict of
                                 Nothing ->
                                     "(fix) "
                                         |> Text.from
@@ -364,13 +388,13 @@ reasonFromProblem : Review.Fix.Problem -> String
 reasonFromProblem problem =
     case problem of
         Review.Fix.Unchanged ->
-            "The fix resulted in the same source code."
+            "it resulted in the same source code."
 
         Review.Fix.SourceCodeIsNotValid string ->
-            "The fix resulted in invalid Elm code."
+            "it resulted in invalid Elm code."
 
         Review.Fix.HasCollisionsInFixRanges ->
-            "The fix was invalid."
+            "it was invalid."
 
 
 compareErrorPositions : Error -> Error -> Order
