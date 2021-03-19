@@ -306,8 +306,8 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
                 sourceCodeExtract ->
                     Text.from "\n\n" :: sourceCodeExtract
 
-        details_ : List Text
-        details_ =
+        details : List Text
+        details =
             case detailsMode of
                 WithDetails ->
                     Text.from "\n\n"
@@ -344,7 +344,7 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
     List.concat
         [ formatErrorTitle fixProblemDict mode error
         , codeExtract_
-        , details_
+        , details
         , fixFailMessage
         ]
 
