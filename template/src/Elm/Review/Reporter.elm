@@ -361,17 +361,16 @@ formatErrorTitle fixProblemDict mode error =
                             Text.from ""
 
                         Reviewing ->
-                            case Dict.get fixKey fixProblemDict of
-                                Nothing ->
-                                    "(fix) "
-                                        |> Text.from
-                                        |> Text.inBlue
+                            if Dict.member fixKey fixProblemDict then
+                                -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
+                                "(FIX FAILED) "
+                                    |> Text.from
+                                    |> Text.inYellow
 
-                                Just problem ->
-                                    -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                                    ("(FIX FAILED: " ++ reasonFromProblem problem ++ ") ")
-                                        |> Text.from
-                                        |> Text.inYellow
+                            else
+                                "(fix) "
+                                    |> Text.from
+                                    |> Text.inBlue
 
                 Nothing ->
                     Text.from ""
