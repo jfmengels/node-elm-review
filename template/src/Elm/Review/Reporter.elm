@@ -209,7 +209,7 @@ formatReport fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
                         |> Set.toList
             in
             Just
-                [ ("I tried applying some fixes but they failed in ways the author didn't expect. Please let the maintainer(s) of the following rules know:\n- "
+                [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n- "
                     ++ String.join "\n- " ruleNames
                   )
                     |> Text.from
