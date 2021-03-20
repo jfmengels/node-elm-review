@@ -1,5 +1,6 @@
 module FormatFixProposalTest exposing (suite)
 
+import Dict
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import FormatTester exposing (expect)
 import Test exposing (Test, describe, test)
@@ -24,7 +25,7 @@ suite =
                             { start = { row = 2, column = 5 }
                             , end = { row = 2, column = 10 }
                             }
-                        , hasFix = True
+                        , fixesHash = Just "some-value"
                         }
 
                     file : File
@@ -45,7 +46,7 @@ other=lines
 other2=lines2
 """
                 in
-                Reporter.formatFixProposal Reporter.WithDetails file error fixedSource
+                Reporter.formatFixProposal Dict.empty Reporter.WithDetails file error fixedSource
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -102,7 +103,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                             { start = { row = 2, column = 1 }
                             , end = { row = 2, column = 2 }
                             }
-                        , hasFix = True
+                        , fixesHash = Just "some-value"
                         }
 
                     file : File
@@ -126,7 +127,7 @@ b =
     a
 """
                 in
-                Reporter.formatFixProposal Reporter.WithDetails file error fixedSource
+                Reporter.formatFixProposal Dict.empty Reporter.WithDetails file error fixedSource
                     |> expect
                         { withoutColors =
                             """-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:2:1

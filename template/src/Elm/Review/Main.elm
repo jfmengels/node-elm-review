@@ -555,7 +555,8 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         AwaitingFixAll ->
                             { model | errorAwaitingConfirmation = NotAwaiting }
                                 |> runReview
-                                |> makeReport
+                                -- TODO We should still display the errors that could not be applied here.
+                                |> makeReport Dict.empty
 
                         NotAwaiting ->
                             fixOneByOne model
@@ -676,7 +677,7 @@ reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
     case model.fixMode of
         Mode_DontFix ->
-            makeReport model
+            makeReport Dict.empty model
 
         Mode_Fix ->
             fixOneByOne model
@@ -689,8 +690,8 @@ reportOrFix model =
             ( { newModel | logger = Progress.reset newModel.logger }, cmd )
 
 
-makeReport : Model -> ( Model, Cmd msg )
-makeReport model =
+makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
+makeReport failedFixesDict model =
     let
         errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
         errorsByFile =
@@ -709,7 +710,7 @@ makeReport model =
                             , errors = List.map (fromReviewError model.links) file.errors
                             }
                         )
-                    |> Reporter.formatReport model.detailsMode model.errorsHaveBeenFixedPreviously
+                    |> Reporter.formatReport failedFixesDict model.detailsMode model.errorsHaveBeenFixedPreviously
                     |> encodeReport
 
             Json ->
@@ -752,7 +753,7 @@ encodeError links detailsMode source error =
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode source (fromReviewError links error)) )
     ]
         |> List.filterMap identity
         |> Encode.object
@@ -794,11 +795,12 @@ encodePosition position =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        Just ( file, error, fixedSource ) ->
+    case findFix Dict.empty model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors |> Tuple.second of
+        Just { file, error, fixedSource } ->
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
+                    Dict.empty
                     model.detailsMode
                     { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
                     (fromReviewError model.links error)
@@ -819,16 +821,16 @@ fixOneByOne model =
             )
 
         Nothing ->
-            makeReport model
+            makeReport Dict.empty model
 
 
 fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
-    case applyAllFixes model of
-        Just newModel ->
+    case applyAllFixes Dict.empty model of
+        Just ( failedFixesDict, newModel ) ->
             case diff model.project newModel.project of
                 [] ->
-                    makeReport newModel
+                    makeReport failedFixesDict newModel
 
                 diffs ->
                     let
@@ -892,10 +894,10 @@ encodeChangedFile changedFile =
         ]
 
 
-applyAllFixes : Model -> Maybe Model
-applyAllFixes model =
-    case findFix model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        Just ( file, error, fixedSource ) ->
+applyAllFixes : Dict String Fix.Problem -> Model -> Maybe ( Dict String Fix.Problem, Model )
+applyAllFixes failedFixesDict model =
+    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
+        ( newFailedFixesDict, Just { file, error, fixedSource } ) ->
             let
                 newProject : Project
                 newProject =
@@ -914,13 +916,14 @@ applyAllFixes model =
 
             else
                 applyAllFixes
+                    newFailedFixesDict
                     ({ model | project = newProject }
                         |> addFixedErrorForFile file.path error
                         |> runReview
                     )
 
-        Nothing ->
-            Just model
+        ( newFailedFixesDict, Nothing ) ->
+            Just ( newFailedFixesDict, model )
 
 
 addFixedErrorForFile : String -> Rule.ReviewError -> Model -> Model
@@ -956,43 +959,57 @@ fixableFilesInProject project =
     Dict.fromList (( readme.path, readme ) :: moduleFiles)
 
 
-findFix : RefusedErrorFixes -> Dict String { path : String, source : String } -> List Rule.ReviewError -> Maybe ( { path : String, source : String }, Rule.ReviewError, String )
-findFix refusedErrorFixes files errors =
+findFix :
+    Dict String Fix.Problem
+    -> RefusedErrorFixes
+    -> Dict String { path : String, source : String }
+    -> List Rule.ReviewError
+    ->
+        ( Dict String Fix.Problem
+        , Maybe
+            { file : { path : String, source : String }
+            , error : Rule.ReviewError
+            , fixedSource : String
+            }
+        )
+findFix failedFixesDict refusedErrorFixes files errors =
     case errors of
         [] ->
-            Nothing
+            ( failedFixesDict, Nothing )
 
         error :: restOfErrors ->
             if RefusedErrorFixes.member error refusedErrorFixes then
-                findFix refusedErrorFixes files restOfErrors
+                findFix failedFixesDict refusedErrorFixes files restOfErrors
 
             else
-                case Dict.get (Rule.errorFilePath error) files of
-                    -- TODO Determine whether there is a fix before trying to get the file
-                    -- then get the file
-                    -- then check whether the fix is applicable
-                    Nothing ->
-                        findFix refusedErrorFixes files restOfErrors
-
-                    Just file ->
-                        case applyFixFromError error file.source of
+                case Rule.errorFixes error of
+                    Just fixes ->
+                        case Dict.get (Rule.errorFilePath error) files of
                             Nothing ->
-                                findFix refusedErrorFixes files restOfErrors
+                                findFix failedFixesDict refusedErrorFixes files restOfErrors
 
-                            Just (Fix.Errored _) ->
-                                -- Ignore error if applying the fix results in a problem
-                                findFix refusedErrorFixes files restOfErrors
+                            Just file ->
+                                case Fix.fix (Rule.errorTarget error) fixes file.source of
+                                    Fix.Errored problem ->
+                                        -- Ignore error if applying the fix results in a problem
+                                        findFix
+                                            (Dict.insert (Reporter.hashFixes fixes) problem failedFixesDict)
+                                            refusedErrorFixes
+                                            files
+                                            restOfErrors
 
-                            Just (Fix.Successful fixedSource) ->
-                                -- Return error and the result of the fix otherwise
-                                Just ( { path = file.path, source = file.source }, error, fixedSource )
+                                    Fix.Successful fixedSource ->
+                                        -- Return error and the result of the fix otherwise
+                                        ( failedFixesDict
+                                        , Just
+                                            { file = { path = file.path, source = file.source }
+                                            , error = error
+                                            , fixedSource = fixedSource
+                                            }
+                                        )
 
-
-applyFixFromError : Rule.ReviewError -> Source -> Maybe FixResult
-applyFixFromError error source =
-    error
-        |> Rule.errorFixes
-        |> Maybe.map (\fixes -> Fix.fix (Rule.errorTarget error) fixes source)
+                    Nothing ->
+                        findFix failedFixesDict refusedErrorFixes files restOfErrors
 
 
 type alias FixedFile =
@@ -1110,7 +1127,7 @@ fromReviewError links error =
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
-    , hasFix = Rule.errorFixes error /= Nothing
+    , fixesHash = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
     }
 
 
