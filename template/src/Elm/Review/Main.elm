@@ -12,7 +12,7 @@ import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorF
 import Elm.Review.Reporter as Reporter
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
-import Elm.Syntax.Range exposing (Range)
+import Elm.Syntax.Range as Range exposing (Range)
 import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -74,6 +74,9 @@ port abort : String -> Cmd msg
 
 
 port abortWithDetails : { title : String, message : String } -> Cmd msg
+
+
+port abortForConfigurationErrors : Encode.Value -> Cmd msg
 
 
 
@@ -218,33 +221,42 @@ I recommend you take a look at the following documents:
             )
 
       else
-        case List.filterMap (Rule.getConfigurationError rule) config of
+        case List.filterMap getConfigurationError config of
             [] ->
                 cmd
 
-            errors ->
-                [ ( "success", Encode.bool False )
-                , ( "errors"
-                  , case model.reportMode of
+            configurationErrors ->
+                abortForConfigurationErrors <|
+                    case reportMode of
                         HumanReadable ->
-                            errorsByFile
-                                |> List.map
-                                    (\file ->
-                                        { path = file.path
-                                        , source = file.source
-                                        , errors = List.map (fromReviewError model.links) errors
-                                        }
-                                    )
-                                |> Reporter.formatReport failedFixesDict model.detailsMode model.errorsHaveBeenFixedPreviously
+                            [ { path = Reporter.ConfigurationError
+                              , source = Reporter.Source ""
+                              , errors = configurationErrors
+                              }
+                            ]
+                                |> Reporter.formatReport Dict.empty detailsMode False
                                 |> encodeReport
 
                         Json ->
-                            Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
-                  )
-                ]
-                    |> Encode.object
-                    |> reviewReport
+                            encodeConfigurationErrors detailsMode configurationErrors
     )
+
+
+getConfigurationError : Rule -> Maybe Reporter.Error
+getConfigurationError rule =
+    case Rule.getConfigurationError rule of
+        Just configurationError ->
+            Just
+                { ruleName = Rule.ruleName rule
+                , ruleLink = Nothing
+                , message = configurationError.message
+                , details = configurationError.details
+                , range = Range.emptyRange
+                , fixesHash = Nothing
+                }
+
+        Nothing ->
+            Nothing
 
 
 unknownRulesFilterMessage : { ruleNames : List String, filterNames : List String } -> { title : String, message : String }
@@ -745,6 +757,14 @@ encodeErrorByFile links detailsMode file =
         ]
 
 
+encodeConfigurationErrors : Reporter.DetailsMode -> List Reporter.Error -> Encode.Value
+encodeConfigurationErrors detailsMode errors =
+    Encode.object
+        [ ( "path", encodeFilePath Reporter.ConfigurationError )
+        , ( "errors", Encode.list (encodeConfigurationError detailsMode) errors )
+        ]
+
+
 encodeFilePath : Reporter.FilePath -> Encode.Value
 encodeFilePath filePath =
     case filePath of
@@ -772,6 +792,17 @@ encodeError links detailsMode source error =
     ]
         |> List.filterMap identity
         |> Encode.object
+
+
+encodeConfigurationError : Reporter.DetailsMode -> Reporter.Error -> Encode.Value
+encodeConfigurationError detailsMode error =
+    Encode.object
+        [ ( "rule", Encode.string error.ruleName )
+        , ( "message", Encode.string error.message )
+        , ( "details", Encode.list Encode.string error.details )
+        , ( "region", encodeRange Range.emptyRange )
+        , ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode (Reporter.Source "") error) )
+        ]
 
 
 linkToRule : Dict String String -> Rule.ReviewError -> Maybe String
