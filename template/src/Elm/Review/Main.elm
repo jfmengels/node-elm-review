@@ -218,7 +218,32 @@ I recommend you take a look at the following documents:
             )
 
       else
-        cmd
+        case List.filterMap (Rule.getConfigurationError rule) config of
+            [] ->
+                cmd
+
+            errors ->
+                [ ( "success", Encode.bool False )
+                , ( "errors"
+                  , case model.reportMode of
+                        HumanReadable ->
+                            errorsByFile
+                                |> List.map
+                                    (\file ->
+                                        { path = file.path
+                                        , source = file.source
+                                        , errors = List.map (fromReviewError model.links) errors
+                                        }
+                                    )
+                                |> Reporter.formatReport failedFixesDict model.detailsMode model.errorsHaveBeenFixedPreviously
+                                |> encodeReport
+
+                        Json ->
+                            Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
+                  )
+                ]
+                    |> Encode.object
+                    |> reviewReport
     )
 
 
