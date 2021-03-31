@@ -366,6 +366,11 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "config-syntax-error"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
+    "Using an configuration which fails due to configuration error" \
+    "--config ../config-configuration-error" \
+    "config-configuration-error"
+
+createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using an configuration which fails due to debug remnants" \
     "--config ../config-error-debug" \
     "config-error-debug"

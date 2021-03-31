@@ -1,0 +1,33 @@
+{
+  "type": "review-errors",
+  "errors": {
+    "path": null,
+    "errors": [
+      {
+        "rule": "Some.Rule",
+        "message": "This is a configuration error message",
+        "details": [
+          "These are configuration error details"
+        ],
+        "region": {
+          "start": {
+            "line": 0,
+            "column": 0
+          },
+          "end": {
+            "line": 0,
+            "column": 0
+          }
+        },
+        "formatted": [
+          "",
+          {
+            "string": "Some.Rule",
+            "color": "#FF0000"
+          },
+          ": This is a configuration error message\n\nThese are configuration error details"
+        ]
+      }
+    ]
+  }
+}
