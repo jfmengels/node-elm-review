@@ -897,7 +897,7 @@ encodeChangedFile changedFile =
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe ( Dict String Fix.Problem, Model )
 applyAllFixes failedFixesDict model =
     case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
-        ( newFailedFixesDict, Just { file, error, fixedSource } ) ->
+        ( newFailedFixesDict, Just { file, error, fixedSource, remainingErrors } ) ->
             let
                 newProject : Project
                 newProject =
@@ -918,7 +918,7 @@ applyAllFixes failedFixesDict model =
                 applyAllFixes
                     newFailedFixesDict
                     ({ model | project = newProject }
-                        |> addFixedErrorForFile file.path error
+                        |> addFixedErrorForFile file.path error remainingErrors
                         |> runReview
                     )
 
@@ -926,8 +926,8 @@ applyAllFixes failedFixesDict model =
             Just ( newFailedFixesDict, model )
 
 
-addFixedErrorForFile : String -> Rule.ReviewError -> Model -> Model
-addFixedErrorForFile path error model =
+addFixedErrorForFile : String -> Rule.ReviewError -> List Rule.ReviewError -> Model -> Model
+addFixedErrorForFile path error remainingErrors model =
     let
         errorsForFile : List Reporter.Error
         errorsForFile =
@@ -938,7 +938,7 @@ addFixedErrorForFile path error model =
     in
     { model
         | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors
-        , logger = Progress.fixWasApplied model.logger
+        , logger = Progress.fixWasApplied remainingErrors model.logger
     }
 
 
@@ -970,6 +970,7 @@ findFix :
             { file : { path : String, source : String }
             , error : Rule.ReviewError
             , fixedSource : String
+            , remainingErrors : List Rule.ReviewError
             }
         )
 findFix failedFixesDict refusedErrorFixes files errors =
@@ -1005,6 +1006,7 @@ findFix failedFixesDict refusedErrorFixes files errors =
                                             { file = { path = file.path, source = file.source }
                                             , error = error
                                             , fixedSource = fixedSource
+                                            , remainingErrors = restOfErrors
                                             }
                                         )
 

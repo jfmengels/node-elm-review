@@ -2,6 +2,7 @@ module Elm.Review.Progress exposing (Console, decoder, dummy, fixWasApplied, res
 
 import Json.Decode
 import Json.Encode
+import Review.Rule as Rule
 
 
 type Console
@@ -26,17 +27,24 @@ decoder =
     Json.Decode.map (Console 0) Json.Decode.value
 
 
-fixWasApplied : Console -> Console
-fixWasApplied (Console previousCount console) =
+fixWasApplied : List Rule.ReviewError -> Console -> Console
+fixWasApplied remainingErrors (Console previousCount console) =
     let
         count : Int
         count =
             previousCount + 1
+
+        remainingFixableErrors : String
+        remainingFixableErrors =
+            remainingErrors
+                |> List.filterMap Rule.errorFixes
+                |> List.length
+                |> String.fromInt
     in
     if count >= 3 then
         always (Console count console) <|
             Json.Decode.decodeValue
-                (Json.Decode.field ("log::" ++ String.fromInt count) (Json.Decode.null ()))
+                (Json.Decode.field ("log::" ++ String.fromInt count ++ "::" ++ remainingFixableErrors) (Json.Decode.null ()))
                 console
 
     else
