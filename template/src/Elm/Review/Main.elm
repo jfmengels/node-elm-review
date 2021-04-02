@@ -511,6 +511,15 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                     if Just file.path == (Project.readme project |> Maybe.map .path) then
                                         Project.addReadme { path = file.path, content = file.source } project
 
+                                    else if String.endsWith "elm.json" file.path then
+                                        case Decode.decodeString elmJsonDecoder file.source of
+                                            Ok elmJson ->
+                                                Project.addElmJson elmJson project
+
+                                            Err err ->
+                                                -- TODO Error
+                                                project
+
                                     else
                                         Project.addModule { path = file.path, source = file.source } project
                                 )
