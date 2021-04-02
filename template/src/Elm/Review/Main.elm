@@ -396,14 +396,6 @@ update msg model =
             ( { model | project = Project.removeModule path model.project }, Cmd.none )
 
         ReceivedElmJson rawElmJson ->
-            let
-                elmJsonDecoder : Decode.Decoder { path : String, raw : String, project : Elm.Project.Project }
-                elmJsonDecoder =
-                    Decode.map3 (\path raw project -> { path = path, raw = raw, project = project })
-                        (Decode.field "path" Decode.string)
-                        (Decode.field "raw" Decode.string)
-                        (Decode.field "project" Elm.Project.decoder)
-            in
             case Decode.decodeValue elmJsonDecoder rawElmJson of
                 Ok elmJson ->
                     ( { model | project = Project.addElmJson elmJson model.project }
@@ -566,6 +558,14 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
             ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
+
+
+elmJsonDecoder : Decode.Decoder { path : String, raw : String, project : Elm.Project.Project }
+elmJsonDecoder =
+    Decode.map3 (\path raw project -> { path = path, raw = raw, project = project })
+        (Decode.field "path" Decode.string)
+        (Decode.field "raw" Decode.string)
+        (Decode.field "project" Elm.Project.decoder)
 
 
 cacheFileRequest : Project -> String -> Encode.Value
