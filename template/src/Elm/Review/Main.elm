@@ -945,6 +945,12 @@ addFixedErrorForFile path error remainingErrors model =
 fixableFilesInProject : Project -> Dict String { path : String, source : String }
 fixableFilesInProject project =
     let
+        elmJson : { path : String, source : String }
+        elmJson =
+            Project.elmJson project
+                |> Maybe.map (\r -> { path = r.path, source = r.raw })
+                |> Maybe.withDefault { path = "$$Not a valid module name$$", source = "" }
+
         readme : { path : String, source : String }
         readme =
             Project.readme project
@@ -956,7 +962,7 @@ fixableFilesInProject project =
             Project.modules project
                 |> List.map (\module_ -> ( module_.path, { path = module_.path, source = module_.source } ))
     in
-    Dict.fromList (( readme.path, readme ) :: moduleFiles)
+    Dict.fromList (( elmJson.path, elmJson ) :: ( readme.path, readme ) :: moduleFiles)
 
 
 findFix :
