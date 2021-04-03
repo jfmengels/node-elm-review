@@ -506,25 +506,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     let
                         newProject : Project
                         newProject =
-                            List.foldl
-                                (\file project ->
-                                    if Just file.path == (Project.readme project |> Maybe.map .path) then
-                                        Project.addReadme { path = file.path, content = file.source } project
-
-                                    else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
-                                        case Decode.decodeString Elm.Project.decoder file.source of
-                                            Ok elmJson ->
-                                                Project.addElmJson { path = file.path, raw = file.source, project = elmJson } project
-
-                                            Err err ->
-                                                -- TODO Error
-                                                project
-
-                                    else
-                                        Project.addModule { path = file.path, source = file.source } project
-                                )
-                                model.project
-                                rawFiles
+                            List.foldl addUpdatedFileToProject model.project rawFiles
                     in
                     if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
@@ -903,6 +885,24 @@ encodeChangedFile changedFile =
         ]
 
 
+addUpdatedFileToProject : { a | path : String, source : String } -> Project -> Project
+addUpdatedFileToProject file project =
+    if Just file.path == (Project.readme project |> Maybe.map .path) then
+        Project.addReadme { path = file.path, content = file.source } project
+
+    else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
+        case Decode.decodeString Elm.Project.decoder file.source of
+            Ok elmJson ->
+                Project.addElmJson { path = file.path, raw = file.source, project = elmJson } project
+
+            Err err ->
+                -- TODO Error
+                project
+
+    else
+        Project.addModule { path = file.path, source = file.source } project
+
+
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe ( Dict String Fix.Problem, Model )
 applyAllFixes failedFixesDict model =
     case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
@@ -910,11 +910,7 @@ applyAllFixes failedFixesDict model =
             let
                 newProject : Project
                 newProject =
-                    if Just file.path == Maybe.map .path (Project.readme model.project) then
-                        Project.addReadme { path = file.path, content = fixedSource } model.project
-
-                    else
-                        Project.addModule { path = file.path, source = fixedSource } model.project
+                    addUpdatedFileToProject { file | source = fixedSource } model.project
             in
             if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
                 -- There is a new module that failed to parse in the
