@@ -1,0 +1,28 @@
+-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
+
+NoUnused.Modules: Module `Folder.Unused` is never used.
+
+1| module Folder.Unused exposing (..)
+          ^^^^^^^^^^^^^
+
+This module is never used. You may want to remove it to keep your project clean,
+and maybe detect some unused code in your project.
+
+src/Folder/Unused.elm  ↑
+====o======================================================================o====
+↓  src/Main.elm
+
+
+-- ELM-REVIEW ERROR ------------------------------------------ src/Main.elm:27:7
+
+NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is not
+used.
+
+26|     | Decrement
+27|     | UnusedCustomType
+          ^^^^^^^^^^^^^^^^
+
+This type constructor is never used. It might be handled everywhere it might
+appear, but there is no location where this value actually gets created.
+
+I found 2 errors in 2 files.

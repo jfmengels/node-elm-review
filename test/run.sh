@@ -370,6 +370,52 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "--config ../config-error-debug" \
     "config-error-debug"
 
+# FIXES
+
+if [ "$1" == "record" ]
+then
+  rm -rf "$SNAPSHOTS/project to fix"
+  cp -r "$CWD/project-with-errors" "$SNAPSHOTS/project to fix"
+  cd "$SNAPSHOTS/project to fix"
+else
+  rm -rf "$TMP/project to fix"
+  cp -r "$CWD/project-with-errors" "$TMP/project to fix"
+  cd "$TMP/project to fix"
+fi
+
+$createTest "$CMD" \
+    "Running with --fix-all-without-prompt" \
+    "--fix-all-without-prompt" \
+    "fix-all.txt"
+
+if [ "$1" != "record" ]
+then
+    if [ "$(diff -yq "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm")" != "" ]
+    then
+        echo -e "Running with --fix-all-without-prompt (looking at code)"
+        echo -e "\x1B[31m  ERROR\n  I found a different FIX output  for Main.elmthan expected:\x1B[0m"
+        echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
+        diff -py "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm"
+        exit 1
+    fi
+    if [ "$(diff -yq "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm")" != "" ]
+    then
+        echo -e "Running with --fix-all-without-prompt (looking at code)"
+        echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Used.elm:\x1B[0m"
+        echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
+        diff -py "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm"
+        exit 1
+    fi
+    if [ "$(diff -yq "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm")" != "" ]
+    then
+        echo -e "Running with --fix-all-without-prompt (looking at code)"
+        echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Unused.elm:\x1B[0m"
+        echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
+        diff -py "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm"
+        exit 1
+    fi
+fi
+
 # new-package
 
 if [ "$1" == "record" ]
