@@ -510,6 +510,10 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         newProject : Project
                         newProject =
                             List.foldl addUpdatedFileToProject model.project rawFiles
+
+                        changesToElmJson : List ElmJsonChange
+                        changesToElmJson =
+                            changesToElm model.project newProject
                     in
                     if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
@@ -519,6 +523,21 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         ( model
                           -- TODO Improve abort message
                         , abort <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
+                        )
+
+                    else if not <| List.isEmpty changesToElmJson then
+                        ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
+                        , changesToElmJson
+                            |> List.map
+                                (\change ->
+                                    case change of
+                                        DependenciesChanged ->
+                                            abort "dependencies changed"
+
+                                        SourceDirectoriesChanged ->
+                                            abort "source directories changed"
+                                )
+                            |> Cmd.batch
                         )
 
                     else
@@ -922,7 +941,7 @@ applyAllFixes failedFixesDict model =
                 -- we were not successful in preventing earlier.
                 Nothing
 
-            else if not <| List.isEmpty (significantChangesToElmJson model.project newProject) then
+            else if not <| List.isEmpty (changesToElm model.project newProject) then
                 Just
                     { failedFixesDict = newFailedFixesDict
                     , newModel = { model | project = newProject }
@@ -948,8 +967,8 @@ type ElmJsonChange
     | DependenciesChanged
 
 
-significantChangesToElmJson : Project -> Project -> List ElmJsonChange
-significantChangesToElmJson oldProject newProject =
+changesToElm : Project -> Project -> List ElmJsonChange
+changesToElm oldProject newProject =
     case Maybe.map2 Tuple.pair (Project.elmJson oldProject) (Project.elmJson newProject) of
         Just ( oldElmJson, newElmJson ) ->
             if oldElmJson == newElmJson then
