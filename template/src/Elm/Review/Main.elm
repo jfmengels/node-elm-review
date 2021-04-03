@@ -510,10 +510,6 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         newProject : Project
                         newProject =
                             List.foldl addUpdatedFileToProject model.project rawFiles
-
-                        changesToElmJson : List ElmJsonChange
-                        changesToElmJson =
-                            changesToElm model.project newProject
                     in
                     if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
                         -- There is a new file that failed to parse in the
@@ -524,21 +520,16 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                           -- TODO Improve abort message
                         , abort <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
                         )
-
-                    else if not <| List.isEmpty changesToElmJson then
-                        ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
-                        , changesToElmJson
-                            |> List.map
-                                (\change ->
-                                    case change of
-                                        DependenciesChanged ->
-                                            abort "dependencies changed"
-
-                                        SourceDirectoriesChanged ->
-                                            abort "source directories changed"
-                                )
-                            |> Cmd.batch
-                        )
+                        -- TODO Handle these cases
+                        --else if dependenciesHaveChanged then
+                        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
+                        --    , abort "The dependencies have changed"
+                        --    )
+                        --
+                        --else if sourceDirectoriesHaveChanged then
+                        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
+                        --    , abort "request source directories changed"
+                        --    )
 
                     else
                         { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
