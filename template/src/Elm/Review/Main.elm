@@ -818,7 +818,7 @@ fixOneByOne model =
 fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
     case applyAllFixes Dict.empty model of
-        Just ( failedFixesDict, newModel ) ->
+        Just { failedFixesDict, newModel } ->
             case diff model.project newModel.project of
                 [] ->
                     makeReport failedFixesDict newModel
@@ -903,7 +903,7 @@ addUpdatedFileToProject file project =
         Project.addModule { path = file.path, source = file.source } project
 
 
-applyAllFixes : Dict String Fix.Problem -> Model -> Maybe ( Dict String Fix.Problem, Model )
+applyAllFixes : Dict String Fix.Problem -> Model -> Maybe { failedFixesDict : Dict String Fix.Problem, newModel : Model }
 applyAllFixes failedFixesDict model =
     case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
         ( newFailedFixesDict, Just { file, error, fixedSource, remainingErrors } ) ->
@@ -920,7 +920,10 @@ applyAllFixes failedFixesDict model =
                 Nothing
 
             else if Just file.path == (Project.elmJson newProject |> Maybe.map .path) then
-                Just ( newFailedFixesDict, { model | project = newProject } )
+                Just
+                    { failedFixesDict = newFailedFixesDict
+                    , newModel = { model | project = newProject }
+                    }
 
             else
                 applyAllFixes
@@ -931,7 +934,10 @@ applyAllFixes failedFixesDict model =
                     )
 
         ( newFailedFixesDict, Nothing ) ->
-            Just ( newFailedFixesDict, model )
+            Just
+                { failedFixesDict = newFailedFixesDict
+                , newModel = model
+                }
 
 
 addFixedErrorForFile : String -> Rule.ReviewError -> List Rule.ReviewError -> Model -> Model
