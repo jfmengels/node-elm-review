@@ -1053,10 +1053,29 @@ diff before after =
                 Nothing ->
                     []
 
+        beforeElmJson : List ( String, { path : String, source : String } )
+        beforeElmJson =
+            case Project.elmJson before of
+                Just readme ->
+                    [ ( readme.path, { path = readme.path, source = readme.raw } ) ]
+
+                Nothing ->
+                    []
+
+        afterElmJson : List ( String, String )
+        afterElmJson =
+            case Project.elmJson after of
+                Just elmJson ->
+                    [ ( elmJson.path, elmJson.raw ) ]
+
+                Nothing ->
+                    []
+
         beforeModules : Dict String { path : String, source : String }
         beforeModules =
             List.concat
                 [ beforeReadme
+                , beforeElmJson
                 , before
                     |> Project.modules
                     |> List.map (\mod -> ( mod.path, { path = mod.path, source = mod.source } ))
@@ -1067,6 +1086,7 @@ diff before after =
         fixedSources =
             List.concat
                 [ afterReadme
+                , afterElmJson
                 , after
                     |> Project.modules
                     |> List.map (\mod -> ( mod.path, mod.source ))
