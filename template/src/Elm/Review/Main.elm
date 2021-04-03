@@ -914,11 +914,14 @@ addUpdatedFileToProject file project =
 
     else
         case Project.elmJson project of
-            Just elmJson ->
-                if file.path == elmJson.path then
+            Just oldElmJson ->
+                if file.path == oldElmJson.path then
                     case Decode.decodeString Elm.Project.decoder file.source of
                         Ok newElmJson ->
-                            Project.addElmJson { path = file.path, raw = file.source, project = newElmJson } project
+                            List.foldl
+                                Project.removeDependency
+                                (Project.addElmJson { path = file.path, raw = file.source, project = newElmJson } project)
+                                (removedDependencies oldElmJson.project newElmJson)
 
                         Err err ->
                             -- TODO Error
@@ -929,6 +932,37 @@ addUpdatedFileToProject file project =
 
             Nothing ->
                 addElmFile file project
+
+
+removedDependencies : Elm.Project.Project -> Elm.Project.Project -> List String
+removedDependencies old new =
+    Set.diff (projectDependencies old) (projectDependencies new)
+        |> Set.toList
+
+
+projectDependencies : Elm.Project.Project -> Set String
+projectDependencies project =
+    case project of
+        Elm.Project.Application application ->
+            List.concat
+                [ getPackageName application.depsDirect
+                , getPackageName application.depsIndirect
+                , getPackageName application.testDepsDirect
+                , getPackageName application.testDepsIndirect
+                ]
+                |> Set.fromList
+
+        Elm.Project.Package packageInfo ->
+            List.concat
+                [ getPackageName packageInfo.deps
+                , getPackageName packageInfo.testDeps
+                ]
+                |> Set.fromList
+
+
+getPackageName : Elm.Project.Deps a -> List String
+getPackageName deps =
+    List.map (Tuple.first >> Elm.Package.toString) deps
 
 
 addElmFile : { a | path : String, source : String } -> Project -> Project
