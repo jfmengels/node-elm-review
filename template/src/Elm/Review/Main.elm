@@ -919,6 +919,9 @@ applyAllFixes failedFixesDict model =
                 -- we were not successful in preventing earlier.
                 Nothing
 
+            else if Just file.path == (Project.elmJson newProject |> Maybe.map .path) then
+                Just ( newFailedFixesDict, { model | project = newProject } )
+
             else
                 applyAllFixes
                     newFailedFixesDict
