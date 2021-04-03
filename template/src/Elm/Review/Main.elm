@@ -912,17 +912,28 @@ addUpdatedFileToProject file project =
     if Just file.path == (Project.readme project |> Maybe.map .path) then
         Project.addReadme { path = file.path, content = file.source } project
 
-    else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
-        case Decode.decodeString Elm.Project.decoder file.source of
-            Ok elmJson ->
-                Project.addElmJson { path = file.path, raw = file.source, project = elmJson } project
-
-            Err err ->
-                -- TODO Error
-                project
-
     else
-        Project.addModule { path = file.path, source = file.source } project
+        case Project.elmJson project of
+            Just elmJson ->
+                if file.path == elmJson.path then
+                    case Decode.decodeString Elm.Project.decoder file.source of
+                        Ok newElmJson ->
+                            Project.addElmJson { path = file.path, raw = file.source, project = newElmJson } project
+
+                        Err err ->
+                            -- TODO Error
+                            project
+
+                else
+                    addElmFile file project
+
+            Nothing ->
+                addElmFile file project
+
+
+addElmFile : { a | path : String, source : String } -> Project -> Project
+addElmFile file project =
+    Project.addModule { path = file.path, source = file.source } project
 
 
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe { failedFixesDict : Dict String Fix.Problem, newModel : Model }
