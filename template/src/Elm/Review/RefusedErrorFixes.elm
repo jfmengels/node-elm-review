@@ -1,4 +1,4 @@
-module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, member, memberForReporterError)
+module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, member)
 
 {-| Keeps track of error fixes that the user refused to apply.
 
@@ -6,7 +6,6 @@ module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, 
 
 -}
 
-import Elm.Review.Reporter as Reporter
 import Elm.Syntax.Range exposing (Range)
 import Review.Rule as Rule exposing (ReviewError)
 import Set exposing (Set)
@@ -41,11 +40,6 @@ member error (RefusedErrorFixes refusedErrorFixes) =
     Set.member (errorKey error) refusedErrorFixes
 
 
-memberForReporterError : Reporter.Error -> RefusedErrorFixes -> Bool
-memberForReporterError error (RefusedErrorFixes refusedErrorFixes) =
-    Set.member (errorKeyForReporterError error) refusedErrorFixes
-
-
 errorKey : ReviewError -> String
 errorKey error =
     let
@@ -61,22 +55,6 @@ errorKey error =
           , range.start.column
           , range.end.row
           , range.end.column
-          ]
-            |> List.map String.fromInt
-            |> String.join "-"
-        ]
-
-
-errorKeyForReporterError : Reporter.Error -> String
-errorKeyForReporterError error =
-    String.join "###"
-        [ error.ruleName
-        , error.message
-        , String.join "\n" error.details
-        , [ error.range.start.row
-          , error.range.start.column
-          , error.range.end.row
-          , error.range.end.column
           ]
             |> List.map String.fromInt
             |> String.join "-"

@@ -389,7 +389,7 @@ reasonFromProblem problem =
         Review.Fix.Unchanged ->
             "it resulted in the same source code."
 
-        Review.Fix.SourceCodeIsNotValid string ->
+        Review.Fix.SourceCodeIsNotValid _ ->
             "it resulted in invalid Elm code."
 
         Review.Fix.HasCollisionsInFixRanges ->
@@ -760,7 +760,7 @@ addLineNumbers changes =
                         Diff.Removed _ ->
                             lineNumber + 1
 
-                        Diff.Added str ->
+                        Diff.Added _ ->
                             lineNumber
                 )
                 0

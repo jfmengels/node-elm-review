@@ -16,8 +16,8 @@ import Elm.Syntax.Range exposing (Range)
 import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Review.Fix as Fix exposing (Fix, FixResult)
-import Review.Project as Project exposing (Project, ProjectModule)
+import Review.Fix as Fix exposing (Fix)
+import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
@@ -405,7 +405,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                Err err ->
+                Err _ ->
                     ( model, Cmd.none )
 
         ReceivedReadme rawReadme ->
@@ -422,7 +422,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                Err err ->
+                Err _ ->
                     ( model, Cmd.none )
 
         ReceivedDependencies json ->
@@ -632,20 +632,6 @@ find predicate list =
 
             else
                 find predicate rest
-
-
-replaceFileErrors : ProjectModule -> List Rule.ReviewError -> List ( ProjectModule, List Rule.ReviewError ) -> List ( ProjectModule, List Rule.ReviewError )
-replaceFileErrors module_ errorsForFile allErrors =
-    case allErrors of
-        [] ->
-            []
-
-        (( file, _ ) as fileAndErrors) :: restOfErrors ->
-            if file.path == module_.path then
-                ( module_, errorsForFile ) :: restOfErrors
-
-            else
-                fileAndErrors :: replaceFileErrors module_ errorsForFile restOfErrors
 
 
 refuseError : Rule.ReviewError -> Model -> Model
@@ -923,7 +909,7 @@ addUpdatedFileToProject file project =
                                 (Project.addElmJson { path = file.path, raw = file.source, project = newElmJson } project)
                                 (removedDependencies oldElmJson.project newElmJson)
 
-                        Err err ->
+                        Err _ ->
                             -- TODO Error
                             project
 
@@ -1231,7 +1217,7 @@ diff before after =
     in
     Dict.merge
         (\_ _ acc -> acc)
-        (\path beforeModule fixedSource acc ->
+        (\_ beforeModule fixedSource acc ->
             if beforeModule.source /= fixedSource then
                 { path = beforeModule.path, source = beforeModule.source, fixedSource = fixedSource } :: acc
 

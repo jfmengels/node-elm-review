@@ -29,7 +29,7 @@ runManyTimes : Int -> String -> String -> (() -> Expectation)
 runManyTimes times a_ b_ =
     let
         total =
-            List.foldl (\i n -> n + List.length (diffLines a_ b_)) 0 (List.range 1 times)
+            List.foldl (\_ n -> n + List.length (diffLines a_ b_)) 0 (List.range 1 times)
     in
     \_ -> Expect.true "" (total > 0)
 

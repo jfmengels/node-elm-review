@@ -1,8 +1,7 @@
 module ReporterTest exposing (suite)
 
 import Dict
-import Elm.Review.Reporter as Reporter exposing (Error, File)
-import Expect
+import Elm.Review.Reporter as Reporter
 import FormatTester exposing (expect)
 import Test exposing (Test, describe, test)
 
