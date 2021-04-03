@@ -1,7 +1,9 @@
 port module Elm.Review.Main exposing (main)
 
 import Dict exposing (Dict)
+import Elm.Constraint
 import Elm.Docs
+import Elm.Package
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.File
@@ -11,6 +13,7 @@ import Elm.Review.Reporter as Reporter
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range exposing (Range)
+import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix, FixResult)
@@ -919,7 +922,7 @@ applyAllFixes failedFixesDict model =
                 -- we were not successful in preventing earlier.
                 Nothing
 
-            else if Just file.path == (Project.elmJson newProject |> Maybe.map .path) then
+            else if not <| List.isEmpty (significantChangesToElmJson model.project newProject) then
                 Just
                     { failedFixesDict = newFailedFixesDict
                     , newModel = { model | project = newProject }
@@ -938,6 +941,66 @@ applyAllFixes failedFixesDict model =
                 { failedFixesDict = newFailedFixesDict
                 , newModel = model
                 }
+
+
+type ElmJsonChange
+    = SourceDirectoriesChanged
+    | DependenciesChanged
+
+
+significantChangesToElmJson : Project -> Project -> List ElmJsonChange
+significantChangesToElmJson oldProject newProject =
+    case Maybe.map2 Tuple.pair (Project.elmJson oldProject) (Project.elmJson newProject) of
+        Just ( oldElmJson, newElmJson ) ->
+            if oldElmJson == newElmJson then
+                []
+
+            else
+                case ( oldElmJson.project, newElmJson.project ) of
+                    ( Elm.Project.Application oldApp, Elm.Project.Application newApp ) ->
+                        List.filterMap identity
+                            [ if Set.fromList oldApp.dirs == Set.fromList newApp.dirs then
+                                Nothing
+
+                              else
+                                Just SourceDirectoriesChanged
+                            , if normalizeApplicationDeps oldApp == normalizeApplicationDeps newApp then
+                                Nothing
+
+                              else
+                                Just DependenciesChanged
+                            ]
+
+                    ( Elm.Project.Package oldPackage, Elm.Project.Package newPackage ) ->
+                        List.filterMap identity
+                            [ if normalizePackageDeps oldPackage == normalizePackageDeps newPackage then
+                                Nothing
+
+                              else
+                                Just DependenciesChanged
+                            ]
+
+                    _ ->
+                        [ SourceDirectoriesChanged, DependenciesChanged ]
+
+        Nothing ->
+            []
+
+
+normalizeApplicationDeps : Elm.Project.ApplicationInfo -> List (Dict String Elm.Version.Version)
+normalizeApplicationDeps application =
+    [ List.map (\( name, version ) -> ( Elm.Package.toString name, version )) application.depsDirect |> Dict.fromList
+    , List.map (\( name, version ) -> ( Elm.Package.toString name, version )) application.depsIndirect |> Dict.fromList
+    , List.map (\( name, version ) -> ( Elm.Package.toString name, version )) application.testDepsDirect |> Dict.fromList
+    , List.map (\( name, version ) -> ( Elm.Package.toString name, version )) application.testDepsIndirect |> Dict.fromList
+    ]
+
+
+normalizePackageDeps : Elm.Project.PackageInfo -> List (Dict String Elm.Constraint.Constraint)
+normalizePackageDeps application =
+    [ List.map (\( name, constraint ) -> ( Elm.Package.toString name, constraint )) application.deps |> Dict.fromList
+    , List.map (\( name, constraint ) -> ( Elm.Package.toString name, constraint )) application.testDeps |> Dict.fromList
+    ]
 
 
 addFixedErrorForFile : String -> Rule.ReviewError -> List Rule.ReviewError -> Model -> Model
