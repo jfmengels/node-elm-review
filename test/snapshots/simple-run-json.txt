@@ -7,7 +7,7 @@
         {
           "rule": "NoUnused.Modules",
           "message": "Module `Folder.Unused` is never used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Modules",
           "details": [
             "This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
           ],
@@ -26,7 +26,7 @@
             {
               "string": "NoUnused.Modules",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Modules"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Modules"
             },
             ": Module `Folder.Unused` is never used.\n\n1| module Folder.Unused exposing (..)\n          ",
             {
@@ -44,7 +44,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `span` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -81,7 +81,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables"
             },
             ": Imported variable `span` is not used\n\n10|           -- span is unused\n11|         , span\n              ",
             {
@@ -94,7 +94,7 @@
         {
           "rule": "NoUnused.CustomTypeConstructors",
           "message": "Type constructor `UnusedCustomType` is not used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors",
           "details": [
             "This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
           ],
@@ -113,7 +113,7 @@
             {
               "string": "NoUnused.CustomTypeConstructors",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.4/NoUnused-CustomTypeConstructors"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors"
             },
             ": Type constructor `UnusedCustomType` is not used.\n\n28|     | Decrement\n29|     | UnusedCustomType\n          ",
             {

@@ -1,8 +1,8 @@
 Starting review application build
 Compiling review application
 Finished review application build
-Building parser app for elm-syntax v7.2.1
-Parsing using stil4m/elm-syntax v7.2.1
+Building parser app for elm-syntax v7.2.3
+Parsing using stil4m/elm-syntax v7.2.3
 Reviewing the following files:
  - src/Folder/Unused.elm
  - src/Folder/Used.elm
