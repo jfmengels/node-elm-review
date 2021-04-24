@@ -42,7 +42,7 @@ formatWithoutColors : List TextContent -> String
 formatWithoutColors textList =
     textList
         |> List.map .str
-        |> String.join ""
+        |> String.concat
 
 
 formatWithColors : List TextContent -> String
@@ -57,4 +57,4 @@ formatWithColors textList =
                     Nothing ->
                         str
             )
-        |> String.join ""
+        |> String.concat

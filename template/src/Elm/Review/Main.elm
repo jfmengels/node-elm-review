@@ -1286,8 +1286,9 @@ groupErrorsByFile project errors =
                 [ project
                     |> Project.modules
                     |> List.map (\file -> { path = file.path, source = file.source })
-                , [ { path = "GLOBAL ERROR", source = "" } ]
-                , [ { path = "CONFIGURATION ERROR", source = "" } ]
+                , [ { path = "GLOBAL ERROR", source = "" }
+                  , { path = "CONFIGURATION ERROR", source = "" }
+                  ]
                 , case Project.elmJson project of
                     Just { path, raw } ->
                         [ { path = path, source = raw } ]
