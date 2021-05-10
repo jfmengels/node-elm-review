@@ -13,10 +13,10 @@
             "jfmengels/elm-review-common": "1.0.3",
             "jfmengels/elm-review-debug": "1.0.5",
             "jfmengels/elm-review-documentation": "1.0.1",
-            "jfmengels/elm-review-simplify": "1.0.1",
-            "jfmengels/elm-review-unused": "1.1.9",
+            "jfmengels/elm-review-simplify": "1.0.2",
+            "jfmengels/elm-review-unused": "1.1.10",
             "sparksp/elm-review-forbidden-words": "1.0.1",
-            "stil4m/elm-syntax": "7.2.3"
+            "stil4m/elm-syntax": "7.2.4"
         },
         "indirect": {
             "elm/html": "1.0.0",
