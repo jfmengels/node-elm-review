@@ -1022,7 +1022,12 @@ applyAllFixes failedFixesDict model =
             else if not <| List.isEmpty (changesToElm model.project newProject) then
                 Just
                     { failedFixesDict = newFailedFixesDict
-                    , newModel = { model | project = newProject }
+                    , newModel =
+                        addFixedErrorForFile
+                            file.path
+                            error
+                            remainingErrors
+                            { model | project = newProject }
                     }
 
             else
