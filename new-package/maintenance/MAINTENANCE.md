@@ -117,7 +117,7 @@ Contrary to the initial release, the CI will automatically try to publish a new 
 Here is a script that you can run to publish your package, which will help you avoid errors showing up at the CI stage.
 
 ```bash
-npm run elm-bump
+npx elm bump
 
 # Commit it all
 git add --all
