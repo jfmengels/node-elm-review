@@ -148,6 +148,7 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
+
 # Version
 
 $createTest "$CMD" \
@@ -374,6 +375,23 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using an configuration which fails due to debug remnants" \
     "--config ../config-error-debug" \
     "config-error-debug"
+
+$createTest "$CMD" \
+    "Running on project with unknown file" \
+    "--config ../config-that-triggers-no-errors unknown-target" \
+    "run-with-unknown-target.txt"
+
+cd "$CWD/project-with-dir-ending-in-elm"
+
+$createTest "$CMD" \
+    "Running on project with a directory ending in .elm" \
+    "--config ../config-that-triggers-no-errors" \
+    "src.elm-project-without-arg.txt"
+
+$createTest "$CMD" \
+    "Running on project with a directory ending in .elm" \
+    "--config ../config-that-triggers-no-errors src.elm" \
+    "src.elm-project-with-arg.txt"
 
 # FIXES
 
