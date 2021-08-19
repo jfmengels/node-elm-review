@@ -30,6 +30,9 @@ import NoUnused.Patterns
 import NoUnused.Variables
 import Review.Rule as Rule exposing (Rule)
 import Simplify
+import CognitiveComplexity
+import NoSimpleLetBody
+import NoPrematureLetBody
 
 
 config : List Rule
@@ -44,6 +47,8 @@ config =
     , NoMissingTypeAnnotation.rule
     , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
+    , NoSimpleLetBody.rule
+    , NoPrematureLetBody.rule
     , NoUnused.CustomTypeConstructors.rule []
     , NoUnused.CustomTypeConstructorArgs.rule
     , NoUnused.Dependencies.rule
@@ -53,4 +58,5 @@ config =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule
+    , CognitiveComplexity.rule 10
     ]
