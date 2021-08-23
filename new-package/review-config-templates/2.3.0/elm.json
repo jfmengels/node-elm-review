@@ -15,7 +15,7 @@
             "jfmengels/elm-review-common": "1.1.2",
             "jfmengels/elm-review-debug": "1.0.6",
             "jfmengels/elm-review-documentation": "1.0.3",
-            "jfmengels/elm-review-simplify": "1.0.2",
+            "jfmengels/elm-review-simplify": "2.0.7",
             "jfmengels/elm-review-unused": "1.1.16",
             "sparksp/elm-review-forbidden-words": "1.0.1",
             "stil4m/elm-syntax": "7.2.7"
