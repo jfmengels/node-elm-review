@@ -642,7 +642,7 @@ fileSeparator pathAbove pathBelow =
 -- FIX
 
 
-{-| Reports a fix proposal for a single errorin a nice human-readable way.
+{-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
 formatFixProposal : Dict String Review.Fix.Problem -> DetailsMode -> File -> Error -> Source -> List TextContent
 formatFixProposal fixProblemDict detailsMode file error fixedSource =
