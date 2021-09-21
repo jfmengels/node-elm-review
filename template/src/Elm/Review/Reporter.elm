@@ -569,7 +569,7 @@ codeExtract (Source source) =
               in
               underlineError_
                 { start = getIndexOfFirstNonSpace line + 1
-                , end = String.length line + 1
+                , end = end.column
                 }
             , getRowWithLineNumberUnlessEmpty (endLine + 1)
             ]

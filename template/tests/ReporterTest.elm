@@ -195,7 +195,7 @@ a =
 
 
             + 3.4
-            + 5.6
+            + 5.6 + ignore
 
 -- end
 """
@@ -206,7 +206,7 @@ a =
                       , details = []
                       , range =
                             { start = { row = 5, column = 5 }
-                            , end = { row = 10, column = 17 }
+                            , end = { row = 10, column = 18 }
                             }
                       , fixesHash = Nothing
                       }
@@ -228,7 +228,7 @@ NoLeftPizza: Do not use left pizza
  8|$
  9|             + 3.4
                 ^^^^^
-10|             + 5.6
+10|             + 5.6 + ignore
                 ^^^^^
 
 I found 1 error in 1 file."""
@@ -245,7 +245,7 @@ I found 1 error in 1 file."""
  8|$
  9|             + 3.4
                 [^^^^^](#FF0000)
-10|             + 5.6
+10|             + 5.6 + ignore
                 [^^^^^](#FF0000)
 
 I found [1 error](#FF0000) in [1 file](#FFFF00)."""
