@@ -17,6 +17,7 @@ suite =
         , singleCompactErrorTest
         , multilineErrorTest
         , globalErrorTest
+        , unicodeTests
         ]
 
 
@@ -613,3 +614,99 @@ I found 1 error in 1 file."""
 I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                     }
         )
+
+
+unicodeTests : Test
+unicodeTests =
+    describe "Positioning of underline when encountering unicode characters "
+        [ test "add underline at the correct position when unicode characters are in front of the underlined string"
+            (\() ->
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
+a = "🔧" <| Debug.log "debug" 1"""
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                          , message = "Do not use Debug"
+                          , details = [ "Some description." ]
+                          , range =
+                                { start = { row = 2, column = 12 }
+                                , end = { row = 2, column = 17 }
+                                }
+                          , fixesHash = Nothing
+                          }
+                        ]
+                  }
+                ]
+                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> expect
+                        { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
+
+NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = "🔧" <| Debug.log "debug" 1
+               ^^^^^
+
+Some description.
+
+I found 1 error in 1 file."""
+                        , withColors = """[-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12](#33BBC8)
+
+[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = "🔧" <| Debug.log "debug" 1
+               [^^^^^](#FF0000)
+
+Some description.
+
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+                        }
+            )
+        , test "add underline at the correct position when unicode characters are contained in the underlined string"
+            (\() ->
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
+a = "🔧" ++ 1"""
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                          , message = "Do not use Debug"
+                          , details = [ "Some description." ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 8 }
+                                }
+                          , fixesHash = Nothing
+                          }
+                        ]
+                  }
+                ]
+                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> expect
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = "🔧" ++ 1
+       ^^^^
+
+Some description.
+
+I found 1 error in 1 file."""
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = "🔧" ++ 1
+       [^^^^](#FF0000)
+
+Some description.
+
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+                        }
+            )
+        ]

@@ -483,6 +483,10 @@ codeExtract (Source source) =
             underlineError_ =
                 underlineError gutterLength
 
+            underlineError_2 : { start : Int, end : Int } -> { lineContent : String } -> List Text
+            underlineError_2 =
+                underlineError2 gutterLength
+
             getRowWithLineNumber : Int -> String
             getRowWithLineNumber rowIndex =
                 lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
@@ -490,6 +494,7 @@ codeExtract (Source source) =
             getRowWithLineNumberUnlessEmpty : Int -> List Text
             getRowWithLineNumberUnlessEmpty rowIndex =
                 let
+                    line : String
                     line =
                         getRowAtLine rowIndex
                 in
@@ -504,9 +509,14 @@ codeExtract (Source source) =
                 []
 
             else
+                let
+                    lineContent : String
+                    lineContent =
+                        getRowWithLineNumber (start.row - 1)
+                in
                 [ getRowWithLineNumberUnlessEmpty (start.row - 2)
-                , [ Text.from <| getRowWithLineNumber (start.row - 1) ]
-                , underlineError_ { start = start.column, end = end.column }
+                , [ Text.from lineContent ]
+                , underlineError_2 { start = start.column, end = end.column } { lineContent = lineContent }
                 , getRowWithLineNumberUnlessEmpty end.row
                 ]
                     |> List.filter (not << List.isEmpty)
@@ -592,6 +602,44 @@ underlineError : Int -> { start : Int, end : Int } -> List Text
 underlineError gutterLength { start, end } =
     [ Text.from <| String.repeat (gutterLength + start - 1) " "
     , String.repeat (end - start) "^"
+        |> Text.from
+        |> Text.inRed
+    ]
+
+
+underlineError2 : Int -> { start : Int, end : Int } -> { lineContent : String } -> List Text
+underlineError2 gutterLength { start, end } { lineContent } =
+    let
+        lineChars : List Char
+        lineChars =
+            String.toList lineContent
+
+        preText : List Char
+        preText =
+            List.take (gutterLength + start - 1) lineChars
+
+        unicodePreOffset : Int
+        unicodePreOffset =
+            -- Some characters like 🔧 are considered as 1 character by elm-syntax's range and editors' position coordinates,
+            -- but are in practice shown as 2 character's wide in the editor and in the CLI.
+            -- String.length "🔧" == 2
+            -- List.length (String.toList "🔧") == 1
+            String.length (String.fromList preText) - List.length preText
+
+        inText : List Char
+        inText =
+            lineChars
+                |> List.drop (gutterLength + start - 1)
+                |> List.take (end - start)
+
+        unicodeInOffset : Int
+        unicodeInOffset =
+            -- We want to show enough ^ characters to cover the whole underlined zone,
+            -- and for unicode characters that sometimes means 2 ^
+            String.length (String.fromList inText) - List.length inText
+    in
+    [ Text.from <| String.repeat (gutterLength + unicodePreOffset + start - 1) " "
+    , String.repeat (unicodeInOffset + end - start) "^"
         |> Text.from
         |> Text.inRed
     ]
