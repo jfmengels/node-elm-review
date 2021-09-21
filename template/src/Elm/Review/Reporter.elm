@@ -499,17 +499,18 @@ codeExtract (Source source) =
                 else
                     [ Text.from (lineNumberPrefix maxLineNumberLength rowIndex ++ line) ]
         in
-        if start == end then
-            []
+        if start.row == end.row then
+            if start.column == end.column then
+                []
 
-        else if start.row == end.row then
-            [ getRowWithLineNumberUnlessEmpty (start.row - 2)
-            , [ Text.from <| getRowWithLineNumber (start.row - 1) ]
-            , underlineError_ { start = start.column, end = end.column }
-            , getRowWithLineNumberUnlessEmpty end.row
-            ]
-                |> List.filter (not << List.isEmpty)
-                |> Text.join "\n"
+            else
+                [ getRowWithLineNumberUnlessEmpty (start.row - 2)
+                , [ Text.from <| getRowWithLineNumber (start.row - 1) ]
+                , underlineError_ { start = start.column, end = end.column }
+                , getRowWithLineNumberUnlessEmpty end.row
+                ]
+                    |> List.filter (not << List.isEmpty)
+                    |> Text.join "\n"
 
         else
             let
