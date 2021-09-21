@@ -8,8 +8,8 @@ import Test exposing (Test, describe, test)
 suite : Test
 suite =
     describe "formatFixProposals"
-        [ test "propose fix where the diff is only a single segment"
-            (\() ->
+        [ test "propose fix where the diff is only a single segment" <|
+            \() ->
                 let
                     error : Error
                     error =
@@ -126,5 +126,4 @@ Applied from the fixes for the following errors:
 3| someOther=lines
 """
                         }
-            )
         ]

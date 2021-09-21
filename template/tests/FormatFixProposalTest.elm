@@ -9,8 +9,8 @@ import Test exposing (Test, describe, test)
 suite : Test
 suite =
     describe "formatFixProposal"
-        [ test "propose fix where the diff is only a single segment"
-            (\() ->
+        [ test "propose fix where the diff is only a single segment" <|
+            \() ->
                 let
                     error : Error
                     error =
@@ -89,9 +89,8 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 3| other=lines
 """
                         }
-            )
-        , test "propose fix where the diff contains blank lines"
-            (\() ->
+        , test "propose fix where the diff contains blank lines" <|
+            \() ->
                 let
                     error : Error
                     error =
@@ -171,5 +170,4 @@ Some details
 5| b =
 """
                         }
-            )
         ]

@@ -479,14 +479,6 @@ codeExtract (Source source) =
             gutterLength =
                 lineNumberPrefix maxLineNumberLength maxLineNumber |> String.length
 
-            underlineError_ : { start : Int, end : Int } -> List Text
-            underlineError_ =
-                underlineError gutterLength
-
-            underlineError_2 : { start : Int, end : Int } -> { lineContent : String } -> List Text
-            underlineError_2 =
-                underlineError2 gutterLength
-
             getRowWithLineNumber : Int -> String
             getRowWithLineNumber rowIndex =
                 lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
@@ -516,7 +508,7 @@ codeExtract (Source source) =
                 in
                 [ getRowWithLineNumberUnlessEmpty (start.row - 2)
                 , [ Text.from lineContent ]
-                , underlineError_2 { start = start.column, end = end.column } { lineContent = lineContent }
+                , underline gutterLength { start = start.column, end = end.column, lineContent = lineContent }
                 , getRowWithLineNumberUnlessEmpty end.row
                 ]
                     |> List.filter (not << List.isEmpty)
@@ -524,9 +516,17 @@ codeExtract (Source source) =
 
         else
             let
-                startLine : Int
-                startLine =
+                startLineNumber : Int
+                startLineNumber =
                     start.row - 1
+
+                startLineContent : String
+                startLineContent =
+                    getRowAtLine startLineNumber
+
+                startLineContentWithLineNumber : String
+                startLineContentWithLineNumber =
+                    lineNumberPrefix maxLineNumberLength startLineNumber ++ startLineContent
 
                 linesBetweenStartAndEnd : List Int
                 linesBetweenStartAndEnd =
@@ -535,12 +535,21 @@ codeExtract (Source source) =
                 endLine : Int
                 endLine =
                     end.row - 1
+
+                endLineContent : String
+                endLineContent =
+                    getRowAtLine endLine
+
+                endLineContentWithLineNumber : String
+                endLineContentWithLineNumber =
+                    lineNumberPrefix maxLineNumberLength endLine ++ endLineContent
             in
-            [ getRowWithLineNumberUnlessEmpty (startLine - 1)
-            , [ Text.from <| getRowWithLineNumber startLine ]
-            , underlineError_
+            [ getRowWithLineNumberUnlessEmpty (startLineNumber - 1)
+            , [ Text.from startLineContentWithLineNumber ]
+            , underline gutterLength
                 { start = start.column
-                , end = String.length (getRowAtLine startLine) + 1
+                , end = List.length (String.toList startLineContent) + 1
+                , lineContent = startLineContentWithLineNumber
                 }
             , linesBetweenStartAndEnd
                 |> List.map
@@ -556,20 +565,14 @@ codeExtract (Source source) =
                         else
                             Text.from (getRowWithLineNumber middleLine)
                                 :: Text.from "\n"
-                                :: underlineError_
-                                    { start = getIndexOfFirstNonSpace line + 1
-                                    , end = String.length line + 1
-                                    }
+                                :: underlineWholeLine gutterLength line
                     )
                 |> Text.join "\n"
-            , [ Text.from (getRowWithLineNumber endLine) ]
-            , let
-                line =
-                    getRowAtLine endLine
-              in
-              underlineError_
-                { start = getIndexOfFirstNonSpace line + 1
+            , [ Text.from endLineContentWithLineNumber ]
+            , underline gutterLength
+                { start = getIndexOfFirstNonSpace endLineContent + 1
                 , end = end.column
+                , lineContent = endLineContentWithLineNumber
                 }
             , getRowWithLineNumberUnlessEmpty (endLine + 1)
             ]
@@ -598,17 +601,26 @@ lengthOfLineNumber lineNumber =
         |> String.length
 
 
-underlineError : Int -> { start : Int, end : Int } -> List Text
-underlineError gutterLength { start, end } =
-    [ Text.from <| String.repeat (gutterLength + start - 1) " "
+underlineWholeLine : Int -> String -> List Text
+underlineWholeLine gutterLength line =
+    let
+        start : Int
+        start =
+            getIndexOfFirstNonSpace line
+
+        end : Int
+        end =
+            String.length line
+    in
+    [ Text.from <| String.repeat (gutterLength + start) " "
     , String.repeat (end - start) "^"
         |> Text.from
         |> Text.inRed
     ]
 
 
-underlineError2 : Int -> { start : Int, end : Int } -> { lineContent : String } -> List Text
-underlineError2 gutterLength { start, end } { lineContent } =
+underline : Int -> { start : Int, end : Int, lineContent : String } -> List Text
+underline gutterLength { start, end, lineContent } =
     let
         lineChars : List Char
         lineChars =
