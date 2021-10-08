@@ -130,7 +130,8 @@ rm -rf "$TMP" \
       "$CWD/config-unparsable-elmjson/elm-stuff" \
       "$CWD/config-without-elm-review/elm-stuff" \
       "$CWD/project-using-es2015-module/elm-stuff" \
-      "$CWD/project-with-errors/elm-stuff"
+      "$CWD/project-with-errors/elm-stuff" \
+      "$CWD/project-with-suppressed-errors/elm-stuff"
 
 mkdir -p "$TMP"
 
@@ -148,6 +149,13 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
+cd "$CWD/project-with-suppressed-errors"
+$createTest "$CMD" \
+    "Running with no suppressed errors should not report an error" \
+    "--config ../project-with-errors/review" \
+    "suppressed-errors-pass.txt"
+
+exit 0
 
 # Version
 
