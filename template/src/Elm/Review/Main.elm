@@ -724,11 +724,16 @@ removeSuppressedErrors errors =
                     |> ListExtra.gatherEqualsBy Rule.errorRuleName
                     |> List.concatMap
                         (\( head, tail ) ->
-                            if Rule.errorFilePath head == "src/Main.elm" && Rule.errorRuleName head == "NoUnused.Variables" && List.length tail == 1 then
-                                []
+                            case Dict.get ( Rule.errorFilePath head, Rule.errorRuleName head ) suppressedErrors of
+                                Just count ->
+                                    if List.length tail == count - 1 then
+                                        []
 
-                            else
-                                head :: tail
+                                    else
+                                        head :: tail
+
+                                Nothing ->
+                                    head :: tail
                         )
             )
 
