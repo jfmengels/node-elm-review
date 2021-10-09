@@ -879,8 +879,12 @@ makeReport failedFixesDict model =
         errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
         errorsByFile =
             groupErrorsByFile model.project model.reviewErrorsAfterSuppression
+
+        suppressedErrors : SuppressedErrorsDict
+        suppressedErrors =
+            generateSuppressions model.reviewErrors
     in
-    ( model
+    ( { model | suppressedErrors = suppressedErrors }
     , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
       , ( "errors"
         , case model.reportMode of
@@ -899,7 +903,7 @@ makeReport failedFixesDict model =
             Json ->
                 Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
         )
-      , ( "suppressedErrors", encodeSuppressions (generateSuppressions model.reviewErrors) )
+      , ( "suppressedErrors", encodeSuppressions suppressedErrors )
       ]
         |> Encode.object
         |> reviewReport
