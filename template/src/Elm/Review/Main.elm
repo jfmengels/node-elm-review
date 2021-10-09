@@ -59,6 +59,12 @@ port startReview : (() -> msg) -> Sub msg
 port reviewReport : Encode.Value -> Cmd msg
 
 
+port startGeneratingSuppressions : (() -> msg) -> Sub msg
+
+
+port suppressionsResponse : Encode.Value -> Cmd msg
+
+
 port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
 
 
@@ -394,6 +400,7 @@ type Msg
     | ReceivedDependencies Decode.Value
     | ReceivedLinks Decode.Value
     | GotRequestToReview
+    | GotRequestToGenerateSuppressionErrors
     | UserConfirmedFix Decode.Value
     | RequestedToKnowIfAFixConfirmationIsExpected
 
@@ -550,6 +557,23 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             }
                 |> runReview
                 |> reportOrFix
+
+        GotRequestToGenerateSuppressionErrors ->
+            let
+                newModel : Model
+                newModel =
+                    { model
+                        | project = Project.precomputeModuleGraph model.project
+                        , fixAllErrors = Dict.empty
+                    }
+                        |> runReview
+            in
+            ( newModel
+            , newModel.reviewErrors
+                |> generateSuppressions
+                |> encodeSuppressions
+                |> suppressionsResponse
+            )
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue confirmationDecoder confirmation of
@@ -1472,6 +1496,7 @@ subscriptions =
         , collectDependencies ReceivedDependencies
         , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
+        , startGeneratingSuppressions (always GotRequestToGenerateSuppressionErrors)
         , userConfirmedFix UserConfirmedFix
         , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
         ]
