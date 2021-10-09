@@ -842,9 +842,7 @@ encodeRuleSuppression ruleName fileSuppressions =
 
 encodeFileSuppressions : List ( Int, String ) -> Encode.Value
 encodeFileSuppressions countPerFile =
-    countPerFile
-        |> List.sortBy Tuple.first
-        |> Encode.list encodeFileSuppression
+    Encode.list encodeFileSuppression countPerFile
 
 
 encodeFileSuppression : ( Int, String ) -> Encode.Value
