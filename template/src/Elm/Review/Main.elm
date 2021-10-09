@@ -44,6 +44,9 @@ port collectReadme : (Decode.Value -> msg) -> Sub msg
 port collectDependencies : (Decode.Value -> msg) -> Sub msg
 
 
+port collectSuppressedErrors : (Decode.Value -> msg) -> Sub msg
+
+
 port collectLinks : (Decode.Value -> msg) -> Sub msg
 
 
@@ -398,6 +401,7 @@ type Msg
     | ReceivedElmJson Decode.Value
     | ReceivedReadme Decode.Value
     | ReceivedDependencies Decode.Value
+    | ReceivedSuppressedErrors Decode.Value
     | ReceivedLinks Decode.Value
     | GotRequestToReview
     | GotRequestToGenerateSuppressionErrors
@@ -541,6 +545,39 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                       }
                     , Cmd.none
                     )
+
+        ReceivedSuppressedErrors json ->
+            let
+                suppressedErrorsDecoder : Decode.Decoder SuppressedErrorsDict
+                suppressedErrorsDecoder =
+                    Decode.list suppressedErrorEntryDecoder
+                        |> Decode.map (List.concat >> Dict.fromList)
+
+                suppressedErrorEntryDecoder : Decode.Decoder (List ( ( String, String ), Int ))
+                suppressedErrorEntryDecoder =
+                    Decode.map2
+                        (\rule suppressions ->
+                            List.map
+                                (\( filePath, count ) ->
+                                    ( ( rule, filePath ), count )
+                                )
+                                suppressions
+                        )
+                        (Decode.field "rule" Decode.string)
+                        (Decode.field "suppressions" (Decode.list fileEntryDecoder))
+
+                fileEntryDecoder : Decode.Decoder ( String, Int )
+                fileEntryDecoder =
+                    Decode.map2 Tuple.pair
+                        (Decode.field "filePath" Decode.string)
+                        (Decode.field "count" Decode.int)
+            in
+            case Decode.decodeValue suppressedErrorsDecoder json of
+                Err _ ->
+                    ( model, Cmd.none )
+
+                Ok suppressedErrors ->
+                    ( { model | suppressedErrors = suppressedErrors }, Cmd.none )
 
         ReceivedLinks json ->
             case Decode.decodeValue (Decode.dict Decode.string) json of
@@ -1494,6 +1531,7 @@ subscriptions =
         , collectElmJson ReceivedElmJson
         , collectReadme ReceivedReadme
         , collectDependencies ReceivedDependencies
+        , collectSuppressedErrors ReceivedSuppressedErrors
         , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
         , startGeneratingSuppressions (always GotRequestToGenerateSuppressionErrors)
