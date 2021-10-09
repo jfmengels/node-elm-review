@@ -720,7 +720,7 @@ removeSuppressedErrors errors =
         |> ListExtra.gatherEqualsBy (\error -> ( Rule.errorFilePath error, Rule.errorRuleName error ))
         |> List.concatMap
             (\( head, tail ) ->
-                case Dict.get ( Rule.errorFilePath head, Rule.errorRuleName head ) suppressedErrors of
+                case Dict.get ( Rule.errorRuleName head, Rule.errorFilePath head ) suppressedErrors of
                     Just count ->
                         if List.length tail == count - 1 then
                             []
