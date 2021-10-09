@@ -792,7 +792,7 @@ removeSuppressedErrors suppressedErrors errors =
             (\( head, tail ) ->
                 case Dict.get ( Rule.errorRuleName head, Rule.errorFilePath head ) suppressedErrors of
                     Just count ->
-                        if List.length tail == count - 1 then
+                        if List.length tail <= count - 1 then
                             []
 
                         else
