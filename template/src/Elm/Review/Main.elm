@@ -718,7 +718,7 @@ type alias SuppressedErrorsDict =
 removeSuppressedErrors : SuppressedErrorsDict -> List Rule.ReviewError -> List Rule.ReviewError
 removeSuppressedErrors suppressedErrors errors =
     errors
-        |> ListExtra.gatherEqualsBy (\error -> ( Rule.errorFilePath error, Rule.errorRuleName error ))
+        |> ListExtra.gatherWith (\a b -> (Rule.errorFilePath a == Rule.errorFilePath b) && (Rule.errorRuleName a == Rule.errorRuleName b))
         |> List.concatMap
             (\( head, tail ) ->
                 case Dict.get ( Rule.errorRuleName head, Rule.errorFilePath head ) suppressedErrors of

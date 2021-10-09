@@ -1,4 +1,4 @@
-module Elm.Review.Vendor.List.Extra exposing (gatherEqualsBy)
+module Elm.Review.Vendor.List.Extra exposing (gatherWith)
 
 {-| Copied from <https://github.com/elm-community/list-extra>
 
@@ -29,18 +29,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 -}
-
-
-{-| Group equal elements together. A function is applied to each element of the list
-and then the equality check is performed against the results of that function evaluation.
-Elements will be grouped in the same order as they appear in the original list. The
-same applies to elements within each group.
-gatherEqualsBy .age [{age=25},{age=23},{age=25}]
---> [({age=25},[{age=25}]),({age=23},[])]
--}
-gatherEqualsBy : (a -> b) -> List a -> List ( a, List a )
-gatherEqualsBy extract list =
-    gatherWith (\a b -> extract a == extract b) list
 
 
 {-| Group equal elements together using a custom equality function. Elements will be
