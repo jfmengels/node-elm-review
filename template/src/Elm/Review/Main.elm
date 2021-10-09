@@ -11,6 +11,7 @@ import Elm.Review.Progress as Progress
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.Vendor.Levenshtein as Levenshtein
+import Elm.Review.Vendor.List.Extra as ListExtra
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import Elm.Version
@@ -701,11 +702,30 @@ runReview model =
             Rule.reviewV2 model.rules model.projectData model.project
     in
     { model
-        | reviewErrors = errors
+        | reviewErrors = removeSuppressedErrors errors
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
     }
+
+
+removeSuppressedErrors : List Rule.ReviewError -> List Rule.ReviewError
+removeSuppressedErrors errors =
+    errors
+        |> ListExtra.gatherEqualsBy Rule.errorFilePath
+        |> List.concatMap
+            (\( firstError, restOfErrors ) ->
+                (firstError :: restOfErrors)
+                    |> ListExtra.gatherEqualsBy Rule.errorRuleName
+                    |> List.concatMap
+                        (\( head, tail ) ->
+                            if Rule.errorFilePath head == "src/Main.elm" && Rule.errorRuleName head == "NoUnused.Variables" && List.length tail == 1 then
+                                []
+
+                            else
+                                head :: tail
+                        )
+            )
 
 
 reportOrFix : Model -> ( Model, Cmd msg )
