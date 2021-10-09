@@ -709,7 +709,11 @@ runReview model =
     }
 
 
-suppressedErrors : Dict ( String, String ) Int
+type alias SuppressedErrorsDict =
+    Dict ( String, String ) Int
+
+
+suppressedErrors : SuppressedErrorsDict
 suppressedErrors =
     Dict.singleton ( "NoUnused.Variables", "src/Main.elm" ) 2
 
