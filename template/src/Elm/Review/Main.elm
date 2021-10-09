@@ -110,6 +110,7 @@ type alias Model =
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
+    , suppressedErrors : SuppressedErrorsDict
     , errorsHaveBeenFixedPreviously : Bool
     , ignoreProblematicDependencies : Bool
 
@@ -191,6 +192,7 @@ init rawFlags =
       , detailsMode = flags.detailsMode
       , reportMode = flags.reportMode
       , reviewErrors = []
+      , suppressedErrors = Dict.singleton ( "NoUnused.Variables", "src/Main.elm" ) 2
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
@@ -702,7 +704,7 @@ runReview model =
             Rule.reviewV2 model.rules model.projectData model.project
     in
     { model
-        | reviewErrors = removeSuppressedErrors errors
+        | reviewErrors = removeSuppressedErrors model.suppressedErrors errors
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
@@ -713,13 +715,8 @@ type alias SuppressedErrorsDict =
     Dict ( String, String ) Int
 
 
-suppressedErrors : SuppressedErrorsDict
-suppressedErrors =
-    Dict.singleton ( "NoUnused.Variables", "src/Main.elm" ) 2
-
-
-removeSuppressedErrors : List Rule.ReviewError -> List Rule.ReviewError
-removeSuppressedErrors errors =
+removeSuppressedErrors : SuppressedErrorsDict -> List Rule.ReviewError -> List Rule.ReviewError
+removeSuppressedErrors suppressedErrors errors =
     errors
         |> ListExtra.gatherEqualsBy (\error -> ( Rule.errorFilePath error, Rule.errorRuleName error ))
         |> List.concatMap
