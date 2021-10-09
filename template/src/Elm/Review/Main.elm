@@ -119,6 +119,7 @@ type alias Model =
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
+    , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppressedErrors : SuppressedErrorsDict
     , errorsHaveBeenFixedPreviously : Bool
     , ignoreProblematicDependencies : Bool
@@ -201,6 +202,7 @@ init rawFlags =
       , detailsMode = flags.detailsMode
       , reportMode = flags.reportMode
       , reviewErrors = []
+      , reviewErrorsAfterSuppression = []
       , suppressedErrors = Dict.empty
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
@@ -765,7 +767,8 @@ runReview model =
             Rule.reviewV2 model.rules model.projectData model.project
     in
     { model
-        | reviewErrors =
+        | reviewErrors = errors
+        , reviewErrorsAfterSuppression =
             if Dict.isEmpty model.suppressedErrors then
                 errors
 
@@ -875,7 +878,7 @@ makeReport failedFixesDict model =
     let
         errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
         errorsByFile =
-            groupErrorsByFile model.project model.reviewErrors
+            groupErrorsByFile model.project model.reviewErrorsAfterSuppression
     in
     ( model
     , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
@@ -995,7 +998,7 @@ encodePosition position =
 
 fixOneByOne : Model -> ( Model, Cmd msg )
 fixOneByOne model =
-    case findFix Dict.empty model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors |> Tuple.second of
+    case findFix Dict.empty model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrorsAfterSuppression |> Tuple.second of
         Just { file, error, fixedSource } ->
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
@@ -1159,7 +1162,7 @@ addElmFile file project =
 
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe { failedFixesDict : Dict String Fix.Problem, newModel : Model }
 applyAllFixes failedFixesDict model =
-    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrors of
+    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrorsAfterSuppression of
         ( newFailedFixesDict, Just { file, error, fixedSource, remainingErrors } ) ->
             let
                 newProject : Project
