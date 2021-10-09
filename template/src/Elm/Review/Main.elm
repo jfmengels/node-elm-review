@@ -704,7 +704,12 @@ runReview model =
             Rule.reviewV2 model.rules model.projectData model.project
     in
     { model
-        | reviewErrors = removeSuppressedErrors model.suppressedErrors errors
+        | reviewErrors =
+            if Dict.isEmpty model.suppressedErrors then
+                errors
+
+            else
+                removeSuppressedErrors model.suppressedErrors errors
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
