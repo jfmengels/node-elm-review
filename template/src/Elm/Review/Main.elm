@@ -739,6 +739,19 @@ removeSuppressedErrors suppressedErrors errors =
             )
 
 
+generateSuppressions : List Rule.ReviewError -> SuppressedErrorsDict
+generateSuppressions reviewErrors =
+    List.foldl
+        (\error acc ->
+            Dict.update
+                ( Rule.errorRuleName error, Rule.errorFilePath error )
+                (Maybe.withDefault 0 >> (+) 1 >> Just)
+                acc
+        )
+        Dict.empty
+        reviewErrors
+
+
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
     case model.fixMode of
