@@ -896,6 +896,7 @@ makeReport failedFixesDict model =
             Json ->
                 Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
         )
+      , ( "suppressedErrors", encodeSuppressions (generateSuppressions model.reviewErrors) )
       ]
         |> Encode.object
         |> reviewReport
