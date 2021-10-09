@@ -709,6 +709,11 @@ runReview model =
     }
 
 
+suppressedErrors : Dict ( String, String ) Int
+suppressedErrors =
+    Dict.singleton ( "NoUnused.Variables", "src/Main.elm" ) 2
+
+
 removeSuppressedErrors : List Rule.ReviewError -> List Rule.ReviewError
 removeSuppressedErrors errors =
     errors
