@@ -297,15 +297,23 @@ type alias DecodedFlags =
 
 decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.map8 DecodedFlags
-        (Decode.field "fixMode" decodeFix)
-        (Decode.field "detailsMode" decodeDetailsMode)
-        (Decode.field "report" decodeReportMode)
-        (Decode.field "ignoreProblematicDependencies" Decode.bool)
-        (Decode.field "rulesFilter" decodeRulesFilter)
-        (Decode.field "ignoredDirs" (Decode.list Decode.string))
-        (Decode.field "ignoredFiles" (Decode.list Decode.string))
-        (Decode.field "logger" Progress.decoder)
+    Decode.succeed DecodedFlags
+        |> field "fixMode" decodeFix
+        |> field "detailsMode" decodeDetailsMode
+        |> field "report" decodeReportMode
+        |> field "ignoreProblematicDependencies" Decode.bool
+        |> field "rulesFilter" decodeRulesFilter
+        |> field "ignoredDirs" (Decode.list Decode.string)
+        |> field "ignoredFiles" (Decode.list Decode.string)
+        |> field "logger" Progress.decoder
+
+
+field : String -> Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
+field key valDecoder decoder =
+    Decode.map2
+        (|>)
+        (Decode.field key valDecoder)
+        decoder
 
 
 decodeFix : Decode.Decoder FixMode
