@@ -880,11 +880,21 @@ makeReport failedFixesDict model =
         errorsByFile =
             groupErrorsByFile model.project model.reviewErrorsAfterSuppression
 
-        suppressedErrors : SuppressedErrorsDict
-        suppressedErrors =
-            generateSuppressions model.reviewErrors
+        ( newModel, suppressedErrorsForJson ) =
+            if List.isEmpty model.reviewErrorsAfterSuppression then
+                let
+                    suppressedErrors : SuppressedErrorsDict
+                    suppressedErrors =
+                        generateSuppressions model.reviewErrors
+                in
+                ( { model | suppressedErrors = suppressedErrors }
+                , encodeSuppressions suppressedErrors
+                )
+
+            else
+                ( model, Encode.null )
     in
-    ( { model | suppressedErrors = suppressedErrors }
+    ( newModel
     , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
       , ( "errors"
         , case model.reportMode of
@@ -903,7 +913,7 @@ makeReport failedFixesDict model =
             Json ->
                 Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
         )
-      , ( "suppressedErrors", encodeSuppressions suppressedErrors )
+      , ( "suppressedErrors", suppressedErrorsForJson )
       ]
         |> Encode.object
         |> reviewReport
