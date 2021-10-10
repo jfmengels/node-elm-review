@@ -5,6 +5,7 @@ module Elm.Review.Text exposing
     , withLink
     , join, simplify
     , toRecord
+    , inOrange
     )
 
 {-| Represents text with some styling applied to it.
@@ -88,6 +89,11 @@ inBlue (Text text) =
 inRed : Text -> Text
 inRed (Text text) =
     Text { text | color = Just "#FF0000" }
+
+
+inOrange : Text -> Text
+inOrange (Text text) =
+    Text { text | color = Just "#FFA500" }
 
 
 inYellow : Text -> Text

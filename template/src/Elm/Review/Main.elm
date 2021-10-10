@@ -121,6 +121,7 @@ type alias Model =
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppressedErrors : SuppressedErrorsDict
+    , originalNumberOfSuppressedErrors : Int
     , errorsHaveBeenFixedPreviously : Bool
     , ignoreProblematicDependencies : Bool
 
@@ -204,6 +205,7 @@ init rawFlags =
       , reviewErrors = []
       , reviewErrorsAfterSuppression = []
       , suppressedErrors = Dict.empty
+      , originalNumberOfSuppressedErrors = 0
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
@@ -248,7 +250,7 @@ I recommend you take a look at the following documents:
                               , errors = configurationErrors
                               }
                             ]
-                                |> Reporter.formatReport Dict.empty flags.detailsMode False
+                                |> Reporter.formatReport Dict.empty 0 Dict.empty flags.detailsMode False
                                 |> encodeReport
 
                         Json ->
@@ -267,6 +269,7 @@ getConfigurationError rule =
                 , details = configurationError.details
                 , range = Range.emptyRange
                 , fixesHash = Nothing
+                , suppressed = False
                 }
 
         Nothing ->
@@ -576,10 +579,17 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             in
             case Decode.decodeValue suppressedErrorsDecoder json of
                 Err _ ->
+                    -- TODO Report something?
+                    -- TODO Report if version is not supported
                     ( model, Cmd.none )
 
                 Ok suppressedErrors ->
-                    ( { model | suppressedErrors = suppressedErrors }, Cmd.none )
+                    ( { model
+                        | suppressedErrors = suppressedErrors
+                        , originalNumberOfSuppressedErrors = List.sum (Dict.values suppressedErrors)
+                      }
+                    , Cmd.none
+                    )
 
         ReceivedLinks json ->
             case Decode.decodeValue (Decode.dict Decode.string) json of
@@ -897,21 +907,21 @@ makeReport failedFixesDict model =
     ( newModel
     , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
       , ( "errors"
-        , case model.reportMode of
+        , case newModel.reportMode of
             HumanReadable ->
                 errorsByFile
                     |> List.map
                         (\file ->
                             { path = file.path
                             , source = file.source
-                            , errors = List.map (fromReviewError model.links) file.errors
+                            , errors = List.map (fromReviewError newModel.suppressedErrors newModel.links) file.errors
                             }
                         )
-                    |> Reporter.formatReport failedFixesDict model.detailsMode model.errorsHaveBeenFixedPreviously
+                    |> Reporter.formatReport newModel.suppressedErrors newModel.originalNumberOfSuppressedErrors failedFixesDict newModel.detailsMode newModel.errorsHaveBeenFixedPreviously
                     |> encodeReport
 
             Json ->
-                Encode.list (encodeErrorByFile model.links model.detailsMode) errorsByFile
+                Encode.list (encodeErrorByFile newModel.suppressedErrors newModel.links newModel.detailsMode) errorsByFile
         )
       , ( "suppressedErrors", suppressedErrorsForJson )
       ]
@@ -920,11 +930,11 @@ makeReport failedFixesDict model =
     )
 
 
-encodeErrorByFile : Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
-encodeErrorByFile links detailsMode file =
+encodeErrorByFile : SuppressedErrorsDict -> Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
+encodeErrorByFile suppressedErrors links detailsMode file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
-        , ( "errors", Encode.list (encodeError links detailsMode file.source) file.errors )
+        , ( "errors", Encode.list (encodeError suppressedErrors links detailsMode file.source) file.errors )
         ]
 
 
@@ -949,8 +959,8 @@ encodeFilePath filePath =
             Encode.null
 
 
-encodeError : Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
-encodeError links detailsMode source error =
+encodeError : SuppressedErrorsDict -> Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
+encodeError suppressedErrors links detailsMode source error =
     [ Just ( "rule", Encode.string <| Rule.errorRuleName error )
     , Just ( "message", Encode.string <| Rule.errorMessage error )
     , linkToRule links error
@@ -959,7 +969,7 @@ encodeError links detailsMode source error =
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode source (fromReviewError links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode source (fromReviewError suppressedErrors links error)) )
     ]
         |> List.filterMap identity
         |> Encode.object
@@ -1020,7 +1030,7 @@ fixOneByOne model =
                     Dict.empty
                     model.detailsMode
                     { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
-                    (fromReviewError model.links error)
+                    (fromReviewError model.suppressedErrors model.links error)
                     (Reporter.Source fixedSource)
                     |> encodeReport
                 )
@@ -1281,7 +1291,7 @@ addFixedErrorForFile path error remainingErrors model =
     let
         errorsForFile : List Reporter.Error
         errorsForFile =
-            fromReviewError model.links error
+            fromReviewError model.suppressedErrors model.links error
                 :: (Dict.get path model.fixAllErrors
                         |> Maybe.withDefault []
                    )
@@ -1499,14 +1509,15 @@ groupErrorsByFile project errors =
         |> List.filter (\file -> not (List.isEmpty file.errors))
 
 
-fromReviewError : Dict String String -> Rule.ReviewError -> Reporter.Error
-fromReviewError links error =
+fromReviewError : Dict ( String, String ) a -> Dict String String -> Rule.ReviewError -> Reporter.Error
+fromReviewError suppressedErrors links error =
     { ruleName = Rule.errorRuleName error
     , ruleLink = linkToRule links error
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , fixesHash = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
+    , suppressed = Dict.member ( Rule.errorRuleName error, Rule.errorFilePath error ) suppressedErrors
     }
 
 

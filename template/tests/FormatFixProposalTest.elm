@@ -26,6 +26,7 @@ suite =
                             , end = { row = 2, column = 10 }
                             }
                         , fixesHash = Just "some-value"
+                        , suppressed = False
                         }
 
                     file : File
@@ -103,6 +104,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                             , end = { row = 2, column = 2 }
                             }
                         , fixesHash = Just "some-value"
+                        , suppressed = False
                         }
 
                     file : File

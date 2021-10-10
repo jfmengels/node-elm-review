@@ -36,7 +36,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                 |> expect
                     { withoutColors = "I found no errors!"
                     , withColors = "I found no errors!"
@@ -58,7 +58,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty Reporter.WithDetails True
+                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails True
                 |> expect
                     { withoutColors = "I found no more errors!"
                     , withColors = "I found no more errors!"
@@ -85,6 +85,7 @@ a = Debug.log "debug" 1"""
                             , end = { row = 2, column = 10 }
                             }
                       , fixesHash = Nothing
+                      , suppressed = False
                       }
                     ]
               }
@@ -94,7 +95,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -145,6 +146,7 @@ a = Debug.log "debug" 1"""
                             , end = { row = 2, column = 10 }
                             }
                       , fixesHash = Nothing
+                      , suppressed = False
                       }
                     ]
               }
@@ -154,7 +156,7 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty Reporter.WithoutDetails False
+                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithoutDetails False
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -205,11 +207,12 @@ a =
                             , end = { row = 10, column = 18 }
                             }
                       , fixesHash = Nothing
+                      , suppressed = False
                       }
                     ]
               }
             ]
-                |> Reporter.formatReport Dict.empty Reporter.WithoutDetails False
+                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithoutDetails False
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:5:5
 
@@ -274,6 +277,7 @@ b = foo <| Debug.log "other debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         , { ruleName = "NoDebug"
                           , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
@@ -284,6 +288,7 @@ b = foo <| Debug.log "other debug" 1"""
                                 , end = { row = 3, column = 17 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
@@ -293,7 +298,7 @@ a = Debug.log "debug" 1"""
                   , errors = []
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -366,6 +371,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
@@ -385,6 +391,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
@@ -404,11 +411,12 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -529,11 +537,12 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , suppressed = False
                           }
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -588,11 +597,12 @@ globalErrorTest =
                             , end = { row = 0, column = 0 }
                             }
                       , fixesHash = Nothing
+                      , suppressed = False
                       }
                     ]
               }
             ]
-                |> Reporter.formatReport Dict.empty Reporter.WithoutDetails False
+                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithoutDetails False
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------------- GLOBAL ERROR
 
@@ -625,11 +635,12 @@ a = "🔧" <| Debug.log "debug" 1"""
                                 , end = { row = 2, column = 17 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
 
@@ -669,11 +680,12 @@ a = "🔧" ++ 1"""
                                 , end = { row = 2, column = 8 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -715,11 +727,12 @@ a = "🔧" ++ "🔧
                                 , end = { row = 4, column = 7 }
                                 }
                           , fixesHash = Nothing
+                          , suppressed = False
                           }
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
 

@@ -25,6 +25,7 @@ suite =
                             , end = { row = 2, column = 10 }
                             }
                         , fixesHash = Just "some-value"
+                        , suppressed = False
                         }
 
                     changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Error }

@@ -43,6 +43,7 @@ type alias Error =
     , details : List String
     , range : Range
     , fixesHash : Maybe String
+    , suppressed : Bool
     }
 
 
@@ -148,8 +149,8 @@ type DetailsMode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Dict String Review.Fix.Problem -> DetailsMode -> Bool -> List FileWithError -> List TextContent
-formatReport fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
+formatReport : Dict a Int -> Int -> Dict String Review.Fix.Problem -> DetailsMode -> Bool -> List FileWithError -> List TextContent
+formatReport suppressedErrors originalNumberOfSuppressedErrors fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -162,25 +163,32 @@ formatReport fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
                 |> List.sortBy (.path >> filePath)
     in
     if numberOfErrors == 0 then
-        if errorsHaveBeenFixedPreviously then
-            "I found no more errors!"
-                |> Text.from
-                |> Text.toRecord
-                |> List.singleton
-
-        else
-            "I found no errors!"
-                |> Text.from
-                |> Text.toRecord
-                |> List.singleton
+        formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenFixedPreviously
 
     else
         let
             { invalidFixableErrors, hasIgnoredFixableErrors } =
                 classifyFixes fixProblemDict (fixableErrors files)
+
+            hasUnsuppressedErrors : Bool
+            hasUnsuppressedErrors =
+                List.any
+                    (\file ->
+                        List.any (\error -> error.suppressed) file.errors
+                    )
+                    files
         in
         [ formatReports fixProblemDict detailsMode filesWithErrors
             |> Just
+        , if hasUnsuppressedErrors then
+            Just
+                [ "Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before."
+                    |> Text.from
+                    |> Text.inOrange
+                ]
+
+          else
+            Nothing
         , if hasIgnoredFixableErrors then
             Just
                 [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
@@ -276,6 +284,54 @@ pluralize n word =
             else
                 ""
            )
+
+
+formatNoErrors : Dict a Int -> Int -> Bool -> List Text.TextContent
+formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenFixedPreviously =
+    let
+        mainMessage : String
+        mainMessage =
+            if errorsHaveBeenFixedPreviously then
+                "I found no more errors!"
+
+            else
+                "I found no errors!"
+
+        numberOfSuppressedErrors : Int
+        numberOfSuppressedErrors =
+            suppressedErrors
+                |> Dict.values
+                |> List.sum
+
+        suppressedErrorMessage : List Text
+        suppressedErrorMessage =
+            if numberOfSuppressedErrors == 0 then
+                []
+
+            else
+                List.concat
+                    [ [ Text.from "\n\nThere are still "
+                      , numberOfSuppressedErrors
+                            |> String.fromInt
+                            |> Text.from
+                            |> Text.inOrange
+                      , Text.from " suppressed errors to address"
+                      ]
+                    , if numberOfSuppressedErrors < originalNumberOfSuppressedErrors then
+                        [ Text.from ", of which you fixed "
+                        , (originalNumberOfSuppressedErrors - numberOfSuppressedErrors)
+                            |> String.fromInt
+                            |> Text.from
+                            |> Text.inGreen
+                        , Text.from "!"
+                        ]
+
+                      else
+                        [ Text.from "." ]
+                    ]
+    in
+    (Text.from mainMessage :: suppressedErrorMessage)
+        |> List.map Text.toRecord
 
 
 formatReportForFileWithExtract : Dict String Review.Fix.Problem -> DetailsMode -> Mode -> FileWithError -> List Text
@@ -409,8 +465,19 @@ formatErrorTitle fixProblemDict mode error =
 
                 Nothing ->
                     Text.from ""
+
+        suppressedPrefix : Text
+        suppressedPrefix =
+            if error.suppressed then
+                "(unsuppressed) "
+                    |> Text.from
+                    |> Text.inOrange
+
+            else
+                Text.from ""
     in
-    [ fixPrefix
+    [ suppressedPrefix
+    , fixPrefix
     , Text.from error.ruleName
         |> Text.inRed
         |> Text.withLink error.ruleLink
