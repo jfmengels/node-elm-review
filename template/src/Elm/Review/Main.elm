@@ -116,6 +116,7 @@ type alias Model =
     , projectData : Maybe Rule.ProjectData
     , links : Dict String String
     , fixMode : FixMode
+    , unsuppress : Bool
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
@@ -163,6 +164,7 @@ init rawFlags =
 
                 Err error ->
                     ( { fixMode = Mode_DontFix
+                      , unsuppress = False
                       , reportMode = HumanReadable
                       , detailsMode = Reporter.WithoutDetails
                       , ignoreProblematicDependencies = False
@@ -200,6 +202,7 @@ init rawFlags =
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
+      , unsuppress = flags.unsuppress
       , detailsMode = flags.detailsMode
       , reportMode = flags.reportMode
       , reviewErrors = []
@@ -302,6 +305,7 @@ closestNames names name =
 
 type alias DecodedFlags =
     { fixMode : FixMode
+    , unsuppress : Bool
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
@@ -316,6 +320,7 @@ decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
     Decode.succeed DecodedFlags
         |> field "fixMode" decodeFix
+        |> field "unsuppress" Decode.bool
         |> field "detailsMode" decodeDetailsMode
         |> field "report" decodeReportMode
         |> field "ignoreProblematicDependencies" Decode.bool
@@ -888,7 +893,13 @@ makeReport failedFixesDict model =
     let
         errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
         errorsByFile =
-            groupErrorsByFile model.project model.reviewErrorsAfterSuppression
+            groupErrorsByFile model.project
+                (if model.unsuppress then
+                    model.reviewErrors
+
+                 else
+                    model.reviewErrorsAfterSuppression
+                )
 
         ( newModel, suppressedErrorsForJson ) =
             if List.isEmpty model.reviewErrorsAfterSuppression then
