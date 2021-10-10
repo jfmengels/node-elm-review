@@ -38,6 +38,7 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = Dict.empty
+                    , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
@@ -66,6 +67,7 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = Dict.empty
+                    , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
@@ -109,6 +111,7 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = Dict.empty
+                    , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
@@ -176,6 +179,7 @@ a = Debug.log "debug" 1"""
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = Dict.empty
+                    , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithoutDetails
@@ -238,6 +242,7 @@ a =
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = Dict.empty
+                    , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithoutDetails
@@ -330,6 +335,7 @@ a = Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport
                         { suppressedErrors = Dict.empty
+                        , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
@@ -454,6 +460,7 @@ a = Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport
                         { suppressedErrors = Dict.empty
+                        , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
@@ -586,6 +593,7 @@ a = Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport
                         { suppressedErrors = Dict.empty
+                        , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
@@ -652,6 +660,7 @@ globalErrorTest =
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = Dict.empty
+                    , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithoutDetails
@@ -696,6 +705,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                 ]
                     |> Reporter.formatReport
                         { suppressedErrors = Dict.empty
+                        , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
@@ -747,6 +757,7 @@ a = "🔧" ++ 1"""
                 ]
                     |> Reporter.formatReport
                         { suppressedErrors = Dict.empty
+                        , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
@@ -800,6 +811,7 @@ a = "🔧" ++ "🔧
                 ]
                     |> Reporter.formatReport
                         { suppressedErrors = Dict.empty
+                        , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails

@@ -250,6 +250,7 @@ I recommend you take a look at the following documents:
                         HumanReadable ->
                             Reporter.formatReport
                                 { suppressedErrors = Dict.empty
+                                , unsuppress = False
                                 , originalNumberOfSuppressedErrors = 0
                                 , detailsMode = flags.detailsMode
                                 , errorsHaveBeenFixedPreviously = False
@@ -940,6 +941,7 @@ makeReport failedFixesDict model =
                 in
                 Reporter.formatReport
                     { suppressedErrors = newModel.suppressedErrors
+                    , unsuppress = newModel.unsuppress
                     , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
                     , detailsMode = newModel.detailsMode
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously

@@ -151,6 +151,7 @@ type DetailsMode
 -}
 formatReport :
     { suppressedErrors : Dict a Int
+    , unsuppress : Bool
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
     , errorsHaveBeenFixedPreviously : Bool
@@ -158,7 +159,7 @@ formatReport :
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fixProblemDict } files =
+formatReport { suppressedErrors, unsuppress, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fixProblemDict } files =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -177,18 +178,10 @@ formatReport { suppressedErrors, originalNumberOfSuppressedErrors, detailsMode, 
         let
             { invalidFixableErrors, hasIgnoredFixableErrors } =
                 classifyFixes fixProblemDict (fixableErrors files)
-
-            hasUnsuppressedErrors : Bool
-            hasUnsuppressedErrors =
-                List.any
-                    (\file ->
-                        List.any (\error -> error.suppressed) file.errors
-                    )
-                    files
         in
         [ formatReports fixProblemDict detailsMode filesWithErrors
             |> Just
-        , if hasUnsuppressedErrors then
+        , if not unsuppress && hasUnsuppressedErrors files then
             Just
                 [ "Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before."
                     |> Text.from
@@ -292,6 +285,15 @@ pluralize n word =
             else
                 ""
            )
+
+
+hasUnsuppressedErrors : List FileWithError -> Bool
+hasUnsuppressedErrors files =
+    List.any
+        (\file ->
+            List.any (\error -> error.suppressed) file.errors
+        )
+        files
 
 
 formatNoErrors : Dict a Int -> Int -> Bool -> List Text.TextContent
