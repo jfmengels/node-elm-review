@@ -141,10 +141,10 @@ type ReportMode
 
 
 init : Flags -> ( Model, Cmd msg )
-init flags =
+init rawFlags =
     let
-        ( { fixMode, reportMode, detailsMode, ignoreProblematicDependencies, rulesFilter, ignoredDirs, ignoredFiles, logger }, cmd ) =
-            case Decode.decodeValue decodeFlags flags of
+        ( flags, cmd ) =
+            case Decode.decodeValue decodeFlags rawFlags of
                 Ok decodedFlags ->
                     ( decodedFlags, Cmd.none )
 
@@ -162,7 +162,7 @@ init flags =
                     )
 
         ( rules, filterNames ) =
-            case rulesFilter of
+            case flags.rulesFilter of
                 Just rulesToEnable ->
                     let
                         ruleNames : Set String
@@ -180,22 +180,22 @@ init flags =
     in
     ( { rules =
             List.map
-                (Rule.ignoreErrorsForDirectories ignoredDirs >> Rule.ignoreErrorsForFiles ignoredFiles)
+                (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
                 rules
       , project = Project.new
       , projectData = Nothing
       , links = Dict.empty
       , fixAllResultProject = Project.new
-      , fixMode = fixMode
-      , detailsMode = detailsMode
-      , reportMode = reportMode
+      , fixMode = flags.fixMode
+      , detailsMode = flags.detailsMode
+      , reportMode = flags.reportMode
       , reviewErrors = []
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
       , fixAllErrors = Dict.empty
-      , ignoreProblematicDependencies = ignoreProblematicDependencies
-      , logger = logger
+      , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+      , logger = flags.logger
       }
     , if List.isEmpty config then
         -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
@@ -227,18 +227,18 @@ I recommend you take a look at the following documents:
 
             configurationErrors ->
                 abortForConfigurationErrors <|
-                    case reportMode of
+                    case flags.reportMode of
                         HumanReadable ->
                             [ { path = Reporter.ConfigurationError
                               , source = Reporter.Source ""
                               , errors = configurationErrors
                               }
                             ]
-                                |> Reporter.formatReport Dict.empty detailsMode False
+                                |> Reporter.formatReport Dict.empty flags.detailsMode False
                                 |> encodeReport
 
                         Json ->
-                            encodeConfigurationErrors detailsMode configurationErrors
+                            encodeConfigurationErrors flags.detailsMode configurationErrors
     )
 
 
