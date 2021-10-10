@@ -248,12 +248,18 @@ I recommend you take a look at the following documents:
                 abortForConfigurationErrors <|
                     case flags.reportMode of
                         HumanReadable ->
-                            [ { path = Reporter.ConfigurationError
-                              , source = Reporter.Source ""
-                              , errors = configurationErrors
-                              }
-                            ]
-                                |> Reporter.formatReport Dict.empty 0 Dict.empty flags.detailsMode False
+                            Reporter.formatReport
+                                { suppressedErrors = Dict.empty
+                                , originalNumberOfSuppressedErrors = 0
+                                , detailsMode = flags.detailsMode
+                                , errorsHaveBeenFixedPreviously = False
+                                , fixProblemDict = Dict.empty
+                                }
+                                [ { path = Reporter.ConfigurationError
+                                  , source = Reporter.Source ""
+                                  , errors = configurationErrors
+                                  }
+                                ]
                                 |> encodeReport
 
                         Json ->
@@ -920,15 +926,26 @@ makeReport failedFixesDict model =
       , ( "errors"
         , case newModel.reportMode of
             HumanReadable ->
-                errorsByFile
-                    |> List.map
-                        (\file ->
-                            { path = file.path
-                            , source = file.source
-                            , errors = List.map (fromReviewError newModel.suppressedErrors newModel.links) file.errors
-                            }
-                        )
-                    |> Reporter.formatReport newModel.suppressedErrors newModel.originalNumberOfSuppressedErrors failedFixesDict newModel.detailsMode newModel.errorsHaveBeenFixedPreviously
+                let
+                    filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
+                    filesWithError =
+                        List.map
+                            (\file ->
+                                { path = file.path
+                                , source = file.source
+                                , errors = List.map (fromReviewError newModel.suppressedErrors newModel.links) file.errors
+                                }
+                            )
+                            errorsByFile
+                in
+                Reporter.formatReport
+                    { suppressedErrors = newModel.suppressedErrors
+                    , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
+                    , detailsMode = newModel.detailsMode
+                    , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+                    , fixProblemDict = failedFixesDict
+                    }
+                    filesWithError
                     |> encodeReport
 
             Json ->

@@ -36,7 +36,13 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                |> Reporter.formatReport
+                    { suppressedErrors = Dict.empty
+                    , originalNumberOfSuppressedErrors = 0
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
                 |> expect
                     { withoutColors = "I found no errors!"
                     , withColors = "I found no errors!"
@@ -58,7 +64,13 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails True
+                |> Reporter.formatReport
+                    { suppressedErrors = Dict.empty
+                    , originalNumberOfSuppressedErrors = 0
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithDetails
+                    , errorsHaveBeenFixedPreviously = True
+                    }
                 |> expect
                     { withoutColors = "I found no more errors!"
                     , withColors = "I found no more errors!"
@@ -95,7 +107,13 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                |> Reporter.formatReport
+                    { suppressedErrors = Dict.empty
+                    , originalNumberOfSuppressedErrors = 0
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -156,7 +174,13 @@ a = Debug.log "debug" 1"""
               , errors = []
               }
             ]
-                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithoutDetails False
+                |> Reporter.formatReport
+                    { suppressedErrors = Dict.empty
+                    , originalNumberOfSuppressedErrors = 0
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithoutDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -212,7 +236,13 @@ a =
                     ]
               }
             ]
-                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithoutDetails False
+                |> Reporter.formatReport
+                    { suppressedErrors = Dict.empty
+                    , originalNumberOfSuppressedErrors = 0
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithoutDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:5:5
 
@@ -298,7 +328,13 @@ a = Debug.log "debug" 1"""
                   , errors = []
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport
+                        { suppressedErrors = Dict.empty
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -416,7 +452,13 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport
+                        { suppressedErrors = Dict.empty
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -542,7 +584,13 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport
+                        { suppressedErrors = Dict.empty
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -602,7 +650,13 @@ globalErrorTest =
                     ]
               }
             ]
-                |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithoutDetails False
+                |> Reporter.formatReport
+                    { suppressedErrors = Dict.empty
+                    , originalNumberOfSuppressedErrors = 0
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithoutDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------------- GLOBAL ERROR
 
@@ -640,7 +694,13 @@ a = "🔧" <| Debug.log "debug" 1"""
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport
+                        { suppressedErrors = Dict.empty
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
 
@@ -685,7 +745,13 @@ a = "🔧" ++ 1"""
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport
+                        { suppressedErrors = Dict.empty
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -732,7 +798,13 @@ a = "🔧" ++ "🔧
                         ]
                   }
                 ]
-                    |> Reporter.formatReport Dict.empty 0 Dict.empty Reporter.WithDetails False
+                    |> Reporter.formatReport
+                        { suppressedErrors = Dict.empty
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
 

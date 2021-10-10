@@ -149,8 +149,16 @@ type DetailsMode
 
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
-formatReport : Dict a Int -> Int -> Dict String Review.Fix.Problem -> DetailsMode -> Bool -> List FileWithError -> List TextContent
-formatReport suppressedErrors originalNumberOfSuppressedErrors fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
+formatReport :
+    { suppressedErrors : Dict a Int
+    , originalNumberOfSuppressedErrors : Int
+    , detailsMode : DetailsMode
+    , errorsHaveBeenFixedPreviously : Bool
+    , fixProblemDict : Dict String Review.Fix.Problem
+    }
+    -> List FileWithError
+    -> List TextContent
+formatReport { suppressedErrors, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fixProblemDict } files =
     let
         numberOfErrors : Int
         numberOfErrors =
