@@ -2,7 +2,7 @@ module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, decoder, e
 
 import Dict exposing (Dict)
 import Elm.Review.Vendor.List.Extra as ListExtra
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Rule as Rule
 
@@ -52,13 +52,13 @@ apply suppressedErrors errors =
 -- DECODER
 
 
-decoder : Decode.Decoder SuppressedErrors
+decoder : Decoder SuppressedErrors
 decoder =
     Decode.list suppressedErrorEntryDecoder
         |> Decode.map (List.concat >> Dict.fromList)
 
 
-suppressedErrorEntryDecoder : Decode.Decoder (List ( ( String, String ), Int ))
+suppressedErrorEntryDecoder : Decoder (List ( ( String, String ), Int ))
 suppressedErrorEntryDecoder =
     Decode.map2
         (\rule suppressions ->
@@ -72,7 +72,7 @@ suppressedErrorEntryDecoder =
         (Decode.field "suppressions" (Decode.list fileEntryDecoder))
 
 
-fileEntryDecoder : Decode.Decoder ( String, Int )
+fileEntryDecoder : Decoder ( String, Int )
 fileEntryDecoder =
     Decode.map2 Tuple.pair
         (Decode.field "filePath" Decode.string)
