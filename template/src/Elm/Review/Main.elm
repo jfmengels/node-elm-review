@@ -12,7 +12,6 @@ import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorF
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
-import Elm.Review.Vendor.List.Extra as ListExtra
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import Elm.Version
@@ -771,30 +770,11 @@ runReview model =
                 errors
 
             else
-                removeSuppressedErrors model.suppressedErrors errors
+                SuppressedErrors.apply model.suppressedErrors errors
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
     }
-
-
-removeSuppressedErrors : SuppressedErrors -> List Rule.ReviewError -> List Rule.ReviewError
-removeSuppressedErrors suppressedErrors errors =
-    errors
-        |> ListExtra.gatherWith (\a b -> (Rule.errorFilePath a == Rule.errorFilePath b) && (Rule.errorRuleName a == Rule.errorRuleName b))
-        |> List.concatMap
-            (\( head, tail ) ->
-                case Dict.get ( Rule.errorRuleName head, Rule.errorFilePath head ) suppressedErrors of
-                    Just count ->
-                        if List.length tail <= count - 1 then
-                            []
-
-                        else
-                            head :: tail
-
-                    Nothing ->
-                        head :: tail
-            )
 
 
 generateSuppressions : List Rule.ReviewError -> SuppressedErrors
