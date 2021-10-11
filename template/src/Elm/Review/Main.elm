@@ -207,7 +207,7 @@ init rawFlags =
       , reportMode = flags.reportMode
       , reviewErrors = []
       , reviewErrorsAfterSuppression = []
-      , suppressedErrors = Dict.empty
+      , suppressedErrors = SuppressedErrors.empty
       , originalNumberOfSuppressedErrors = 0
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
@@ -249,7 +249,7 @@ I recommend you take a look at the following documents:
                     case flags.reportMode of
                         HumanReadable ->
                             Reporter.formatReport
-                                { suppressedErrors = Dict.empty
+                                { suppressedErrors = SuppressedErrors.empty
                                 , unsuppress = False
                                 , originalNumberOfSuppressedErrors = 0
                                 , detailsMode = flags.detailsMode

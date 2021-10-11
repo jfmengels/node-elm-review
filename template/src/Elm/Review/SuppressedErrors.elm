@@ -1,4 +1,4 @@
-module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, decoder, encode, fromReviewErrors)
+module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, decoder, empty, encode, fromReviewErrors)
 
 import Dict exposing (Dict)
 import Elm.Review.Vendor.List.Extra as ListExtra
@@ -9,6 +9,11 @@ import Review.Rule as Rule
 
 type alias SuppressedErrors =
     Dict ( String, String ) Int
+
+
+empty : SuppressedErrors
+empty =
+    Dict.empty
 
 
 fromReviewErrors : List Rule.ReviewError -> SuppressedErrors
