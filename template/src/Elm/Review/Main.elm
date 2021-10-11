@@ -607,7 +607,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             ( newModel
             , newModel.reviewErrors
                 |> SuppressedErrors.fromReviewErrors
-                |> encodeSuppressions
+                |> SuppressedErrors.encode
                 |> suppressionsResponse
             )
 
@@ -777,46 +777,6 @@ runReview model =
     }
 
 
-encodeSuppressions : SuppressedErrors -> Encode.Value
-encodeSuppressions suppressedErrors =
-    suppressedErrors
-        |> Dict.toList
-        |> List.foldl
-            (\( ( ruleName, path ), count ) acc ->
-                Dict.update
-                    ruleName
-                    (Maybe.withDefault [] >> (::) ( count, path ) >> Just)
-                    acc
-            )
-            Dict.empty
-        |> Dict.toList
-        |> Encode.list
-            (\( ruleName, countPerFile ) ->
-                encodeRuleSuppression ruleName (encodeFileSuppressions countPerFile)
-            )
-
-
-encodeRuleSuppression : String -> Encode.Value -> Encode.Value
-encodeRuleSuppression ruleName fileSuppressions =
-    Encode.object
-        [ ( "rule", Encode.string ruleName )
-        , ( "suppressions", fileSuppressions )
-        ]
-
-
-encodeFileSuppressions : List ( Int, String ) -> Encode.Value
-encodeFileSuppressions countPerFile =
-    Encode.list encodeFileSuppression countPerFile
-
-
-encodeFileSuppression : ( Int, String ) -> Encode.Value
-encodeFileSuppression ( count, path ) =
-    Encode.object
-        [ ( "count", Encode.int count )
-        , ( "filePath", Encode.string path )
-        ]
-
-
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
     case model.fixMode of
@@ -855,7 +815,7 @@ makeReport failedFixesDict model =
                         SuppressedErrors.fromReviewErrors model.reviewErrors
                 in
                 ( { model | suppressedErrors = suppressedErrors }
-                , encodeSuppressions suppressedErrors
+                , SuppressedErrors.encode suppressedErrors
                 )
 
             else

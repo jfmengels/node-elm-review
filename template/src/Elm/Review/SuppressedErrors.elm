@@ -1,8 +1,9 @@
-module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, decoder, fromReviewErrors)
+module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, decoder, encode, fromReviewErrors)
 
 import Dict exposing (Dict)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Review.Rule as Rule
 
 
@@ -71,3 +72,47 @@ fileEntryDecoder =
     Decode.map2 Tuple.pair
         (Decode.field "filePath" Decode.string)
         (Decode.field "count" Decode.int)
+
+
+
+-- ENCODE
+
+
+encode : SuppressedErrors -> Encode.Value
+encode suppressedErrors =
+    suppressedErrors
+        |> Dict.toList
+        |> List.foldl
+            (\( ( ruleName, path ), count ) acc ->
+                Dict.update
+                    ruleName
+                    (Maybe.withDefault [] >> (::) ( count, path ) >> Just)
+                    acc
+            )
+            Dict.empty
+        |> Dict.toList
+        |> Encode.list
+            (\( ruleName, countPerFile ) ->
+                encodeRuleSuppression ruleName (encodeFileSuppressions countPerFile)
+            )
+
+
+encodeRuleSuppression : String -> Encode.Value -> Encode.Value
+encodeRuleSuppression ruleName fileSuppressions =
+    Encode.object
+        [ ( "rule", Encode.string ruleName )
+        , ( "suppressions", fileSuppressions )
+        ]
+
+
+encodeFileSuppressions : List ( Int, String ) -> Encode.Value
+encodeFileSuppressions countPerFile =
+    Encode.list encodeFileSuppression countPerFile
+
+
+encodeFileSuppression : ( Int, String ) -> Encode.Value
+encodeFileSuppression ( count, path ) =
+    Encode.object
+        [ ( "count", Encode.int count )
+        , ( "filePath", Encode.string path )
+        ]
