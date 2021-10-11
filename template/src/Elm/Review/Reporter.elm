@@ -26,6 +26,7 @@ module Elm.Review.Reporter exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
@@ -150,7 +151,7 @@ type DetailsMode
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
 formatReport :
-    { suppressedErrors : Dict a Int
+    { suppressedErrors : SuppressedErrors
     , unsuppress : Bool
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
@@ -296,7 +297,7 @@ hasUnsuppressedErrors files =
         files
 
 
-formatNoErrors : Dict a Int -> Int -> Bool -> List Text.TextContent
+formatNoErrors : SuppressedErrors -> Int -> Bool -> List Text.TextContent
 formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenFixedPreviously =
     let
         mainMessage : String
@@ -309,9 +310,7 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
 
         numberOfSuppressedErrors : Int
         numberOfSuppressedErrors =
-            suppressedErrors
-                |> Dict.values
-                |> List.sum
+            SuppressedErrors.count suppressedErrors
 
         suppressedErrorMessage : List Text
         suppressedErrorMessage =

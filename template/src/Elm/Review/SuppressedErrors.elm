@@ -1,4 +1,4 @@
-module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, decoder, empty, encode, fromReviewErrors)
+module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, count, decoder, empty, encode, fromReviewErrors, member)
 
 import Dict exposing (Dict)
 import Elm.Review.Vendor.List.Extra as ListExtra
@@ -7,13 +7,13 @@ import Json.Encode as Encode
 import Review.Rule as Rule
 
 
-type alias SuppressedErrors =
-    Dict ( String, String ) Int
+type SuppressedErrors
+    = SuppressedErrors (Dict ( String, String ) Int)
 
 
 empty : SuppressedErrors
 empty =
-    Dict.empty
+    SuppressedErrors Dict.empty
 
 
 fromReviewErrors : List Rule.ReviewError -> SuppressedErrors
@@ -27,10 +27,20 @@ fromReviewErrors reviewErrors =
         )
         Dict.empty
         reviewErrors
+        |> SuppressedErrors
 
 
 apply : SuppressedErrors -> List Rule.ReviewError -> List Rule.ReviewError
-apply suppressedErrors errors =
+apply (SuppressedErrors suppressedErrors) errors =
+    if Dict.isEmpty suppressedErrors then
+        errors
+
+    else
+        applyHelp suppressedErrors errors
+
+
+applyHelp : Dict ( String, String ) Int -> List Rule.ReviewError -> List Rule.ReviewError
+applyHelp suppressedErrors errors =
     errors
         |> ListExtra.gatherWith (\a b -> (Rule.errorFilePath a == Rule.errorFilePath b) && (Rule.errorRuleName a == Rule.errorRuleName b))
         |> List.concatMap
@@ -48,6 +58,18 @@ apply suppressedErrors errors =
             )
 
 
+count : SuppressedErrors -> Int
+count (SuppressedErrors suppressedErrors) =
+    suppressedErrors
+        |> Dict.values
+        |> List.sum
+
+
+member : ( String, String ) -> SuppressedErrors -> Bool
+member key (SuppressedErrors suppressedErrors) =
+    Dict.member key suppressedErrors
+
+
 
 -- DECODER
 
@@ -55,7 +77,7 @@ apply suppressedErrors errors =
 decoder : Decoder SuppressedErrors
 decoder =
     Decode.list suppressedErrorEntryDecoder
-        |> Decode.map (List.concat >> Dict.fromList)
+        |> Decode.map (List.concat >> Dict.fromList >> SuppressedErrors)
 
 
 suppressedErrorEntryDecoder : Decoder (List ( ( String, String ), Int ))
@@ -63,8 +85,8 @@ suppressedErrorEntryDecoder =
     Decode.map2
         (\rule suppressions ->
             List.map
-                (\( filePath, count ) ->
-                    ( ( rule, filePath ), count )
+                (\( filePath, nbSuppressedErrors ) ->
+                    ( ( rule, filePath ), nbSuppressedErrors )
                 )
                 suppressions
         )
@@ -84,14 +106,14 @@ fileEntryDecoder =
 
 
 encode : SuppressedErrors -> Encode.Value
-encode suppressedErrors =
+encode (SuppressedErrors suppressedErrors) =
     suppressedErrors
         |> Dict.toList
         |> List.foldl
-            (\( ( ruleName, path ), count ) acc ->
+            (\( ( ruleName, path ), nbSuppressedErrors ) acc ->
                 Dict.update
                     ruleName
-                    (Maybe.withDefault [] >> (::) ( count, path ) >> Just)
+                    (Maybe.withDefault [] >> (::) ( nbSuppressedErrors, path ) >> Just)
                     acc
             )
             Dict.empty
@@ -116,8 +138,8 @@ encodeFileSuppressions countPerFile =
 
 
 encodeFileSuppression : ( Int, String ) -> Encode.Value
-encodeFileSuppression ( count, path ) =
+encodeFileSuppression ( nbSuppressedErrors, path ) =
     Encode.object
-        [ ( "count", Encode.int count )
+        [ ( "count", Encode.int nbSuppressedErrors )
         , ( "filePath", Encode.string path )
         ]

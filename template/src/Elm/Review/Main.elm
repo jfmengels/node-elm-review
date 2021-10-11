@@ -573,7 +573,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                 Ok suppressedErrors ->
                     ( { model
                         | suppressedErrors = suppressedErrors
-                        , originalNumberOfSuppressedErrors = List.sum (Dict.values suppressedErrors)
+                        , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
                       }
                     , Cmd.none
                     )
@@ -765,12 +765,7 @@ runReview model =
     in
     { model
         | reviewErrors = errors
-        , reviewErrorsAfterSuppression =
-            if Dict.isEmpty model.suppressedErrors then
-                errors
-
-            else
-                SuppressedErrors.apply model.suppressedErrors errors
+        , reviewErrorsAfterSuppression = SuppressedErrors.apply model.suppressedErrors errors
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
@@ -1438,7 +1433,7 @@ groupErrorsByFile project errors =
         |> List.filter (\file -> not (List.isEmpty file.errors))
 
 
-fromReviewError : Dict ( String, String ) a -> Dict String String -> Rule.ReviewError -> Reporter.Error
+fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
 fromReviewError suppressedErrors links error =
     { ruleName = Rule.errorRuleName error
     , ruleLink = linkToRule links error
@@ -1446,7 +1441,7 @@ fromReviewError suppressedErrors links error =
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , fixesHash = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
-    , suppressed = Dict.member ( Rule.errorRuleName error, Rule.errorFilePath error ) suppressedErrors
+    , suppressed = SuppressedErrors.member ( Rule.errorRuleName error, Rule.errorFilePath error ) suppressedErrors
     }
 
 

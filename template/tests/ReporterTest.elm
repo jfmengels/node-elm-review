@@ -2,6 +2,7 @@ module ReporterTest exposing (suite)
 
 import Dict
 import Elm.Review.Reporter as Reporter
+import Elm.Review.SuppressedErrors as SuppressedErrors
 import FormatTester exposing (expect)
 import Test exposing (Test, describe, test)
 
@@ -37,7 +38,7 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = Dict.empty
+                    { suppressedErrors = SuppressedErrors.empty
                     , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
@@ -66,7 +67,7 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = Dict.empty
+                    { suppressedErrors = SuppressedErrors.empty
                     , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
@@ -110,7 +111,7 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = Dict.empty
+                    { suppressedErrors = SuppressedErrors.empty
                     , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
@@ -178,7 +179,7 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = Dict.empty
+                    { suppressedErrors = SuppressedErrors.empty
                     , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
@@ -241,7 +242,7 @@ a =
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = Dict.empty
+                    { suppressedErrors = SuppressedErrors.empty
                     , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
@@ -334,7 +335,7 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = Dict.empty
+                        { suppressedErrors = SuppressedErrors.empty
                         , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
@@ -459,7 +460,7 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = Dict.empty
+                        { suppressedErrors = SuppressedErrors.empty
                         , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
@@ -592,7 +593,7 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = Dict.empty
+                        { suppressedErrors = SuppressedErrors.empty
                         , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
@@ -659,7 +660,7 @@ globalErrorTest =
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = Dict.empty
+                    { suppressedErrors = SuppressedErrors.empty
                     , unsuppress = False
                     , originalNumberOfSuppressedErrors = 0
                     , fixProblemDict = Dict.empty
@@ -704,7 +705,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = Dict.empty
+                        { suppressedErrors = SuppressedErrors.empty
                         , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
@@ -756,7 +757,7 @@ a = "🔧" ++ 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = Dict.empty
+                        { suppressedErrors = SuppressedErrors.empty
                         , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
@@ -810,7 +811,7 @@ a = "🔧" ++ "🔧
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = Dict.empty
+                        { suppressedErrors = SuppressedErrors.empty
                         , unsuppress = False
                         , originalNumberOfSuppressedErrors = 0
                         , fixProblemDict = Dict.empty
