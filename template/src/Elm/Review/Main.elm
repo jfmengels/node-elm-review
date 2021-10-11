@@ -606,7 +606,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             in
             ( newModel
             , newModel.reviewErrors
-                |> generateSuppressions
+                |> SuppressedErrors.fromReviewErrors
                 |> encodeSuppressions
                 |> suppressionsResponse
             )
@@ -777,19 +777,6 @@ runReview model =
     }
 
 
-generateSuppressions : List Rule.ReviewError -> SuppressedErrors
-generateSuppressions reviewErrors =
-    List.foldl
-        (\error acc ->
-            Dict.update
-                ( Rule.errorRuleName error, Rule.errorFilePath error )
-                (Maybe.withDefault 0 >> (+) 1 >> Just)
-                acc
-        )
-        Dict.empty
-        reviewErrors
-
-
 encodeSuppressions : SuppressedErrors -> Encode.Value
 encodeSuppressions suppressedErrors =
     suppressedErrors
@@ -865,7 +852,7 @@ makeReport failedFixesDict model =
                 let
                     suppressedErrors : SuppressedErrors
                     suppressedErrors =
-                        generateSuppressions model.reviewErrors
+                        SuppressedErrors.fromReviewErrors model.reviewErrors
                 in
                 ( { model | suppressedErrors = suppressedErrors }
                 , encodeSuppressions suppressedErrors
