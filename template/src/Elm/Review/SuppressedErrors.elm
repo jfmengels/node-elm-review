@@ -36,8 +36,8 @@ apply suppressedErrors errors =
         |> List.concatMap
             (\( head, tail ) ->
                 case Dict.get ( Rule.errorRuleName head, Rule.errorFilePath head ) suppressedErrors of
-                    Just count ->
-                        if List.length tail <= count - 1 then
+                    Just nbSuppressedErrors ->
+                        if List.length tail <= nbSuppressedErrors - 1 then
                             []
 
                         else
