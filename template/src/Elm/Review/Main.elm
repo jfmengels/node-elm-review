@@ -47,6 +47,9 @@ port collectDependencies : (Decode.Value -> msg) -> Sub msg
 port collectSuppressedErrors : (Decode.Value -> msg) -> Sub msg
 
 
+port updateSuppressedErrors : (Decode.Value -> msg) -> Sub msg
+
+
 port collectLinks : (Decode.Value -> msg) -> Sub msg
 
 
@@ -419,6 +422,7 @@ type Msg
     | ReceivedReadme Decode.Value
     | ReceivedDependencies Decode.Value
     | ReceivedSuppressedErrors Decode.Value
+    | UpdateSuppressedErrors Decode.Value
     | ReceivedLinks Decode.Value
     | GotRequestToReview
     | GotRequestToGenerateSuppressionErrors
@@ -577,6 +581,24 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                       }
                     , Cmd.none
                     )
+
+        UpdateSuppressedErrors json ->
+            case Decode.decodeValue SuppressedErrors.decoder json of
+                Err _ ->
+                    -- TODO Report something?
+                    -- TODO Report if version is not supported
+                    ( model, Cmd.none )
+
+                Ok suppressedErrors ->
+                    if suppressedErrors == model.suppressedErrors then
+                        ( model, Cmd.none )
+
+                    else
+                        makeReport Dict.empty
+                            { model
+                                | suppressedErrors = suppressedErrors
+                                , reviewErrorsAfterSuppression = SuppressedErrors.apply suppressedErrors model.reviewErrors
+                            }
 
         ReceivedLinks json ->
             case Decode.decodeValue (Decode.dict Decode.string) json of
@@ -1483,6 +1505,7 @@ subscriptions =
         , collectReadme ReceivedReadme
         , collectDependencies ReceivedDependencies
         , collectSuppressedErrors ReceivedSuppressedErrors
+        , updateSuppressedErrors UpdateSuppressedErrors
         , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
         , startGeneratingSuppressions (always GotRequestToGenerateSuppressionErrors)
