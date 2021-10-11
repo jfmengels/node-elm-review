@@ -65,9 +65,9 @@ count (SuppressedErrors suppressedErrors) =
         |> List.sum
 
 
-member : ( String, String ) -> SuppressedErrors -> Bool
-member key (SuppressedErrors suppressedErrors) =
-    Dict.member key suppressedErrors
+member : Rule.ReviewError -> SuppressedErrors -> Bool
+member error (SuppressedErrors suppressedErrors) =
+    Dict.member ( Rule.errorRuleName error, Rule.errorFilePath error ) suppressedErrors
 
 
 

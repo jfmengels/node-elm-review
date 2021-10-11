@@ -1441,7 +1441,7 @@ fromReviewError suppressedErrors links error =
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , fixesHash = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
-    , suppressed = SuppressedErrors.member ( Rule.errorRuleName error, Rule.errorFilePath error ) suppressedErrors
+    , suppressed = SuppressedErrors.member error suppressedErrors
     }
 
 
