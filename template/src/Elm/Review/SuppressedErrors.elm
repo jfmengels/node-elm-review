@@ -1,14 +1,14 @@
-module Elm.Review.SuppressedErrors exposing (SuppressedErrorsDict, decoder)
+module Elm.Review.SuppressedErrors exposing (SuppressedErrors, decoder)
 
 import Dict exposing (Dict)
 import Json.Decode as Decode
 
 
-type alias SuppressedErrorsDict =
+type alias SuppressedErrors =
     Dict ( String, String ) Int
 
 
-decoder : Decode.Decoder SuppressedErrorsDict
+decoder : Decode.Decoder SuppressedErrors
 decoder =
     Decode.list suppressedErrorEntryDecoder
         |> Decode.map (List.concat >> Dict.fromList)

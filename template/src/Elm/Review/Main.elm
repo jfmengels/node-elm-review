@@ -10,7 +10,7 @@ import Elm.Review.File
 import Elm.Review.Progress as Progress
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
-import Elm.Review.SuppressedErrors as SuppressedErrors
+import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Review.Vendor.List.Extra as ListExtra
 import Elm.Syntax.File
@@ -122,7 +122,7 @@ type alias Model =
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
-    , suppressedErrors : SuppressedErrorsDict
+    , suppressedErrors : SuppressedErrors
     , originalNumberOfSuppressedErrors : Int
     , errorsHaveBeenFixedPreviously : Bool
     , ignoreProblematicDependencies : Bool
@@ -778,11 +778,7 @@ runReview model =
     }
 
 
-type alias SuppressedErrorsDict =
-    Dict ( String, String ) Int
-
-
-removeSuppressedErrors : SuppressedErrorsDict -> List Rule.ReviewError -> List Rule.ReviewError
+removeSuppressedErrors : SuppressedErrors -> List Rule.ReviewError -> List Rule.ReviewError
 removeSuppressedErrors suppressedErrors errors =
     errors
         |> ListExtra.gatherWith (\a b -> (Rule.errorFilePath a == Rule.errorFilePath b) && (Rule.errorRuleName a == Rule.errorRuleName b))
@@ -801,7 +797,7 @@ removeSuppressedErrors suppressedErrors errors =
             )
 
 
-generateSuppressions : List Rule.ReviewError -> SuppressedErrorsDict
+generateSuppressions : List Rule.ReviewError -> SuppressedErrors
 generateSuppressions reviewErrors =
     List.foldl
         (\error acc ->
@@ -814,7 +810,7 @@ generateSuppressions reviewErrors =
         reviewErrors
 
 
-encodeSuppressions : SuppressedErrorsDict -> Encode.Value
+encodeSuppressions : SuppressedErrors -> Encode.Value
 encodeSuppressions suppressedErrors =
     suppressedErrors
         |> Dict.toList
@@ -887,7 +883,7 @@ makeReport failedFixesDict model =
         ( newModel, suppressedErrorsForJson ) =
             if List.isEmpty model.reviewErrorsAfterSuppression then
                 let
-                    suppressedErrors : SuppressedErrorsDict
+                    suppressedErrors : SuppressedErrors
                     suppressedErrors =
                         generateSuppressions model.reviewErrors
                 in
@@ -936,7 +932,7 @@ makeReport failedFixesDict model =
     )
 
 
-encodeErrorByFile : SuppressedErrorsDict -> Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
+encodeErrorByFile : SuppressedErrors -> Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
 encodeErrorByFile suppressedErrors links detailsMode file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
@@ -965,7 +961,7 @@ encodeFilePath filePath =
             Encode.null
 
 
-encodeError : SuppressedErrorsDict -> Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
+encodeError : SuppressedErrors -> Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
 encodeError suppressedErrors links detailsMode source error =
     [ Just ( "rule", Encode.string <| Rule.errorRuleName error )
     , Just ( "message", Encode.string <| Rule.errorMessage error )
