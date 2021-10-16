@@ -5,7 +5,7 @@ import Elm.Review.Vendor.List.Extra as ListExtra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Rule as Rule
-import Set
+import Set exposing (Set)
 
 
 type SuppressedErrors
@@ -113,30 +113,36 @@ encode ruleNames (SuppressedErrors suppressedErrors) =
         suppressedErrorsList =
             Dict.toList suppressedErrors
 
-        rulesWithSuppressions : Set.Set String
+        rulesWithSuppressions : Set String
         rulesWithSuppressions =
             suppressedErrorsList
                 |> List.map (Tuple.first >> Tuple.first)
                 |> Set.fromList
 
-        rulesWithoutSuppressions : List String
+        rulesWithoutSuppressions : List ( String, List a )
         rulesWithoutSuppressions =
-            List.filter (\ruleName -> not (Set.member ruleName rulesWithSuppressions)) ruleNames
+            ruleNames
+                |> List.filter (\ruleName -> not (Set.member ruleName rulesWithSuppressions))
+                |> List.map (\ruleName -> ( ruleName, [] ))
+
+        suppressionsPerRule : List ( String, List ( Int, String ) )
+        suppressionsPerRule =
+            suppressedErrorsList
+                |> List.foldl
+                    (\( ( ruleName, path ), nbSuppressedErrors ) acc ->
+                        Dict.update
+                            ruleName
+                            (Maybe.withDefault [] >> (::) ( nbSuppressedErrors, path ) >> Just)
+                            acc
+                    )
+                    Dict.empty
+                |> Dict.toList
     in
-    suppressedErrorsList
-        |> List.foldl
-            (\( ( ruleName, path ), nbSuppressedErrors ) acc ->
-                Dict.update
-                    ruleName
-                    (Maybe.withDefault [] >> (::) ( nbSuppressedErrors, path ) >> Just)
-                    acc
-            )
-            Dict.empty
-        |> Dict.toList
-        |> Encode.list
-            (\( ruleName, countPerFile ) ->
-                encodeRuleSuppression ruleName (encodeFileSuppressions countPerFile)
-            )
+    Encode.list
+        (\( ruleName, fileSuppressions ) ->
+            encodeRuleSuppression ruleName (encodeFileSuppressions fileSuppressions)
+        )
+        (suppressionsPerRule ++ rulesWithoutSuppressions)
 
 
 encodeRuleSuppression : String -> Encode.Value -> Encode.Value
