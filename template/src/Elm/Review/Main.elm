@@ -629,7 +629,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             ( newModel
             , newModel.reviewErrors
                 |> SuppressedErrors.fromReviewErrors
-                |> SuppressedErrors.encode
+                |> SuppressedErrors.encode []
                 |> suppressionsResponse
             )
 
@@ -832,7 +832,7 @@ makeReport failedFixesDict model =
                         SuppressedErrors.fromReviewErrors model.reviewErrors
                 in
                 ( { model | suppressedErrors = suppressedErrors }
-                , SuppressedErrors.encode suppressedErrors
+                , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
                 )
 
             else

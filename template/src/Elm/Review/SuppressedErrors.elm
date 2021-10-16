@@ -105,8 +105,8 @@ fileEntryDecoder =
 -- ENCODE
 
 
-encode : SuppressedErrors -> Encode.Value
-encode (SuppressedErrors suppressedErrors) =
+encode : List String -> SuppressedErrors -> Encode.Value
+encode ruleNames (SuppressedErrors suppressedErrors) =
     suppressedErrors
         |> Dict.toList
         |> List.foldl
