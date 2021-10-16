@@ -5,6 +5,7 @@ import Elm.Review.Vendor.List.Extra as ListExtra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Rule as Rule
+import Set
 
 
 type SuppressedErrors
@@ -107,8 +108,22 @@ fileEntryDecoder =
 
 encode : List String -> SuppressedErrors -> Encode.Value
 encode ruleNames (SuppressedErrors suppressedErrors) =
-    suppressedErrors
-        |> Dict.toList
+    let
+        suppressedErrorsList : List ( ( String, String ), Int )
+        suppressedErrorsList =
+            Dict.toList suppressedErrors
+
+        rulesWithSuppressions : Set.Set String
+        rulesWithSuppressions =
+            suppressedErrorsList
+                |> List.map (Tuple.first >> Tuple.first)
+                |> Set.fromList
+
+        rulesWithoutSuppressions : List String
+        rulesWithoutSuppressions =
+            List.filter (\ruleName -> not (Set.member ruleName rulesWithSuppressions)) ruleNames
+    in
+    suppressedErrorsList
         |> List.foldl
             (\( ( ruleName, path ), nbSuppressedErrors ) acc ->
                 Dict.update
