@@ -52,6 +52,8 @@ If the process ran without any hitches, you should get something like the follow
         {
           "rule": "NoUnused.Variables",
           "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.0.1/NoUnused-Variables",
+          "suppressed": false,
+          "originallySuppressed": false,
           "message": "Top-level variable `unusedVariable` is not used",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
@@ -109,6 +111,9 @@ If the process ran without any hitches, you should get something like the follow
   - `path`: The relative path to the file for which the (sibling) errors are reported.
   - `errors`: ("single-error") The array of errors that `elm-review` found for this file. The following describe each item in the array.
     - `rule`: The name of the rule that reported this error.
+    - `originallySuppressed`: Whether this error was intended to be suppressed through suppression JSON files. See `elm-revies suppress --help` for more information.
+    - `suppressed`: Whether this error is actually being suppressed through suppression JSON files. If there are more errors for a given rule and file than expected, these will stop being suppressed.
+    If you wish to show the same errors as `elm-review` then you should hide the error if `suppressed` is set to true. 
     - `ruleLink` (optional): **(Since 2.1.2)** The link to the rule's documentation on the Elm package website, if the rule is not a local one.
     - `message`: A short description of the error. If you show a summary of the errors, this is what you will want to show, along with `rule`.
     - `details`: A longer description, providing more details about the error and often a description of how to resolve it. Every string in this array of strings corresponds to a paragraph.
