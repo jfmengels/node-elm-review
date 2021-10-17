@@ -874,7 +874,15 @@ makeReport failedFixesDict model =
                     errorsByFile =
                         groupErrorsByFile model.project model.reviewErrors
                 in
-                Encode.list (encodeErrorByFile newModel.suppressedErrors newModel.links newModel.detailsMode) errorsByFile
+                Encode.list
+                    (encodeErrorByFile
+                        { suppressedErrors = newModel.suppressedErrors
+                        , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                        }
+                        newModel.links
+                        newModel.detailsMode
+                    )
+                    errorsByFile
         )
       , ( "suppressedErrors", suppressedErrorsForJson )
       ]
@@ -883,11 +891,18 @@ makeReport failedFixesDict model =
     )
 
 
-encodeErrorByFile : SuppressedErrors -> Dict String String -> Reporter.DetailsMode -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError } -> Encode.Value
-encodeErrorByFile suppressedErrors links detailsMode file =
+encodeErrorByFile :
+    { suppressedErrors : SuppressedErrors
+    , reviewErrorsAfterSuppression : List Rule.ReviewError
+    }
+    -> Dict String String
+    -> Reporter.DetailsMode
+    -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+    -> Encode.Value
+encodeErrorByFile suppressedErrorsData links detailsMode file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
-        , ( "errors", Encode.list (encodeError suppressedErrors links detailsMode file.source) file.errors )
+        , ( "errors", Encode.list (encodeError suppressedErrorsData links detailsMode file.source) file.errors )
         ]
 
 
@@ -912,8 +927,21 @@ encodeFilePath filePath =
             Encode.null
 
 
-encodeError : SuppressedErrors -> Dict String String -> Reporter.DetailsMode -> Reporter.Source -> Rule.ReviewError -> Encode.Value
-encodeError suppressedErrors links detailsMode source error =
+encodeError :
+    { suppressedErrors : SuppressedErrors
+    , reviewErrorsAfterSuppression : List Rule.ReviewError
+    }
+    -> Dict String String
+    -> Reporter.DetailsMode
+    -> Reporter.Source
+    -> Rule.ReviewError
+    -> Encode.Value
+encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode source error =
+    let
+        originallySuppressed : Bool
+        originallySuppressed =
+            SuppressedErrors.member error suppressedErrors
+    in
     [ Just ( "rule", Encode.string <| Rule.errorRuleName error )
     , Just ( "message", Encode.string <| Rule.errorMessage error )
     , linkToRule links error
@@ -923,6 +951,8 @@ encodeError suppressedErrors links detailsMode source error =
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
     , Just ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode source (fromReviewError suppressedErrors links error)) )
+    , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
+    , Just ( "originallySuppressed", Encode.bool originallySuppressed )
     ]
         |> List.filterMap identity
         |> Encode.object
