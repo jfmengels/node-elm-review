@@ -814,15 +814,13 @@ reportOrFix model =
 makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
 makeReport failedFixesDict model =
     let
-        errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-        errorsByFile =
-            groupErrorsByFile model.project
-                (if model.unsuppress then
-                    model.reviewErrors
+        errorsToLookAt : List Rule.ReviewError
+        errorsToLookAt =
+            if model.unsuppress then
+                model.reviewErrors
 
-                 else
-                    model.reviewErrorsAfterSuppression
-                )
+            else
+                model.reviewErrorsAfterSuppression
 
         ( newModel, suppressedErrorsForJson ) =
             if List.isEmpty model.reviewErrorsAfterSuppression then
@@ -839,11 +837,15 @@ makeReport failedFixesDict model =
                 ( model, Encode.null )
     in
     ( newModel
-    , [ ( "success", Encode.bool <| List.isEmpty errorsByFile )
+    , [ ( "success", Encode.bool <| List.isEmpty errorsToLookAt )
       , ( "errors"
         , case newModel.reportMode of
             HumanReadable ->
                 let
+                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                    errorsByFile =
+                        groupErrorsByFile model.project errorsToLookAt
+
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
                         List.map
@@ -867,6 +869,11 @@ makeReport failedFixesDict model =
                     |> encodeReport
 
             Json ->
+                let
+                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                    errorsByFile =
+                        groupErrorsByFile model.project model.reviewErrors
+                in
                 Encode.list (encodeErrorByFile newModel.suppressedErrors newModel.links newModel.detailsMode) errorsByFile
         )
       , ( "suppressedErrors", suppressedErrorsForJson )
