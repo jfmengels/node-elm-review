@@ -155,6 +155,11 @@ $createTest "$CMD" \
     "" \
     "suppressed-errors-pass.txt"
 
+$createTest "$CMD" \
+    "Running suppress with --help" \
+    "suppress --help" \
+    "help-suppress.txt"
+
 exit 0
 
 # Version
