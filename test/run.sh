@@ -155,6 +155,17 @@ $createTest "$CMD" \
     "" \
     "suppressed-errors-pass.txt"
 
+cp fixed-elm.json elm.json
+$createTest "$CMD" \
+    "Fixing all errors for an entire rule should remove the suppression file" \
+    "" \
+    "suppressed-errors-after-fixed-errors-for-rule.txt"
+if [ -f review/suppressed/NoUnused.Dependencies.json ]; then
+    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
+    exit 1
+fi
+git checkout HEAD elm.json review/suppressed/ > /dev/null
+
 # Version
 
 $createTest "$CMD" \
