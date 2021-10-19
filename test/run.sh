@@ -179,6 +179,13 @@ if [ "$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variabl
 fi
 git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
 
+cp with-errors-OtherFile.elm src/OtherFile.elm
+$createTest "$CMD" \
+    "Introducing new errors should show all related errors" \
+    "" \
+    "suppressed-errors-introducing-new-errors.txt"
+git checkout HEAD src/OtherFile.elm > /dev/null
+
 $createTest "$CMD" \
     "Running with --unsuppress should report suppressed errors" \
     "--unsuppress" \

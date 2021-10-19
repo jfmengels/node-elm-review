@@ -1,0 +1,29 @@
+-- ELM-REVIEW ERROR -------------------------------------- src/OtherFile.elm:8:1
+
+(unsuppressed) (fix) NoUnused.Variables: Top-level variable `b` is not used
+
+8| b =
+   ^
+9|     2
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+───────────────────────────────────────────────────────── src/OtherFile.elm:12:1
+
+(unsuppressed) (fix) NoUnused.Variables: Top-level variable `c` is not used
+
+12| c =
+    ^
+13|     3
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+Errors marked with (unsuppressed) were previously suppressed, but you introduced
+another error for the same rule in a file where those errors were already being
+suppressed. Please fix them until you have at most as many as errors are before.
+
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+I found 2 errors in 1 file.
