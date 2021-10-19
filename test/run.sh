@@ -155,13 +155,6 @@ $createTest "$CMD" \
     "" \
     "suppressed-errors-pass.txt"
 
-$createTest "$CMD" \
-    "Running suppress with --help" \
-    "suppress --help" \
-    "help-suppress.txt"
-
-exit 0
-
 # Version
 
 $createTest "$CMD" \
@@ -180,6 +173,13 @@ $createTest "$CMD" \
     "Running init with --help" \
     "init --help" \
     "help-init.txt"
+
+$createTest "$CMD" \
+    "Running suppress with --help" \
+    "suppress --help" \
+    "help-suppress.txt"
+
+exit 0
 
 $createTest "$CMD" \
     "Running new-package with --help" \
