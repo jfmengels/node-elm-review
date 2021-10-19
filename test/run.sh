@@ -471,7 +471,7 @@ $createTest "$CMD" \
     "suppressed-errors-after-fixed-errors-for-file.txt"
 
 if [ "$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json)" != "" ]; then
-    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
+    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json to have been updated"
     exit 1
 fi
 git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
