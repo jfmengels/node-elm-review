@@ -151,8 +151,8 @@ npm install -g $PACKAGE_PATH
 
 cd "$CWD/project-with-suppressed-errors"
 $createTest "$CMD" \
-    "Running with no suppressed errors should not report an error" \
-    "--config ../project-with-errors/review" \
+    "Running with only suppressed errors should not report any errors" \
+    "" \
     "suppressed-errors-pass.txt"
 
 exit 0
