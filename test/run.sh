@@ -149,48 +149,6 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
-cd "$CWD/project-with-suppressed-errors"
-$createTest "$CMD" \
-    "Running with only suppressed errors should not report any errors" \
-    "" \
-    "suppressed-errors-pass.txt"
-
-cp fixed-elm.json elm.json
-$createTest "$CMD" \
-    "Fixing all errors for an entire rule should remove the suppression file" \
-    "" \
-    "suppressed-errors-after-fixed-errors-for-rule.txt"
-if [ -f review/suppressed/NoUnused.Dependencies.json ]; then
-    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
-    exit 1
-fi
-git checkout HEAD elm.json review/suppressed/ > /dev/null
-
-
-rm src/OtherFile.elm
-$createTest "$CMD" \
-    "Fixing all errors for an entire rule should update the suppression file" \
-    "" \
-    "suppressed-errors-after-fixed-errors-for-file.txt"
-
-if [ "$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json)" != "" ]; then
-    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
-    exit 1
-fi
-git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
-
-cp with-errors-OtherFile.elm src/OtherFile.elm
-$createTest "$CMD" \
-    "Introducing new errors should show all related errors" \
-    "" \
-    "suppressed-errors-introducing-new-errors.txt"
-git checkout HEAD src/OtherFile.elm > /dev/null
-
-$createTest "$CMD" \
-    "Running with --unsuppress should report suppressed errors" \
-    "--unsuppress" \
-    "suppressed-errors-unsuppress.txt"
-
 # Version
 
 $createTest "$CMD" \
@@ -214,8 +172,6 @@ $createTest "$CMD" \
     "Running suppress with --help" \
     "suppress --help" \
     "help-suppress.txt"
-
-exit 0
 
 $createTest "$CMD" \
     "Running new-package with --help" \
@@ -487,6 +443,52 @@ then
         exit 1
     fi
 fi
+
+## suppress
+
+cd "$CWD/project-with-suppressed-errors"
+$createTest "$CMD" \
+    "Running with only suppressed errors should not report any errors" \
+    "" \
+    "suppressed-errors-pass.txt"
+
+cp fixed-elm.json elm.json
+$createTest "$CMD" \
+    "Fixing all errors for an entire rule should remove the suppression file" \
+    "" \
+    "suppressed-errors-after-fixed-errors-for-rule.txt"
+if [ -f review/suppressed/NoUnused.Dependencies.json ]; then
+    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
+    exit 1
+fi
+git checkout HEAD elm.json review/suppressed/ > /dev/null
+
+
+rm src/OtherFile.elm
+$createTest "$CMD" \
+    "Fixing all errors for an entire rule should update the suppression file" \
+    "" \
+    "suppressed-errors-after-fixed-errors-for-file.txt"
+
+if [ "$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json)" != "" ]; then
+    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
+    exit 1
+fi
+git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
+
+cp with-errors-OtherFile.elm src/OtherFile.elm
+$createTest "$CMD" \
+    "Introducing new errors should show all related errors" \
+    "" \
+    "suppressed-errors-introducing-new-errors.txt"
+git checkout HEAD src/OtherFile.elm > /dev/null
+
+$createTest "$CMD" \
+    "Running with --unsuppress should report suppressed errors" \
+    "--unsuppress" \
+    "suppressed-errors-unsuppress.txt"
+
+cd ..
 
 # new-package
 
