@@ -490,7 +490,7 @@ formatErrorTitle fixProblemDict mode error =
     , Text.from error.ruleName
         |> Text.inRed
         |> Text.withLink error.ruleLink
-    , Text.from <| ": " ++ error.message
+    , Text.from (": " ++ error.message)
     ]
 
 
