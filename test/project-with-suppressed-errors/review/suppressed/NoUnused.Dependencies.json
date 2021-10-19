@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "suppressions": [
+    { "count": 1, "filePath": "elm.json" }
+  ]
+}
