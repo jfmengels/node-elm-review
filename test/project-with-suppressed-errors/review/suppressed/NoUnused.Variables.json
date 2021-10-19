@@ -1,6 +1,7 @@
 {
   "version": 1,
   "suppressions": [
-    { "count": 2, "filePath": "src/Main.elm" }
+    { "count": 2, "filePath": "src/Main.elm" },
+    { "count": 1, "filePath": "src/OtherFile.elm" }
   ]
 }
