@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "suppressions": [
+    { "count": 2, "filePath": "src/Main.elm" }
+  ]
+}
