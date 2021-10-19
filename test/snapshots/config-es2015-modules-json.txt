@@ -52,7 +52,9 @@
               "color": "#FF0000"
             },
             "\n11|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
-          ]
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
         },
         {
           "rule": "NoUnused.CustomTypeConstructors",
@@ -72,7 +74,6 @@
             }
           },
           "formatted": [
-            "",
             {
               "string": "NoUnused.CustomTypeConstructors",
               "color": "#FF0000",
@@ -84,7 +85,9 @@
               "color": "#FF0000"
             },
             "\n\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
-          ]
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
         }
       ]
     }

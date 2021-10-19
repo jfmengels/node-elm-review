@@ -22,7 +22,6 @@
             }
           },
           "formatted": [
-            "",
             {
               "string": "NoUnused.Modules",
               "color": "#FF0000",
@@ -34,7 +33,9 @@
               "color": "#FF0000"
             },
             "\n\nThis module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project."
-          ]
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
         }
       ]
     },
@@ -89,7 +90,9 @@
               "color": "#FF0000"
             },
             "\n12|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
-          ]
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
         },
         {
           "rule": "NoUnused.CustomTypeConstructors",
@@ -109,7 +112,6 @@
             }
           },
           "formatted": [
-            "",
             {
               "string": "NoUnused.CustomTypeConstructors",
               "color": "#FF0000",
@@ -121,7 +123,9 @@
               "color": "#FF0000"
             },
             "\n\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
-          ]
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
         }
       ]
     }

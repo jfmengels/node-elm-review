@@ -52,7 +52,9 @@
               "color": "#FF0000"
             },
             "\n12|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
-          ]
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
         }
       ]
     }

@@ -20,7 +20,6 @@
           }
         },
         "formatted": [
-          "",
           {
             "string": "Some.Rule",
             "color": "#FF0000"
