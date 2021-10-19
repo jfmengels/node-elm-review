@@ -166,6 +166,19 @@ if [ -f review/suppressed/NoUnused.Dependencies.json ]; then
 fi
 git checkout HEAD elm.json review/suppressed/ > /dev/null
 
+
+rm src/OtherFile.elm
+$createTest "$CMD" \
+    "Fixing all errors for an entire rule should update the suppression file" \
+    "" \
+    "suppressed-errors-after-fixed-errors-for-file.txt"
+
+if [ "$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json)" != "" ]; then
+    echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
+    exit 1
+fi
+git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
+
 # Version
 
 $createTest "$CMD" \
