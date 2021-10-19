@@ -452,13 +452,13 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
 formatErrorTitle : Dict String Review.Fix.Problem -> Mode -> Error -> List Text
 formatErrorTitle fixProblemDict mode error =
     let
-        fixPrefix : Text
+        fixPrefix : Maybe Text
         fixPrefix =
             case error.fixesHash of
                 Just fixKey ->
                     case mode of
                         Fixing ->
-                            Text.from ""
+                            Nothing
 
                         Reviewing ->
                             if Dict.member fixKey fixProblemDict then
@@ -466,32 +466,35 @@ formatErrorTitle fixProblemDict mode error =
                                 "(FIX FAILED) "
                                     |> Text.from
                                     |> Text.inYellow
+                                    |> Just
 
                             else
                                 "(fix) "
                                     |> Text.from
                                     |> Text.inBlue
+                                    |> Just
 
                 Nothing ->
-                    Text.from ""
+                    Nothing
 
-        suppressedPrefix : Text
+        suppressedPrefix : Maybe Text
         suppressedPrefix =
             if error.suppressed then
                 "(unsuppressed) "
                     |> Text.from
                     |> Text.inOrange
+                    |> Just
 
             else
-                Text.from ""
+                Nothing
     in
-    [ suppressedPrefix
-    , fixPrefix
-    , Text.from error.ruleName
-        |> Text.inRed
-        |> Text.withLink error.ruleLink
-    , Text.from (": " ++ error.message)
-    ]
+    List.append
+        (List.filterMap identity [ suppressedPrefix, fixPrefix ])
+        [ Text.from error.ruleName
+            |> Text.inRed
+            |> Text.withLink error.ruleLink
+        , Text.from (": " ++ error.message)
+        ]
 
 
 reasonFromProblem : Review.Fix.Problem -> String
