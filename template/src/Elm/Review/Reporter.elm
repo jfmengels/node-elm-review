@@ -659,9 +659,17 @@ underline gutterLength { start, end, lineContent } =
 
 totalNumberOfErrors : List FileWithError -> Int
 totalNumberOfErrors files =
-    files
-        |> List.concatMap .errors
-        |> List.length
+    totalNumberOfErrorsHelp files 0
+
+
+totalNumberOfErrorsHelp : List FileWithError -> Int -> Int
+totalNumberOfErrorsHelp files acc =
+    case files of
+        [] ->
+            acc
+
+        file :: xs ->
+            totalNumberOfErrorsHelp xs (acc + List.length file.errors)
 
 
 fixableErrors : List FileWithError -> List Error
