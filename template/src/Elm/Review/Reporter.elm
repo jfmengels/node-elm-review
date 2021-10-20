@@ -454,50 +454,54 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
 
 formatErrorTitle : Dict String Review.Fix.Problem -> Mode -> Error -> List Text
 formatErrorTitle fixProblemDict mode error =
-    let
-        fixPrefix : Maybe Text
-        fixPrefix =
-            case error.fixesHash of
-                Just fixKey ->
-                    case mode of
-                        Fixing ->
-                            Nothing
+    [ Text.from error.ruleName
+        |> Text.inRed
+        |> Text.withLink error.ruleLink
+    , Text.from (": " ++ error.message)
+    ]
+        |> addFixPrefix fixProblemDict mode error
+        |> addSuppressedPrefix error
 
-                        Reviewing ->
-                            if Dict.member fixKey fixProblemDict then
-                                -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                                "(FIX FAILED) "
-                                    |> Text.from
-                                    |> Text.inYellow
-                                    |> Just
 
-                            else
-                                "(fix) "
-                                    |> Text.from
-                                    |> Text.inBlue
-                                    |> Just
+addSuppressedPrefix : Error -> List Text -> List Text
+addSuppressedPrefix error previous =
+    if error.suppressed then
+        ("(unsuppressed) "
+            |> Text.from
+            |> Text.inOrange
+        )
+            :: previous
 
-                Nothing ->
-                    Nothing
+    else
+        previous
 
-        suppressedPrefix : Maybe Text
-        suppressedPrefix =
-            if error.suppressed then
-                "(unsuppressed) "
-                    |> Text.from
-                    |> Text.inOrange
-                    |> Just
 
-            else
-                Nothing
-    in
-    List.append
-        (List.filterMap identity [ suppressedPrefix, fixPrefix ])
-        [ Text.from error.ruleName
-            |> Text.inRed
-            |> Text.withLink error.ruleLink
-        , Text.from (": " ++ error.message)
-        ]
+addFixPrefix : Dict String Review.Fix.Problem -> Mode -> Error -> List Text -> List Text
+addFixPrefix fixProblemDict mode error previous =
+    case error.fixesHash of
+        Just fixKey ->
+            case mode of
+                Fixing ->
+                    previous
+
+                Reviewing ->
+                    if Dict.member fixKey fixProblemDict then
+                        -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
+                        ("(FIX FAILED) "
+                            |> Text.from
+                            |> Text.inYellow
+                        )
+                            :: previous
+
+                    else
+                        ("(fix) "
+                            |> Text.from
+                            |> Text.inBlue
+                        )
+                            :: previous
+
+        Nothing ->
+            previous
 
 
 reasonFromProblem : Review.Fix.Problem -> String
