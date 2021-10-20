@@ -176,21 +176,12 @@ formatReport fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
 
     else
         let
-            hasFixErrors : Error -> Bool
-            hasFixErrors error =
-                case error.fixesHash of
-                    Just fixesHash ->
-                        Dict.member fixesHash fixProblemDict
-
-                    Nothing ->
-                        False
-
-            ( invalidFixableErrors, ignoredFixableErrors ) =
-                List.partition hasFixErrors (fixableErrors files)
+            { invalidFixableErrors, hasIgnoredFixableErrors } =
+                classifyFixes fixProblemDict (fixableErrors files)
         in
         [ formatReports fixProblemDict detailsMode filesWithErrors
             |> Just
-        , if not (List.isEmpty ignoredFixableErrors) then
+        , if hasIgnoredFixableErrors then
             Just
                 [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
                     |> Text.from
@@ -230,6 +221,50 @@ formatReport fixProblemDict detailsMode errorsHaveBeenFixedPreviously files =
             |> Text.join "\n\n"
             |> Text.simplify
             |> List.map Text.toRecord
+
+
+classifyFixes : Dict String Review.Fix.Problem -> List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
+classifyFixes fixProblemDict errors =
+    let
+        { invalidFixableErrors, hasIgnoredFixableErrors } =
+            classifyFixesHelp
+                fixProblemDict
+                errors
+                { invalidFixableErrors = [], hasIgnoredFixableErrors = False }
+    in
+    { invalidFixableErrors = List.reverse invalidFixableErrors
+    , hasIgnoredFixableErrors = hasIgnoredFixableErrors
+    }
+
+
+classifyFixesHelp : Dict String Review.Fix.Problem -> List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool } -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
+classifyFixesHelp fixProblemDict errors acc =
+    case errors of
+        [] ->
+            acc
+
+        error :: rest ->
+            let
+                isInvalid : Bool
+                isInvalid =
+                    case error.fixesHash of
+                        Just fixesHash ->
+                            Dict.member fixesHash fixProblemDict
+
+                        Nothing ->
+                            False
+            in
+            if isInvalid then
+                classifyFixesHelp
+                    fixProblemDict
+                    rest
+                    { invalidFixableErrors = error :: acc.invalidFixableErrors, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
+
+            else
+                classifyFixesHelp
+                    fixProblemDict
+                    rest
+                    { invalidFixableErrors = acc.invalidFixableErrors, hasIgnoredFixableErrors = True }
 
 
 pluralize : Int -> String -> String
