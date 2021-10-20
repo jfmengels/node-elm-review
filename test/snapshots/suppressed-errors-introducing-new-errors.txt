@@ -21,8 +21,9 @@ You should either use this value somewhere, or remove it at the location I
 pointed at.
 
 Errors marked with (unsuppressed) were previously suppressed, but you introduced
-another error for the same rule in a file where those errors were already being
-suppressed. Please fix them until you have at most as many as errors are before.
+new errors for the same rule and file. There are now more of those than what I
+previously allowed. Please fix them until you have at most as many errors as
+before. Maybe fix a few more while you're there?
 
 Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
 

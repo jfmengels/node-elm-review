@@ -705,10 +705,10 @@ suppressedTests =
                     |> expect
                         { withoutColors = """I found no errors!
 
-There are still 1 suppressed errors to address."""
+There are still 1 suppressed error to address."""
                         , withColors = """I found no errors!
 
-There are still [1](#FFA500) suppressed errors to address."""
+There are still [1](#FFA500) suppressed error to address."""
                         }
         , test "report report that there are no errors but that the user has fixed some if there are less than the original number of suppressed errors" <|
             \() ->
@@ -716,7 +716,7 @@ There are still [1](#FFA500) suppressed errors to address."""
                     suppressedErrors : SuppressedErrors
                     suppressedErrors =
                         SuppressedErrors.createFOR_TESTS
-                            [ ( ( "NoDebug", "src/FileA.elm" ), 1 ) ]
+                            [ ( ( "NoDebug", "src/FileA.elm" ), 2 ) ]
                 in
                 Reporter.formatReport
                     { suppressedErrors = suppressedErrors
@@ -730,10 +730,10 @@ There are still [1](#FFA500) suppressed errors to address."""
                     |> expect
                         { withoutColors = """I found no errors!
 
-There are still 1 suppressed errors to address, of which you fixed 4!"""
+There are still 2 suppressed errors to address, of which you fixed 4!"""
                         , withColors = """I found no errors!
 
-There are still [1](#FFA500) suppressed errors to address, of which you fixed [4](#008000)!"""
+There are still [2](#FFA500) suppressed errors to address, of which you fixed [4](#008000)!"""
                         }
         , test "report report suppressed errors" <|
             \() ->
@@ -781,7 +781,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before.
+Errors marked with (unsuppressed) were previously suppressed, but you introduced new errors for the same rule and file. There are now more of those than what I previously allowed. Please fix them until you have at most as many errors as before. Maybe fix a few more while you're there?
 
 Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
 
@@ -798,7 +798,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-[Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before.](#FFA500)
+[Errors marked with (unsuppressed) were previously suppressed, but you introduced new errors for the same rule and file. There are now more of those than what I previously allowed. Please fix them until you have at most as many errors as before. Maybe fix a few more while you're there?](#FFA500)
 
 [Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 

@@ -184,7 +184,7 @@ formatReport { suppressedErrors, unsuppress, originalNumberOfSuppressedErrors, d
             |> Just
         , if not unsuppress && hasUnsuppressedErrors files then
             Just
-                [ "Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before."
+                [ "Errors marked with (unsuppressed) were previously suppressed, but you introduced new errors for the same rule and file. There are now more of those than what I previously allowed. Please fix them until you have at most as many errors as before. Maybe fix a few more while you're there?"
                     |> Text.from
                     |> Text.inOrange
                 ]
@@ -279,13 +279,16 @@ classifyFixesHelp fixProblemDict errors acc =
 
 pluralize : Int -> String -> String
 pluralize n word =
-    (String.fromInt n ++ " " ++ word)
-        ++ (if n > 1 then
-                "s"
+    String.fromInt n ++ " " ++ pluralizeEnding n word
 
-            else
-                ""
-           )
+
+pluralizeEnding : Int -> String -> String
+pluralizeEnding n word =
+    if n > 1 then
+        word ++ "s"
+
+    else
+        word
 
 
 hasUnsuppressedErrors : List FileWithError -> Bool
@@ -324,7 +327,7 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
                             |> String.fromInt
                             |> Text.from
                             |> Text.inOrange
-                      , Text.from " suppressed errors to address"
+                      , Text.from (" suppressed " ++ pluralizeEnding numberOfSuppressedErrors "error" ++ " to address")
                       ]
                     , if numberOfSuppressedErrors < originalNumberOfSuppressedErrors then
                         [ Text.from ", of which you fixed "
