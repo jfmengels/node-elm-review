@@ -1,4 +1,4 @@
-module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, count, decoder, empty, encode, fromReviewErrors, member)
+module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, count, createFOR_TESTS, decoder, empty, encode, fromReviewErrors, member)
 
 import Dict exposing (Dict)
 import Elm.Review.Vendor.List.Extra as ListExtra
@@ -164,3 +164,12 @@ encodeFileSuppression ( nbSuppressedErrors, path ) =
         [ ( "count", Encode.int nbSuppressedErrors )
         , ( "filePath", Encode.string path )
         ]
+
+
+
+-- TESTS ONLY
+
+
+createFOR_TESTS : List ( ( String, String ), Int ) -> SuppressedErrors
+createFOR_TESTS =
+    Dict.fromList >> SuppressedErrors

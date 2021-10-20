@@ -2,7 +2,7 @@ module ReporterTest exposing (suite)
 
 import Dict
 import Elm.Review.Reporter as Reporter
-import Elm.Review.SuppressedErrors as SuppressedErrors
+import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import FormatTester exposing (expect)
 import Test exposing (Test, describe, test)
 
@@ -18,6 +18,7 @@ suite =
         , singleCompactErrorTest
         , multilineErrorTest
         , globalErrorTest
+        , suppressedTests
         , unicodeTests
         ]
 
@@ -679,6 +680,250 @@ I found 1 error in 1 file."""
 
 I found [1 error](#FF0000) in [1 file](#FFFF00)."""
                     }
+
+
+suppressedTests : Test
+suppressedTests =
+    describe "Suppressed"
+        [ test "report report that there are no errors but some suppressed errors remain if there are no outstanding errors from the suppressed ones" <|
+            \() ->
+                let
+                    suppressedErrors : SuppressedErrors
+                    suppressedErrors =
+                        SuppressedErrors.createFOR_TESTS
+                            [ ( ( "NoDebug", "src/FileA.elm" ), 1 ) ]
+                in
+                Reporter.formatReport
+                    { suppressedErrors = suppressedErrors
+                    , unsuppress = False
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
+                    []
+                    |> expect
+                        { withoutColors = """I found no errors!
+
+There are still 1 suppressed errors to address."""
+                        , withColors = """I found no errors!
+
+There are still [1](#FFA500) suppressed errors to address."""
+                        }
+        , test "report report that there are no errors but that the user has fixed some if there are less than the original number of suppressed errors" <|
+            \() ->
+                let
+                    suppressedErrors : SuppressedErrors
+                    suppressedErrors =
+                        SuppressedErrors.createFOR_TESTS
+                            [ ( ( "NoDebug", "src/FileA.elm" ), 1 ) ]
+                in
+                Reporter.formatReport
+                    { suppressedErrors = suppressedErrors
+                    , unsuppress = False
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
+                    , fixProblemDict = Dict.empty
+                    , detailsMode = Reporter.WithDetails
+                    , errorsHaveBeenFixedPreviously = False
+                    }
+                    []
+                    |> expect
+                        { withoutColors = """I found no errors!
+
+There are still 1 suppressed errors to address, of which you fixed 4!"""
+                        , withColors = """I found no errors!
+
+There are still [1](#FFA500) suppressed errors to address, of which you fixed [4](#008000)!"""
+                        }
+        , test "report report suppressed errors" <|
+            \() ->
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , fixesHash = Just "some-value"
+                          , suppressed = True
+                          }
+                        ]
+                  }
+                ]
+                    |> Reporter.formatReport
+                        { suppressedErrors = SuppressedErrors.empty
+                        , unsuppress = False
+
+                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
+                    |> expect
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+(unsuppressed) (fix) NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before.
+
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+I found 1 error in 1 file."""
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[(unsuppressed) ](#FFA500)[(fix) ](#33BBC8)[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](#FF0000)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+[Errors marked with (unsuppressed) were previously suppressed, but you introduced another error for the same rule in a file where those errors were already being suppressed. Please fix them until you have at most as many as errors are before.](#FFA500)
+
+[Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
+
+I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+                        }
+        , test "report report all errors when unsuppress is true" <|
+            \() ->
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , fixesHash = Just "some-value"
+                          , suppressed = True
+                          }
+                        ]
+                  }
+                , { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+                  , errors =
+                        [ { ruleName = "NoDebug2"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                          , message = "Do not use Debug2"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , fixesHash = Just "some-value"
+                          , suppressed = False
+                          }
+                        ]
+                  }
+                ]
+                    |> Reporter.formatReport
+                        { suppressedErrors = SuppressedErrors.empty
+                        , unsuppress = True
+
+                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
+                        , originalNumberOfSuppressedErrors = 0
+                        , fixProblemDict = Dict.empty
+                        , detailsMode = Reporter.WithDetails
+                        , errorsHaveBeenFixedPreviously = False
+                        }
+                    |> expect
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+(unsuppressed) (fix) NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+                                                            src/FileA.elm  ↑
+====o======================================================================o====
+    ↓  src/FileA.elm
+
+
+-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+(fix) NoDebug2: Do not use Debug2
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+I found 2 errors in 2 files."""
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[(unsuppressed) ](#FFA500)[(fix) ](#33BBC8)[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](#FF0000)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+                                                            [src/FileA.elm  ↑
+====o======================================================================o====
+    ↓  src/FileA.elm](#FF0000)
+
+
+[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[(fix) ](#33BBC8)[NoDebug2](#FF0000): Do not use Debug2
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](#FF0000)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+[Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
+
+I found [2 errors](#FF0000) in [2 files](#FFFF00)."""
+                        }
+        ]
 
 
 unicodeTests : Test
