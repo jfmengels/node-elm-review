@@ -57,7 +57,7 @@
             },
             "\n12|         , -- span is unused\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
           ],
-          "suppressed": false,
+          "suppressed": true,
           "originallySuppressed": true
         },
         {
@@ -113,7 +113,7 @@
             },
             "\n14|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
           ],
-          "suppressed": false,
+          "suppressed": true,
           "originallySuppressed": true
         }
       ]
@@ -174,7 +174,7 @@
             },
             "\n9|     2\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
           ],
-          "suppressed": false,
+          "suppressed": true,
           "originallySuppressed": true
         }
       ]

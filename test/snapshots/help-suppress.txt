@@ -35,14 +35,14 @@ do so with moderation. The aim of the suppression system is to allow enabling
 rules while there are errors remaining and to have these fixed incrementally,
 not to make it easier to ignore errors.
 
-When you wish to tackle the suppressed errors, you can use the following
+When you wish to tackle the suppressed errors, you can run elm-review (without
+the suppress subcommand) with its available flags, and you can use the following
 options to help you:
 
     --unsuppress
-        Report errors including the ones that were suppressed.
+        Include suppressed errors in the error report for all rules.
 
-    --rules <rule1,rule2,...>
-        Run with a subsection of the rules in the configuration. Specify them
-        by their name, and separate them by commas.
-        Use this to tackle suppressed errors one rule at a time.
+    --unsuppress-rules <rule1,rule2,...>
+        Include suppressed errors in the error report for the listed rules.
+        Specify the rules by their name, and separate them by commas.
 

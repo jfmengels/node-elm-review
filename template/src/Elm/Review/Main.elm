@@ -11,6 +11,7 @@ import Elm.Review.Progress as Progress
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
+import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
@@ -119,7 +120,7 @@ type alias Model =
     , projectData : Maybe Rule.ProjectData
     , links : Dict String String
     , fixMode : FixMode
-    , unsuppress : Bool
+    , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
@@ -167,7 +168,7 @@ init rawFlags =
 
                 Err error ->
                     ( { fixMode = Mode_DontFix
-                      , unsuppress = False
+                      , unsuppressMode = UnsuppressMode.UnsuppressNone
                       , reportMode = HumanReadable
                       , detailsMode = Reporter.WithoutDetails
                       , ignoreProblematicDependencies = False
@@ -179,7 +180,7 @@ init rawFlags =
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
 
-        ( rules, filterNames ) =
+        ( rulesFromConfig, filterNames ) =
             case flags.rulesFilter of
                 Just rulesToEnable ->
                     let
@@ -195,17 +196,20 @@ init rawFlags =
 
                 Nothing ->
                     ( config, [] )
-    in
-    ( { rules =
+
+        rules : List Rule
+        rules =
             List.map
                 (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
-                rules
+                rulesFromConfig
+    in
+    ( { rules = rules
       , project = Project.new
       , projectData = Nothing
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
-      , unsuppress = flags.unsuppress
+      , unsuppressMode = flags.unsuppressMode
       , detailsMode = flags.detailsMode
       , reportMode = flags.reportMode
       , reviewErrors = []
@@ -253,7 +257,7 @@ I recommend you take a look at the following documents:
                         HumanReadable ->
                             Reporter.formatReport
                                 { suppressedErrors = SuppressedErrors.empty
-                                , unsuppress = False
+                                , unsuppressMode = flags.unsuppressMode
                                 , originalNumberOfSuppressedErrors = 0
                                 , detailsMode = flags.detailsMode
                                 , errorsHaveBeenFixedPreviously = False
@@ -315,7 +319,7 @@ closestNames names name =
 
 type alias DecodedFlags =
     { fixMode : FixMode
-    , unsuppress : Bool
+    , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
@@ -330,7 +334,7 @@ decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
     Decode.succeed DecodedFlags
         |> field "fixMode" decodeFix
-        |> field "unsuppress" Decode.bool
+        |> field "unsuppress" UnsuppressMode.decoder
         |> field "detailsMode" decodeDetailsMode
         |> field "report" decodeReportMode
         |> field "ignoreProblematicDependencies" Decode.bool
@@ -597,7 +601,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         makeReport Dict.empty
                             { model
                                 | suppressedErrors = suppressedErrors
-                                , reviewErrorsAfterSuppression = SuppressedErrors.apply suppressedErrors model.reviewErrors
+                                , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode suppressedErrors model.reviewErrors
                             }
 
         ReceivedLinks json ->
@@ -787,7 +791,7 @@ runReview model =
     in
     { model
         | reviewErrors = errors
-        , reviewErrorsAfterSuppression = SuppressedErrors.apply model.suppressedErrors errors
+        , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode model.suppressedErrors errors
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
@@ -814,14 +818,6 @@ reportOrFix model =
 makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
 makeReport failedFixesDict model =
     let
-        errorsToLookAt : List Rule.ReviewError
-        errorsToLookAt =
-            if model.unsuppress then
-                model.reviewErrors
-
-            else
-                model.reviewErrorsAfterSuppression
-
         ( newModel, suppressedErrorsForJson ) =
             if List.isEmpty model.reviewErrorsAfterSuppression then
                 let
@@ -837,14 +833,14 @@ makeReport failedFixesDict model =
                 ( model, Encode.null )
     in
     ( newModel
-    , [ ( "success", Encode.bool <| List.isEmpty errorsToLookAt )
+    , [ ( "success", Encode.bool <| List.isEmpty model.reviewErrorsAfterSuppression )
       , ( "errors"
         , case newModel.reportMode of
             HumanReadable ->
                 let
                     errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
                     errorsByFile =
-                        groupErrorsByFile model.project errorsToLookAt
+                        groupErrorsByFile model.project model.reviewErrorsAfterSuppression
 
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
@@ -859,7 +855,7 @@ makeReport failedFixesDict model =
                 in
                 Reporter.formatReport
                     { suppressedErrors = newModel.suppressedErrors
-                    , unsuppress = newModel.unsuppress
+                    , unsuppressMode = newModel.unsuppressMode
                     , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
                     , detailsMode = newModel.detailsMode
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously

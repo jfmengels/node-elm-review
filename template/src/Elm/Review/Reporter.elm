@@ -28,6 +28,7 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
+import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
 import Set
@@ -152,7 +153,7 @@ type DetailsMode
 -}
 formatReport :
     { suppressedErrors : SuppressedErrors
-    , unsuppress : Bool
+    , unsuppressMode : UnsuppressMode
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
     , errorsHaveBeenFixedPreviously : Bool
@@ -160,7 +161,7 @@ formatReport :
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppress, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fixProblemDict } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fixProblemDict } files =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -182,7 +183,7 @@ formatReport { suppressedErrors, unsuppress, originalNumberOfSuppressedErrors, d
         in
         [ formatReports fixProblemDict detailsMode filesWithErrors
             |> Just
-        , if not unsuppress && hasUnsuppressedErrors files then
+        , if showUnsuppressedWarning unsuppressMode files then
             Just
                 [ "Errors marked with (unsuppressed) were previously suppressed, but you introduced new errors for the same rule and file. There are now more of those than what I previously allowed. Please fix them until you have at most as many errors as before. Maybe fix a few more while you're there?"
                     |> Text.from
@@ -291,13 +292,29 @@ pluralizeEnding n word =
         word
 
 
-hasUnsuppressedErrors : List FileWithError -> Bool
-hasUnsuppressedErrors files =
-    List.any
-        (\file ->
-            List.any (\error -> error.suppressed) file.errors
-        )
-        files
+showUnsuppressedWarning : UnsuppressMode -> List FileWithError -> Bool
+showUnsuppressedWarning unsuppressMode files =
+    case unsuppressMode of
+        UnsuppressMode.UnsuppressAll ->
+            False
+
+        UnsuppressMode.UnsuppressRules set ->
+            List.any
+                (\file ->
+                    List.any
+                        (\error ->
+                            error.suppressed && not (Set.member error.ruleName set)
+                        )
+                        file.errors
+                )
+                files
+
+        UnsuppressMode.UnsuppressNone ->
+            List.any
+                (\file ->
+                    List.any (\error -> error.suppressed) file.errors
+                )
+                files
 
 
 formatNoErrors : SuppressedErrors -> Int -> Bool -> List Text.TextContent

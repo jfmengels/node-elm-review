@@ -5,6 +5,6 @@ The --rules flag needs more information.
 Here is the documentation for this flag:
 
     --rules <rule1,rule2,...>
-        Run with a subsection of the rules in the configuration. Specify them
-        by their name, and separate them by commas.
+        Run with a subsection of the rules in the configuration.
+        Specify them by their name, and separate them by commas.
 

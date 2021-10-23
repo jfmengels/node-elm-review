@@ -503,6 +503,11 @@ createTestSuiteForHumanAndJson "$CMD" \
     "--unsuppress" \
     "suppressed-errors-unsuppress"
 
+createTestSuiteForHumanAndJson "$CMD" \
+    "Running with --unsuppress-rules should report suppressed errors for that rule" \
+    "--unsuppress-rules NoUnused.Dependencies" \
+    "suppressed-errors-unsuppress-rules"
+
 cd ..
 
 # new-package

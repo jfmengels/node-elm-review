@@ -1,0 +1,14 @@
+-- ELM-REVIEW ERROR --------------------------------------------- elm.json:12:14
+
+(unsuppressed) NoUnused.Dependencies: Unused dependency `elm/time`
+
+11|             "elm/html": "1.0.0",
+12|             "elm/time": "1.0.0"
+                 ^^^^^^^^
+13|         },
+
+To remove it, I recommend running the following command:
+
+    elm-json uninstall elm/time
+
+I found 1 error in 1 file.

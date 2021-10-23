@@ -1,6 +1,17 @@
-module Elm.Review.SuppressedErrors exposing (SuppressedErrors, apply, count, createFOR_TESTS, decoder, empty, encode, fromReviewErrors, member)
+module Elm.Review.SuppressedErrors exposing
+    ( SuppressedErrors
+    , apply
+    , count
+    , createFOR_TESTS
+    , decoder
+    , empty
+    , encode
+    , fromReviewErrors
+    , member
+    )
 
 import Dict exposing (Dict)
+import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -31,13 +42,30 @@ fromReviewErrors reviewErrors =
         |> SuppressedErrors
 
 
-apply : SuppressedErrors -> List Rule.ReviewError -> List Rule.ReviewError
-apply (SuppressedErrors suppressedErrors) errors =
+apply : UnsuppressMode -> SuppressedErrors -> List Rule.ReviewError -> List Rule.ReviewError
+apply unsuppressMode (SuppressedErrors suppressedErrors) errors =
     if Dict.isEmpty suppressedErrors then
         errors
 
     else
-        applyHelp suppressedErrors errors
+        case unsuppressMode of
+            UnsuppressMode.UnsuppressAll ->
+                errors
+
+            UnsuppressMode.UnsuppressRules ruleNames ->
+                applyHelp (filterSuppressed ruleNames suppressedErrors) errors
+
+            UnsuppressMode.UnsuppressNone ->
+                applyHelp suppressedErrors errors
+
+
+filterSuppressed : Set String -> Dict ( String, String ) a -> Dict ( String, String ) a
+filterSuppressed ruleNames suppressedErrors =
+    Dict.filter
+        (\( ruleName, _ ) _ ->
+            not (Set.member ruleName ruleNames)
+        )
+        suppressedErrors
 
 
 applyHelp : Dict ( String, String ) Int -> List Rule.ReviewError -> List Rule.ReviewError
