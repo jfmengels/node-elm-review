@@ -88,6 +88,21 @@ function createTestSuiteWithDifferentReportFormats {
         "$FILE-ndjson.txt"
 }
 
+function createTestSuiteForHumanAndJson {
+    local LOCAL_COMMAND=$1
+    local TITLE=$2
+    local ARGS=$3
+    local FILE=$4
+    $createTest "$LOCAL_COMMAND" \
+        "$TITLE" \
+        "$ARGS" \
+        "$FILE.txt"
+    $createTest "$LOCAL_COMMAND" \
+        "$TITLE (JSON)" \
+        "$ARGS --report=json" \
+        "$FILE-json.txt"
+}
+
 function initElmProject {
   echo Y | npx --no-install elm init > /dev/null
   echo -e 'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n' > src/Main.elm
@@ -447,10 +462,10 @@ fi
 ## suppress
 
 cd "$CWD/project-with-suppressed-errors"
-$createTest "$CMD" \
+createTestSuiteForHumanAndJson "$CMD" \
     "Running with only suppressed errors should not report any errors" \
     "" \
-    "suppressed-errors-pass.txt"
+    "suppressed-errors-pass"
 
 cp fixed-elm.json elm.json
 $createTest "$CMD" \
@@ -477,16 +492,16 @@ fi
 git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
 
 cp with-errors-OtherFile.elm src/OtherFile.elm
-$createTest "$CMD" \
+createTestSuiteForHumanAndJson "$CMD" \
     "Introducing new errors should show all related errors" \
     "" \
-    "suppressed-errors-introducing-new-errors.txt"
+    "suppressed-errors-introducing-new-errors"
 git checkout HEAD src/OtherFile.elm > /dev/null
 
-$createTest "$CMD" \
+createTestSuiteForHumanAndJson "$CMD" \
     "Running with --unsuppress should report suppressed errors" \
     "--unsuppress" \
-    "suppressed-errors-unsuppress.txt"
+    "suppressed-errors-unsuppress"
 
 cd ..
 
