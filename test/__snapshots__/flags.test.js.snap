@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Running with an unknown flag 1`] = `
+"-- UNKNOWN FLAG ----------------------------------------------------------------
+
+I did not recognize this flag:
+
+    watc
+
+Maybe you want one of these instead?
+
+    --watch
+    --help
+
+"
+`;
+
+exports[`Running with an unknown shorthand flag 1`] = `
+"-- UNKNOWN FLAG ----------------------------------------------------------------
+
+I did not recognize this shorthand flag: -u
+
+I only know these: -h, -v
+
+"
+`;
