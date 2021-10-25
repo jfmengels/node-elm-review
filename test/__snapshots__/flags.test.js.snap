@@ -1,26 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Running with an unknown flag 1`] = `
-"-- UNKNOWN FLAG ----------------------------------------------------------------
+"[32m-- UNKNOWN FLAG ----------------------------------------------------------------[39m
 
 I did not recognize this flag:
 
-    watc
+    [91mwatc[39m
 
 Maybe you want one of these instead?
 
-    --watch
-    --help
+[92m    --watch[39m
+[92m    --help[39m
 
 "
 `;
 
 exports[`Running with an unknown shorthand flag 1`] = `
-"-- UNKNOWN FLAG ----------------------------------------------------------------
+"[32m-- UNKNOWN FLAG ----------------------------------------------------------------[39m
 
-I did not recognize this shorthand flag: -u
+I did not recognize this shorthand flag: [91m-u[39m
 
-I only know these: -h, -v
+I only know these: [92m-h[39m, [92m-v[39m
 
 "
 `;
