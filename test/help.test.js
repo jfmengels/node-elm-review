@@ -2,6 +2,7 @@ const path = require('path');
 const spawnAsync = require('cross-spawn');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const version = require('../package.json').version;
 
 test('--help', async () => {
     const output = await spawn('--help');
@@ -30,5 +31,5 @@ test('new-rule --help', async () => {
 
 const cli = path.resolve(__dirname, "../bin/elm-review");
 function spawn(args) {
-    return exec(`${cli} ${args}`);
+    return exec(`${cli} --FOR-TESTS ${args}`);
 }
