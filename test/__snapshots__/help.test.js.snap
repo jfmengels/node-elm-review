@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`--help 1`] = `
-"You are using [92melm-review 2.7.0-beta.2[39m.
+"You are using [92melm-review <version>[39m.
 
     [96melm-review <zero-or-more-files-or-directories>[39m
         Analyzes your project, and lists the locations where patterns forbidden
