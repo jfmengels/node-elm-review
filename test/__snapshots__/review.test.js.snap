@@ -1,157 +1,140 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Regular run from inside the project (JSON output) 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "errors": Array [
-        Object {
-          "details": Array [
-            "This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project.",
+"{
+  \\"type\\": \\"review-errors\\",
+  \\"errors\\": [
+    {
+      \\"path\\": \\"src/Folder/Unused.elm\\",
+      \\"errors\\": [
+        {
+          \\"rule\\": \\"NoUnused.Modules\\",
+          \\"message\\": \\"Module \`Folder.Unused\` is never used.\\",
+          \\"ruleLink\\": \\"https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Modules\\",
+          \\"details\\": [
+            \\"This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project.\\"
           ],
-          "formatted": Array [
-            Object {
-              "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Modules",
-              "string": "NoUnused.Modules",
+          \\"region\\": {
+            \\"start\\": {
+              \\"line\\": 1,
+              \\"column\\": 8
             },
-            ": Module \`Folder.Unused\` is never used.
-
-1| module Folder.Unused exposing (..)
-          ",
-            Object {
-              "color": "#FF0000",
-              "string": "^^^^^^^^^^^^^",
-            },
-            "
-
-This module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project.",
-          ],
-          "message": "Module \`Folder.Unused\` is never used.",
-          "originallySuppressed": false,
-          "region": Object {
-            "end": Object {
-              "column": 21,
-              "line": 1,
-            },
-            "start": Object {
-              "column": 8,
-              "line": 1,
-            },
+            \\"end\\": {
+              \\"line\\": 1,
+              \\"column\\": 21
+            }
           },
-          "rule": "NoUnused.Modules",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Modules",
-          "suppressed": false,
-        },
-      ],
-      "path": "src/Folder/Unused.elm",
-    },
-    Object {
-      "errors": Array [
-        Object {
-          "details": Array [
-            "You should either use this value somewhere, or remove it at the location I pointed at.",
+          \\"formatted\\": [
+            {
+              \\"string\\": \\"NoUnused.Modules\\",
+              \\"color\\": \\"#FF0000\\",
+              \\"href\\": \\"https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Modules\\"
+            },
+            \\": Module \`Folder.Unused\` is never used.\\\\n\\\\n1| module Folder.Unused exposing (..)\\\\n          \\",
+            {
+              \\"string\\": \\"^^^^^^^^^^^^^\\",
+              \\"color\\": \\"#FF0000\\"
+            },
+            \\"\\\\n\\\\nThis module is never used. You may want to remove it to keep your project clean, and maybe detect some unused code in your project.\\"
           ],
-          "fix": Array [
-            Object {
-              "range": Object {
-                "end": Object {
-                  "column": 15,
-                  "line": 11,
+          \\"suppressed\\": false,
+          \\"originallySuppressed\\": false
+        }
+      ]
+    },
+    {
+      \\"path\\": \\"src/Main.elm\\",
+      \\"errors\\": [
+        {
+          \\"rule\\": \\"NoUnused.Variables\\",
+          \\"message\\": \\"Imported variable \`span\` is not used\\",
+          \\"ruleLink\\": \\"https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables\\",
+          \\"details\\": [
+            \\"You should either use this value somewhere, or remove it at the location I pointed at.\\"
+          ],
+          \\"region\\": {
+            \\"start\\": {
+              \\"line\\": 11,
+              \\"column\\": 11
+            },
+            \\"end\\": {
+              \\"line\\": 11,
+              \\"column\\": 15
+            }
+          },
+          \\"fix\\": [
+            {
+              \\"range\\": {
+                \\"start\\": {
+                  \\"line\\": 9,
+                  \\"column\\": 14
                 },
-                "start": Object {
-                  "column": 14,
-                  "line": 9,
-                },
+                \\"end\\": {
+                  \\"line\\": 11,
+                  \\"column\\": 15
+                }
               },
-              "string": "",
-            },
+              \\"string\\": \\"\\"
+            }
           ],
-          "formatted": Array [
-            Object {
-              "color": "#33BBC8",
-              "string": "(fix) ",
+          \\"formatted\\": [
+            {
+              \\"string\\": \\"(fix) \\",
+              \\"color\\": \\"#33BBC8\\"
             },
-            Object {
-              "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
-              "string": "NoUnused.Variables",
+            {
+              \\"string\\": \\"NoUnused.Variables\\",
+              \\"color\\": \\"#FF0000\\",
+              \\"href\\": \\"https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables\\"
             },
-            ": Imported variable \`span\` is not used
-
-10|           -- span is unused
-11|         , span
-              ",
-            Object {
-              "color": "#FF0000",
-              "string": "^^^^",
+            \\": Imported variable \`span\` is not used\\\\n\\\\n10|           -- span is unused\\\\n11|         , span\\\\n              \\",
+            {
+              \\"string\\": \\"^^^^\\",
+              \\"color\\": \\"#FF0000\\"
             },
-            "
-12|         , text
-
-You should either use this value somewhere, or remove it at the location I pointed at.",
+            \\"\\\\n12|         , text\\\\n\\\\nYou should either use this value somewhere, or remove it at the location I pointed at.\\"
           ],
-          "message": "Imported variable \`span\` is not used",
-          "originallySuppressed": false,
-          "region": Object {
-            "end": Object {
-              "column": 15,
-              "line": 11,
-            },
-            "start": Object {
-              "column": 11,
-              "line": 11,
-            },
-          },
-          "rule": "NoUnused.Variables",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
-          "suppressed": false,
+          \\"suppressed\\": false,
+          \\"originallySuppressed\\": false
         },
-        Object {
-          "details": Array [
-            "This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created.",
+        {
+          \\"rule\\": \\"NoUnused.CustomTypeConstructors\\",
+          \\"message\\": \\"Type constructor \`UnusedCustomType\` is not used.\\",
+          \\"ruleLink\\": \\"https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors\\",
+          \\"details\\": [
+            \\"This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created.\\"
           ],
-          "formatted": Array [
-            Object {
-              "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors",
-              "string": "NoUnused.CustomTypeConstructors",
+          \\"region\\": {
+            \\"start\\": {
+              \\"line\\": 29,
+              \\"column\\": 7
             },
-            ": Type constructor \`UnusedCustomType\` is not used.
-
-28|     | Decrement
-29|     | UnusedCustomType
-          ",
-            Object {
-              "color": "#FF0000",
-              "string": "^^^^^^^^^^^^^^^^",
-            },
-            "
-
-This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created.",
-          ],
-          "message": "Type constructor \`UnusedCustomType\` is not used.",
-          "originallySuppressed": false,
-          "region": Object {
-            "end": Object {
-              "column": 23,
-              "line": 29,
-            },
-            "start": Object {
-              "column": 7,
-              "line": 29,
-            },
+            \\"end\\": {
+              \\"line\\": 29,
+              \\"column\\": 23
+            }
           },
-          "rule": "NoUnused.CustomTypeConstructors",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors",
-          "suppressed": false,
-        },
-      ],
-      "path": "src/Main.elm",
-    },
-  ],
-  "type": "review-errors",
+          \\"formatted\\": [
+            {
+              \\"string\\": \\"NoUnused.CustomTypeConstructors\\",
+              \\"color\\": \\"#FF0000\\",
+              \\"href\\": \\"https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors\\"
+            },
+            \\": Type constructor \`UnusedCustomType\` is not used.\\\\n\\\\n28|     | Decrement\\\\n29|     | UnusedCustomType\\\\n          \\",
+            {
+              \\"string\\": \\"^^^^^^^^^^^^^^^^\\",
+              \\"color\\": \\"#FF0000\\"
+            },
+            \\"\\\\n\\\\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created.\\"
+          ],
+          \\"suppressed\\": false,
+          \\"originallySuppressed\\": false
+        }
+      ]
+    }
+  ]
 }
+"
 `;
 
 exports[`Regular run from inside the project 1`] = `
