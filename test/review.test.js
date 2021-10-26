@@ -1,5 +1,8 @@
 const path = require('path');
+const { toMatchFile } = require('jest-file-snapshot');
 const TestCli = require('./jest-helpers/cli');
+
+expect.extend({ toMatchFile });
 
 test('Regular run from inside the project', async () => {
     const output = await TestCli.runAndExpectError(
@@ -14,7 +17,7 @@ test('Regular run from inside the project (JSON output)', async () => {
         '',
         { project: "project-with-errors/", report: 'json' }
     );
-    expect(output).toMatchSnapshot();
+    expect(output).toMatchFile();
 });
 
 test.skip('Regular run from inside the project (ndjson output)', async () => {
