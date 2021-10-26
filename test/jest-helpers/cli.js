@@ -10,13 +10,13 @@ module.exports = {
     runWithoutTestMode
 }
 
-function run(args) {
-    return internalExec(`--FOR-TESTS ${args}`);
+function run(args, options) {
+    return internalExec(`--FOR-TESTS ${args}`, options);
 }
 
-async function runAndExpectError(args) {
+async function runAndExpectError(args, options) {
     try {
-        const output = await internalExec(`--FOR-TESTS ${args}`);
+        const output = await internalExec(`--FOR-TESTS ${args}`, options);
         throw new Error(`CLI did not exit with an exit code as expected. Here is its output:\n\n${output}`);
     }
     catch(output) {
@@ -24,12 +24,12 @@ async function runAndExpectError(args) {
     }
 }
 
-function runWithoutTestMode(args) {
-    return internalExec(args);
+function runWithoutTestMode(args, options) {
+    return internalExec(args, options);
 }
 
-function internalExec(args) {
-    return exec(`${cli} ${args}`)
+function internalExec(args, options) {
+    return exec(`${cli} ${args}`, options)
         .then(result => result.stdout)
         .catch(err => {
             throw err.stdout;
