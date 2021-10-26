@@ -194,13 +194,6 @@ checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
 
 # Review
 
-cd "$CWD/project-with-errors"
-
-createTestSuiteWithDifferentReportFormats "$CMD" \
-    "Running using other configuration (without errors)" \
-    "--config ../config-that-triggers-no-errors" \
-    "no-errors"
-
 cd "$CWD"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Regular run using --elmjson and --config" \
