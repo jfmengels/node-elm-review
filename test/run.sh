@@ -164,28 +164,6 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
-# Flag errors
-
-$createTest "$CMD" \
-    "Running --report with an unknown value" \
-    "--report=unknown" \
-    "report-unknown-argument.txt"
-
-$createTest "$CMD" \
-    "Running --template with a bad value" \
-    "--template=not-github-repo" \
-    "template-bad-argument.txt"
-
-$createTest "$CMD" \
-    "Running init --template with a bad value" \
-    "init --template=not-github-repo" \
-    "init-template-bad-argument.txt"
-
-$createTest "$CMD" \
-    "Using the same flag twice" \
-    "--config a/ --config b/" \
-    "duplicate-flags.txt"
-
 # init
 
 INIT_PROJECT_NAME="init-project"

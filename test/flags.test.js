@@ -80,3 +80,22 @@ test("Running --github-auth with a bad value", async () => {
     expect(output).toMatchSnapshot();
 });
 
+test("Running --report with an unknown value", async () => {
+    const output = await TestCli.runAndExpectError("--report=unknown");
+    expect(output).toMatchSnapshot();
+});
+
+test("Running --template with a bad value", async () => {
+    const output = await TestCli.runAndExpectError("--template=not-github-repo");
+    expect(output).toMatchSnapshot();
+});
+
+test("Running init --template with a bad value", async () => {
+    const output = await TestCli.runAndExpectError("init --template=not-github-repo");
+    expect(output).toMatchSnapshot();
+});
+
+test("Using the same flag twice", async () => {
+    const output = await TestCli.runAndExpectError("--config a/ --config b/");
+    expect(output).toMatchSnapshot();
+});

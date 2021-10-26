@@ -97,6 +97,21 @@ Here is the documentation for this flag:
 "
 `;
 
+exports[`Running --report with an unknown value 1`] = `
+"[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+
+The value [91munknown[39m passed to [36m--report[39m is not a valid one.
+
+Here is the documentation for this flag:
+
+    [36m--report=<json or ndjson>[39m
+        Error reports will be in JSON format. [35mjson[39m prints a single JSON object
+        while [35mndjson[39m will print one JSON object per error each on a new line.
+        The formats are described in this document: https://bit.ly/31F6jzz
+
+"
+`;
+
 exports[`Running --report without an argument 1`] = `
 "[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
 
@@ -122,6 +137,27 @@ Here is the documentation for this flag:
     [36m--rules <rule1,rule2,...>[39m
         Run with a subsection of the rules in the configuration.
         Specify them by their name, and separate them by commas.
+
+"
+`;
+
+exports[`Running --template with a bad value 1`] = `
+"[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+
+The value [91mnot-github-repo[39m passed to [36m--template[39m is not a valid one.
+
+Here is the documentation for this flag:
+
+    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+        Use the review configuration from a GitHub repository. You can use this
+        to try out [92melm-review[39m, a configuration or a single rule.
+        This flag requires Internet access, even after the first run.
+        Examples:
+          - elm-review --template author/elm-review-configuration
+          - elm-review --template jfmengels/elm-review-unused/example#master
+
+        I recommend to only use this temporarily, and run [93melm-review init[39m with
+        this same flag to copy the configuration to your project.
 
 "
 `;
@@ -173,6 +209,22 @@ Here is the documentation for this flag:
     [36m--config <path-to-review-directory>[39m
         Create the configuration files in the specified directory instead of in
         the review/ directory.
+
+"
+`;
+
+exports[`Running init --template with a bad value 1`] = `
+"[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+
+The value [91mnot-github-repo[39m passed to [36m--template[39m is not a valid one.
+
+Here is the documentation for this flag:
+
+    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+        Copy the review configuration from a GitHub repository, at the root or
+        in a folder. Examples:
+        - elm-review init --template author/elm-review-configuration
+        - elm-review init --template jfmengels/elm-review-unused/example#master
 
 "
 `;
@@ -230,6 +282,20 @@ exports[`Running with an unknown shorthand flag 1`] = `
 I did not recognize this shorthand flag: [91m-u[39m
 
 I only know these: [92m-h[39m, [92m-v[39m
+
+"
+`;
+
+exports[`Using the same flag twice 1`] = `
+"[32m-- FLAG USED SEVERAL TIMES -----------------------------------------------------[39m
+
+The [91m--config[39m flag may not be used several times. I need a single value for this flag but I got several, and I don't know which one to choose.
+
+In case it helps, here is the documentation for this flag:
+
+    [36m--config <path-to-review-directory>[39m
+        Use the review configuration in the specified directory instead of the
+        one found in the current directory or one of its parents.
 
 "
 `;
