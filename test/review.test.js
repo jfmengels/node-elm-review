@@ -12,7 +12,7 @@ test('Regular run from inside the project', async () => {
     expect(output).toMatchSnapshot();
 });
 
-test('Regular run from inside the project (JSON output)', async () => {
+test.only('Regular run from inside the project (JSON output)', async () => {
     const output = await TestCli.runAndExpectError(
         '',
         { project: "project-with-errors/", report: 'json' }
