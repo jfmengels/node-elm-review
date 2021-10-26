@@ -49,6 +49,11 @@ test("Running --rules without an argument", async () => {
     expect(output).toMatchFile(testName("missing-argument-rules"));
 });
 
+test("Running --suppressed-rules without an argument", async () => {
+    const output = await TestCli.runAndExpectError("--suppressed-rules");
+    expect(output).toMatchFile(testName("missing-argument-suppressed-rules"));
+});
+
 test("Running --ignore-dirs without an argument", async () => {
     const output = await TestCli.runAndExpectError("--ignore-dirs");
     expect(output).toMatchFile(testName("missing-argument-ignore-dirs"));

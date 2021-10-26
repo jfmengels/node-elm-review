@@ -1,0 +1,11 @@
+[32m-- UNKNOWN FLAG ----------------------------------------------------------------[39m
+
+I did not recognize this flag:
+
+    [91msuppressed-rules[39m
+
+Maybe you want one of these instead?
+
+[92m    --unsuppress-rules <rule1,rule2,...>[39m
+[92m    --unsuppress[39m
+
