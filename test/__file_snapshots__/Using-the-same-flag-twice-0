@@ -1,0 +1,10 @@
+[32m-- FLAG USED SEVERAL TIMES -----------------------------------------------------[39m
+
+The [91m--config[39m flag may not be used several times. I need a single value for this flag but I got several, and I don't know which one to choose.
+
+In case it helps, here is the documentation for this flag:
+
+    [36m--config <path-to-review-directory>[39m
+        Use the review configuration in the specified directory instead of the
+        one found in the current directory or one of its parents.
+

@@ -1,0 +1,11 @@
+[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+
+The [91m--report[39m flag needs more information.
+
+Here is the documentation for this flag:
+
+    [36m--report=<json or ndjson>[39m
+        Error reports will be in JSON format. [35mjson[39m prints a single JSON object
+        while [35mndjson[39m will print one JSON object per error each on a new line.
+        The formats are described in this document: https://bit.ly/31F6jzz
+

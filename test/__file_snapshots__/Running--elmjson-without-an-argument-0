@@ -1,0 +1,10 @@
+[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+
+The [91m--elmjson[39m flag needs more information.
+
+Here is the documentation for this flag:
+
+    [36m--elmjson <path-to-elm.json>[39m
+        Specify the path to the elm.json file of the project. By default,
+        the one in the current directory or its parent directories will be used.
+

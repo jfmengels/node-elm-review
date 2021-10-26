@@ -1,0 +1,11 @@
+[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+
+The value [91munknown[39m passed to [36m--report[39m is not a valid one.
+
+Here is the documentation for this flag:
+
+    [36m--report=<json or ndjson>[39m
+        Error reports will be in JSON format. [35mjson[39m prints a single JSON object
+        while [35mndjson[39m will print one JSON object per error each on a new line.
+        The formats are described in this document: https://bit.ly/31F6jzz
+

@@ -1,0 +1,10 @@
+[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+
+The [91m--rules[39m flag needs more information.
+
+Here is the documentation for this flag:
+
+    [36m--rules <rule1,rule2,...>[39m
+        Run with a subsection of the rules in the configuration.
+        Specify them by their name, and separate them by commas.
+

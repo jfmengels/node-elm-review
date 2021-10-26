@@ -1,0 +1,12 @@
+[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+
+The [91m--compiler[39m flag needs more information.
+
+Here is the documentation for this flag:
+
+    [36m--compiler <path-to-elm>[39m
+        Specify the path to the [95melm[39m compiler.
+        The [95melm[39m compiler is used to know the version of the compiler to write
+        down in the [93mreview/elm.json[39m file’s `elm-version` field. Use this if you
+        have multiple versions of the [95melm[39m compiler on your device.
+

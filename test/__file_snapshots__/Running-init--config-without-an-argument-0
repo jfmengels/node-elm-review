@@ -1,0 +1,10 @@
+[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+
+The [91m--config[39m flag needs more information.
+
+Here is the documentation for this flag:
+
+    [36m--config <path-to-review-directory>[39m
+        Create the configuration files in the specified directory instead of in
+        the review/ directory.
+

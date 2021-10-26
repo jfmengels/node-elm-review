@@ -1,0 +1,9 @@
+[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+
+The [91m--compiler[39m flag needs more information.
+
+Here is the documentation for this flag:
+
+    [36m--compiler <path-to-elm>[39m
+        Specify the path to the [95melm[39m compiler.
+
