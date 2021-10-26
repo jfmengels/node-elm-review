@@ -1,0 +1,19 @@
+The new-package command scaffolds a new project to help you publish a package with [92melm-review[39m rules.
+
+    [96melm-review new-package[39m
+        It will create a new project, containing:
+        - An elm.json file
+        - A src/ directory with an initial rule
+        - A tests/ directory with an initial rule
+        - A package.json with Elm tooling and scripts
+        - A preconfigured review configuration, tailored for elm-review rules
+        - A GitHub action to publish the package really easily
+
+You can customize the new-package command with the following flags:
+
+    [36m--compiler <path-to-elm>[39m
+        Specify the path to the [95melm[39m compiler.
+        The [95melm[39m compiler is used to know the version of the compiler to write
+        down in the [93mreview/elm.json[39m file’s `elm-version` field. Use this if you
+        have multiple versions of the [95melm[39m compiler on your device.
+

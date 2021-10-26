@@ -1,0 +1,48 @@
+The suppress command helps adding new rules that report many errors
+in your project.
+
+    [38;2;255;165;0melm-review suppress[39m
+        Reviews your project and generates suppression files for the reported
+        errors.
+
+[92melm-review[39m has two systems to ignore reported errors.
+
+First is the use of the [36mRule.ignoreErrorsForDirectories[39m and
+[36mRule.ignoreErrorsForFiles[39m functions in the [36mReviewConfig.elm[39m file. These aim to
+indicate the parts of the project where a rule would not provide value and
+should be ignored, such as generated or vendored code.
+
+The second system is the [38;2;255;165;0mtemporarily suppressed[39m errors system, which aims to
+help you gradually adopt rules that report many errors in your project without
+having you fix all the issues beforehand.
+
+Running [38;2;255;165;0melm-review suppress[39m will generate a JSON file in [38;2;255;165;0mreview/suppressed/[39m for
+every rule that currently reports errors, and records the number of suppressed
+errors per file in your project.
+
+While suppression files exist for your project, running [92melm-review[39m will behave
+as usual but with these additional behaviors:
+  - Suppressed errors won't be reported.
+  - If there are outstanding errors for the ignored rules and files, the related
+    suppressed errors will be reported until you reduce the number of errors
+    back to the number in the JSON file. This is a good opportunity to fix more!
+  - If no errors are being reported and there are less suppressed errors than
+    before, suppression files will be updated automatically, in order to make
+    sure no new errors get re-introduced unknowingly.
+
+While you can run the [38;2;255;165;0msuppress[39m command to ignore newly reported errors, please
+do so with moderation. The aim of the suppression system is to allow enabling
+rules while there are errors remaining and to have these fixed incrementally,
+not to make it easier to ignore errors.
+
+When you wish to tackle the suppressed errors, you can run [92melm-review[39m (without
+the [38;2;255;165;0msuppress[39m subcommand) with its available flags, and you can use the following
+options to help you:
+
+    [36m--unsuppress[39m
+        Include [38;2;255;165;0msuppressed[39m errors in the error report for all rules.
+
+    [36m--unsuppress-rules <rule1,rule2,...>[39m
+        Include [38;2;255;165;0msuppressed[39m errors in the error report for the listed rules.
+        Specify the rules by their name, and separate them by commas.
+
