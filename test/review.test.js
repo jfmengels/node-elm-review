@@ -1,5 +1,8 @@
 const path = require('path');
 const TestCli = require('./jest-helpers/cli');
+const jsonSerializer = require('./jest-helpers/json-serializer');
+
+expect.addSnapshotSerializer(jsonSerializer);
 
 test('Regular run from inside the project', async () => {
     const output = await TestCli.runAndExpectError(
