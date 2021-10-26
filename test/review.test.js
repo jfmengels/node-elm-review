@@ -14,7 +14,7 @@ test('Regular run from inside the project (JSON output)', async () => {
         '',
         { project: "project-with-errors/", report: 'json' }
     );
-    expect(JSON.parse(output)).toMatchSnapshot();
+    expect(output).toMatchSnapshot();
 });
 
 test.skip('Regular run from inside the project (ndjson output)', async () => {
