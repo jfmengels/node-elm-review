@@ -46,7 +46,180 @@ I found 3 errors in 2 files.
 "
 `;
 
+exports[`Regular run using --elmjson and --config 1`] = `
+"-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
+
+NoUnused.Modules: Module \`Folder.Unused\` is never used.
+
+1| module Folder.Unused exposing (..)
+          ^^^^^^^^^^^^^
+
+This module is never used. You may want to remove it to keep your project clean,
+and maybe detect some unused code in your project.
+
+src/Folder/Unused.elm  ↑
+====o======================================================================o====
+↓  src/Main.elm
+
+
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:11:11
+
+(fix) NoUnused.Variables: Imported variable \`span\` is not used
+
+10|           -- span is unused
+11|         , span
+              ^^^^
+12|         , text
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+────────────────────────────────────────────────────────────── src/Main.elm:29:7
+
+NoUnused.CustomTypeConstructors: Type constructor \`UnusedCustomType\` is not
+used.
+
+28|     | Decrement
+29|     | UnusedCustomType
+          ^^^^^^^^^^^^^^^^
+
+This type constructor is never used. It might be handled everywhere it might
+appear, but there is no location where this value actually gets created.
+
+Errors marked with (fix) can be fixed automatically using \`elm-review --fix\`.
+
+I found 3 errors in 2 files.
+"
+`;
+
+exports[`Running in a project using ES2015 modules 1`] = `
+"-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:10:11
+
+(fix) NoUnused.Variables: Imported variable \`span\` is not used
+
+ 9|           -- span is unused
+10|         , span
+              ^^^^
+11|         , text
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+────────────────────────────────────────────────────────────── src/Main.elm:28:7
+
+NoUnused.CustomTypeConstructors: Type constructor \`UnusedCustomType\` is not
+used.
+
+27|     | Decrement
+28|     | UnusedCustomType
+          ^^^^^^^^^^^^^^^^
+
+This type constructor is never used. It might be handled everywhere it might
+appear, but there is no location where this value actually gets created.
+
+Errors marked with (fix) can be fixed automatically using \`elm-review --fix\`.
+
+I found 2 errors in 1 file.
+"
+`;
+
+exports[`Running on project with a directory ending in .elm 1`] = `
+"I found no errors!
+"
+`;
+
+exports[`Running on project with unknown file 1`] = `
+"[32m-- NO FILES FOUND --------------------------------------------------------------[39m
+
+I was expecting to find Elm files in all the paths that you passed, but I could
+not find any in the following directories:
+- <local-path>/test/project-with-errors/unknown-target
+
+When I can’t find files in some of the directories, I’m assuming that you
+misconfigured the CLI’s arguments.
+
+"
+`;
+
 exports[`Running using other configuration (without errors) 1`] = `
 "I found no errors!
+"
+`;
+
+exports[`Using a configuration which fails due to configuration error 1`] = `
+"-- ELM-REVIEW ERROR ---------------------------------------- CONFIGURATION ERROR
+
+Some.Rule: This is a configuration error message
+
+These are configuration error details
+
+I found 1 error in 1 file.
+"
+`;
+
+exports[`Using a configuration which fails due to debug remnants 1`] = `
+"[32m-- DEBUG IN CONFIGURATION ------------------------------------------------------[39m
+
+You are using the [33mDebug[39m module in your configuration or rules, but I am
+compiling in optimized mode. Either remove those uses or run elm-review with
+[33m--debug[39m.
+
+"
+`;
+
+exports[`Using a configuration which fails due to syntax error 1`] = `
+"[32m-- CONFIGURATION COMPILATION ERROR ---------------------------------------------[39m
+
+Errors occurred while compiling your configuration for [92melm-review[39m. I need your
+configuration to compile in order to know how to analyze your files. Hopefully
+the compiler error below will help you figure out how to fix it.
+
+"
+`;
+
+exports[`Using a configuration which fails due to unknown module 1`] = `
+"[32m-- MODULE NOT FOUND ------------------------------------------------------------[39m
+
+A module is missing in your configuration. Maybe you forgot to add some
+dependencies that contain the rules you wished to enable? If so, run [96melm install[39m
+with the package name from inside
+[93m<local-path>/test/config-error-unknown-module[39m.
+
+"
+`;
+
+exports[`Using a configuration with a missing direct elm-review dependency 1`] = `
+"[32m-- MISSING ELM-REVIEW DEPENDENCY -----------------------------------------------[39m
+
+[33m<local-path>/test/config-without-elm-review/elm.json[39m does not include [92mjfmengels/elm-review[39m in its direct dependencies.
+
+Please add it by running [96melm install jfmengels/elm-review[39m inside
+of [33m<local-path>/test/config-without-elm-review[39m.
+
+"
+`;
+
+exports[`Using a configuration with an outdated elm-review package 1`] = `
+"[32m-- UNSUPPORTED ELM-REVIEW VERSION ----------------------------------------------[39m
+
+You are using [92mjfmengels/elm-review[39m v1.0.0, but I need it to be
+2.4.0 <= v < 3.0.0.
+
+Please upgrade your version by running
+[96mnpx elm-json install jfmengels/elm-review@2[39m inside
+of [33m<local-path>/test/config-for-outdated-elm-review-version[39m.
+
+"
+`;
+
+exports[`Using an empty configuration 1`] = `
+"[32m-- CONFIGURATION IS EMPTY ------------------------------------------------------[39m
+
+Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
+
+I recommend you take a look at the following documents:
+  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
+  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule
+
 "
 `;
