@@ -1,8 +1,10 @@
 const path = require('path');
 const util = require('util');
+const { toMatchFile } = require('jest-file-snapshot');
 const exec = util.promisify(require('child_process').exec);
 
 const cli = path.resolve(__dirname, "../../bin/elm-review");
+expect.extend({ toMatchFile });
 
 module.exports = {
     run,

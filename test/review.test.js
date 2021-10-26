@@ -1,8 +1,5 @@
 const path = require('path');
-const { toMatchFile } = require('jest-file-snapshot');
 const TestCli = require('./jest-helpers/cli');
-
-expect.extend({ toMatchFile });
 
 test('Regular run from inside the project', async () => {
     const output = await TestCli.runAndExpectError(

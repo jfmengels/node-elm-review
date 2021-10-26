@@ -1,7 +1,4 @@
-const { toMatchFile } = require('jest-file-snapshot');
 const TestCli = require('./jest-helpers/cli');
-
-expect.extend({ toMatchFile });
 
 test('--help', async () => {
     const output = await TestCli.run('--help');
