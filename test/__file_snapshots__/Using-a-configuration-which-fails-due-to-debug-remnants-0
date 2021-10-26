@@ -1,0 +1,6 @@
+[32m-- DEBUG IN CONFIGURATION ------------------------------------------------------[39m
+
+You are using the [33mDebug[39m module in your configuration or rules, but I am
+compiling in optimized mode. Either remove those uses or run elm-review with
+[33m--debug[39m.
+

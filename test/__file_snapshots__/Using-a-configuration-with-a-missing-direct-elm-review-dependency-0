@@ -1,0 +1,7 @@
+[32m-- MISSING ELM-REVIEW DEPENDENCY -----------------------------------------------[39m
+
+[33m<local-path>/test/config-without-elm-review/elm.json[39m does not include [92mjfmengels/elm-review[39m in its direct dependencies.
+
+Please add it by running [96melm install jfmengels/elm-review[39m inside
+of [33m<local-path>/test/config-without-elm-review[39m.
+

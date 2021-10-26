@@ -1,6 +1,5 @@
-const TestCli = require('./jest-helpers/cli');
-
 const { toMatchFile } = require('jest-file-snapshot');
+const TestCli = require('./jest-helpers/cli');
 
 expect.extend({ toMatchFile });
 

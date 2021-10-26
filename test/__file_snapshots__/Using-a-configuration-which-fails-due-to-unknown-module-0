@@ -1,0 +1,7 @@
+[32m-- MODULE NOT FOUND ------------------------------------------------------------[39m
+
+A module is missing in your configuration. Maybe you forgot to add some
+dependencies that contain the rules you wished to enable? If so, run [96melm install[39m
+with the package name from inside
+[93m<local-path>/test/config-error-unknown-module[39m.
+
