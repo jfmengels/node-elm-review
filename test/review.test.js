@@ -9,6 +9,22 @@ test('Regular run from inside the project', async () => {
     expect(output).toMatchSnapshot();
 });
 
+test('Regular run from inside the project (JSON output)', async () => {
+    const output = await TestCli.runAndExpectError(
+        '',
+        { project: "project-with-errors/", report: 'json' }
+    );
+    expect(JSON.parse(output)).toMatchSnapshot();
+});
+
+test.skip('Regular run from inside the project (ndjson output)', async () => {
+    const output = await TestCli.runAndExpectError(
+        '',
+        { project: "project-with-errors/", report: 'ndjson' }
+    );
+    expect(output).toMatchSnapshot();
+});
+
 test('Running using other configuration (without errors)', async () => {
     const output = await TestCli.run(
         '--config ../config-that-triggers-no-errors',
