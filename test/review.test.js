@@ -20,12 +20,12 @@ test('Regular run from inside the project (JSON output)', async () => {
     expect(output).toMatchFile();
 });
 
-test.skip('Regular run from inside the project (ndjson output)', async () => {
+test('Regular run from inside the project (ndjson output)', async () => {
     const output = await TestCli.runAndExpectError(
         '',
         { project: "project-with-errors/", report: 'ndjson' }
     );
-    expect(output).toMatchSnapshot();
+    expect(output).toMatchFile();
 });
 
 test('Running using other configuration (without errors)', async () => {
