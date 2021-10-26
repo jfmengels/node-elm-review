@@ -30,7 +30,11 @@ function runWithoutTestMode(args, options) {
 
 function internalExec(args, options={}) {
     return exec(
-        `${cli} ${args}`,
+        [ cli
+        , reportMode(options)
+        , colors(options)
+        , args
+        ].join(' '),
         { ...options
         , cwd: cwdFromOptions(options)
         }
@@ -43,7 +47,21 @@ function internalExec(args, options={}) {
 
 function cwdFromOptions(options) {
     if (options.project) {
-        return path.resolve(__dirname, "..", options.project)
+        return path.resolve(__dirname, "..", options.project);
     }
     return options.cwd;
+}
+
+function reportMode(options) {
+    if (!options.report) {
+        return "";
+    }
+    return `--report=${options.report}`;
+}
+
+function colors(options) {
+    if (options.colors) {
+        return "";
+    }
+    return `--no-color`;
 }

@@ -1,28 +1,28 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Regular run from inside the project 1`] = `
-"[38;2;51;187;200m-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8[39m
+"-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
 
-[38;2;255;0;0mNoUnused.Modules[39m: Module \`Folder.Unused\` is never used.
+NoUnused.Modules: Module \`Folder.Unused\` is never used.
 
 1| module Folder.Unused exposing (..)
-          [38;2;255;0;0m^^^^^^^^^^^^^[39m
+          ^^^^^^^^^^^^^
 
 This module is never used. You may want to remove it to keep your project clean,
 and maybe detect some unused code in your project.
 
-[38;2;255;0;0msrc/Folder/Unused.elm  ↑[39m
-[38;2;255;0;0m====o======================================================================o====[39m
-[38;2;255;0;0m↓  src/Main.elm[39m
+src/Folder/Unused.elm  ↑
+====o======================================================================o====
+↓  src/Main.elm
 
 
-[38;2;51;187;200m-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:11:11[39m
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:11:11
 
-[38;2;51;187;200m(fix) [39m[38;2;255;0;0mNoUnused.Variables[39m: Imported variable \`span\` is not used
+(fix) NoUnused.Variables: Imported variable \`span\` is not used
 
 10|           -- span is unused
 11|         , span
-              [38;2;255;0;0m^^^^[39m
+              ^^^^
 12|         , text
 
 You should either use this value somewhere, or remove it at the location I
@@ -30,19 +30,19 @@ pointed at.
 
 ────────────────────────────────────────────────────────────── src/Main.elm:29:7
 
-[38;2;255;0;0mNoUnused.CustomTypeConstructors[39m: Type constructor \`UnusedCustomType\` is not
+NoUnused.CustomTypeConstructors: Type constructor \`UnusedCustomType\` is not
 used.
 
 28|     | Decrement
 29|     | UnusedCustomType
-          [38;2;255;0;0m^^^^^^^^^^^^^^^^[39m
+          ^^^^^^^^^^^^^^^^
 
 This type constructor is never used. It might be handled everywhere it might
 appear, but there is no location where this value actually gets created.
 
-[38;2;51;187;200mErrors marked with (fix) can be fixed automatically using \`elm-review --fix\`.[39m
+Errors marked with (fix) can be fixed automatically using \`elm-review --fix\`.
 
-I found [38;2;255;0;0m3 errors[39m in [38;2;255;255;0m2 files[39m.
+I found 3 errors in 2 files.
 "
 `;
 
