@@ -45,3 +45,8 @@ appear, but there is no location where this value actually gets created.
 I found [38;2;255;0;0m3 errors[39m in [38;2;255;255;0m2 files[39m.
 "
 `;
+
+exports[`Running using other configuration (without errors) 1`] = `
+"I found no errors!
+"
+`;
