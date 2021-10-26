@@ -164,52 +164,6 @@ PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
 npm install -g $PACKAGE_PATH
 
-# Version
-
-$createTest "$CMD" \
-    "Running with --version" \
-    "--version" \
-    "version.txt"
-
-# Help
-
-$createTest "$CMD" \
-    "Running with --help" \
-    "--help" \
-    "help-main.txt"
-
-$createTest "$CMD" \
-    "Running init with --help" \
-    "init --help" \
-    "help-init.txt"
-
-$createTest "$CMD" \
-    "Running suppress with --help" \
-    "suppress --help" \
-    "help-suppress.txt"
-
-$createTest "$CMD" \
-    "Running new-package with --help" \
-    "new-package --help" \
-    "help-new-package.txt"
-
-$createTest "$CMD" \
-    "Running new-rule with --help" \
-    "new-rule --help" \
-    "help-new-rule.txt"
-
-# Unknown flags
-
-$createTest "$CMD" \
-    "Running with an unknown flag" \
-    "--watc" \
-    "unknown-flag.txt"
-
-$createTest "$CMD" \
-    "Running with an unknown shorthand flag" \
-    "-u" \
-    "unknown-shorthand-flag.txt"
-
 # Flag errors
 
 $createTest "$CMD" \
