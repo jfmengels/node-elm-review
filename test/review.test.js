@@ -132,3 +132,19 @@ test("Running on project with a directory ending in .elm (with arg)", async () =
     );
     expect(output).toMatchFile(testName("src.elm-project-without-arg"));
 });
+
+test("Running with --unsuppress should report suppressed errors", async () => {
+    const output = await TestCli.runAndExpectError(
+        "--unsuppress",
+        { project: "project-with-suppressed-errors" }
+    );
+    expect(output).toMatchFile(testName("suppressed-errors-unsuppress"));
+});
+
+test("Running with --unsuppress-rules should report suppressed errors for that rule", async () => {
+    const output = await TestCli.runAndExpectError(
+        "--unsuppress-rules NoUnused.Dependencies",
+        { project: "project-with-suppressed-errors" }
+    );
+    expect(output).toMatchFile(testName("suppressed-errors-unsuppress-rules"));
+});

@@ -277,17 +277,7 @@ createTestSuiteForHumanAndJson "$CMD" \
     "suppressed-errors-introducing-new-errors"
 git checkout HEAD src/OtherFile.elm > /dev/null
 
-createTestSuiteForHumanAndJson "$CMD" \
-    "Running with --unsuppress should report suppressed errors" \
-    "--unsuppress" \
-    "suppressed-errors-unsuppress"
-
-createTestSuiteForHumanAndJson "$CMD" \
-    "Running with --unsuppress-rules should report suppressed errors for that rule" \
-    "--unsuppress-rules NoUnused.Dependencies" \
-    "suppressed-errors-unsuppress-rules"
-
-cd ..
+cd "$CWD"
 
 # new-package
 
