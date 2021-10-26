@@ -28,10 +28,22 @@ function runWithoutTestMode(args, options) {
     return internalExec(args, options);
 }
 
-function internalExec(args, options) {
-    return exec(`${cli} ${args}`, options)
-        .then(result => result.stdout)
-        .catch(err => {
-            throw err.stdout;
-        });
+function internalExec(args, options={}) {
+    return exec(
+        `${cli} ${args}`,
+        { ...options
+        , cwd: cwdFromOptions(options)
+        }
+    )
+    .then(result => result.stdout)
+    .catch(err => {
+        throw err.stdout;
+    });
+}
+
+function cwdFromOptions(options) {
+    if (options.project) {
+        return path.resolve(__dirname, "..", options.project)
+    }
+    return options.cwd;
 }
