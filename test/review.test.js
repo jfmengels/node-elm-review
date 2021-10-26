@@ -1,12 +1,16 @@
 const path = require('path');
 const TestCli = require('./jest-helpers/cli');
 
+function testName(name) {
+    return `test/snapshots/review/${name}.txt`;
+}
+
 test('Regular run from inside the project', async () => {
     const output = await TestCli.runAndExpectError(
         '',
         { project: "project-with-errors/" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile("review-with-errors");
 });
 
 test('Regular run from inside the project (JSON output)', async () => {
@@ -14,7 +18,7 @@ test('Regular run from inside the project (JSON output)', async () => {
         '',
         { project: "project-with-errors/", report: 'json' }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("review-with-errors-json"));
 });
 
 test('Regular run from inside the project (ndjson output)', async () => {
@@ -22,7 +26,7 @@ test('Regular run from inside the project (ndjson output)', async () => {
         '',
         { project: "project-with-errors/", report: 'ndjson' }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("review-with-errors-ndjson"));
 });
 
 test('Running using other configuration (without errors)', async () => {
@@ -30,7 +34,7 @@ test('Running using other configuration (without errors)', async () => {
         '--config ../config-that-triggers-no-errors',
         { project: "project-with-errors/" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("no-errors"));
 });
 
 test("Regular run using --elmjson and --config", async () => {
@@ -38,7 +42,7 @@ test("Regular run using --elmjson and --config", async () => {
         "--elmjson project-with-errors/elm.json --config project-with-errors/review",
         { cwd: path.resolve(__dirname, ".") }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("run-with-elmjson-flag"));
 });
 
 test("Running in a project using ES2015 modules", async () => {
@@ -46,7 +50,7 @@ test("Running in a project using ES2015 modules", async () => {
         "",
         { project: "project-using-es2015-module" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("config-es2015-modules"));
 });
 
 test("Using an empty configuration", async () => {
@@ -54,7 +58,7 @@ test("Using an empty configuration", async () => {
         "--config ../config-empty",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("config-empty"));
 });
 
 test("Using a configuration with a missing direct elm-review dependency", async () => {
@@ -62,7 +66,7 @@ test("Using a configuration with a missing direct elm-review dependency", async 
         "--config ../config-without-elm-review",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("without-elm-review"));
 });
 
 test("Using a configuration with an outdated elm-review package", async () => {
@@ -70,7 +74,7 @@ test("Using a configuration with an outdated elm-review package", async () => {
         "--config ../config-for-outdated-elm-review-version",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("outdated-version"));
 });
 
 test("Using a configuration which fails due to unknown module", async () => {
@@ -78,7 +82,7 @@ test("Using a configuration which fails due to unknown module", async () => {
         "--config ../config-error-unknown-module",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("config-error-unknown-module"));
 });
 
 test("Using a configuration which fails due to syntax error", async () => {
@@ -86,7 +90,7 @@ test("Using a configuration which fails due to syntax error", async () => {
         "--config ../config-syntax-error",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("config-syntax-error"));
 });
 
 test("Using a configuration which fails due to configuration error", async () => {
@@ -94,7 +98,7 @@ test("Using a configuration which fails due to configuration error", async () =>
         "--config ../config-configuration-error",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("config-configuration-error"));
 });
 
 test("Using a configuration which fails due to debug remnants", async () => {
@@ -102,7 +106,7 @@ test("Using a configuration which fails due to debug remnants", async () => {
         "--config ../config-error-debug",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("config-error-debug"));
 });
 
 test("Running on project with unknown file", async () => {
@@ -110,13 +114,21 @@ test("Running on project with unknown file", async () => {
         "--config ../config-that-triggers-no-errors unknown-target",
         { project: "project-with-errors" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("run-with-unknown-target"));
 });
 
-test("Running on project with a directory ending in .elm", async () => {
+test("Running on project with a directory ending in .elm (without arg)", async () => {
     const output = await TestCli.run(
         "--config ../config-that-triggers-no-errors",
         { project: "project-with-dir-ending-in-elm" }
     );
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName("src.elm-project-without-arg"));
+});
+
+test("Running on project with a directory ending in .elm (with arg)", async () => {
+    const output = await TestCli.run(
+        "--config ../config-that-triggers-no-errors src.elm",
+        { project: "project-with-dir-ending-in-elm" }
+    );
+    expect(output).toMatchFile(testName("src.elm-project-without-arg"));
 });
