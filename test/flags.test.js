@@ -1,8 +1,12 @@
 const TestCli = require('./jest-helpers/cli');
 
+function testName(name) {
+    return `test/__file_snapshots__/flags/${name}.txt`;
+}
+
 test('Running with an unknown flag', async () => {
     const output = await TestCli.runAndExpectError('--watc');
-    expect(output).toMatchFile();
+    expect(output).toMatchFile(testName('unknown-flag'));
 });
 
 test('Running with an unknown shorthand flag', async () => {
