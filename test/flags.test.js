@@ -1,7 +1,7 @@
 const TestCli = require('./jest-helpers/cli');
 
 function testName(name) {
-    return `test/__file_snapshots__/flags/${name}.txt`;
+    return `test/snapshots/flags/${name}.txt`;
 }
 
 test('Running with an unknown flag', async () => {
