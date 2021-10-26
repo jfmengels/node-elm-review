@@ -195,10 +195,6 @@ checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
 # Review
 
 cd "$CWD/project-with-errors"
-createExtensiveTestSuite "$CMD" \
-    "Regular run from inside the project" \
-    "" \
-    "simple-run"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Running using other configuration (without errors)" \
