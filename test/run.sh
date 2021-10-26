@@ -206,55 +206,62 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "" \
     "config-es2015-modules"
 
-cd "$CWD/project-with-errors"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using an empty configuration" \
     "--config ../config-empty" \
     "config-empty"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration with a missing direct elm-review dependency" \
     "--config ../config-without-elm-review" \
     "without-elm-review"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration with an outdated elm-review package" \
     "--config ../config-for-outdated-elm-review-version" \
     "outdated-version"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration which fails due to unknown module" \
     "--config ../config-error-unknown-module" \
     "config-error-unknown-module"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration which fails due to syntax error" \
     "--config ../config-syntax-error" \
     "config-syntax-error"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration which fails due to configuration error" \
     "--config ../config-configuration-error" \
     "config-configuration-error"
 
+cd "$CWD/project-with-errors"
 createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using a configuration which fails due to debug remnants" \
     "--config ../config-error-debug" \
     "config-error-debug"
 
+cd "$CWD/project-with-errors"
 $createTest "$CMD" \
     "Running on project with unknown file" \
     "--config ../config-that-triggers-no-errors unknown-target" \
     "run-with-unknown-target.txt"
 
 cd "$CWD/project-with-dir-ending-in-elm"
-
 $createTest "$CMD" \
     "Running on project with a directory ending in .elm" \
     "--config ../config-that-triggers-no-errors" \
     "src.elm-project-without-arg.txt"
 
+cd "$CWD/project-with-dir-ending-in-elm"
 $createTest "$CMD" \
     "Running on project with a directory ending in .elm" \
     "--config ../config-that-triggers-no-errors src.elm" \
