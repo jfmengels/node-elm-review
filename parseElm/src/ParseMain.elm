@@ -34,11 +34,17 @@ type Msg
 
 update : Msg -> () -> ( (), Cmd Msg )
 update (GotFile source) () =
-    parseSource source
-        |> Result.map AstCodec.encode
-        |> Result.withDefault Encode.null
-        |> parseResult
-        |> Tuple.pair ()
+    let
+        json : Encode.Value
+        json =
+            case parseSource source of
+                Ok ast ->
+                    AstCodec.encode ast
+
+                Err _ ->
+                    Encode.null
+    in
+    ( (), parseResult json )
 
 
 {-| Parse source code into a AST
