@@ -18,7 +18,7 @@ main : Program () () Msg
 main =
     Platform.worker
         { init = always ( (), Cmd.none )
-        , update = update
+        , update = \msg _ -> ( (), update msg )
         , subscriptions = always subscriptions
         }
 
@@ -32,8 +32,8 @@ type Msg
     = GotFile String
 
 
-update : Msg -> () -> ( (), Cmd Msg )
-update (GotFile source) () =
+update : Msg -> Cmd Msg
+update (GotFile source) =
     let
         json : Encode.Value
         json =
@@ -44,7 +44,7 @@ update (GotFile source) () =
                 Err _ ->
                     Encode.null
     in
-    ( (), parseResult json )
+    parseResult json
 
 
 {-| Parse source code into a AST
