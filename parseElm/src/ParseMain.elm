@@ -45,10 +45,12 @@ update (GotFile source) () =
 -}
 parseSource : String -> Result () File
 parseSource source =
-    source
-        |> Parser.parse
-        |> Result.mapError (always ())
-        |> Result.map (Elm.Processing.process elmProcessContext)
+    case Parser.parse source of
+        Ok ast ->
+            Ok (Elm.Processing.process elmProcessContext ast)
+
+        Err _ ->
+            Err ()
 
 
 elmProcessContext : Elm.Processing.ProcessContext
