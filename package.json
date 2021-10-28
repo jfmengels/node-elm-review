@@ -58,6 +58,7 @@
   "xo": {
     "space": 2,
     "prettier": true,
+    "globals": [ "test", "expect" ],
     "rules": {
       "complexity": "off",
       "max-params": "off",
