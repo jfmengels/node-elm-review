@@ -1,6 +1,0 @@
--- UNKNOWN FLAG ----------------------------------------------------------------
-
-I did not recognize this shorthand flag: -u
-
-I only know these: -h, -v
-

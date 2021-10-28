@@ -1,7 +1,0 @@
--- ELM-REVIEW ERROR ---------------------------------------- CONFIGURATION ERROR
-
-Some.Rule: This is a configuration error message
-
-These are configuration error details
-
-I found 1 error in 1 file.

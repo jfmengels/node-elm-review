@@ -1,9 +1,0 @@
--- MISSING FLAG ARGUMENT -------------------------------------------------------
-
-The --ignore-dirs flag needs more information.
-
-Here is the documentation for this flag:
-
-    --ignore-dirs <dir1,dir2,...>
-        Ignore the reports of all rules for the specified directories.
-

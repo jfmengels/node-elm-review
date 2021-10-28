@@ -1,9 +1,0 @@
--- MISSING FLAG ARGUMENT -------------------------------------------------------
-
-The --ignore-files flag needs more information.
-
-Here is the documentation for this flag:
-
-    --ignore-files <file1,file2,...>
-        Ignore the reports of all rules for the specified files.
-

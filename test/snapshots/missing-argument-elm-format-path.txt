@@ -1,9 +1,0 @@
--- MISSING FLAG ARGUMENT -------------------------------------------------------
-
-The --elm-format-path flag needs more information.
-
-Here is the documentation for this flag:
-
-    --elm-format-path <path-to-elm-format>
-        Specify the path to elm-format.
-

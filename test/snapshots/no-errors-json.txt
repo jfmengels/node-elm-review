@@ -1,4 +1,0 @@
-{
-  "type": "review-errors",
-  "errors": []
-}

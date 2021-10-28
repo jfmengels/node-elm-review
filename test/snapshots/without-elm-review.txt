@@ -1,7 +1,0 @@
--- MISSING ELM-REVIEW DEPENDENCY -----------------------------------------------
-
-<local-path>/test/config-without-elm-review/elm.json does not include jfmengels/elm-review in its direct dependencies.
-
-Please add it by running elm install jfmengels/elm-review inside
-of <local-path>/test/config-without-elm-review.
-

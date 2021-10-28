@@ -1,9 +1,0 @@
--- NO FILES FOUND --------------------------------------------------------------
-
-I was expecting to find Elm files in all the paths that you passed, but I could
-not find any in the following directories:
-- <local-path>/test/project-with-errors/unknown-target
-
-When I can’t find files in some of the directories, I’m assuming that you
-misconfigured the CLI’s arguments.
-

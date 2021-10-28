@@ -1,9 +1,0 @@
--- UNSUPPORTED ELM-REVIEW VERSION ----------------------------------------------
-
-You are using jfmengels/elm-review v1.0.0, but I need it to be
-2.4.0 <= v < 3.0.0.
-
-Please upgrade your version by running
-npx elm-json install jfmengels/elm-review@2 inside
-of <local-path>/test/config-for-outdated-elm-review-version.
-
