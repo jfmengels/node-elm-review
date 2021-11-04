@@ -1,10 +1,10 @@
-[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+-- MISSING FLAG ARGUMENT -------------------------------------------------------
 
-The [91m--template[39m flag needs more information.
+The --template flag needs more information.
 
 Here is the documentation for this flag:
 
-    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+    --template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit]
         Copy the review configuration from a GitHub repository, at the root or
         in a folder. Examples:
         - elm-review init --template author/elm-review-configuration

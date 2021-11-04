@@ -1,9 +1,9 @@
-[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+-- MISSING FLAG ARGUMENT -------------------------------------------------------
 
-The [91m--elm-format-path[39m flag needs more information.
+The --elm-format-path flag needs more information.
 
 Here is the documentation for this flag:
 
-    [36m--elm-format-path <path-to-elm-format>[39m
-        Specify the path to [95melm-format[39m.
+    --elm-format-path <path-to-elm-format>
+        Specify the path to elm-format.
 

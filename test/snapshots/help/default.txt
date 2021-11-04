@@ -1,106 +1,106 @@
-You are using [92melm-review <version>[39m.
+You are using elm-review <version>.
 
-    [96melm-review <zero-or-more-files-or-directories>[39m
+    elm-review <zero-or-more-files-or-directories>
         Analyzes your project, and lists the locations where patterns forbidden
         by your configuration appear. It can potentially also fix some of the
-        errors for you when adding [94m--fix[39m.
+        errors for you when adding --fix.
 
-        Unless files or directories are specified, [92melm-review[39m will look at:
+        Unless files or directories are specified, elm-review will look at:
         - For packages: src/ and tests/
         - For applications: the project’s elm.json’s "source-directories" and
           tests/
 
-    [93melm-review init[39m
-        Creates an empty review configuration. It creates a [93mreview/elm.json[39m and
-        a [36mreview/src/ReviewConfig.elm[39m file, and provides links to help you get
-        started. Learn more by running [94melm-review init --help[39m.
+    elm-review init
+        Creates an empty review configuration. It creates a review/elm.json and
+        a review/src/ReviewConfig.elm file, and provides links to help you get
+        started. Learn more by running elm-review init --help.
 
-    [93melm-review suppress[39m
+    elm-review suppress
         Generate suppression files for rules that report many errors. Use this
         when you wish to enable a rule without requiring fixing all the issues
-        beforehand. Learn more by running [38;2;255;165;0melm-review suppress --help[39m.
+        beforehand. Learn more by running elm-review suppress --help.
 
-    [93melm-review new-package[39m
+    elm-review new-package
         Creates an new project aimed to contain rules and to be published later.
 
-    [93melm-review new-rule [RULE-NAME][39m
+    elm-review new-rule [RULE-NAME]
         Adds a new rule to your review configuration or review package.
 
 You can customize the review command with the following flags:
 
-    [36m--unsuppress[39m
-        Include [38;2;255;165;0msuppressed[39m errors in the error report for all rules.
+    --unsuppress
+        Include suppressed errors in the error report for all rules.
 
-    [36m--rules <rule1,rule2,...>[39m
+    --rules <rule1,rule2,...>
         Run with a subsection of the rules in the configuration.
         Specify them by their name, and separate them by commas.
 
-    [36m--watch[39m
-        Re-run [92melm-review[39m automatically when your project or configuration
-        changes. Use [36m--watch-code[39m to re-run only on project changes.
-        You can use [36m--watch[39m and [94m--fix[39m together.
+    --watch
+        Re-run elm-review automatically when your project or configuration
+        changes. Use --watch-code to re-run only on project changes.
+        You can use --watch and --fix together.
 
-    [36m--elmjson <path-to-elm.json>[39m
+    --elmjson <path-to-elm.json>
         Specify the path to the elm.json file of the project. By default,
         the one in the current directory or its parent directories will be used.
 
-    [36m--config <path-to-review-directory>[39m
+    --config <path-to-review-directory>
         Use the review configuration in the specified directory instead of the
         one found in the current directory or one of its parents.
 
-    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+    --template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit]
         Use the review configuration from a GitHub repository. You can use this
-        to try out [92melm-review[39m, a configuration or a single rule.
+        to try out elm-review, a configuration or a single rule.
         This flag requires Internet access, even after the first run.
         Examples:
           - elm-review --template author/elm-review-configuration
           - elm-review --template jfmengels/elm-review-unused/example#master
 
-        I recommend to only use this temporarily, and run [93melm-review init[39m with
+        I recommend to only use this temporarily, and run elm-review init with
         this same flag to copy the configuration to your project.
 
-    [36m--compiler <path-to-elm>[39m
-        Specify the path to the [95melm[39m compiler.
+    --compiler <path-to-elm>
+        Specify the path to the elm compiler.
 
-    [36m--version[39m
-        Print the version of the [92melm-review[39m CLI.
+    --version
+        Print the version of the elm-review CLI.
 
-    [36m--debug[39m
+    --debug
         Add helpful information to debug your configuration or rules.
         - Print the list of reviewed files.
-        - Run the compiler in debug mode, allowing you to use [33mDebug[39m statements
+        - Run the compiler in debug mode, allowing you to use Debug statements
           in your configuration and custom rules.
 
-    [36m--report=<json or ndjson>[39m
-        Error reports will be in JSON format. [35mjson[39m prints a single JSON object
-        while [35mndjson[39m will print one JSON object per error each on a new line.
+    --report=<json or ndjson>
+        Error reports will be in JSON format. json prints a single JSON object
+        while ndjson will print one JSON object per error each on a new line.
         The formats are described in this document: https://bit.ly/31F6jzz
 
-    [36m--no-details[39m
+    --no-details
         Hide the details from error reports for a more compact view.
 
-    [36m--ignore-dirs <dir1,dir2,...>[39m
+    --ignore-dirs <dir1,dir2,...>
         Ignore the reports of all rules for the specified directories.
 
-    [36m--ignore-files <file1,file2,...>[39m
+    --ignore-files <file1,file2,...>
         Ignore the reports of all rules for the specified files.
 
-If you wish to use [94mautomatic fixing[39m, you can use the following flags:
+If you wish to use automatic fixing, you can use the following flags:
 
-    [94m--fix[39m
-        [92melm-review[39m will present fixes for the errors that offer an automatic
+    --fix
+        elm-review will present fixes for the errors that offer an automatic
         fix, which you can then accept or refuse one by one. When there are no
-        more fixable errors left, [92melm-review[39m will report the remaining errors as
-        if it was called without [94m--fix[39m.
-        Fixed files will be reformatted using [95melm-format[39m.
+        more fixable errors left, elm-review will report the remaining errors as
+        if it was called without --fix.
+        Fixed files will be reformatted using elm-format.
 
-    [94m--fix-all[39m
-        [92melm-review[39m will present a single fix containing the application of all
+    --fix-all
+        elm-review will present a single fix containing the application of all
         available automatic fixes, which you can then accept or refuse.
-        Afterwards, [92melm-review[39m will report the remaining errors as if it was
-        called without [94m--fix-all[39m.
-        Fixed files will be reformatted using [95melm-format[39m.
+        Afterwards, elm-review will report the remaining errors as if it was
+        called without --fix-all.
+        Fixed files will be reformatted using elm-format.
 
-    [36m--elm-format-path <path-to-elm-format>[39m
-        Specify the path to [95melm-format[39m.
+    --elm-format-path <path-to-elm-format>
+        Specify the path to elm-format.
 

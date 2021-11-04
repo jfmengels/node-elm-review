@@ -1,13 +1,13 @@
-[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+-- INVALID FLAG ARGUMENT -------------------------------------------------------
 
-The value [91mbad[39m passed to [36m--github-auth[39m is not a valid one.
+The value bad passed to --github-auth is not a valid one.
 
 Here is the documentation for this flag:
 
-    [36m--github-auth=<github-api-token>[39m
-        To be used along with [36m--template[39m to avoid GitHub rate limiting.
+    --github-auth=<github-api-token>
+        To be used along with --template to avoid GitHub rate limiting.
         Follow https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to create an API token. The API token needs access to public repositories.
 
         Then use the flag like this:
-        [92m  --github-auth=my-user-name:abcdef01234567890[39m
+          --github-auth=my-user-name:abcdef01234567890
 

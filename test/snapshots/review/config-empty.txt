@@ -1,4 +1,4 @@
-[32m-- CONFIGURATION IS EMPTY ------------------------------------------------------[39m
+-- CONFIGURATION IS EMPTY ------------------------------------------------------
 
 Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
 

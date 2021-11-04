@@ -1,17 +1,17 @@
-[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+-- INVALID FLAG ARGUMENT -------------------------------------------------------
 
-The value [91mnot-github-repo[39m passed to [36m--template[39m is not a valid one.
+The value not-github-repo passed to --template is not a valid one.
 
 Here is the documentation for this flag:
 
-    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+    --template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit]
         Use the review configuration from a GitHub repository. You can use this
-        to try out [92melm-review[39m, a configuration or a single rule.
+        to try out elm-review, a configuration or a single rule.
         This flag requires Internet access, even after the first run.
         Examples:
           - elm-review --template author/elm-review-configuration
           - elm-review --template jfmengels/elm-review-unused/example#master
 
-        I recommend to only use this temporarily, and run [93melm-review init[39m with
+        I recommend to only use this temporarily, and run elm-review init with
         this same flag to copy the configuration to your project.
 

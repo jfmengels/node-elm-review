@@ -1,9 +1,9 @@
-[32m-- MISSING FLAG ARGUMENT -------------------------------------------------------[39m
+-- MISSING FLAG ARGUMENT -------------------------------------------------------
 
-The [91m--ignore-files[39m flag needs more information.
+The --ignore-files flag needs more information.
 
 Here is the documentation for this flag:
 
-    [36m--ignore-files <file1,file2,...>[39m
+    --ignore-files <file1,file2,...>
         Ignore the reports of all rules for the specified files.
 

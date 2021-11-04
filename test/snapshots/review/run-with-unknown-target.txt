@@ -1,4 +1,4 @@
-[32m-- NO FILES FOUND --------------------------------------------------------------[39m
+-- NO FILES FOUND --------------------------------------------------------------
 
 I was expecting to find Elm files in all the paths that you passed, but I could
 not find any in the following directories:

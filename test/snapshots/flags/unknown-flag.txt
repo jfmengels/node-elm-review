@@ -1,11 +1,11 @@
-[32m-- UNKNOWN FLAG ----------------------------------------------------------------[39m
+-- UNKNOWN FLAG ----------------------------------------------------------------
 
 I did not recognize this flag:
 
-    [91mwatc[39m
+    watc
 
 Maybe you want one of these instead?
 
-[92m    --watch[39m
-[92m    --help[39m
+    --watch
+    --help
 

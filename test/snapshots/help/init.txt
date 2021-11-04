@@ -1,28 +1,28 @@
-The init command helps getting started with [92melm-review[39m’s configuration.
+The init command helps getting started with elm-review’s configuration.
 
-    [96melm-review init[39m
+    elm-review init
         It will ask permission to create several files:
-        - [93mreview/elm.json[39m in which you may add dependencies with review rules.
-        - [95mreview/src/ReviewConfig.elm[39m to define your configuration.
+        - review/elm.json in which you may add dependencies with review rules.
+        - review/src/ReviewConfig.elm to define your configuration.
 
         After the files have been created, it will provide links to get you
         started.
 
 You can customize the init command with the following flags:
 
-    [36m--config <path-to-review-directory>[39m
+    --config <path-to-review-directory>
         Create the configuration files in the specified directory instead of in
         the review/ directory.
 
-    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+    --template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit]
         Copy the review configuration from a GitHub repository, at the root or
         in a folder. Examples:
         - elm-review init --template author/elm-review-configuration
         - elm-review init --template jfmengels/elm-review-unused/example#master
 
-    [36m--compiler <path-to-elm>[39m
-        Specify the path to the [95melm[39m compiler.
-        The [95melm[39m compiler is used to know the version of the compiler to write
-        down in the [93mreview/elm.json[39m file’s `elm-version` field. Use this if you
-        have multiple versions of the [95melm[39m compiler on your device.
+    --compiler <path-to-elm>
+        Specify the path to the elm compiler.
+        The elm compiler is used to know the version of the compiler to write
+        down in the review/elm.json file’s `elm-version` field. Use this if you
+        have multiple versions of the elm compiler on your device.
 

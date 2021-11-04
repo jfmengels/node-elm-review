@@ -1,10 +1,10 @@
-[32m-- INVALID FLAG ARGUMENT -------------------------------------------------------[39m
+-- INVALID FLAG ARGUMENT -------------------------------------------------------
 
-The value [91mnot-github-repo[39m passed to [36m--template[39m is not a valid one.
+The value not-github-repo passed to --template is not a valid one.
 
 Here is the documentation for this flag:
 
-    [36m--template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit][39m
+    --template <author>/<repo>[/path-to-the-config-folder][#branch-or-commit]
         Copy the review configuration from a GitHub repository, at the root or
         in a folder. Examples:
         - elm-review init --template author/elm-review-configuration

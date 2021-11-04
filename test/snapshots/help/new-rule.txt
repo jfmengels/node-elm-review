@@ -1,7 +1,7 @@
 The new-rule command adds an empty rule to your review configuration or
 review package.
 
-    [96melm-review new-rule [RULE-NAME][39m
+    elm-review new-rule [RULE-NAME]
         It will add a rule file in src/ and a corresponding test file in tests/.
         If this is for a review package, the command will add the rule to the
         list of "exposed-modules" in the elm.json file. It will also add to the
