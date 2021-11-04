@@ -1,0 +1,6 @@
+-- DEBUG IN CONFIGURATION ------------------------------------------------------
+
+You are using the Debug module in your configuration or rules, but I am
+compiling in optimized mode. Either remove those uses or run elm-review with
+--debug.
+

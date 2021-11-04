@@ -1,0 +1,11 @@
+-- UNKNOWN FLAG ----------------------------------------------------------------
+
+I did not recognize this flag:
+
+    suppressed-rules
+
+Maybe you want one of these instead?
+
+    --unsuppress-rules <rule1,rule2,...>
+    --unsuppress
+

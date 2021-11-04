@@ -10,7 +10,7 @@
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "test": "npm run elm-tests && xo && npm run flow && npm run elm-format && npm run -s test-run",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
-    "test-run": "(cd test/ && ./run.sh)",
+    "test-run": "npx jest && (cd test/ && ./run.sh)",
     "test-run-record": "(cd test/ && ./run.sh record)",
     "prepack": "rm -r ./**/elm-stuff ./**/ElmjutsuDumMyM0DuL3.elm || exit 0 # Does not delete the files when run automatically",
     "prepare": "elm-tooling install"
@@ -58,6 +58,7 @@
   "xo": {
     "space": 2,
     "prettier": true,
+    "globals": [ "test", "expect" ],
     "rules": {
       "complexity": "off",
       "max-params": "off",
@@ -91,6 +92,8 @@
     "elm-test": "^0.19.1-revision6",
     "eslint": "^6.2.2",
     "flow-bin": "^0.122.0",
+    "jest": "^27.3.1",
+    "jest-file-snapshot": "^0.5.0",
     "uglify-js": "^3.9.1",
     "xo": "^0.33.0"
   }

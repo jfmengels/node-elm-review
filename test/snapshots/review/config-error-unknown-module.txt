@@ -1,0 +1,7 @@
+-- MODULE NOT FOUND ------------------------------------------------------------
+
+A module is missing in your configuration. Maybe you forgot to add some
+dependencies that contain the rules you wished to enable? If so, run elm install
+with the package name from inside
+<local-path>/test/config-error-unknown-module.
+
