@@ -1,4 +1,5 @@
 const path = require('path');
+const childProcess = require('child_process');
 const TestCli = require('./jest-helpers/cli');
 
 function testName(name) {
@@ -149,4 +150,23 @@ test('Running with --unsuppress-rules should report suppressed errors for that r
     {project: 'project-with-suppressed-errors'}
   );
   expect(output).toMatchFile(testName('suppressed-errors-unsuppress-rules'));
+});
+
+test('Running with "suppress --check-after-tests" when there are no uncommitted changes should not exit with failure', async () => {
+  const output = await TestCli.run('suppress --check-after-tests', {
+    project: 'project-with-suppressed-errors'
+  });
+  expect(output).toEqual('');
+});
+
+test('Running with "suppress --check-after-tests" when there are uncommitted changes should exit with failure', async () => {
+ childProcess.execSync(`rm -r ${path.resolve(__dirname, './project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json')}`)
+
+ const output = await TestCli.runAndExpectError(
+   'suppress --check-after-tests',
+   {project: 'project-with-suppressed-errors'}
+ );
+ // Remove uncommitted suppression files
+ childProcess.execSync(`git checkout HEAD ${path.resolve(__dirname, './project-with-suppressed-errors/review/suppressed/')}`)
+ expect(output).toMatchFile(testName('suppressed-errors-check-with-uncommitted-changes'));
 });
