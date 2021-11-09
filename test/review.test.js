@@ -130,6 +130,12 @@ test('Running on project with a directory ending in .elm (with arg)', async () =
   expect(output).toMatchFile(testName('src.elm-project-without-arg'));
 });
 
+test('Running on project with only suppressed errors remaining should not exit with failure', () => {
+  return TestCli.run('', {
+    project: 'project-with-suppressed-errors'
+  });
+});
+
 test('Running with --unsuppress should report suppressed errors', async () => {
   const output = await TestCli.runAndExpectError('--unsuppress', {
     project: 'project-with-suppressed-errors'
