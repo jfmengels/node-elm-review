@@ -340,11 +340,10 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
             else
                 List.concat
                     [ [ Text.from "\n\nThere are still "
-                      , numberOfSuppressedErrors
-                            |> String.fromInt
+                      , (String.fromInt numberOfSuppressedErrors ++ " suppressed " ++ pluralizeEnding numberOfSuppressedErrors "error")
                             |> Text.from
                             |> Text.inOrange
-                      , Text.from (" suppressed " ++ pluralizeEnding numberOfSuppressedErrors "error" ++ " to address")
+                      , Text.from " to address"
                       ]
                     , if numberOfSuppressedErrors < originalNumberOfSuppressedErrors then
                         [ Text.from ", of which you fixed "
