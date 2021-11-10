@@ -127,6 +127,7 @@ type alias Model =
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppressedErrors : SuppressedErrors
     , originalNumberOfSuppressedErrors : Int
+    , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
     , ignoreProblematicDependencies : Bool
 
@@ -175,6 +176,7 @@ init rawFlags =
                       , rulesFilter = Nothing
                       , ignoredDirs = []
                       , ignoredFiles = []
+                      , writeSuppressionFiles = False
                       , logger = Progress.dummy
                       }
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
@@ -216,6 +218,7 @@ init rawFlags =
       , reviewErrorsAfterSuppression = []
       , suppressedErrors = SuppressedErrors.empty
       , originalNumberOfSuppressedErrors = 0
+      , writeSuppressionFiles = flags.writeSuppressionFiles
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
       , errorAwaitingConfirmation = NotAwaiting
@@ -326,6 +329,7 @@ type alias DecodedFlags =
     , rulesFilter : Maybe (Set String)
     , ignoredDirs : List String
     , ignoredFiles : List String
+    , writeSuppressionFiles : Bool
     , logger : Progress.Console
     }
 
@@ -341,6 +345,7 @@ decodeFlags =
         |> field "rulesFilter" decodeRulesFilter
         |> field "ignoredDirs" (Decode.list Decode.string)
         |> field "ignoredFiles" (Decode.list Decode.string)
+        |> field "writeSuppressionFiles" Decode.bool
         |> field "logger" Progress.decoder
 
 
@@ -819,7 +824,7 @@ makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
 makeReport failedFixesDict model =
     let
         ( newModel, suppressedErrorsForJson ) =
-            if List.isEmpty model.reviewErrorsAfterSuppression then
+            if List.isEmpty model.reviewErrorsAfterSuppression && model.writeSuppressionFiles then
                 let
                     suppressedErrors : SuppressedErrors
                     suppressedErrors =
