@@ -1,31 +1,19 @@
-The suppress command helps adding new rules that report many errors
-in your project.
+The suppress command helps with fixing reported errors gradually.
+
+This can be useful for instance when adding new rules that report many errors in
+your project, instead of ignoring the rules on the files they currently report
+errors for, or delaying enabling of the rule until all errors have been fixed.
 
     elm-review suppress
         Reviews your project and generates suppression files for the reported
         errors.
 
     --check-after-tests
-        Checks whether there are uncommitted changes. Running elm-review may
-        cause suppression files to be updated, which people can forget to commit
+        Checks whether there are uncommitted suppression files. They may get
+        updated when running elm-review, which people can forget to commit
         before making a pull request. Running elm-review suppress with this flag
         at the end of your test suite makes sure these files stay up to date.
         This command does not cause your project to be reviewed though.
-
-elm-review has two systems to ignore reported errors.
-
-First is the use of the Rule.ignoreErrorsForDirectories and
-Rule.ignoreErrorsForFiles functions in the ReviewConfig.elm file. These aim to
-indicate the parts of the project where a rule would not provide value and
-should be ignored, such as generated or vendored code.
-
-The second system is the temporarily suppressed errors system, which aims to
-help you gradually adopt rules that report many errors in your project without
-having you fix all the issues beforehand.
-
-Running elm-review suppress will generate a JSON file in review/suppressed/ for
-every rule that currently reports errors, and records the number of suppressed
-errors per file in your project.
 
 While suppression files exist for your project, running elm-review will behave
 as usual but with these additional behaviors:
@@ -42,9 +30,9 @@ do so with moderation. The aim of the suppression system is to allow enabling
 rules while there are errors remaining and to have these fixed incrementally,
 not to make it easier to ignore errors.
 
-When you wish to tackle the suppressed errors, you can run elm-review (without
-the suppress subcommand) with its available flags, and you can use the following
-options to help you:
+When you wish to actively tackle the suppressed errors, you can run elm-review
+(without the suppress subcommand) with its available flags, and you can use the
+following additional flags to help you:
 
     --unsuppress
         Include suppressed errors in the error report for all rules.
