@@ -154,7 +154,7 @@ test('Running with --unsuppress-rules should report suppressed errors for that r
 
 test('Running with "suppress --check-after-tests" when there are no uncommitted changes should not exit with failure', async () => {
   const output = await TestCli.run('suppress --check-after-tests', {
-    project: 'project-with-suppressed-errors'
+    project: 'project-with-suppressed-errors2'
   });
   expect(output).toEqual('');
 });
