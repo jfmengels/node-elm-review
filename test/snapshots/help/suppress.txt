@@ -6,7 +6,7 @@ errors for, or delaying enabling of the rule until all errors have been fixed.
 
     elm-review suppress
         Reviews your project and generates suppression files for the reported
-        errors.
+        errors. These files should be included in your versioning system.
 
     --check-after-tests
         Checks whether there are uncommitted suppression files. They may get
