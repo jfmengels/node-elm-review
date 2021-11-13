@@ -1,6 +1,6 @@
 {
   "name": "elm-review",
-  "version": "2.7.0-beta.2",
+  "version": "2.7.0-beta.3",
   "description": "Run elm-review from Node.js",
   "engines": {
     "node": ">=10.0.0"
@@ -58,7 +58,10 @@
   "xo": {
     "space": 2,
     "prettier": true,
-    "globals": [ "test", "expect" ],
+    "globals": [
+      "test",
+      "expect"
+    ],
     "rules": {
       "complexity": "off",
       "max-params": "off",
