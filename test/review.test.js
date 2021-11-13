@@ -160,13 +160,20 @@ test('Running with "suppress --check-after-tests" when there are no uncommitted 
 });
 
 test('Running with "suppress --check-after-tests" when there are uncommitted changes should exit with failure', async () => {
- childProcess.execSync(`rm -r ${path.resolve(__dirname, './project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json')}`)
+  const folder = path.resolve(
+    __dirname,
+    './project-with-suppressed-errors/review/suppressed/'
+  );
+  const filePath = folder + '/NoUnused.Variables.json';
+  childProcess.execSync(`rm -r ${filePath}`);
 
- const output = await TestCli.runAndExpectError(
-   'suppress --check-after-tests',
-   {project: 'project-with-suppressed-errors'}
- );
- // Remove uncommitted suppression files
- childProcess.execSync(`git checkout HEAD ${path.resolve(__dirname, './project-with-suppressed-errors/review/suppressed/')}`)
- expect(output).toMatchFile(testName('suppressed-errors-check-with-uncommitted-changes'));
+  const output = await TestCli.runAndExpectError(
+    'suppress --check-after-tests',
+    {project: 'project-with-suppressed-errors'}
+  );
+  // Remove uncommitted suppression files
+  childProcess.execSync(`git checkout HEAD ${folder}`);
+  expect(output).toMatchFile(
+    testName('suppressed-errors-check-with-uncommitted-changes')
+  );
 });

@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "do not": "touch manually",
   "automatically created by": "elm-review suppress",
   "learn more": "elm-review suppress --help",
   "suppressions": [
