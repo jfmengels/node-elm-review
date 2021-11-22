@@ -95,8 +95,8 @@ Applied from the fixes for the following errors:
                         , withColors = """[-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------](#33BBC8)
 
 I found fixable errors for the following files:
-  [- src/FileA.elm](#FFFF00)
-  [- src/FileB.elm](#FFFF00)
+  [- src/FileA.elm](#E8C338)
+  [- src/FileB.elm](#E8C338)
 
 Here is how the code would change if you applied each fix.
 

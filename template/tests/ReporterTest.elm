@@ -147,7 +147,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                     }
 
 
@@ -207,7 +207,7 @@ I found 1 error in 1 file."""
 2| a = Debug.log "debug" 1
        [^^^^^](#FF0000)
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                     }
 
 
@@ -286,7 +286,7 @@ I found 1 error in 1 file."""
 10|             + 5.6 + ignore
                 [^^^^^](#FF0000)
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                     }
 
 
@@ -397,7 +397,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I found [2 errors](#FF0000) in [1 file](#FFFF00)."""
+I found [2 errors](#FF0000) in [1 file](#E8C338)."""
                         }
         , test "report errors in multiple files" <|
             \() ->
@@ -564,7 +564,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat 
 
 Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
-I found [3 errors](#FF0000) in [3 files](#FFFF00)."""
+I found [3 errors](#FF0000) in [3 files](#E8C338)."""
                         }
         ]
 
@@ -633,7 +633,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 [Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
         ]
 
@@ -680,7 +680,7 @@ I found 1 error in 1 file."""
 
 [NoDebug](#FF0000): Do not use Debug
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                     }
 
 
@@ -804,7 +804,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 [Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
         , test "report report all errors when unsuppressMode is UnsuppressAll" <|
             \() ->
@@ -923,7 +923,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 [Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 
-I found [2 errors](#FF0000) in [2 files](#FFFF00)."""
+I found [2 errors](#FF0000) in [2 files](#E8C338)."""
                         }
         , test "report not show suppressed warning when the rules that report errors are unsuppressed" <|
             \() ->
@@ -1042,7 +1042,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 [Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 
-I found [2 errors](#FF0000) in [2 files](#FFFF00)."""
+I found [2 errors](#FF0000) in [2 files](#E8C338)."""
                         }
         , test "report show suppressed warning when getting errors from suppressed rules that are not the unsuppressed ones" <|
             \() ->
@@ -1165,7 +1165,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 [Errors marked with (fix) can be fixed automatically using `elm-review --fix`.](#33BBC8)
 
-I found [2 errors](#FF0000) in [2 files](#FFFF00)."""
+I found [2 errors](#FF0000) in [2 files](#E8C338)."""
                         }
         ]
 
@@ -1223,7 +1223,7 @@ I found 1 error in 1 file."""
 
 Some description.
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
         , test "add underline at the correct position when unicode characters are contained in the underlined string" <|
             \() ->
@@ -1275,7 +1275,7 @@ I found 1 error in 1 file."""
 
 Some description.
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
         , test "add underline at the correct position in multiline strings" <|
             \() ->
@@ -1337,6 +1337,6 @@ I found 1 error in 1 file."""
 
 Some description.
 
-I found [1 error](#FF0000) in [1 file](#FFFF00)."""
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
         ]
