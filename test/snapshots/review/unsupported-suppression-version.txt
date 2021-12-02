@@ -1,0 +1,6 @@
+-- UNKNOWN VERSION FOR SUPPRESSION FILE ----------------------------------------
+
+I was trying to read <local-path>/test/project-with-unsupported-suppression-version/review/suppressed/NoUnused.Variables.json but the version of that file is "10000" whereas I only support version "1".
+
+Try updating elm-review to a version that supports this version of suppression files.
+

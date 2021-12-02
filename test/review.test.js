@@ -177,3 +177,10 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     testName('suppressed-errors-check-with-uncommitted-changes')
   );
 });
+
+test('Running with unsupported version of suppression files should exit with failure', async () => {
+  const output = await TestCli.runAndExpectError('', {
+    project: 'project-with-unsupported-suppression-version'
+  });
+  expect(output).toMatchFile(testName('unsupported-suppression-version'));
+});
