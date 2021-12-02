@@ -98,7 +98,7 @@ inOrange (Text text) =
 
 inYellow : Text -> Text
 inYellow (Text text) =
-    Text { text | color = Just "#FFFF00" }
+    Text { text | color = Just "#E8C338" }
 
 
 inGreen : Text -> Text
