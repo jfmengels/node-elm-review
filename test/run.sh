@@ -5,7 +5,7 @@ set -e
 CWD=$(pwd)
 CMD="elm-review"
 TMP="$CWD/temporary"
-SNAPSHOTS="$CWD/snapshots"
+SNAPSHOTS="$CWD/run-snapshots"
 SUBCOMMAND="$1"
 REPLACE_SCRIPT="node $CWD/replace-local-path.js"
 
