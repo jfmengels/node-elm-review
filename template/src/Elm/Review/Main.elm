@@ -129,6 +129,7 @@ type alias Model =
     , originalNumberOfSuppressedErrors : Int
     , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
+    , extracts : Dict String Encode.Value
     , ignoreProblematicDependencies : Bool
 
     -- FIX
@@ -224,6 +225,7 @@ init rawFlags =
       , errorAwaitingConfirmation = NotAwaiting
       , fixAllErrors = Dict.empty
       , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+      , extracts = Dict.empty
       , logger = flags.logger
       }
     , if List.isEmpty config then
@@ -791,8 +793,8 @@ confirmationDecoder =
 runReview : Model -> Model
 runReview model =
     let
-        { errors, rules, projectData } =
-            Rule.reviewV2 model.rules model.projectData model.project
+        { errors, rules, projectData, extracts } =
+            Rule.reviewV3 model.rules model.projectData model.project
     in
     { model
         | reviewErrors = errors
@@ -800,6 +802,7 @@ runReview model =
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
+        , extracts = extracts
     }
 
 
