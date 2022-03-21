@@ -888,6 +888,7 @@ makeReport failedFixesDict model =
                     )
                     errorsByFile
         )
+      , ( "extracts", Encode.dict identity identity newModel.extracts )
       , ( "suppressedErrors", suppressedErrorsForJson )
       ]
         |> Encode.object
