@@ -18,6 +18,8 @@ You can customize the init command with the following flags:
         Copy the review configuration from a GitHub repository, at the root or
         in a folder. Examples:
         - elm-review init --template author/elm-review-configuration
+        - elm-review init --template jfmengels/elm-review-config/package
+        - elm-review init --template jfmengels/elm-review-config/application
         - elm-review init --template jfmengels/elm-review-unused/example#master
 
     --compiler <path-to-elm>
