@@ -23,21 +23,21 @@ See [below](#try-it-out) if you want to try it out without installing it.
 
 ```bash
 # Print the help
-elm-review --help       
+elm-review --help
 
 # Review your project
-elm-review              
+elm-review
 
 # Create an empty review configuration
-elm-review init         
+elm-review init
 
 # Create a new project containing elm-review rules
 # aimed at being published on the Elm package registry
-elm-review new-package  
+elm-review new-package
 
 # Create an empty new rule to get started.
 # Very helpful for projects created with new-package
-elm-review new-rule     
+elm-review new-rule
 ```
 
 ## Try it out
@@ -70,38 +70,66 @@ You can use the same mechanic to try out a single rule before adding the depende
 npx elm-review --template jfmengels/elm-review-unused/example --rules NoUnused.Variables
 ```
 
+
 ## Configuration
 
-To run `elm-review` for the first time, you need to run
+`elm-review` is configured through a `review/` folder in your project. It is a self-contained Elm project where you can
+specify your dependencies, and write, import, and configure review rules.
 
-```bash
-elm-review init
-elm-review init --help # for more information and the available flags
-```
-
-This will create a `review/` directory containing an `elm.json` and a `ReviewConfig.elm` file, which you should commit into your project. Here is what it may look like:
+Rules are configured in the `review/ReviewConfig.elm` file:
 
 ```elm
 module ReviewConfig exposing (config)
 
-import Review.Rule exposing Rule
-import NoDebug
-import NoUnused.Variables
+import Review.Rule exposing (Rule)
+import Third.Party.Rule
+import My.Own.Custom.rule
+import Another.Rule
 
 
 config : List Rule
 config =
-    [ NoDebug.rule
-    , NoUnused.Variables.rule
+    [ Third.Party.Rule.rule
+    , My.Own.Custom.rule
+    , Another.Rule.rule { ruleOptions = [] }
     ]
 ```
 
-`elm-review` does not come with any built-in rules. You can read why [here](https://github.com/jfmengels/elm-review/blob/master/documentation/design/no-built-in-rules.md). You can find rules in the Elm package registry by [using `elm-search` and searching for `Review.Rule.Rule`](https://klaftertief.github.io/elm-search/?q=Review.Rule.Rule), and use them by going to your `review/` directory and running `elm install` in your terminal.
+
+## Get started
+
+You can get started with a fresh configuration by running the `elm-review init` command with the command line tool installed,
+which will add a `review` folder to your project.
+
+You can also use an existing configuration using `elm-review init --template <some configuration>`.
+I created [some configurations](https://github.com/jfmengels/elm-review-config) that I believe can be good **starting** points.
+
+```bash
+# Start with an empty configuration
+elm-review init
+
+# Starter configuration for an Elm application
+elm-review init --template jfmengels/elm-review-config/application
+
+# Starter configuration for an Elm package
+elm-review init --template jfmengels/elm-review-config/package
+```
+
+Once you have set up an initial configuration, you can add new rules. As `elm-review` does not
+[come with built-in rules](https://github.com/jfmengels/elm-review/blob/master/documentation/design/no-built-in-rules.md),
+you can look for packages with rules on the [Elm package registry](https://package.elm-lang.org/) by searching for packages named `elm-review-`.
+
+Once you've found a package that you like, you can install it with the `elm install` command, just like any other Elm project dependency.
 
 ```bash
 cd review/ # Go inside your review configuration directory
 elm install authorName/packageName
+# then update your `review/ReviewConfiguration` to add the rule
+# as explained in the package's documentation
 ```
+
+Before you start adding rules or an unfamiliar existing configuration, I suggest reading the rest of this document, especially the section on [when to enable a rule](#when-to-write-or-enable-a-rule).
+
 
 ## Run a review
 
