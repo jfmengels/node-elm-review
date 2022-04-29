@@ -1,7 +1,5 @@
 # elm-review CLI
 
-![](https://travis-ci.com/jfmengels/node-elm-review.svg?branch=master)
-
 Run [`elm-review`] from Node.js.
 
 ![elm-review reporter output](https://github.com/jfmengels/node-elm-review/blob/master/documentation/images/elm-review-report.png?raw=true)
