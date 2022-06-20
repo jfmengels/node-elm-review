@@ -36,6 +36,18 @@ suite =
 a = Debug.log "debug" 1
 other=lines
 other2=lines2
+
+some =
+  dummy
+    a
+    a
+    a
+    a
+    a
+    a
+    a
+    a
+    a
 """
                         }
 
@@ -45,6 +57,18 @@ other2=lines2
 a = 1
 other=lines
 other2=lines2
+
+some =
+  dummy
+    a
+    a
+    a
+    a
+    a
+    a
+    a
+    a
+    a
 """
                 in
                 Reporter.formatFixProposal Dict.empty Reporter.WithDetails file error fixedSource

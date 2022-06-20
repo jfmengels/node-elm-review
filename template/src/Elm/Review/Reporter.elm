@@ -958,19 +958,20 @@ addLineNumbers changes =
         maxLineNumberLength : Int
         maxLineNumberLength =
             List.foldl
-                (\change lineNumber ->
+                (\change ( currentMax, lineNumber ) ->
                     case change of
                         Diff.NoChange _ ->
-                            lineNumber + 1
+                            ( currentMax, lineNumber + 1 )
 
                         Diff.Removed _ ->
-                            lineNumber + 1
+                            ( lineNumber + 1, lineNumber + 1 )
 
                         Diff.Added _ ->
-                            lineNumber
+                            ( lineNumber, lineNumber )
                 )
-                0
+                ( 0, 0 )
                 changes
+                |> Tuple.first
                 |> lengthOfLineNumber
 
         ( _, unchangedLines, diffLines ) =
