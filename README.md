@@ -62,7 +62,7 @@ npx elm-review init --template jfmengels/elm-review-unused/example
 
 I **highly** recommend [reading this section on when to enable rules](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/#when-to-write-or-enable-a-rule) in your configuration though.
 
-You can use the same mechanic to try out a single rule before adding the dependency to your existing configuration and adding it to your configuration.
+You can use the same mechanics to try out a single rule before adding the dependency to your existing configuration and adding it to your configuration.
 
 ```bash
 npx elm-review --template jfmengels/elm-review-unused/example --rules NoUnused.Variables
@@ -96,7 +96,7 @@ config =
 
 ## Get started
 
-You can get started with a fresh configuration by running the `elm-review init` command with the command line tool installed,
+You can get started with an empty configuration by running the `elm-review init` command with the command line tool installed,
 which will add a `review` folder to your project.
 
 You can also use an existing configuration using `elm-review init --template <some configuration>`.
@@ -122,7 +122,7 @@ Once you've found a package that you like, you can install it with the `elm inst
 ```bash
 cd review/ # Go inside your review configuration directory
 elm install authorName/packageName
-# then update your `review/ReviewConfiguration` to add the rule
+# then update your `review/src/ReviewConfig.elm` to add the rule
 # as explained in the package's documentation
 ```
 
