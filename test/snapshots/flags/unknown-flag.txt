@@ -2,7 +2,7 @@
 
 I did not recognize this flag:
 
-    watc
+    --watc
 
 Maybe you want one of these instead?
 

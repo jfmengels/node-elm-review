@@ -2,7 +2,7 @@
 
 I did not recognize this flag:
 
-    suppressed-rules
+    --suppressed-rules
 
 Maybe you want one of these instead?
 
