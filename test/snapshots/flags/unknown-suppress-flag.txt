@@ -1,0 +1,11 @@
+-- UNKNOWN FLAG ----------------------------------------------------------------
+
+I did not recognize this flag:
+
+    --suppress
+
+There is a suppress subcommand available, did you mean that? Or do you want one of these instead?
+
+    --unsuppress
+    --rules <rule1,rule2,...>
+

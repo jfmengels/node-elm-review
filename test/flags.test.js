@@ -14,6 +14,11 @@ test('Running with an unknown shorthand flag', async () => {
   expect(output).toMatchFile(testName('unknown-shorthand-flag'));
 });
 
+test('Running with unknown flag --suppress', async () => {
+  const output = await TestCli.runAndExpectError('--suppress');
+  expect(output).toMatchFile(testName('unknown-suppress-flag'));
+});
+
 test('Running --compiler without an argument', async () => {
   const output = await TestCli.runAndExpectError('--compiler');
   expect(output).toMatchFile(testName('missing-argument-compiler'));
