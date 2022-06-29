@@ -67,5 +67,5 @@ config =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule Simplify.defaults
-    , CognitiveComplexity.rule 10
+    , CognitiveComplexity.rule 15
     ]
