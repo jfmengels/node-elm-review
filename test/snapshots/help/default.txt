@@ -71,6 +71,9 @@ You can customize the review command with the following flags:
         - Run the compiler in debug mode, allowing you to use Debug statements
           in your configuration and custom rules.
 
+    --no-color
+        Disable colors in the output.
+
     --report=<json or ndjson>
         Error reports will be in JSON format. json prints a single JSON object
         while ndjson will print one JSON object per error each on a new line.
