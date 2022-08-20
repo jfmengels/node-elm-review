@@ -3,7 +3,7 @@
 set -e
 
 CWD=$(pwd)
-CMD="elm-review"
+CMD="elm-review --no-color"
 TMP="$CWD/temporary"
 SNAPSHOTS="$CWD/run-snapshots"
 SUBCOMMAND="$1"
