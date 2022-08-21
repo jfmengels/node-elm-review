@@ -338,15 +338,24 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
                 []
 
             else
+                let
+                    are : String
+                    are =
+                        if numberOfSuppressedErrors == 1 then
+                            "is"
+
+                        else
+                            "are"
+                in
                 List.concat
-                    [ [ Text.from "\n\nThere are still "
+                    [ [ Text.from ("\n\nThere " ++ are ++ " still ")
                       , (String.fromInt numberOfSuppressedErrors ++ " suppressed " ++ pluralizeEnding numberOfSuppressedErrors "error")
                             |> Text.from
                             |> Text.inOrange
                       , Text.from " to address"
                       ]
                     , if numberOfSuppressedErrors < originalNumberOfSuppressedErrors then
-                        [ Text.from ", of which you fixed "
+                        [ Text.from ", and you just fixed "
                         , (originalNumberOfSuppressedErrors - numberOfSuppressedErrors)
                             |> String.fromInt
                             |> Text.from

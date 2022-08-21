@@ -707,10 +707,10 @@ suppressedTests =
                     |> expect
                         { withoutColors = """I found no errors!
 
-There are still 1 suppressed error to address."""
+There is still 1 suppressed error to address."""
                         , withColors = """I found no errors!
 
-There are still [1 suppressed error](#FFA500) to address."""
+There is still [1 suppressed error](#FFA500) to address."""
                         }
         , test "report report that there are no errors but that the user has fixed some if there are less than the original number of suppressed errors" <|
             \() ->
@@ -732,10 +732,10 @@ There are still [1 suppressed error](#FFA500) to address."""
                     |> expect
                         { withoutColors = """I found no errors!
 
-There are still 2 suppressed errors to address, of which you fixed 4!"""
+There are still 2 suppressed errors to address, and you just fixed 4!"""
                         , withColors = """I found no errors!
 
-There are still [2 suppressed errors](#FFA500) to address, of which you fixed [4](#008000)!"""
+There are still [2 suppressed errors](#FFA500) to address, and you just fixed [4](#008000)!"""
                         }
         , test "report report suppressed errors" <|
             \() ->
