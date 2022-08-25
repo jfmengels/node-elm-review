@@ -1,3 +1,13 @@
 - Fetching template information
 ✔ Build finished! Now reviewing your project...
-I found no errors!
+-- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
+
+NoUnused.Exports: Module `Folder.Unused` is never used.
+
+1| module Folder.Unused exposing (..)
+          ^^^^^^^^^^^^^
+
+This module is never used. You may want to remove it to keep your project clean,
+and maybe detect some unused code in your project.
+
+I found 1 error in 1 file.
