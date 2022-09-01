@@ -794,7 +794,7 @@ runReview : Model -> Model
 runReview model =
     let
         { errors, rules, projectData, extracts } =
-            Rule.reviewV3 model.rules model.projectData model.project
+            Rule.reviewV3 { extract = model.reportMode == Json } model.rules model.projectData model.project
     in
     { model
         | reviewErrors = errors
