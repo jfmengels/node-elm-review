@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- Fixed an issue where `elm-review init --template ...` could sometimes crash if the project already had a review configuration.
+
 ## [2.7.4] - 2022-08-21
 
 - Fixed an issue on Windows where suppressed didn't work [#80]
