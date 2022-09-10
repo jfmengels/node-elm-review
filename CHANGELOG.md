@@ -1,8 +1,9 @@
 # Changelog
 
-## UNRELEASED
+## [2.7.5] - 2022-09-10
 
 - Fixed an issue where `elm-review init --template ...` could sometimes crash if the project already had a review configuration.
+- Updated the GitHub Actions workflow so that the project always runs on the latest LTS version of Node
 
 ## [2.7.4] - 2022-08-21
 
@@ -24,10 +25,13 @@
 ## [2.7.2] - 2022-04-26
 
 - Added mentions of `elm-review` starter configurations
+
+
 ## Missing changelog
 
 Help would be appreciated to fill the blanks!
 
+[2.7.5]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.5
 [2.7.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.4
 [2.7.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.3
 [2.7.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.2
