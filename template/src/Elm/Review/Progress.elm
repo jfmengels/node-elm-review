@@ -1,4 +1,4 @@
-module Elm.Review.Progress exposing (Console, decoder, dummy, finishedRunningRule, fixWasApplied, reset)
+module Elm.Review.Progress exposing (Console, decoder, dummy, fixWasApplied, reset, log)
 
 import Json.Decode
 import Json.Encode
@@ -63,18 +63,9 @@ fixWasApplied remainingErrors (Console previousCount console) =
         Console count console
 
 
-finishedRunningRule : String -> Console -> Console
-finishedRunningRule ruleName (Console count console) =
-    let
-        message : String
-        message =
-            Json.Encode.object
-                [ ( "type", Json.Encode.string "time-rule" )
-                , ( "ruleName", Json.Encode.string ruleName )
-                ]
-                |> Json.Encode.encode 0
-    in
-    always (Console count console) <|
+log : Console -> String -> String
+log (Console _ console) message =
+    always message <|
         sendLoggerMessage message console
 
 

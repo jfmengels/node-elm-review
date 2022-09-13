@@ -798,6 +798,7 @@ runReview model =
             Rule.reviewV3
                 (ReviewOptions.defaults
                     |> ReviewOptions.withDataExtraction (model.reportMode == Json)
+                    |> ReviewOptions.withLogger (Progress.log model.logger)
                 )
                 model.rules
                 model.projectData
