@@ -16,9 +16,17 @@ dummy =
 
 reset : Console -> Console
 reset (Console _ console) =
+    let
+        message : String
+        message =
+            Json.Encode.object
+                [ ( "type", Json.Encode.string "reset" )
+                ]
+                |> Json.Encode.encode 0
+    in
     always (Console 0 console) <|
         Json.Decode.decodeValue
-            (Json.Decode.field "reset" (Json.Decode.null ()))
+            (Json.Decode.field message (Json.Decode.null ()))
             console
 
 
@@ -34,17 +42,25 @@ fixWasApplied remainingErrors (Console previousCount console) =
         count =
             previousCount + 1
 
-        remainingFixableErrors : String
+        remainingFixableErrors : Int
         remainingFixableErrors =
             remainingErrors
                 |> List.filterMap Rule.errorFixes
                 |> List.length
-                |> String.fromInt
+
+        message : String
+        message =
+            Json.Encode.object
+                [ ( "type", Json.Encode.string "log" )
+                , ( "done", Json.Encode.int count )
+                , ( "remaining", Json.Encode.int remainingFixableErrors )
+                ]
+                |> Json.Encode.encode 0
     in
     if count >= 3 then
         always (Console count console) <|
             Json.Decode.decodeValue
-                (Json.Decode.field ("log::" ++ String.fromInt count ++ "::" ++ remainingFixableErrors) (Json.Decode.null ()))
+                (Json.Decode.field message (Json.Decode.null ()))
                 console
 
     else
