@@ -25,9 +25,7 @@ reset (Console _ console) =
                 |> Json.Encode.encode 0
     in
     always (Console 0 console) <|
-        Json.Decode.decodeValue
-            (Json.Decode.field message (Json.Decode.null ()))
-            console
+        sendLoggerMessage message console
 
 
 decoder : Json.Decode.Decoder Console
@@ -59,9 +57,14 @@ fixWasApplied remainingErrors (Console previousCount console) =
     in
     if count >= 3 then
         always (Console count console) <|
-            Json.Decode.decodeValue
-                (Json.Decode.field message (Json.Decode.null ()))
-                console
+            sendLoggerMessage message console
 
     else
         Console count console
+
+
+sendLoggerMessage : String -> Json.Decode.Value -> Result Json.Decode.Error ()
+sendLoggerMessage message console =
+    Json.Decode.decodeValue
+        (Json.Decode.field message (Json.Decode.null ()))
+        console
