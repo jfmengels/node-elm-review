@@ -1285,6 +1285,17 @@ normalizePackageDeps application =
 addFixedErrorForFile : String -> Rule.ReviewError -> List Rule.ReviewError -> Model -> Model
 addFixedErrorForFile path error remainingErrors model =
     let
+        _ =
+            Progress.log
+                model.logger
+                (Encode.object
+                    [ ( "type", Encode.string "apply-fix" )
+                    , ( "ruleName", Encode.string (Rule.errorRuleName error) )
+                    , ( "path", Encode.string (Rule.errorFilePath error) )
+                    ]
+                    |> Encode.encode 0
+                )
+
         errorsForFile : List Reporter.Error
         errorsForFile =
             fromReviewError model.suppressedErrors model.links error
