@@ -1,4 +1,4 @@
-module Elm.Review.Progress exposing (Console, decoder, dummy, fixWasApplied, log, reset)
+module Elm.Review.Progress exposing (Console, decoder, dummy, fixWasApplied, log, logInPipe, reset)
 
 import Json.Decode
 import Json.Encode
@@ -66,6 +66,12 @@ fixWasApplied remainingErrors (Console previousCount console) =
 log : Console -> String -> String
 log (Console _ console) message =
     always message <|
+        sendLoggerMessage message console
+
+
+logInPipe : Console -> String -> a -> a
+logInPipe (Console _ console) message data =
+    always data <|
         sendLoggerMessage message console
 
 

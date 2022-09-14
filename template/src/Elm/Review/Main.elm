@@ -816,9 +816,24 @@ runReview model =
 
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
+    let
+        _ =
+            Progress.log
+                model.logger
+                (Encode.object
+                    [ ( "type", Encode.string "process-errors-start" ) ]
+                    |> Encode.encode 0
+                )
+    in
     case model.fixMode of
         Mode_DontFix ->
             makeReport Dict.empty model
+                |> Progress.logInPipe
+                    model.logger
+                    (Encode.object
+                        [ ( "type", Encode.string "process-errors-end" ) ]
+                        |> Encode.encode 0
+                    )
 
         Mode_Fix ->
             fixOneByOne model
@@ -1212,6 +1227,12 @@ applyAllFixes failedFixesDict model =
                     newFailedFixesDict
                     ({ model | project = newProject }
                         |> addFixedErrorForFile file.path error remainingErrors
+                        |> Progress.logInPipe
+                            model.logger
+                            (Encode.object
+                                [ ( "type", Encode.string "process-errors-end" ) ]
+                                |> Encode.encode 0
+                            )
                         |> runReview
                     )
 
