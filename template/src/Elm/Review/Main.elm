@@ -795,18 +795,32 @@ runReview : Model -> Model
 runReview model =
     let
         { errors, rules, projectData, extracts } =
-            Rule.reviewV3
-                (ReviewOptions.defaults
-                    |> ReviewOptions.withDataExtraction (model.reportMode == Json)
-                    |> ReviewOptions.withLogger (Progress.log model.logger)
-                )
-                model.rules
-                model.projectData
-                model.project
+            model.project
+                |> Progress.logInPipe
+                    model.logger
+                    [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "run-review" ) ]
+                |> Rule.reviewV3
+                    (ReviewOptions.defaults
+                        |> ReviewOptions.withDataExtraction (model.reportMode == Json)
+                        |> ReviewOptions.withLogger (Just (Progress.log model.logger))
+                    )
+                    model.rules
+                    model.projectData
+                |> Progress.logInPipe
+                    model.logger
+                    [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "run-review" ) ]
     in
     { model
         | reviewErrors = errors
-        , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode model.suppressedErrors errors
+        , reviewErrorsAfterSuppression =
+            errors
+                |> Progress.logInPipe
+                    model.logger
+                    [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "apply-suppressions" ) ]
+                |> SuppressedErrors.apply model.unsuppressMode model.suppressedErrors
+                |> Progress.logInPipe
+                    model.logger
+                    [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
         , rules = rules
         , projectData = projectData
         , errorAwaitingConfirmation = NotAwaiting
@@ -821,7 +835,7 @@ reportOrFix model =
             Progress.log
                 model.logger
                 (Encode.object
-                    [ ( "type", Encode.string "process-errors-start" ) ]
+                    [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "process-errors" ) ]
                     |> Encode.encode 0
                 )
     in
@@ -830,10 +844,7 @@ reportOrFix model =
             makeReport Dict.empty model
                 |> Progress.logInPipe
                     model.logger
-                    (Encode.object
-                        [ ( "type", Encode.string "process-errors-end" ) ]
-                        |> Encode.encode 0
-                    )
+                    [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
 
         Mode_Fix ->
             fixOneByOne model
@@ -1229,10 +1240,7 @@ applyAllFixes failedFixesDict model =
                         |> addFixedErrorForFile file.path error remainingErrors
                         |> Progress.logInPipe
                             model.logger
-                            (Encode.object
-                                [ ( "type", Encode.string "process-errors-end" ) ]
-                                |> Encode.encode 0
-                            )
+                            [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
                         |> runReview
                     )
 

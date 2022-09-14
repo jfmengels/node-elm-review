@@ -69,10 +69,10 @@ log (Console _ console) message =
         sendLoggerMessage message console
 
 
-logInPipe : Console -> String -> a -> a
+logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
 logInPipe (Console _ console) message data =
     always data <|
-        sendLoggerMessage message console
+        sendLoggerMessage (Json.Encode.encode 0 (Json.Encode.object message)) console
 
 
 sendLoggerMessage : String -> Json.Decode.Value -> Result Json.Decode.Error ()
