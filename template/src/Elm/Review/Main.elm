@@ -19,6 +19,7 @@ import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
+import Review.Options as ReviewOptions
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
@@ -794,7 +795,13 @@ runReview : Model -> Model
 runReview model =
     let
         { errors, rules, projectData, extracts } =
-            Rule.reviewV3 { extract = model.reportMode == Json } model.rules model.projectData model.project
+            Rule.reviewV3
+                (ReviewOptions.defaults
+                    |> ReviewOptions.withDataExtraction (model.reportMode == Json)
+                )
+                model.rules
+                model.projectData
+                model.project
     in
     { model
         | reviewErrors = errors
