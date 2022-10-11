@@ -118,7 +118,6 @@ main =
 type alias Model =
     { rules : List Rule
     , project : Project
-    , projectData : Maybe Rule.ProjectData
     , links : Dict String String
     , fixMode : FixMode
     , unsuppressMode : UnsuppressMode
@@ -209,7 +208,6 @@ init rawFlags =
     in
     ( { rules = rules
       , project = Project.new
-      , projectData = Nothing
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
@@ -794,7 +792,7 @@ confirmationDecoder =
 runReview : Model -> Model
 runReview model =
     let
-        { errors, rules, projectData, extracts } =
+        { errors, rules, project, extracts } =
             model.project
                 |> Progress.logInPipe
                     model.logger
@@ -805,7 +803,6 @@ runReview model =
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
                     )
                     model.rules
-                    model.projectData
                 |> Progress.logInPipe
                     model.logger
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "run-review" ) ]
@@ -822,7 +819,7 @@ runReview model =
                     model.logger
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
         , rules = rules
-        , projectData = projectData
+        , project = project
         , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
     }
