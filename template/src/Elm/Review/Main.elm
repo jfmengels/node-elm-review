@@ -801,6 +801,7 @@ runReview model =
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
+                        |> ReviewOptions.withFixAll (model.fixMode == Mode_FixAll)
                     )
                     model.rules
                 |> Progress.logInPipe
