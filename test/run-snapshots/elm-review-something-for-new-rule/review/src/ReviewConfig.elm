@@ -37,6 +37,7 @@ import NoUnused.Variables
 import Review.Rule as Rule exposing (Rule)
 import Simplify
 
+
 config : List Rule
 config =
     [ Docs.NoMissing.rule
