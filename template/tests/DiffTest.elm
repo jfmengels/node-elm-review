@@ -31,7 +31,9 @@ runManyTimes times a_ b_ =
         total =
             List.foldl (\_ n -> n + List.length (diffLines a_ b_)) 0 (List.range 1 times)
     in
-    \_ -> Expect.true "" (total > 0)
+    \_ ->
+        total
+            |> Expect.greaterThan 0
 
 
 perf : Test

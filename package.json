@@ -91,7 +91,7 @@
     "wrap-ansi": "^6.2.0"
   },
   "devDependencies": {
-    "elm-test": "^0.19.1-revision6",
+    "elm-test": "^0.19.1-revision10",
     "eslint": "^6.2.2",
     "flow-bin": "^0.122.0",
     "jest": "^27.3.1",
