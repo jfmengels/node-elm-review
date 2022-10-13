@@ -1318,7 +1318,7 @@ addFixedErrorForFile path error remainingErrors model =
                 (Encode.object
                     [ ( "type", Encode.string "apply-fix" )
                     , ( "ruleName", Encode.string (Rule.errorRuleName error) )
-                    , ( "path", Encode.string (Rule.errorFilePath error) )
+                    , ( "filePath", Encode.string (Rule.errorFilePath error) )
                     ]
                     |> Encode.encode 0
                 )
