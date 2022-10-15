@@ -689,7 +689,10 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 |> fixOneByOne
 
                         AwaitingFixAll ->
-                            { model | errorAwaitingConfirmation = NotAwaiting }
+                            { model
+                                | errorAwaitingConfirmation = NotAwaiting
+                                , project = model.fixAllResultProject
+                            }
                                 |> runReview
                                 -- TODO We should still display the errors that could not be applied here.
                                 |> makeReport Dict.empty
@@ -820,7 +823,7 @@ runReview model =
                     model.logger
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
         , rules = rules
-        , project = project
+        , fixAllResultProject = project
         , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
     }
@@ -1075,7 +1078,7 @@ fixAll : Model -> ( Model, Cmd msg )
 fixAll model =
     case applyAllFixes Dict.empty model of
         Just { failedFixesDict, newModel } ->
-            case diff model.project newModel.project of
+            case diff model.project newModel.fixAllResultProject of
                 [] ->
                     makeReport failedFixesDict newModel
 
@@ -1108,7 +1111,7 @@ fixAll model =
                     in
                     ( { newModel
                         | project = model.project
-                        , fixAllResultProject = newModel.project
+                        , fixAllResultProject = newModel.fixAllResultProject
                         , errorAwaitingConfirmation = AwaitingFixAll
                       }
                     , askConfirmationToFix
@@ -1206,21 +1209,21 @@ addElmFile file project =
 
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe { failedFixesDict : Dict String Fix.Problem, newModel : Model }
 applyAllFixes failedFixesDict model =
-    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.project) model.reviewErrorsAfterSuppression of
+    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.fixAllResultProject) model.reviewErrorsAfterSuppression of
         ( newFailedFixesDict, Just { file, error, fixedSource, remainingErrors } ) ->
             let
                 newProject : Project
                 newProject =
-                    addUpdatedFileToProject { file | source = fixedSource } model.project
+                    addUpdatedFileToProject { file | source = fixedSource } model.fixAllResultProject
             in
-            if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
+            if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.fixAllResultProject) then
                 -- There is a new module that failed to parse in the
                 -- project when we updated the fixed file. This means
                 -- that our fix introduced a syntactical regression that
                 -- we were not successful in preventing earlier.
                 Nothing
 
-            else if not <| List.isEmpty (changesToElm model.project newProject) then
+            else if not <| List.isEmpty (changesToElm model.fixAllResultProject newProject) then
                 Just
                     { failedFixesDict = newFailedFixesDict
                     , newModel =
@@ -1228,13 +1231,13 @@ applyAllFixes failedFixesDict model =
                             file.path
                             error
                             remainingErrors
-                            { model | project = newProject }
+                            { model | fixAllResultProject = newProject }
                     }
 
             else
                 applyAllFixes
                     newFailedFixesDict
-                    ({ model | project = newProject }
+                    ({ model | fixAllResultProject = newProject }
                         |> addFixedErrorForFile file.path error remainingErrors
                         |> Progress.logInPipe
                             model.logger
