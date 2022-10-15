@@ -795,7 +795,7 @@ confirmationDecoder =
 runReview : Model -> Model
 runReview model =
     let
-        { errors, rules, project, extracts } =
+        { errors, rules, project, extracts, fixedErrors } =
             model.project
                 |> Progress.logInPipe
                     model.logger
@@ -824,6 +824,7 @@ runReview model =
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
         , rules = rules
         , fixAllResultProject = project
+        , fixAllErrors = Dict.map (\_ fixedErrors_ -> List.map (fromReviewError model.suppressedErrors model.links) fixedErrors_) fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
     }
