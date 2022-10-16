@@ -619,22 +619,31 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { model | links = links }, Cmd.none )
 
         GotRequestToReview ->
+            let
+                project : Project
+                project =
+                    Project.precomputeModuleGraph model.project
+            in
             { model
-                | project = Project.precomputeModuleGraph model.project
+                | project = project
                 , fixAllErrors = Dict.empty
             }
-                |> runReview
+                |> runReview project
                 |> reportOrFix
 
         GotRequestToGenerateSuppressionErrors ->
             let
+                project : Project
+                project =
+                    Project.precomputeModuleGraph model.project
+
                 newModel : Model
                 newModel =
                     { model
-                        | project = Project.precomputeModuleGraph model.project
+                        | project = project
                         , fixAllErrors = Dict.empty
                     }
-                        |> runReview
+                        |> runReview project
             in
             ( newModel
             , newModel.reviewErrors
@@ -673,7 +682,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
                     else
                         { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
-                            |> runReview
+                            |> runReview newProject
                             |> reportOrFix
                             |> Tuple.mapSecond
                                 (\cmd ->
@@ -693,7 +702,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 | errorAwaitingConfirmation = NotAwaiting
                                 , project = model.fixAllResultProject
                             }
-                                |> runReview
+                                |> runReview model.fixAllResultProject
                                 -- TODO We should still display the errors that could not be applied here.
                                 |> makeReport Dict.empty
 
@@ -792,11 +801,11 @@ confirmationDecoder =
             )
 
 
-runReview : Model -> Model
-runReview model =
+runReview : Project -> Model -> Model
+runReview initialProject model =
     let
         { errors, rules, project, extracts, fixedErrors } =
-            model.project
+            initialProject
                 |> Progress.logInPipe
                     model.logger
                     [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "run-review" ) ]
@@ -1244,7 +1253,7 @@ applyAllFixes failedFixesDict model =
                         |> Progress.logInPipe
                             model.logger
                             [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
-                        |> runReview
+                        |> runReview newProject
                     )
 
         ( newFailedFixesDict, Nothing ) ->
