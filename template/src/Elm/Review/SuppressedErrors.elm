@@ -1,5 +1,6 @@
 module Elm.Review.SuppressedErrors exposing
     ( SuppressedErrors
+    , addToReviewOptions
     , apply
     , count
     , createFOR_TESTS
@@ -15,6 +16,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Review.Options as ReviewOptions exposing (ReviewOptions)
 import Review.Rule as Rule
 import Set exposing (Set)
 
@@ -85,6 +87,11 @@ applyHelp suppressedErrors errors =
                     Nothing ->
                         head :: tail
             )
+
+
+addToReviewOptions : SuppressedErrors -> ReviewOptions -> ReviewOptions
+addToReviewOptions (SuppressedErrors suppressedErrors) reviewOptions =
+    ReviewOptions.withSuppressedErrors suppressedErrors reviewOptions
 
 
 count : SuppressedErrors -> Int

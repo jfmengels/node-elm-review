@@ -805,6 +805,7 @@ runReview model =
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
                         |> ReviewOptions.withFixAll (model.fixMode == Mode_FixAll)
+                        |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules
                 |> Progress.logInPipe
