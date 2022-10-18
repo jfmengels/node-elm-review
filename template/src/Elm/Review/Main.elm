@@ -656,11 +656,15 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             case Decode.decodeValue confirmationDecoder confirmation of
                 Ok (Accepted rawFiles) ->
                     let
+                        previousProject : Project
+                        previousProject =
+                            model.fixAllResultProject
+
                         newProject : Project
                         newProject =
-                            List.foldl addUpdatedFileToProject model.project rawFiles
+                            List.foldl addUpdatedFileToProject previousProject rawFiles
                     in
-                    if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.project) then
+                    if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse previousProject) then
                         -- There is a new file that failed to parse in the
                         -- project when we updated the fixed file. This means
                         -- that our fix introduced a syntactical regression that
