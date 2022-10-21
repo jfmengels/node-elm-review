@@ -117,7 +117,9 @@ main =
 
 type alias Model =
     { rules : List Rule
+    , fixAllRules : List Rule
     , project : Project
+    , isInitialRun : Bool
     , links : Dict String String
     , fixMode : FixMode
     , unsuppressMode : UnsuppressMode
@@ -207,7 +209,9 @@ init rawFlags =
                 rulesFromConfig
     in
     ( { rules = rules
+      , fixAllRules = rules
       , project = Project.new
+      , isInitialRun = True
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
@@ -685,7 +689,12 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         --    )
 
                     else
-                        { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
+                        { model
+                            | project = newProject
+                            , rules = model.fixAllRules
+                            , fixAllErrors = Dict.empty
+                            , errorsHaveBeenFixedPreviously = True
+                        }
                             |> runReview { fixAllAllowed = True } newProject
                             |> reportOrFix
                             |> Tuple.mapSecond
@@ -836,7 +845,14 @@ runReview { fixAllAllowed } initialProject model =
                 |> Progress.logInPipe
                     model.logger
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
-        , rules = rules
+        , rules =
+            if model.isInitialRun || model.fixMode /= Mode_FixAll then
+                rules
+
+            else
+                model.rules
+        , isInitialRun = False
+        , fixAllRules = rules
         , fixAllResultProject = project
         , fixAllErrors = Dict.map (\_ fixedErrors_ -> List.map (fromReviewError model.suppressedErrors model.links) fixedErrors_) fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
