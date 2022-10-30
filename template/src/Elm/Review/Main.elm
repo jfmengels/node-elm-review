@@ -154,7 +154,29 @@ type AwaitingConfirmation
 type FixMode
     = Mode_DontFix
     | Mode_Fix
-    | Mode_FixAll
+    | Mode_FixAll Int
+
+
+toReviewOptionsFixMode : Bool -> FixMode -> ReviewOptions.FixMode
+toReviewOptionsFixMode fixAllAllowed fixMode =
+    if not fixAllAllowed then
+        ReviewOptions.fixedDisabled
+
+    else
+        case fixMode of
+            Mode_DontFix ->
+                ReviewOptions.fixedDisabled
+
+            Mode_Fix ->
+                ReviewOptions.fixesEnabledWithLimit 1
+
+            Mode_FixAll limit ->
+                if limit == 0 then
+                    ReviewOptions.fixesEnabledWithoutLimits
+
+                else
+                    ReviewOptions.fixesEnabledWithLimit 5
+
 
 
 type ReportMode
@@ -375,7 +397,7 @@ decodeFix =
                         Decode.succeed Mode_Fix
 
                     "fixAll" ->
-                        Decode.succeed Mode_FixAll
+                        Decode.succeed (Mode_FixAll 5)
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
@@ -826,7 +848,7 @@ runReview { fixAllAllowed } initialProject model =
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
-                        |> ReviewOptions.withFixAll (fixAllAllowed && model.fixMode == Mode_FixAll)
+                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixAllAllowed model.fixMode)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules
@@ -846,7 +868,7 @@ runReview { fixAllAllowed } initialProject model =
                     model.logger
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
         , rules =
-            if model.isInitialRun || model.fixMode /= Mode_FixAll then
+            if model.isInitialRun || model.fixMode == Mode_DontFix then
                 rules
 
             else
@@ -881,7 +903,7 @@ reportOrFix model =
         Mode_Fix ->
             fixOneByOne model
 
-        Mode_FixAll ->
+        Mode_FixAll _ ->
             let
                 ( newModel, cmd ) =
                     fixAll model
@@ -1164,9 +1186,11 @@ fixAll model =
             , abort "Got an error while trying to fix all automatic fixes. One of them made the code invalid. I suggest fixing the errors manually, or using `--fix` but with a lot of precaution."
             )
 
+
 numberOfErrors : Dict String (List Reporter.Error) -> Int
 numberOfErrors dict =
     Dict.foldl (\_ errors count -> List.length errors + count) 0 dict
+
 
 encodeChangedFile : { path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
 encodeChangedFile changedFile =
