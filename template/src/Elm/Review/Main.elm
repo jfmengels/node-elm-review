@@ -122,6 +122,7 @@ type alias Model =
     , isInitialRun : Bool
     , links : Dict String String
     , fixMode : FixMode
+    , fixLimit : Int
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
@@ -154,28 +155,28 @@ type AwaitingConfirmation
 type FixMode
     = Mode_DontFix
     | Mode_Fix
-    | Mode_FixAll Int
+    | Mode_FixAll
 
 
-toReviewOptionsFixMode : Bool -> FixMode -> ReviewOptions.FixMode
-toReviewOptionsFixMode fixAllAllowed fixMode =
+toReviewOptionsFixMode : Bool -> Model -> ReviewOptions.FixMode
+toReviewOptionsFixMode fixAllAllowed model =
     if not fixAllAllowed then
         ReviewOptions.fixedDisabled
 
     else
-        case fixMode of
+        case model.fixMode of
             Mode_DontFix ->
                 ReviewOptions.fixedDisabled
 
             Mode_Fix ->
                 ReviewOptions.fixesEnabledWithLimit 1
 
-            Mode_FixAll limit ->
-                if limit == 0 then
+            Mode_FixAll ->
+                if model.fixLimit == 0 then
                     ReviewOptions.fixesEnabledWithoutLimits
 
                 else
-                    ReviewOptions.fixesEnabledWithLimit 5
+                    ReviewOptions.fixesEnabledWithLimit model.fixLimit
 
 
 
@@ -194,6 +195,7 @@ init rawFlags =
 
                 Err error ->
                     ( { fixMode = Mode_DontFix
+                      , fixLimit = 1
                       , unsuppressMode = UnsuppressMode.UnsuppressNone
                       , reportMode = HumanReadable
                       , detailsMode = Reporter.WithoutDetails
@@ -237,6 +239,7 @@ init rawFlags =
       , links = Dict.empty
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
+      , fixLimit = flags.fixLimit
       , unsuppressMode = flags.unsuppressMode
       , detailsMode = flags.detailsMode
       , reportMode = flags.reportMode
@@ -349,6 +352,7 @@ closestNames names name =
 
 type alias DecodedFlags =
     { fixMode : FixMode
+    , fixLimit : Int
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
@@ -365,6 +369,7 @@ decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
     Decode.succeed DecodedFlags
         |> field "fixMode" decodeFix
+        |> field "fixLimit" decodeFixLimit
         |> field "unsuppress" UnsuppressMode.decoder
         |> field "detailsMode" decodeDetailsMode
         |> field "report" decodeReportMode
@@ -397,12 +402,16 @@ decodeFix =
                         Decode.succeed Mode_Fix
 
                     "fixAll" ->
-                        Decode.succeed (Mode_FixAll 5)
+                        Decode.succeed Mode_FixAll
 
                     _ ->
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
             )
 
+decodeFixLimit : Decode.Decoder Int
+decodeFixLimit =
+    Decode.int
+        |> Decode.map (max 0)
 
 decodeDetailsMode : Decode.Decoder Reporter.DetailsMode
 decodeDetailsMode =
@@ -848,7 +857,7 @@ runReview { fixAllAllowed } initialProject model =
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
-                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixAllAllowed model.fixMode)
+                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixAllAllowed model)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules
@@ -903,7 +912,7 @@ reportOrFix model =
         Mode_Fix ->
             fixOneByOne model
 
-        Mode_FixAll _ ->
+        Mode_FixAll ->
             let
                 ( newModel, cmd ) =
                     fixAll model
