@@ -1096,6 +1096,7 @@ fixOneByOne model =
                     ]
                 )
               , ( "error", Encode.string <| Rule.errorMessage error )
+              , ( "count", Encode.int 1 )
               ]
                 |> Encode.object
                 |> askConfirmationToFix
@@ -1153,6 +1154,7 @@ fixAll model =
                                     |> List.map (\file -> { path = file.path, source = file.fixedSource })
                                     |> Encode.list encodeChangedFile
                               )
+                            , ( "count", Encode.int (numberOfErrors newModel.fixAllErrors) )
                             ]
                         )
                     )
@@ -1162,6 +1164,9 @@ fixAll model =
             , abort "Got an error while trying to fix all automatic fixes. One of them made the code invalid. I suggest fixing the errors manually, or using `--fix` but with a lot of precaution."
             )
 
+numberOfErrors : Dict String (List Reporter.Error) -> Int
+numberOfErrors dict =
+    Dict.foldl (\_ errors count -> List.length errors + count) 0 dict
 
 encodeChangedFile : { path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
 encodeChangedFile changedFile =
