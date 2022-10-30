@@ -1358,6 +1358,7 @@ addFixedErrorForFile path error remainingErrors model =
                     [ ( "type", Encode.string "apply-fix" )
                     , ( "ruleName", Encode.string (Rule.errorRuleName error) )
                     , ( "filePath", Encode.string (Rule.errorFilePath error) )
+                    , ( "count", Encode.int (numberOfErrors model.fixAllErrors) )
                     ]
                     |> Encode.encode 0
                 )
