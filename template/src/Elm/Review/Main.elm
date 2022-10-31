@@ -1172,6 +1172,10 @@ fixAll model =
 sendFixPrompt : Model -> List FixedFile -> Cmd msg
 sendFixPrompt model diffs =
     let
+        numberOfFixedErrors : Int
+        numberOfFixedErrors =
+            numberOfErrors model.fixAllErrors
+
         changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
         changedFiles =
             List.map
@@ -1205,7 +1209,7 @@ sendFixPrompt model diffs =
                     |> List.map (\file -> { path = file.path, source = file.fixedSource })
                     |> Encode.list encodeChangedFile
               )
-            , ( "count", Encode.int (numberOfErrors model.fixAllErrors) )
+            , ( "count", Encode.int numberOfFixedErrors )
             ]
         )
 
