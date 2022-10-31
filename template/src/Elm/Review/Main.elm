@@ -179,7 +179,6 @@ toReviewOptionsFixMode fixAllAllowed model =
                     ReviewOptions.fixesEnabledWithLimit model.fixLimit
 
 
-
 type ReportMode
     = HumanReadable
     | Json
@@ -408,10 +407,12 @@ decodeFix =
                         Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
             )
 
+
 decodeFixLimit : Decode.Decoder Int
 decodeFixLimit =
     Decode.int
         |> Decode.map (max 0)
+
 
 decodeDetailsMode : Decode.Decoder Reporter.DetailsMode
 decodeDetailsMode =
