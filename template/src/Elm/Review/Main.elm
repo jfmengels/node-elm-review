@@ -915,7 +915,11 @@ reportOrFix model =
                     [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
 
         Mode_Fix ->
-            fixOneByOne model
+            let
+                ( newModel, cmd ) =
+                    fixAll model
+            in
+            ( { newModel | logger = newModel.logger }, cmd )
 
         Mode_FixAll ->
             let
