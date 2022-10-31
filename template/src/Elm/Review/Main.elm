@@ -176,7 +176,7 @@ toReviewOptionsFixMode fixAllAllowed model =
                     Just fixLimit ->
                         ReviewOptions.fixesEnabledWithLimit fixLimit
 
-                    Nothing->
+                    Nothing ->
                         ReviewOptions.fixesEnabledWithoutLimits
 
 
@@ -1155,54 +1155,59 @@ fixAll model =
                     makeReport failedFixesDict newModel
 
                 diffs ->
-                    let
-                        changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
-                        changedFiles =
-                            List.map
-                                (\{ path, source, fixedSource } ->
-                                    { path =
-                                        if path == "GLOBAL ERROR" then
-                                            Reporter.Global
-
-                                        else
-                                            Reporter.FilePath path
-                                    , source = Reporter.Source source
-                                    , fixedSource = Reporter.Source fixedSource
-                                    , errors =
-                                        Dict.get path newModel.fixAllErrors
-                                            |> Maybe.withDefault []
-                                    }
-                                )
-                                diffs
-
-                        confirmationMessage : Encode.Value
-                        confirmationMessage =
-                            changedFiles
-                                |> Reporter.formatFixProposals
-                                |> encodeReport
-                    in
                     ( { newModel
                         | project = model.project
                         , fixAllResultProject = newModel.fixAllResultProject
                         , errorAwaitingConfirmation = AwaitingFixAll
                       }
-                    , askConfirmationToFix
-                        (Encode.object
-                            [ ( "confirmationMessage", confirmationMessage )
-                            , ( "changedFiles"
-                              , changedFiles
-                                    |> List.map (\file -> { path = file.path, source = file.fixedSource })
-                                    |> Encode.list encodeChangedFile
-                              )
-                            , ( "count", Encode.int (numberOfErrors newModel.fixAllErrors) )
-                            ]
-                        )
+                    , sendFixPrompt newModel diffs
                     )
 
         Nothing ->
             ( model
             , abort "Got an error while trying to fix all automatic fixes. One of them made the code invalid. I suggest fixing the errors manually, or using `--fix` but with a lot of precaution."
             )
+
+
+sendFixPrompt : Model -> List FixedFile -> Cmd msg
+sendFixPrompt model diffs =
+    let
+        changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
+        changedFiles =
+            List.map
+                (\{ path, source, fixedSource } ->
+                    { path =
+                        if path == "GLOBAL ERROR" then
+                            Reporter.Global
+
+                        else
+                            Reporter.FilePath path
+                    , source = Reporter.Source source
+                    , fixedSource = Reporter.Source fixedSource
+                    , errors =
+                        Dict.get path model.fixAllErrors
+                            |> Maybe.withDefault []
+                    }
+                )
+                diffs
+
+        confirmationMessage : Encode.Value
+        confirmationMessage =
+            changedFiles
+                |> Reporter.formatFixProposals
+                |> encodeReport
+    in
+    askConfirmationToFix
+        (Encode.object
+            [ ( "confirmationMessage", confirmationMessage )
+            , ( "changedFiles"
+              , changedFiles
+                    |> List.map (\file -> { path = file.path, source = file.fixedSource })
+                    |> Encode.list encodeChangedFile
+              )
+            , ( "count", Encode.int (numberOfErrors model.fixAllErrors) )
+            ]
+        )
 
 
 numberOfErrors : Dict String (List Reporter.Error) -> Int
