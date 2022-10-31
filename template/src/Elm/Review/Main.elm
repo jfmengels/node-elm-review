@@ -122,7 +122,7 @@ type alias Model =
     , isInitialRun : Bool
     , links : Dict String String
     , fixMode : FixMode
-    , fixLimit : Int
+    , fixLimit : Maybe Int
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
@@ -172,11 +172,12 @@ toReviewOptionsFixMode fixAllAllowed model =
                 ReviewOptions.fixesEnabledWithLimit 1
 
             Mode_FixAll ->
-                if model.fixLimit == 0 then
-                    ReviewOptions.fixesEnabledWithoutLimits
+                case model.fixLimit of
+                    Just fixLimit ->
+                        ReviewOptions.fixesEnabledWithLimit fixLimit
 
-                else
-                    ReviewOptions.fixesEnabledWithLimit model.fixLimit
+                    Nothing->
+                        ReviewOptions.fixesEnabledWithoutLimits
 
 
 type ReportMode
@@ -194,7 +195,7 @@ init rawFlags =
 
                 Err error ->
                     ( { fixMode = Mode_DontFix
-                      , fixLimit = 1
+                      , fixLimit = Nothing
                       , unsuppressMode = UnsuppressMode.UnsuppressNone
                       , reportMode = HumanReadable
                       , detailsMode = Reporter.WithoutDetails
@@ -351,7 +352,7 @@ closestNames names name =
 
 type alias DecodedFlags =
     { fixMode : FixMode
-    , fixLimit : Int
+    , fixLimit : Maybe Int
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
@@ -408,10 +409,13 @@ decodeFix =
             )
 
 
-decodeFixLimit : Decode.Decoder Int
+decodeFixLimit : Decode.Decoder (Maybe Int)
 decodeFixLimit =
-    Decode.int
-        |> Decode.map (max 0)
+    Decode.oneOf
+        [ Decode.int
+            |> Decode.map (\n -> Just (max 1 n))
+        , Decode.null Nothing
+        ]
 
 
 decodeDetailsMode : Decode.Decoder Reporter.DetailsMode
