@@ -1134,7 +1134,6 @@ fixOneByOne model =
                       }
                     ]
                 )
-              , ( "error", Encode.string <| Rule.errorMessage error )
               , ( "count", Encode.int 1 )
               ]
                 |> Encode.object
