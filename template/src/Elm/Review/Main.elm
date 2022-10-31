@@ -1219,6 +1219,25 @@ numberOfErrors dict =
     Dict.foldl (\_ errors count -> List.length errors + count) 0 dict
 
 
+type NumberOfErrors
+    = NoErrors
+    | OneError Reporter.Error
+    | MultipleErrors Int
+
+
+numberOfErrors2 : Dict String (List Reporter.Error) -> NumberOfErrors
+numberOfErrors2 dict =
+    case List.concat (Dict.values dict) of
+        [] ->
+            NoErrors
+
+        [ singleError ] ->
+            OneError singleError
+
+        list ->
+            MultipleErrors (List.length list)
+
+
 encodeChangedFile : { path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
 encodeChangedFile changedFile =
     let
