@@ -71,7 +71,7 @@ some =
     a
 """
                 in
-                Reporter.formatFixProposal Dict.empty Reporter.WithDetails file error fixedSource
+                Reporter.formatFixProposal Reporter.WithDetails file error fixedSource
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -152,7 +152,7 @@ b =
     a
 """
                 in
-                Reporter.formatFixProposal Dict.empty Reporter.WithDetails file error fixedSource
+                Reporter.formatFixProposal Reporter.WithDetails file error fixedSource
                     |> expect
                         { withoutColors =
                             """-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:2:1

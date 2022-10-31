@@ -859,11 +859,11 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatFixProposal : Dict String Review.Fix.Problem -> DetailsMode -> File -> Error -> Source -> List TextContent
-formatFixProposal fixProblemDict detailsMode file error fixedSource =
+formatFixProposal : DetailsMode -> File -> Error -> Source -> List TextContent
+formatFixProposal detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
-            [ formatReportForFileWithExtract fixProblemDict
+            [ formatReportForFileWithExtract Dict.empty
                 detailsMode
                 Fixing
                 { path = file.path

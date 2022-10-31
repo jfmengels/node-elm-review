@@ -1121,7 +1121,6 @@ fixOneByOne model =
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatFixProposal
-                    Dict.empty
                     model.detailsMode
                     { path = Reporter.FilePath file.path, source = Reporter.Source file.source }
                     (fromReviewError model.suppressedErrors model.links error)
