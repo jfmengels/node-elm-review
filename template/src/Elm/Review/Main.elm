@@ -673,7 +673,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                 | project = project
                 , fixAllErrors = Dict.empty
             }
-                |> runReview { fixAllAllowed = True } project
+                |> runReview { fixesAllowed = True } project
                 |> reportOrFix
 
         GotRequestToGenerateSuppressionErrors ->
@@ -688,7 +688,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         | project = project
                         , fixAllErrors = Dict.empty
                     }
-                        |> runReview { fixAllAllowed = False } project
+                        |> runReview { fixesAllowed = False } project
             in
             ( newModel
             , newModel.reviewErrors
@@ -736,7 +736,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                             , fixAllErrors = Dict.empty
                             , errorsHaveBeenFixedPreviously = True
                         }
-                            |> runReview { fixAllAllowed = True } newProject
+                            |> runReview { fixesAllowed = True } newProject
                             |> reportOrFix
                             |> Tuple.mapSecond
                                 (\cmd ->
@@ -756,7 +756,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 | errorAwaitingConfirmation = NotAwaiting
                                 , fixAllResultProject = model.project
                             }
-                                |> runReview { fixAllAllowed = False } model.project
+                                |> runReview { fixesAllowed = False } model.project
                                 -- TODO We should still display the errors that could not be applied here.
                                 |> makeReport Dict.empty
 
@@ -855,8 +855,8 @@ confirmationDecoder =
             )
 
 
-runReview : { fixAllAllowed : Bool } -> Project -> Model -> Model
-runReview { fixAllAllowed } initialProject model =
+runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
+runReview { fixesAllowed } initialProject model =
     let
         { errors, rules, project, extracts, fixedErrors } =
             initialProject
@@ -867,7 +867,7 @@ runReview { fixAllAllowed } initialProject model =
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
-                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixAllAllowed model)
+                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules
@@ -1388,7 +1388,7 @@ applyAllFixes failedFixesDict model =
                         |> Progress.logInPipe
                             model.logger
                             [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
-                        |> runReview { fixAllAllowed = True } newProject
+                        |> runReview { fixesAllowed = True } newProject
                     )
 
         ( newFailedFixesDict, Nothing ) ->
