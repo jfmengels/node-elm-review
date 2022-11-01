@@ -1219,18 +1219,18 @@ numberOfErrors dict =
 
 type NumberOfErrors
     = NoErrors
-    | OneError Reporter.Error
+    | OneError String Reporter.Error
     | MultipleErrors Int
 
 
 numberOfErrors2 : Dict String (List Reporter.Error) -> NumberOfErrors
 numberOfErrors2 dict =
-    case List.concat (Dict.values dict) of
+    case Dict.toList dict of
         [] ->
             NoErrors
 
-        [ singleError ] ->
-            OneError singleError
+        [ ( filePath, [ singleError ] ) ] ->
+            OneError filePath singleError
 
         list ->
             MultipleErrors (List.length list)
