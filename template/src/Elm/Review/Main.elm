@@ -1158,17 +1158,20 @@ fixAll model allowPrintingSingleFix =
                     makeReport failedFixesDict newModel
 
                 diffs ->
-                    ( { newModel
-                        | project = model.project
-                        , fixAllResultProject = newModel.fixAllResultProject
-                        , errorAwaitingConfirmation = AwaitingFixAll
-                      }
-                    , if allowPrintingSingleFix then
-                        sendFixPrompt newModel diffs
+                    let
+                        finalModel : Model
+                        finalModel =
+                            { newModel
+                                | project = model.project
+                                , fixAllResultProject = newModel.fixAllResultProject
+                                , errorAwaitingConfirmation = AwaitingFixAll
+                            }
+                    in
+                    if allowPrintingSingleFix then
+                        sendFixPrompt finalModel diffs
 
-                      else
-                        sendFixPromptForMultipleFixes newModel diffs (countErrors newModel.fixAllErrors)
-                    )
+                    else
+                        ( finalModel, sendFixPromptForMultipleFixes finalModel diffs (countErrors finalModel.fixAllErrors) )
 
         Nothing ->
             ( model
@@ -1176,41 +1179,43 @@ fixAll model allowPrintingSingleFix =
             )
 
 
-sendFixPrompt : Model -> List FixedFile -> Cmd msg
+sendFixPrompt : Model -> List FixedFile -> ( Model, Cmd msg )
 sendFixPrompt model diffs =
     case numberOfErrors model.fixAllErrors of
         NoErrors ->
-            Cmd.none
+            ( model, Cmd.none )
 
         OneError filePath error ->
             case find (\diff_ -> diff_.path == filePath) diffs of
                 Just { source, fixedSource } ->
-                    [ ( "confirmationMessage"
-                      , Reporter.formatFixProposal
+                    ( model
+                    , [ ( "confirmationMessage"
+                        , Reporter.formatFixProposal
                             model.detailsMode
                             { path = Reporter.FilePath filePath, source = Reporter.Source source }
                             error
                             (Reporter.Source fixedSource)
                             |> encodeReport
-                      )
-                    , ( "changedFiles"
-                      , Encode.list encodeChangedFile
+                        )
+                      , ( "changedFiles"
+                        , Encode.list encodeChangedFile
                             [ { path = Reporter.FilePath filePath
                               , source = Reporter.Source fixedSource
                               }
                             ]
-                      )
-                    , ( "count", Encode.int 1 )
-                    ]
+                        )
+                      , ( "count", Encode.int 1 )
+                      ]
                         |> Encode.object
                         |> askConfirmationToFix
+                    )
 
                 Nothing ->
                     -- Should not happen
-                    Cmd.none
+                    ( model, Cmd.none )
 
         MultipleErrors numberOfFixedErrors ->
-            sendFixPromptForMultipleFixes model diffs numberOfFixedErrors
+            ( model, sendFixPromptForMultipleFixes model diffs numberOfFixedErrors )
 
 
 sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
