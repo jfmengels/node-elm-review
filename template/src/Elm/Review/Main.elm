@@ -747,9 +747,13 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                 Ok Refused ->
                     case model.errorAwaitingConfirmation of
                         AwaitingError error ->
-                            model
+                            { model
+                                | errorAwaitingConfirmation = NotAwaiting
+                                , fixAllResultProject = model.project
+                            }
                                 |> refuseError error
-                                |> fixOneByOne
+                                |> runReview { fixesAllowed = True } model.project
+                                |> makeReport Dict.empty
 
                         AwaitingFixAll ->
                             { model
@@ -757,7 +761,6 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 , fixAllResultProject = model.project
                             }
                                 |> runReview { fixesAllowed = False } model.project
-                                -- TODO We should still display the errors that could not be applied here.
                                 |> makeReport Dict.empty
 
                         NotAwaiting ->
