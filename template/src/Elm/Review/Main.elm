@@ -917,14 +917,14 @@ reportOrFix model =
         Mode_Fix ->
             let
                 ( newModel, cmd ) =
-                    fixAll model
+                    fixAll model True
             in
             ( { newModel | logger = newModel.logger }, cmd )
 
         Mode_FixAll ->
             let
                 ( newModel, cmd ) =
-                    fixAll model
+                    fixAll model False
             in
             ( { newModel | logger = Progress.reset newModel.logger }, cmd )
 
@@ -1144,8 +1144,8 @@ fixOneByOne model =
             makeReport Dict.empty model
 
 
-fixAll : Model -> ( Model, Cmd msg )
-fixAll model =
+fixAll : Model -> Bool -> ( Model, Cmd msg )
+fixAll model allowPrintingSingleFix =
     case applyAllFixes Dict.empty model of
         Just { failedFixesDict, newModel } ->
             case diff model.project newModel.fixAllResultProject of
@@ -1158,7 +1158,11 @@ fixAll model =
                         , fixAllResultProject = newModel.fixAllResultProject
                         , errorAwaitingConfirmation = AwaitingFixAll
                       }
-                    , sendFixPrompt newModel diffs
+                    , if allowPrintingSingleFix then
+                        sendFixPrompt newModel diffs
+
+                      else
+                        sendFixPromptForMultipleFixes newModel diffs (countErrors newModel.fixAllErrors)
                     )
 
         Nothing ->
