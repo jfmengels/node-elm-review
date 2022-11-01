@@ -169,7 +169,12 @@ toReviewOptionsFixMode fixAllAllowed model =
                 ReviewOptions.fixedDisabled
 
             Mode_Fix ->
-                ReviewOptions.fixesEnabledWithLimit 1
+                case model.fixLimit of
+                    Just fixLimit ->
+                        ReviewOptions.fixesEnabledWithLimit fixLimit
+
+                    Nothing ->
+                        ReviewOptions.fixesEnabledWithLimit 1
 
             Mode_FixAll ->
                 case model.fixLimit of
