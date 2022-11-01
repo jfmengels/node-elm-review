@@ -1166,7 +1166,6 @@ applyFixesAfterReview model allowPrintingSingleFix =
                         finalModel =
                             { newModel
                                 | project = model.project
-                                , fixAllResultProject = newModel.fixAllResultProject
                                 , errorAwaitingConfirmation = AwaitingFixAll
                             }
                     in
