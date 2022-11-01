@@ -1027,7 +1027,6 @@ removeUnchangedLines maxLineNumberLength list =
             :: (list
                     |> List.reverse
                     |> List.take 1
-                    |> List.reverse
                )
 
     else
