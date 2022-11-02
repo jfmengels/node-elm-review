@@ -1,4 +1,4 @@
-module Elm.Review.Progress exposing (Console, decoder, dummy, fixWasApplied, log, logInPipe, reset)
+module Elm.Review.Progress exposing (Console, decoder, dummy, log, logInPipe, reset)
 
 import Json.Decode
 import Json.Encode
@@ -6,16 +6,16 @@ import Review.Rule as Rule
 
 
 type Console
-    = Console Int Json.Decode.Value
+    = Console Json.Decode.Value
 
 
 dummy : Console
 dummy =
-    Console 0 (Json.Encode.bool True)
+    Console (Json.Encode.bool True)
 
 
 reset : Console -> Console
-reset (Console _ console) =
+reset (Console console) =
     let
         message : String
         message =
@@ -24,53 +24,23 @@ reset (Console _ console) =
                 ]
                 |> Json.Encode.encode 0
     in
-    always (Console 0 console) <|
+    always (Console console) <|
         sendLoggerMessage message console
 
 
 decoder : Json.Decode.Decoder Console
 decoder =
-    Json.Decode.map (Console 0) Json.Decode.value
-
-
-fixWasApplied : List Rule.ReviewError -> Console -> Console
-fixWasApplied remainingErrors (Console previousCount console) =
-    let
-        count : Int
-        count =
-            previousCount + 1
-
-        remainingFixableErrors : Int
-        remainingFixableErrors =
-            remainingErrors
-                |> List.filterMap Rule.errorFixes
-                |> List.length
-
-        message : String
-        message =
-            Json.Encode.object
-                [ ( "type", Json.Encode.string "log" )
-                , ( "done", Json.Encode.int count )
-                , ( "remaining", Json.Encode.int remainingFixableErrors )
-                ]
-                |> Json.Encode.encode 0
-    in
-    if count >= 3 then
-        always (Console count console) <|
-            sendLoggerMessage message console
-
-    else
-        Console count console
+    Json.Decode.map Console Json.Decode.value
 
 
 log : Console -> String -> String
-log (Console _ console) message =
+log (Console console) message =
     always message <|
         sendLoggerMessage message console
 
 
 logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
-logInPipe (Console _ console) message data =
+logInPipe (Console console) message data =
     always data <|
         sendLoggerMessage (Json.Encode.encode 0 (Json.Encode.object message)) console
 

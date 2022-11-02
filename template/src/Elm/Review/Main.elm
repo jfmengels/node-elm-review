@@ -1364,7 +1364,7 @@ addElmFile file project =
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe { failedFixesDict : Dict String Fix.Problem, newModel : Model }
 applyAllFixes failedFixesDict model =
     case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.fixAllResultProject) model.reviewErrorsAfterSuppression of
-        ( newFailedFixesDict, Just { file, error, fixedSource, remainingErrors } ) ->
+        ( newFailedFixesDict, Just { file, error, fixedSource } ) ->
             let
                 newProject : Project
                 newProject =
@@ -1384,7 +1384,6 @@ applyAllFixes failedFixesDict model =
                         addFixedErrorForFile
                             file.path
                             error
-                            remainingErrors
                             { model | fixAllResultProject = newProject }
                     }
 
@@ -1392,7 +1391,7 @@ applyAllFixes failedFixesDict model =
                 applyAllFixes
                     newFailedFixesDict
                     ({ model | fixAllResultProject = newProject }
-                        |> addFixedErrorForFile file.path error remainingErrors
+                        |> addFixedErrorForFile file.path error
                         |> Progress.logInPipe
                             model.logger
                             [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
@@ -1466,32 +1465,29 @@ normalizePackageDeps application =
     ]
 
 
-addFixedErrorForFile : String -> Rule.ReviewError -> List Rule.ReviewError -> Model -> Model
-addFixedErrorForFile path error remainingErrors model =
+addFixedErrorForFile : String -> Rule.ReviewError -> Model -> Model
+addFixedErrorForFile path error model =
     let
-        _ =
-            Progress.log
-                model.logger
-                (Encode.object
-                    [ ( "type", Encode.string "apply-fix" )
-                    , ( "ruleName", Encode.string (Rule.errorRuleName error) )
-                    , ( "filePath", Encode.string (Rule.errorFilePath error) )
-                    , ( "count", Encode.int (countErrors model.fixAllErrors) )
-                    ]
-                    |> Encode.encode 0
-                )
-
         errorsForFile : List Rule.ReviewError
         errorsForFile =
-            error
+            applyFixLog model error
                 :: (Dict.get path model.fixAllErrors
                         |> Maybe.withDefault []
                    )
     in
-    { model
-        | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors
-        , logger = Progress.fixWasApplied remainingErrors model.logger
-    }
+    { model | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors }
+
+
+applyFixLog : Model -> Rule.ReviewError -> Rule.ReviewError
+applyFixLog model error =
+    Progress.logInPipe
+        model.logger
+        [ ( "type", Encode.string "apply-fix" )
+        , ( "ruleName", Encode.string (Rule.errorRuleName error) )
+        , ( "filePath", Encode.string (Rule.errorFilePath error) )
+        , ( "count", Encode.int (countErrors model.fixAllErrors) )
+        ]
+        error
 
 
 fixableFilesInProject : Project -> Dict String { path : String, source : String }
@@ -1528,7 +1524,6 @@ findFix :
             { file : { path : String, source : String }
             , error : Rule.ReviewError
             , fixedSource : String
-            , remainingErrors : List Rule.ReviewError
             }
         )
 findFix failedFixesDict refusedErrorFixes files errors =
@@ -1564,7 +1559,6 @@ findFix failedFixesDict refusedErrorFixes files errors =
                                             { file = { path = file.path, source = file.source }
                                             , error = error
                                             , fixedSource = fixedSource
-                                            , remainingErrors = restOfErrors
                                             }
                                         )
 
