@@ -141,7 +141,7 @@ type alias Model =
 
     -- FIX ALL
     , fixAllResultProject : Project
-    , fixAllErrors : Dict String (List Reporter.Error)
+    , fixAllErrors : Dict String (List Rule.ReviewError)
     , logger : Progress.Console
     }
 
@@ -898,7 +898,7 @@ runReview { fixesAllowed } initialProject model =
         , isInitialRun = False
         , fixAllRules = rules
         , fixAllResultProject = project
-        , fixAllErrors = Dict.map (\_ fixedErrors_ -> List.map (fromReviewError model.suppressedErrors model.links) fixedErrors_) fixedErrors
+        , fixAllErrors = fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
     }
@@ -1195,7 +1195,7 @@ sendFixPrompt model diffs =
                         , Reporter.formatFixProposal
                             model.detailsMode
                             { path = Reporter.FilePath filePath, source = Reporter.Source source }
-                            error
+                            (fromReviewError model.suppressedErrors model.links error)
                             (Reporter.Source fixedSource)
                             |> encodeReport
                         )
@@ -1238,6 +1238,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     , errors =
                         Dict.get path model.fixAllErrors
                             |> Maybe.withDefault []
+                            |> List.map (fromReviewError model.suppressedErrors model.links)
                     }
                 )
                 diffs
@@ -1261,18 +1262,18 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
         )
 
 
-countErrors : Dict String (List Reporter.Error) -> Int
+countErrors : Dict String (List a) -> Int
 countErrors dict =
     Dict.foldl (\_ errors count -> List.length errors + count) 0 dict
 
 
 type NumberOfErrors
     = NoErrors
-    | OneError String Reporter.Error
+    | OneError String Rule.ReviewError
     | MultipleErrors Int
 
 
-numberOfErrors : Dict String (List Reporter.Error) -> NumberOfErrors
+numberOfErrors : Dict String (List Rule.ReviewError) -> NumberOfErrors
 numberOfErrors dict =
     case Dict.toList dict of
         [] ->
@@ -1480,9 +1481,9 @@ addFixedErrorForFile path error remainingErrors model =
                     |> Encode.encode 0
                 )
 
-        errorsForFile : List Reporter.Error
+        errorsForFile : List Rule.ReviewError
         errorsForFile =
-            fromReviewError model.suppressedErrors model.links error
+            error
                 :: (Dict.get path model.fixAllErrors
                         |> Maybe.withDefault []
                    )
