@@ -871,6 +871,7 @@ runReview { fixesAllowed } initialProject model =
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (Progress.log model.logger))
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
+                        |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules

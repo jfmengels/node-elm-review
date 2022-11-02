@@ -1,8 +1,8 @@
-module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, member)
+module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, member, memberUsingRecord)
 
 {-| Keeps track of error fixes that the user refused to apply.
 
-@docs RefusedErrorFixes, empty, insert, member, memberForReporterError
+@docs RefusedErrorFixes, empty, insert, member, memberUsingRecord
 
 -}
 
@@ -40,6 +40,13 @@ member error (RefusedErrorFixes refusedErrorFixes) =
     Set.member (errorKey error) refusedErrorFixes
 
 
+{-| Determine if the error has been refused.
+-}
+memberUsingRecord : { ruleName : String, filePath : String, message : String, details : List String, range : Range } -> RefusedErrorFixes -> Bool
+memberUsingRecord error (RefusedErrorFixes refusedErrorFixes) =
+    Set.member (errorKeyUsingRecord error) refusedErrorFixes
+
+
 errorKey : ReviewError -> String
 errorKey error =
     let
@@ -49,12 +56,30 @@ errorKey error =
     in
     String.join "###"
         [ Rule.errorRuleName error
+        , Rule.errorFilePath error
         , Rule.errorMessage error
         , Rule.errorDetails error |> String.join "\n"
         , [ range.start.row
           , range.start.column
           , range.end.row
           , range.end.column
+          ]
+            |> List.map String.fromInt
+            |> String.join "-"
+        ]
+
+
+errorKeyUsingRecord : { ruleName : String, filePath : String, message : String, details : List String, range : Range } -> String
+errorKeyUsingRecord error =
+    String.join "###"
+        [ error.ruleName
+        , error.filePath
+        , error.message
+        , error.details |> String.join "\n"
+        , [ error.range.start.row
+          , error.range.start.column
+          , error.range.end.row
+          , error.range.end.column
           ]
             |> List.map String.fromInt
             |> String.join "-"
