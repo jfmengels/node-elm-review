@@ -753,7 +753,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                             }
                                 |> refuseError error
                                 |> runReview { fixesAllowed = True } model.project
-                                |> makeReport Dict.empty
+                                |> reportOrFix
 
                         AwaitingFixAll ->
                             { model
@@ -1162,18 +1162,17 @@ applyFixesAfterReview model allowPrintingSingleFix =
 
                 diffs ->
                     let
-                        finalModel : Model
-                        finalModel =
-                            { newModel
-                                | project = model.project
-                                , errorAwaitingConfirmation = AwaitingFixAll
-                            }
+                        modelWithOldProject : Model
+                        modelWithOldProject =
+                            { newModel | project = model.project }
                     in
                     if allowPrintingSingleFix then
-                        sendFixPrompt finalModel diffs
+                        sendFixPrompt modelWithOldProject diffs
 
                     else
-                        ( finalModel, sendFixPromptForMultipleFixes finalModel diffs (countErrors finalModel.fixAllErrors) )
+                        ( { modelWithOldProject | errorAwaitingConfirmation = AwaitingFixAll }
+                        , sendFixPromptForMultipleFixes modelWithOldProject diffs (countErrors modelWithOldProject.fixAllErrors)
+                        )
 
         Nothing ->
             ( model
@@ -1190,7 +1189,7 @@ sendFixPrompt model diffs =
         OneError filePath error ->
             case find (\diff_ -> diff_.path == filePath) diffs of
                 Just { source, fixedSource } ->
-                    ( model
+                    ( { model | errorAwaitingConfirmation = AwaitingError error }
                     , [ ( "confirmationMessage"
                         , Reporter.formatFixProposal
                             model.detailsMode
@@ -1217,7 +1216,7 @@ sendFixPrompt model diffs =
                     ( model, Cmd.none )
 
         MultipleErrors numberOfFixedErrors ->
-            ( model, sendFixPromptForMultipleFixes model diffs numberOfFixedErrors )
+            ( { model | errorAwaitingConfirmation = AwaitingFixAll }, sendFixPromptForMultipleFixes model diffs numberOfFixedErrors )
 
 
 sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
