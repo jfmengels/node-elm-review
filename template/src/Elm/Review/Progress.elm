@@ -1,7 +1,7 @@
-module Elm.Review.Progress exposing (Console, decoder, dummy, log, logInPipe, reset)
+module Elm.Review.Progress exposing (Console, decoder, dummy, log, logInPipe, reset, timerEnd, timerStart)
 
 import Json.Decode
-import Json.Encode
+import Json.Encode as Encode
 import Review.Rule as Rule
 
 
@@ -11,7 +11,7 @@ type Console
 
 dummy : Console
 dummy =
-    Console (Json.Encode.bool True)
+    Console (Encode.bool True)
 
 
 reset : Console -> Console
@@ -19,10 +19,10 @@ reset (Console console) =
     let
         message : String
         message =
-            Json.Encode.object
-                [ ( "type", Json.Encode.string "reset" )
+            Encode.object
+                [ ( "type", Encode.string "reset" )
                 ]
-                |> Json.Encode.encode 0
+                |> Encode.encode 0
     in
     always (Console console) <|
         sendLoggerMessage message console
@@ -42,7 +42,7 @@ log (Console console) message =
 logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
 logInPipe (Console console) message data =
     always data <|
-        sendLoggerMessage (Json.Encode.encode 0 (Json.Encode.object message)) console
+        sendLoggerMessage (Encode.encode 0 (Encode.object message)) console
 
 
 sendLoggerMessage : String -> Json.Decode.Value -> Result Json.Decode.Error ()
@@ -50,3 +50,13 @@ sendLoggerMessage message console =
     Json.Decode.decodeValue
         (Json.Decode.field message (Json.Decode.null ()))
         console
+
+
+timerStart : Console -> String -> a -> a
+timerStart console metric a =
+    logInPipe console [ ( "type", Encode.string "timer-start" ), ( "metric", Encode.string metric ) ] a
+
+
+timerEnd : Console -> String -> a -> a
+timerEnd console metric a =
+    logInPipe console [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string metric ) ] a

@@ -863,9 +863,7 @@ runReview { fixesAllowed } initialProject model =
     let
         { errors, rules, project, extracts, fixedErrors } =
             initialProject
-                |> Progress.logInPipe
-                    model.logger
-                    [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "run-review" ) ]
+                |> Progress.timerStart model.logger "run-review"
                 |> Rule.reviewV3
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
@@ -875,21 +873,15 @@ runReview { fixesAllowed } initialProject model =
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules
-                |> Progress.logInPipe
-                    model.logger
-                    [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "run-review" ) ]
+                |> Progress.timerEnd model.logger "run-review"
     in
     { model
         | reviewErrors = errors
         , reviewErrorsAfterSuppression =
             errors
-                |> Progress.logInPipe
-                    model.logger
-                    [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "apply-suppressions" ) ]
+                |> Progress.timerStart model.logger "apply-suppressions"
                 |> SuppressedErrors.apply model.unsuppressMode model.suppressedErrors
-                |> Progress.logInPipe
-                    model.logger
-                    [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "apply-suppressions" ) ]
+                |> Progress.timerEnd model.logger "apply-suppressions"
         , rules =
             if model.isInitialRun || model.fixMode == Mode_DontFix then
                 rules
@@ -907,21 +899,12 @@ runReview { fixesAllowed } initialProject model =
 
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
-    let
-        _ =
-            Progress.log
-                model.logger
-                (Encode.object
-                    [ ( "type", Encode.string "timer" ), ( "metric", Encode.string "process-errors" ) ]
-                    |> Encode.encode 0
-                )
-    in
     case model.fixMode of
         Mode_DontFix ->
-            makeReport Dict.empty model
-                |> Progress.logInPipe
-                    model.logger
-                    [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
+            model
+                |> Progress.timerStart model.logger "process-errors"
+                |> makeReport Dict.empty
+                |> Progress.timerEnd model.logger "process-errors"
 
         Mode_Fix ->
             let
