@@ -911,7 +911,6 @@ reportOrFix model =
 
         Mode_FixAll ->
             applyFixesAfterReview model False
-                |> CliCommunication.clearFixProgress model.communicationKey
 
 
 makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
@@ -1234,6 +1233,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     |> Encode.list encodeChangedFile
               )
             , ( "count", Encode.int numberOfFixedErrors )
+            , ( "clearFixLine", Encode.bool (model.fixMode == Mode_FixAll) )
             ]
         )
 

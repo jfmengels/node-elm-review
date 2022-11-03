@@ -3,7 +3,6 @@ module Elm.Review.CliCommunication exposing
     , send
     , appliedFix
     , timerStart, timerEnd
-    , clearFixProgress
     )
 
 {-| Communicate with the CLI through a proxied JSON (that we get through flags).
@@ -15,7 +14,6 @@ This is mostly done to provide feedback to the user like the number of applied f
 @docs send
 @docs appliedFix
 @docs timerStart, timerEnd
-@docs clearFixProgress
 
 -}
 
@@ -44,11 +42,6 @@ send key =
         message
             |> sendLoggerMessage key
             |> always message
-
-
-clearFixProgress : Key -> a -> a
-clearFixProgress key a =
-    logInPipe key [ ( "type", Encode.string "clear-fix-progress" ) ] a
 
 
 timerStart : Key -> String -> a -> a
