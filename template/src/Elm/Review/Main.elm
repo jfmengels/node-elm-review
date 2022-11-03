@@ -907,18 +907,11 @@ reportOrFix model =
                 |> Progress.timerEnd model.logger "process-errors"
 
         Mode_Fix ->
-            let
-                ( newModel, cmd ) =
-                    applyFixesAfterReview model True
-            in
-            ( { newModel | logger = newModel.logger }, cmd )
+            applyFixesAfterReview model True
 
         Mode_FixAll ->
-            let
-                ( newModel, cmd ) =
-                    applyFixesAfterReview model False
-            in
-            ( { newModel | logger = Progress.reset newModel.logger }, cmd )
+            applyFixesAfterReview model False
+                |> Progress.clearFixProgress model.logger
 
 
 makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
@@ -1450,24 +1443,12 @@ addFixedErrorForFile path error model =
     let
         errorsForFile : List Rule.ReviewError
         errorsForFile =
-            applyFixLog model error
+            Progress.appliedFix model.logger (countErrors model.fixAllErrors) error
                 :: (Dict.get path model.fixAllErrors
                         |> Maybe.withDefault []
                    )
     in
     { model | fixAllErrors = Dict.insert path errorsForFile model.fixAllErrors }
-
-
-applyFixLog : Model -> Rule.ReviewError -> Rule.ReviewError
-applyFixLog model error =
-    Progress.logInPipe
-        model.logger
-        [ ( "type", Encode.string "apply-fix" )
-        , ( "ruleName", Encode.string (Rule.errorRuleName error) )
-        , ( "filePath", Encode.string (Rule.errorFilePath error) )
-        , ( "count", Encode.int (countErrors model.fixAllErrors) )
-        ]
-        error
 
 
 fixableFilesInProject : Project -> Dict String { path : String, source : String }

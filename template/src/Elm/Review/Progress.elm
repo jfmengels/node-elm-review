@@ -1,4 +1,4 @@
-module Elm.Review.Progress exposing (Console, decoder, dummy, log, logInPipe, reset, timerEnd, timerStart)
+module Elm.Review.Progress exposing (Console, appliedFix, clearFixProgress, decoder, dummy, log, timerEnd, timerStart)
 
 import Json.Decode
 import Json.Encode as Encode
@@ -14,18 +14,9 @@ dummy =
     Console (Encode.bool True)
 
 
-reset : Console -> Console
-reset (Console console) =
-    let
-        message : String
-        message =
-            Encode.object
-                [ ( "type", Encode.string "reset" )
-                ]
-                |> Encode.encode 0
-    in
-    always (Console console) <|
-        sendLoggerMessage message console
+clearFixProgress : Console -> a -> a
+clearFixProgress console a =
+    logInPipe console [ ( "type", Encode.string "clear-fix-progress" ) ] a
 
 
 decoder : Json.Decode.Decoder Console
@@ -39,6 +30,28 @@ log (Console console) message =
         sendLoggerMessage message console
 
 
+timerStart : Console -> String -> a -> a
+timerStart console metric a =
+    logInPipe console [ ( "type", Encode.string "timer-start" ), ( "metric", Encode.string metric ) ] a
+
+
+timerEnd : Console -> String -> a -> a
+timerEnd console metric a =
+    logInPipe console [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string metric ) ] a
+
+
+appliedFix : Console -> Int -> Rule.ReviewError -> Rule.ReviewError
+appliedFix console errorCount error =
+    logInPipe
+        console
+        [ ( "type", Encode.string "apply-fix" )
+        , ( "ruleName", Encode.string (Rule.errorRuleName error) )
+        , ( "filePath", Encode.string (Rule.errorFilePath error) )
+        , ( "count", Encode.int errorCount )
+        ]
+        error
+
+
 logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
 logInPipe (Console console) message data =
     always data <|
@@ -50,13 +63,3 @@ sendLoggerMessage message console =
     Json.Decode.decodeValue
         (Json.Decode.field message (Json.Decode.null ()))
         console
-
-
-timerStart : Console -> String -> a -> a
-timerStart console metric a =
-    logInPipe console [ ( "type", Encode.string "timer-start" ), ( "metric", Encode.string metric ) ] a
-
-
-timerEnd : Console -> String -> a -> a
-timerEnd console metric a =
-    logInPipe console [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string metric ) ] a
