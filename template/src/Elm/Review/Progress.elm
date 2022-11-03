@@ -25,7 +25,7 @@ decoder =
 
 
 log : Console -> String -> String
-log (Console console) message =
+log console message =
     always message <|
         sendLoggerMessage message console
 
@@ -53,13 +53,18 @@ appliedFix console errorCount error =
 
 
 logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
-logInPipe (Console console) message data =
-    always data <|
-        sendLoggerMessage (Encode.encode 0 (Encode.object message)) console
+logInPipe console fields a =
+    let
+        message : String
+        message =
+            Encode.encode 0 (Encode.object fields)
+    in
+    always a <|
+        sendLoggerMessage message console
 
 
-sendLoggerMessage : String -> Json.Decode.Value -> Result Json.Decode.Error ()
-sendLoggerMessage message console =
+sendLoggerMessage : String -> Console -> Result Json.Decode.Error ()
+sendLoggerMessage message (Console hackyJson) =
     Json.Decode.decodeValue
         (Json.Decode.field message (Json.Decode.null ()))
-        console
+        hackyJson
