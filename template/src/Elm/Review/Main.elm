@@ -1375,9 +1375,6 @@ applyAllFixes failedFixesDict model =
                     newFailedFixesDict
                     ({ model | fixAllResultProject = newProject }
                         |> addFixedErrorForFile file.path error
-                        |> Progress.logInPipe
-                            model.logger
-                            [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string "process-errors" ) ]
                         |> runReview { fixesAllowed = True } newProject
                     )
 
