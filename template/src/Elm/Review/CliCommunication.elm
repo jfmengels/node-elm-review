@@ -1,50 +1,70 @@
-module Elm.Review.CliCommunication exposing (Console, appliedFix, clearFixProgress, decoder, dummy, log, timerEnd, timerStart)
+module Elm.Review.CliCommunication exposing
+    ( Key, decoder, dummy
+    , send
+    , appliedFix
+    , timerStart, timerEnd
+    , clearFixProgress
+    )
+
+{-| Communicate with the CLI through a proxied JSON (that we get through flags).
+
+This is mostly done to provide feedback to the user like the number of applied fixes.
+
+@docs Key, decoder, dummy
+
+@docs send
+@docs appliedFix
+@docs timerStart, timerEnd
+@docs clearFixProgress
+
+-}
 
 import Json.Decode
 import Json.Encode as Encode
 import Review.Rule as Rule
 
 
-type Console
-    = Console Json.Decode.Value
+type Key
+    = Key Json.Decode.Value
 
 
-dummy : Console
+dummy : Key
 dummy =
-    Console (Encode.bool True)
+    Key (Encode.bool True)
 
 
-decoder : Json.Decode.Decoder Console
+decoder : Json.Decode.Decoder Key
 decoder =
-    Json.Decode.map Console Json.Decode.value
+    Json.Decode.map Key Json.Decode.value
 
 
-log : Console -> String -> String
-log console message =
-    message
-        |> sendLoggerMessage console
-        |> always message
+send : Key -> String -> String
+send key =
+    \message ->
+        message
+            |> sendLoggerMessage key
+            |> always message
 
 
-clearFixProgress : Console -> a -> a
-clearFixProgress console a =
-    logInPipe console [ ( "type", Encode.string "clear-fix-progress" ) ] a
+clearFixProgress : Key -> a -> a
+clearFixProgress key a =
+    logInPipe key [ ( "type", Encode.string "clear-fix-progress" ) ] a
 
 
-timerStart : Console -> String -> a -> a
-timerStart console metric a =
-    logInPipe console [ ( "type", Encode.string "timer-start" ), ( "metric", Encode.string metric ) ] a
+timerStart : Key -> String -> a -> a
+timerStart key metric a =
+    logInPipe key [ ( "type", Encode.string "timer-start" ), ( "metric", Encode.string metric ) ] a
 
 
-timerEnd : Console -> String -> a -> a
-timerEnd console metric a =
-    logInPipe console [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string metric ) ] a
+timerEnd : Key -> String -> a -> a
+timerEnd key metric a =
+    logInPipe key [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string metric ) ] a
 
 
-appliedFix : Console -> Int -> Rule.ReviewError -> Rule.ReviewError
-appliedFix console errorCount error =
+appliedFix : Key -> Int -> Rule.ReviewError -> Rule.ReviewError
+appliedFix key errorCount error =
     logInPipe
-        console
+        key
         [ ( "type", Encode.string "apply-fix" )
         , ( "ruleName", Encode.string (Rule.errorRuleName error) )
         , ( "filePath", Encode.string (Rule.errorFilePath error) )
@@ -53,17 +73,17 @@ appliedFix console errorCount error =
         error
 
 
-logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
-logInPipe console fields a =
+logInPipe : Key -> List ( String, Json.Decode.Value ) -> a -> a
+logInPipe key fields a =
     fields
         |> Encode.object
         |> Encode.encode 0
-        |> sendLoggerMessage console
+        |> sendLoggerMessage key
         |> always a
 
 
-sendLoggerMessage : Console -> String -> Result Json.Decode.Error ()
-sendLoggerMessage (Console hackyJson) message =
+sendLoggerMessage : Key -> String -> Result Json.Decode.Error ()
+sendLoggerMessage (Key hackyJson) message =
     Json.Decode.decodeValue
         (Json.Decode.field message (Json.Decode.null ()))
         hackyJson

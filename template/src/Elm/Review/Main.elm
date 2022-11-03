@@ -6,8 +6,8 @@ import Elm.Docs
 import Elm.Package
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
-import Elm.Review.File
 import Elm.Review.CliCommunication as CliCommunication
+import Elm.Review.File
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
@@ -142,7 +142,7 @@ type alias Model =
     -- FIX ALL
     , fixAllResultProject : Project
     , fixAllErrors : Dict String (List Rule.ReviewError)
-    , logger : CliCommunication.Console
+    , communicationKey : CliCommunication.Key
     }
 
 
@@ -259,7 +259,7 @@ init rawFlags =
       , fixAllErrors = Dict.empty
       , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
       , extracts = Dict.empty
-      , logger = flags.logger
+      , communicationKey = flags.logger
       }
     , if List.isEmpty config then
         -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
@@ -366,7 +366,7 @@ type alias DecodedFlags =
     , ignoredDirs : List String
     , ignoredFiles : List String
     , writeSuppressionFiles : Bool
-    , logger : CliCommunication.Console
+    , logger : CliCommunication.Key
     }
 
 
@@ -863,25 +863,25 @@ runReview { fixesAllowed } initialProject model =
     let
         { errors, rules, project, extracts, fixedErrors } =
             initialProject
-                |> CliCommunication.timerStart model.logger "run-review"
+                |> CliCommunication.timerStart model.communicationKey "run-review"
                 |> Rule.reviewV3
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.reportMode == Json)
-                        |> ReviewOptions.withLogger (Just (CliCommunication.log model.logger))
+                        |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
                     model.rules
-                |> CliCommunication.timerEnd model.logger "run-review"
+                |> CliCommunication.timerEnd model.communicationKey "run-review"
     in
     { model
         | reviewErrors = errors
         , reviewErrorsAfterSuppression =
             errors
-                |> CliCommunication.timerStart model.logger "apply-suppressions"
+                |> CliCommunication.timerStart model.communicationKey "apply-suppressions"
                 |> SuppressedErrors.apply model.unsuppressMode model.suppressedErrors
-                |> CliCommunication.timerEnd model.logger "apply-suppressions"
+                |> CliCommunication.timerEnd model.communicationKey "apply-suppressions"
         , rules =
             if model.isInitialRun || model.fixMode == Mode_DontFix then
                 rules
@@ -902,16 +902,16 @@ reportOrFix model =
     case model.fixMode of
         Mode_DontFix ->
             model
-                |> CliCommunication.timerStart model.logger "process-errors"
+                |> CliCommunication.timerStart model.communicationKey "process-errors"
                 |> makeReport Dict.empty
-                |> CliCommunication.timerEnd model.logger "process-errors"
+                |> CliCommunication.timerEnd model.communicationKey "process-errors"
 
         Mode_Fix ->
             applyFixesAfterReview model True
 
         Mode_FixAll ->
             applyFixesAfterReview model False
-                |> CliCommunication.clearFixProgress model.logger
+                |> CliCommunication.clearFixProgress model.communicationKey
 
 
 makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
@@ -1443,7 +1443,7 @@ addFixedErrorForFile path error model =
     let
         errorsForFile : List Rule.ReviewError
         errorsForFile =
-            CliCommunication.appliedFix model.logger (countErrors model.fixAllErrors) error
+            CliCommunication.appliedFix model.communicationKey (countErrors model.fixAllErrors) error
                 :: (Dict.get path model.fixAllErrors
                         |> Maybe.withDefault []
                    )
