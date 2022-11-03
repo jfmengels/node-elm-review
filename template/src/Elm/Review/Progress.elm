@@ -14,11 +14,6 @@ dummy =
     Console (Encode.bool True)
 
 
-clearFixProgress : Console -> a -> a
-clearFixProgress console a =
-    logInPipe console [ ( "type", Encode.string "clear-fix-progress" ) ] a
-
-
 decoder : Json.Decode.Decoder Console
 decoder =
     Json.Decode.map Console Json.Decode.value
@@ -26,8 +21,14 @@ decoder =
 
 log : Console -> String -> String
 log console message =
-    always message <|
-        sendLoggerMessage message console
+    message
+        |> sendLoggerMessage console
+        |> always message
+
+
+clearFixProgress : Console -> a -> a
+clearFixProgress console a =
+    logInPipe console [ ( "type", Encode.string "clear-fix-progress" ) ] a
 
 
 timerStart : Console -> String -> a -> a
@@ -54,17 +55,15 @@ appliedFix console errorCount error =
 
 logInPipe : Console -> List ( String, Json.Decode.Value ) -> a -> a
 logInPipe console fields a =
-    let
-        message : String
-        message =
-            Encode.encode 0 (Encode.object fields)
-    in
-    always a <|
-        sendLoggerMessage message console
+    fields
+        |> Encode.object
+        |> Encode.encode 0
+        |> sendLoggerMessage console
+        |> always a
 
 
-sendLoggerMessage : String -> Console -> Result Json.Decode.Error ()
-sendLoggerMessage message (Console hackyJson) =
+sendLoggerMessage : Console -> String -> Result Json.Decode.Error ()
+sendLoggerMessage (Console hackyJson) message =
     Json.Decode.decodeValue
         (Json.Decode.field message (Json.Decode.null ()))
         hackyJson
