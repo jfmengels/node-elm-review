@@ -1,4 +1,4 @@
-module Elm.Review.Progress exposing (Console, appliedFix, clearFixProgress, decoder, dummy, log, timerEnd, timerStart)
+module Elm.Review.CliCommunication exposing (Console, appliedFix, clearFixProgress, decoder, dummy, log, timerEnd, timerStart)
 
 import Json.Decode
 import Json.Encode as Encode
