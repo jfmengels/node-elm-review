@@ -36,10 +36,12 @@ decoder =
     Json.Decode.map Key Json.Decode.value
 
 
-send : Key -> String -> String
+send : Key -> List ( String, Json.Decode.Value ) -> List ( String, Json.Decode.Value )
 send key =
     \message ->
         message
+            |> Encode.object
+            |> Encode.encode 0
             |> sendLoggerMessage key
             |> always message
 
