@@ -738,6 +738,8 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         }
                             |> runReview { fixesAllowed = True } newProject
                             |> reportOrFix
+                            -- TODO Separate sending files to be cached and computing the files.
+                            -- We may now already have found new fixes which are likely to be accepted.
                             |> Tuple.mapSecond
                                 (\cmd ->
                                     (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
