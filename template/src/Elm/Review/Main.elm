@@ -1495,12 +1495,12 @@ findFix failedFixesDict refusedErrorFixes files errors =
             ( failedFixesDict, Nothing )
 
         error :: restOfErrors ->
-            if RefusedErrorFixes.member error refusedErrorFixes then
-                findFix failedFixesDict refusedErrorFixes files restOfErrors
+            case Rule.errorFixes error of
+                Just fixes ->
+                    if RefusedErrorFixes.member error refusedErrorFixes then
+                        findFix failedFixesDict refusedErrorFixes files restOfErrors
 
-            else
-                case Rule.errorFixes error of
-                    Just fixes ->
+                    else
                         case Dict.get (Rule.errorFilePath error) files of
                             Nothing ->
                                 findFix failedFixesDict refusedErrorFixes files restOfErrors
@@ -1525,8 +1525,8 @@ findFix failedFixesDict refusedErrorFixes files errors =
                                             }
                                         )
 
-                    Nothing ->
-                        findFix failedFixesDict refusedErrorFixes files restOfErrors
+                Nothing ->
+                    findFix failedFixesDict refusedErrorFixes files restOfErrors
 
 
 type alias FixedFile =
