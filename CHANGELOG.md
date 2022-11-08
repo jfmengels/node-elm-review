@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.6] - 2022-10-12
+
+Updated the packages created by `elm-review new-package` to
+- use `elm-explorations/test` v2
+- include [`NoConfusingPrefixOperator`](https://package.elm-lang.org/packages/jfmengels/elm-review-common/latest/NoConfusingPrefixOperator) in the default `ReviewConfig`. 
+
 ## [2.7.5] - 2022-09-10
 
 - Fixed an issue where `elm-review init --template ...` could sometimes crash if the project already had a review configuration.
@@ -31,6 +37,7 @@
 
 Help would be appreciated to fill the blanks!
 
+[2.7.6]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.6
 [2.7.5]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.5
 [2.7.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.4
 [2.7.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.3
