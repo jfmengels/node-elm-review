@@ -35,7 +35,7 @@ import Set
 
 
 {-| Contents of an error. Convert the errors from
-[`Review`](https://package.elm-lang.org/packages/jfmengels/elm-review/1.0.0/Review#Error)
+[`Review`](https://package.elm-lang.org/packages/jfmengels/elm-review/2.10.0/Review#Error)
 to this type.
 -}
 type alias Error =
