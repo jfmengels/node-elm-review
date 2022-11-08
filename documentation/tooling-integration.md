@@ -122,6 +122,8 @@ If the process ran without any hitches, you should get something like the follow
     In the CLI, these are applied one-by-one, starting from the ones that are near the end of the file. When applying them, the CLI makes sure that there are no overlapping ranges and that the fix results in an Elm file without syntax errors. These are all steps that you need to do yourself at the moment.
     (Proposal to be discussed: maybe the CLI can be spawned with this fix data and apply its own algorithm, to avoid you having to do all this work?)
     - `formatted`: An array of "chunks" that represent the full human-readable error that would be shown to the user. Chunks are described [below](#chunk).
+- `extracts`: **(since v2.8.0)** An object where each property name is the name of a rule and the property value is arbitrary JSON according to each rule.
+This object will be empty if the tool is run without `--extract` or if no rules provide any extract.
 
 ### Newline delimited JSON
 
