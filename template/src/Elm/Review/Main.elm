@@ -123,6 +123,7 @@ type alias Model =
     , links : Dict String String
     , fixMode : FixMode
     , fixLimit : Maybe Int
+    , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
@@ -201,6 +202,7 @@ init rawFlags =
                 Err error ->
                     ( { fixMode = Mode_DontFix
                       , fixLimit = Nothing
+                      , enableExtract = False
                       , unsuppressMode = UnsuppressMode.UnsuppressNone
                       , reportMode = HumanReadable
                       , detailsMode = Reporter.WithoutDetails
@@ -245,6 +247,7 @@ init rawFlags =
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
       , fixLimit = flags.fixLimit
+      , enableExtract = flags.enableExtract
       , unsuppressMode = flags.unsuppressMode
       , detailsMode = flags.detailsMode
       , reportMode = flags.reportMode
@@ -358,6 +361,7 @@ closestNames names name =
 type alias DecodedFlags =
     { fixMode : FixMode
     , fixLimit : Maybe Int
+    , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
     , reportMode : ReportMode
@@ -375,6 +379,7 @@ decodeFlags =
     Decode.succeed DecodedFlags
         |> field "fixMode" decodeFix
         |> field "fixLimit" decodeFixLimit
+        |> field "enableExtract" Decode.bool
         |> field "unsuppress" UnsuppressMode.decoder
         |> field "detailsMode" decodeDetailsMode
         |> field "report" decodeReportMode
@@ -868,7 +873,7 @@ runReview { fixesAllowed } initialProject model =
                 |> CliCommunication.timerStart model.communicationKey "run-review"
                 |> Rule.reviewV3
                     (ReviewOptions.defaults
-                        |> ReviewOptions.withDataExtraction (model.reportMode == Json)
+                        |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
