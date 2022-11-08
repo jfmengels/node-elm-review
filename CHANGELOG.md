@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.8.0] / [2.8.1] - 2022-11-08
+
+(A technical mishap caused 2.8.0 to not be publishable, so this is technically only 2.8.1)
+
+Now requires running `jfmengels/elm-review` v2.10.0.
+
+This release is partially announced by [this announcement blog post](https://jfmengels.net/much-faster-fixes/).
+
+- By using the package's new way of handling fixes, fixes have become much faster
+- Introduce `--fix-limit=N` flag to limit the number of fixes to apply before prompting the user
+- Introduce `--extract` to extract data from the project (needs to be run with `--report=json`)
+- Include the information of how long a rule ran for when running with `--benchmark-info`
+- More tests folders are now included. Before, `elm-review` looked at the source-directories plus the `tests/` folder in the root of the Elm project.
+Instead, `elm-review` will now look for a `tests/` folder next to every source-directory. This should accommodate projects with multiple Elm subprojects.
+
 ## [2.7.6] - 2022-10-12
 
 Updated the packages created by `elm-review new-package` to
@@ -8,7 +23,7 @@ Updated the packages created by `elm-review new-package` to
 
 ## [2.7.5] - 2022-09-10
 
-- Fixed an issue where `elm-review init --template ...` could sometimes crash if the project already had a review configuration.
+- Fixed an issue where `elm-review init --template ...` could sometimes crash if the project already had a review configuration
 - Updated the GitHub Actions workflow so that the project always runs on the latest LTS version of Node
 
 ## [2.7.4] - 2022-08-21
@@ -37,6 +52,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.8.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.1
+[2.8.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.0
 [2.7.6]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.6
 [2.7.5]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.5
 [2.7.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.4
