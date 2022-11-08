@@ -40,6 +40,11 @@ You can customize the review command with the following flags:
         changes. Use --watch-code to re-run only on project changes.
         You can use --watch and --fix together.
 
+    --extract
+        Enable extracting data from the project for the rules that have a
+        data extractor. Requires running with --report=json.
+        Learn more by reading: TODO REPLACEME
+
     --elmjson <path-to-elm.json>
         Specify the path to the elm.json file of the project. By default,
         the one in the current directory or its parent directories will be used.
@@ -103,6 +108,9 @@ If you wish to use automatic fixing, you can use the following flags:
         Afterwards, elm-review will report the remaining errors as if it was
         called without --fix-all.
         Fixed files will be reformatted using elm-format.
+
+    --fix-limit=N
+        Limit the number of fixes applied in a single batch to N.
 
     --elm-format-path <path-to-elm-format>
         Specify the path to elm-format.
