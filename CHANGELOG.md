@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.2] - 2022-11-09
+
+The `tests/` folder at the root of the project is now included in the tests folder to look for.
+
 ## [2.8.0] / [2.8.1] - 2022-11-08
 
 (A technical mishap caused 2.8.0 to not be publishable, so this is technically only 2.8.1)
@@ -52,6 +56,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.8.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.2
 [2.8.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.1
 [2.8.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.0
 [2.7.6]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.6
