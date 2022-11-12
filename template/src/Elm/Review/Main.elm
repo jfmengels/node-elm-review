@@ -216,22 +216,26 @@ init rawFlags =
                     , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                     )
 
+        rulesWithIds : List Rule
+        rulesWithIds =
+            List.indexedMap Rule.withRuleId config
+
         ( rulesFromConfig, filterNames ) =
             case flags.rulesFilter of
                 Just rulesToEnable ->
                     let
                         ruleNames : Set String
                         ruleNames =
-                            List.map Rule.ruleName config
+                            List.map Rule.ruleName rulesWithIds
                                 |> Set.fromList
                     in
-                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) config
+                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
                     , Set.diff rulesToEnable ruleNames
                         |> Set.toList
                     )
 
                 Nothing ->
-                    ( config, [] )
+                    ( rulesWithIds, [] )
 
         rules : List Rule
         rules =
