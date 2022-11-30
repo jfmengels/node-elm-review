@@ -43,7 +43,8 @@ You can customize the review command with the following flags:
     --extract
         Enable extracting data from the project for the rules that have a
         data extractor. Requires running with --report=json.
-        Learn more by reading: TODO REPLACEME
+        Learn more by reading the section about "Extracting information"
+        at https://bit.ly/3UmNr0V
 
     --elmjson <path-to-elm.json>
         Specify the path to the elm.json file of the project. By default,
@@ -71,10 +72,13 @@ You can customize the review command with the following flags:
         Print the version of the elm-review CLI.
 
     --debug
-        Add helpful information to debug your configuration or rules.
-        - Print the list of reviewed files.
-        - Run the compiler in debug mode, allowing you to use Debug statements
-          in your configuration and custom rules.
+        Add helpful pieces of information for debugging purposes.
+        This will also run the compiler with --debug, allowing you to use
+        Debug functions in your custom rules.
+
+    --benchmark-info
+        Print out how much time it took for rules and phases of the process to
+        run. This is meant for benchmarking purposes.
 
     --no-color
         Disable colors in the output.
