@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.8.3] - 2022-12-01
+
+- Document the `--debug` flag better in `--help`
+- Document the `--extract` flag better in `--help`
+- Document the `--benchmark-info` flag in `--help`
+- Give a more helpful error when using an outdated version of the package
+- Fix a crash when running with `--fix` in non-TTY mode (in CI for instance)
+
 ## [2.8.2] - 2022-11-09
 
 The `tests/` folder at the root of the project is now included in the tests folder to look for.
@@ -56,6 +64,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.8.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.3
 [2.8.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.2
 [2.8.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.1
 [2.8.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.0
