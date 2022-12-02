@@ -889,6 +889,12 @@ runReview { fixesAllowed } initialProject model =
                 model.rules
         , isInitialRun = False
         , fixAllRules = rules
+        , project =
+            if model.isInitialRun || model.fixMode == Mode_DontFix then
+                project
+
+            else
+                model.project
         , fixAllResultProject = project
         , fixAllErrors = fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
