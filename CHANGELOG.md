@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.4] - 2022-12-02
+
+- Fix incorrect reports in `--watch` mode
+
 ## [2.8.3] - 2022-12-01
 
 - Document the `--debug` flag better in `--help`
@@ -64,6 +68,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.8.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.4
 [2.8.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.3
 [2.8.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.2
 [2.8.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.1
