@@ -669,16 +669,8 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { model | links = links }, Cmd.none )
 
         GotRequestToReview ->
-            let
-                project : Project
-                project =
-                    Project.precomputeModuleGraph model.project
-            in
-            { model
-                | project = project
-                , fixAllErrors = Dict.empty
-            }
-                |> runReview { fixesAllowed = True } project
+            { model | fixAllErrors = Dict.empty }
+                |> runReview { fixesAllowed = True } model.project
                 |> reportOrFix
 
         GotRequestToGenerateSuppressionErrors ->
