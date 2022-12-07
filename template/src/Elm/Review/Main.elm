@@ -890,7 +890,7 @@ runReview { fixesAllowed } initialProject model =
         , isInitialRun = False
         , fixAllRules = rules
         , project =
-            if model.isInitialRun || model.fixMode == Mode_DontFix then
+            if model.fixMode == Mode_DontFix then
                 project
 
             else
