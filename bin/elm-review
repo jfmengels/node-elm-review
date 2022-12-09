@@ -1,3 +1,4 @@
 #!/usr/bin/env node
-
+console.time("build time")
+console.time("start time")
 require('../lib/main')();
