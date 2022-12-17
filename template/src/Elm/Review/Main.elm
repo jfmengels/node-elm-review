@@ -928,12 +928,12 @@ makeReport failedFixesDict model =
                     suppressedErrors =
                         SuppressedErrors.fromReviewErrors model.reviewErrors
                 in
-                ( { model | suppressedErrors = suppressedErrors }
+                ( { model | suppressedErrors = suppressedErrors, rules = model.fixAllRules }
                 , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
                 )
 
             else
-                ( model, Encode.null )
+                ( { model | rules = model.fixAllRules }, Encode.null )
     in
     ( newModel
     , [ ( "success", Encode.bool <| List.isEmpty model.reviewErrorsAfterSuppression )
