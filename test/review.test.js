@@ -127,5 +127,5 @@ test('Running on project with a directory ending in .elm (with arg)', async () =
     '--config ../config-that-triggers-no-errors src.elm',
     {project: 'project-with-dir-ending-in-elm'}
   );
-  expect(output).toMatchFile(testName('src.elm-project-without-arg'));
+  expect(output).toMatchFile(testName('src.elm-project-with-arg'));
 });
