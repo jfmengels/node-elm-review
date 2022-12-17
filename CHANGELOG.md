@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.9.0] - 2022-12-18
+
+Now requires `jfmengels/elm-review` v2.11.0.
+
+- Adds a file-system cache for the linting results, which improves performance by quite a bit.
+- Improve the error message when indicated that the package version is not supported
+- Fix a problem where in watch and fix mode, the CLI sometimes remained stuck. 
+
 ## [2.8.4] - 2022-12-02
 
 - Fix incorrect reports in `--watch` mode
@@ -20,7 +28,7 @@ The `tests/` folder at the root of the project is now included in the tests fold
 
 (A technical mishap caused 2.8.0 to not be publishable, so this is technically only 2.8.1)
 
-Now requires running `jfmengels/elm-review` v2.10.0.
+Now requires `jfmengels/elm-review` v2.10.0.
 
 This release is partially announced by [this announcement blog post](https://jfmengels.net/much-faster-fixes/).
 
@@ -68,6 +76,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.9.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.0
 [2.8.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.4
 [2.8.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.3
 [2.8.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.2
