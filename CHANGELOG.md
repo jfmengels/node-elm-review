@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.1] - 2022-12-20
+
+Optimizes the internal stringification of project contexts. Hopefully this will improve performance, but it's mostly useful to avoid stack overflows during that process.
+
 ## [2.9.0] - 2022-12-18
 
 Now requires `jfmengels/elm-review` v2.11.0.
@@ -76,6 +80,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.9.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.1
 [2.9.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.0
 [2.8.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.4
 [2.8.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.3
