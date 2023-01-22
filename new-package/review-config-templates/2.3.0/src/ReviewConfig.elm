@@ -19,6 +19,7 @@ import Docs.UpToDateReadmeLinks
 import NoConfusingPrefixOperator
 import NoDebug.Log
 import NoDebug.TodoOrToString
+import NoDeprecated
 import NoExposingEverything
 import NoForbiddenWords
 import NoImportingEverything
@@ -51,6 +52,7 @@ config =
     , NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
         |> Rule.ignoreErrorsForDirectories [ "tests/" ]
+    , NoDeprecated.rule NoDeprecated.defaults
     , NoExposingEverything.rule
     , NoForbiddenWords.rule [ "REPLACEME" ]
     , NoImportingEverything.rule []
