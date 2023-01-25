@@ -21,7 +21,7 @@ function checkThatExampleCompiles(exampleConfiguration) {
   );
 
   try {
-    execSync(`npx elm-review --config ${exampleConfiguration} --report=json`, {
+    execSync('npx elm-review', ['--config', exampleConfiguration, '--report=json'], {
       encoding: 'utf8',
       stdio: 'pipe',
       cwd: path.resolve(__dirname, '..')
