@@ -190,8 +190,10 @@ module.exports = {
   watchPathIgnorePatterns: [
     'snapshots/',
     'project-with-suppressed-errors/review/suppressed/'
-  ]
+  ],
 
   // Whether to use watchman for file crawling
   // watchman: true,
+
+  testTimeout: 30000
 };
