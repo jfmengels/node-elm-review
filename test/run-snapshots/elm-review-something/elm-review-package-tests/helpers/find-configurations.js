@@ -1,5 +1,5 @@
 const path = require('path');
-const glob = require('glob');
+const {globSync} = require('glob');
 
 const root = path
   .resolve(__dirname, '../../')
@@ -11,10 +11,8 @@ module.exports = {
 };
 
 function findPreviewConfigurations() {
-  return glob
-    .sync(`${root}/preview*/**/elm.json`, {
-      ignore: ['**/elm-stuff/**'],
-      nodir: true
-    })
-    .map(path.dirname);
+  return globSync(`${root}/preview*/**/elm.json`, {
+    ignore: ['**/elm-stuff/**'],
+    nodir: true
+  }).map(path.dirname);
 }
