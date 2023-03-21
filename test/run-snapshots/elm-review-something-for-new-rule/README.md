@@ -5,7 +5,8 @@ Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-revi
 
 ## Provided rules
 
-- [`SomeRule`](https://package.elm-lang.org/packages/some-author/elm-review-something/1.0.0/SomeRule) - Reports REPLACEME.
+- [`SomeProjectRule`](https://package.elm-lang.org/packages/some-author/elm-review-something/1.0.0/SomeProjectRule) - Reports REPLACEME.
+- [`SomeModuleRule`](https://package.elm-lang.org/packages/some-author/elm-review-something/1.0.0/SomeModuleRule) - Reports REPLACEME.
 - [`No.Doing.Foo`](https://package.elm-lang.org/packages/some-author/elm-review-something/1.0.0/No-Doing-Foo) - Reports REPLACEME.
 
 
@@ -16,12 +17,14 @@ module ReviewConfig exposing (config)
 
 import No.Doing.Foo
 import Review.Rule exposing (Rule)
-import SomeRule
+import SomeModuleRule
+import SomeProjectRule
 
 config : List Rule
 config =
     [ No.Doing.Foo.rule
-    , SomeRule.rule
+    , SomeProjectRule.rule
+    , SomeModuleRule.rule
     ]
 ```
 

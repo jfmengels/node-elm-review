@@ -1,4 +1,4 @@
-module SomeRule exposing (rule)
+module SomeProjectRule exposing (rule)
 
 {-|
 
@@ -14,7 +14,7 @@ import Review.Rule as Rule exposing (Rule)
 {-| Reports... REPLACEME
 
     config =
-        [ SomeRule.rule
+        [ SomeProjectRule.rule
         ]
 
 
@@ -41,13 +41,13 @@ This rule is not useful when REPLACEME.
 You can try this rule out by running the following command:
 
 ```bash
-elm-review --template some-author/elm-review-something/example --rules SomeRule
+elm-review --template some-author/elm-review-something/example --rules SomeProjectRule
 ```
 
 -}
 rule : Rule
 rule =
-    Rule.newModuleRuleSchemaUsingContextCreator "SomeRule" initialContext
+    Rule.newModuleRuleSchemaUsingContextCreator "SomeProjectRule" initialContext
         |> Rule.withExpressionEnterVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
 

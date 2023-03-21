@@ -1,3 +1,3 @@
-Adding rule - SomeRule
+Adding rule - SomeModuleRule
 Exposing the rule in elm.json
 Adding rule to the README

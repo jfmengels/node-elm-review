@@ -305,8 +305,13 @@ cd $NEW_PACKAGE_NAME_FOR_NEW_RULE
 
 $createTest "$CMD" \
     "Creating a new rule" \
-    "new-rule SomeRule" \
-    "new-rule.txt"
+    "new-rule SomeModuleRule --rule-type module" \
+    "new-module-rule.txt"
+
+$createTest "$CMD" \
+    "Creating a new rule" \
+    "new-rule SomeProjectRule --rule-type project" \
+    "new-project-rule.txt"
 
 checkFolderContents $NEW_PACKAGE_NAME_FOR_NEW_RULE
 

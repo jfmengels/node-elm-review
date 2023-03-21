@@ -1,13 +1,13 @@
-module SomeRuleTest exposing (all)
+module SomeModuleRuleTest exposing (all)
 
-import SomeRule exposing (rule)
+import SomeModuleRule exposing (rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 
 
 all : Test
 all =
-    describe "SomeRule"
+    describe "SomeModuleRule"
         [ test "should not report an error when REPLACEME" <|
             \() ->
                 """module A exposing (..)
