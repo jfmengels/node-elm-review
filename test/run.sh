@@ -33,7 +33,9 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 | $REPLACE_SCRIPT \
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
+        | $REPLACE_SCRIPT \
+        | grep -v "Downloading elm-json" \
         > "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
     then
@@ -56,7 +58,9 @@ function runAndRecord {
     local ARGS=$3
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 | $REPLACE_SCRIPT \
+    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
+        | $REPLACE_SCRIPT \
+        | grep -v "Downloading elm-json" \
         > "$SNAPSHOTS/$FILE"
 }
 
