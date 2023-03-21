@@ -47,24 +47,59 @@ elm-review --template some-author/elm-review-something/example --rules SomeProje
 -}
 rule : Rule
 rule =
-    Rule.newModuleRuleSchemaUsingContextCreator "SomeProjectRule" initialContext
-        |> Rule.withExpressionEnterVisitor expressionVisitor
-        |> Rule.fromModuleRuleSchema
+    Rule.newProjectRuleSchema "SomeProjectRule" initialProjectContext
+        |> Rule.withModuleVisitor moduleVisitor
+        |> Rule.withModuleContextUsingContextCreator
+            { fromProjectToModule = fromProjectToModule
+            , fromModuleToProject = fromModuleToProject
+            , foldProjectContexts = foldProjectContexts
+            }
+        -- Enable this if modules need to get information from other modules
+        -- |> Rule.withContextFromImportedModules
+        |> Rule.fromProjectRuleSchema
 
 
-type alias Context =
+type alias ProjectContext =
     {}
 
 
-initialContext : Rule.ContextCreator () Context
-initialContext =
+type alias ModuleContext =
+    {}
+
+
+moduleVisitor : Rule.ModuleRuleSchema schema ModuleContext -> Rule.ModuleRuleSchema { schema | hasAtLeastOneVisitor : () } ModuleContext
+moduleVisitor schema =
+    schema
+        |> Rule.withExpressionEnterVisitor expressionVisitor
+
+
+initialProjectContext : ProjectContext
+initialProjectContext =
+    {}
+
+
+fromProjectToModule : Rule.ContextCreator ProjectContext ModuleContext
+fromProjectToModule =
     Rule.initContextCreator
-        (\() ->
+        (\projectContext ->
             {}
         )
 
 
-expressionVisitor : Node Expression -> Context -> ( List (Rule.Error {}), Context )
+fromModuleToProject : Rule.ContextCreator ModuleContext ProjectContext
+fromModuleToProject =
+    Rule.initContextCreator
+        (\moduleContext ->
+            {}
+        )
+
+
+foldProjectContexts : ProjectContext -> ProjectContext -> ProjectContext
+foldProjectContexts new previous =
+    {}
+
+
+expressionVisitor : Node Expression -> ProjectContext -> ( List (Rule.Error {}), ProjectContext )
 expressionVisitor node context =
     case Node.value node of
         _ ->
