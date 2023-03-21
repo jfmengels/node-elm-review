@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.9.2] - 2023-03-21
+
+`elm-review new-rule` now creates a more helpful starting rule. It can also generate a project rule if you think that
+you will need that. This change also applies to the rule created using `elm-review new-package`.
+
+Bug fixes:
+- Fix watch issue on Windows by [@bdukes](https://github.com/bdukes) [#107]
+
+
 ## [2.9.1] - 2022-12-20
 
 Optimizes the internal stringification of project contexts. Hopefully this will improve performance, but it's mostly useful to avoid stack overflows during that process.
@@ -93,6 +102,7 @@ Help would be appreciated to fill the blanks!
 [2.7.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.3
 [2.7.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.2
 
+[#107]: https://github.com/jfmengels/node-elm-review/pull/107
 [#80]: https://github.com/jfmengels/node-elm-review/pull/80
 [#79]: https://github.com/jfmengels/node-elm-review/issue/79
 
