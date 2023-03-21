@@ -6,6 +6,8 @@ module SomeRule exposing (rule)
 
 -}
 
+import Elm.Syntax.Expression exposing (Expression)
+import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Rule)
 
 
@@ -45,6 +47,25 @@ elm-review --template some-author/elm-review-something/example --rules SomeRule
 -}
 rule : Rule
 rule =
-    Rule.newModuleRuleSchema "SomeRule" ()
-        -- Add your visitors
+    Rule.newModuleRuleSchemaUsingContextCreator "SomeRule" initialContext
+        |> Rule.withExpressionEnterVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
+
+
+type alias Context =
+    {}
+
+
+initialContext : Rule.ContextCreator () Context
+initialContext =
+    Rule.initContextCreator
+        (\() ->
+            {}
+        )
+
+
+expressionVisitor : Node Expression -> Context -> ( List (Rule.Error {}), Context )
+expressionVisitor node context =
+    case Node.value node of
+        _ ->
+            ( [], context )
