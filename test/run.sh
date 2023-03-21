@@ -293,7 +293,7 @@ NEW_PACKAGE_NAME_FOR_NEW_RULE="$NEW_PACKAGE_NAME-for-new-rule"
 
 $createTest "$CMD" \
     "Creating a new package" \
-    "new-package --prefill some-author,$NEW_PACKAGE_NAME,BSD-3-Clause No.Doing.Foo" \
+    "new-package --prefill some-author,$NEW_PACKAGE_NAME,BSD-3-Clause No.Doing.Foo --rule-type module" \
     "new-package.txt"
 
 checkFolderContents $NEW_PACKAGE_NAME
