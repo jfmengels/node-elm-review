@@ -1348,43 +1348,68 @@ addElmFile file project =
 
 applyAllFixes : Dict String Fix.Problem -> Model -> Maybe { failedFixesDict : Dict String Fix.Problem, newModel : Model }
 applyAllFixes failedFixesDict model =
-    case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.fixAllResultProject) model.reviewErrorsAfterSuppression of
-        ( newFailedFixesDict, Just { file, error, fixedSource } ) ->
-            let
-                newProject : Project
-                newProject =
-                    addUpdatedFileToProject { file | source = fixedSource } model.fixAllResultProject
-            in
-            if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.fixAllResultProject) then
-                -- There is a new module that failed to parse in the
-                -- project when we updated the fixed file. This means
-                -- that our fix introduced a syntactical regression that
-                -- we were not successful in preventing earlier.
-                Nothing
+    if shouldStopFindingFixes model then
+        Just
+            { failedFixesDict = failedFixesDict
+            , newModel = model
+            }
 
-            else if not <| List.isEmpty (changesToElm model.fixAllResultProject newProject) then
+    else
+        case findFix failedFixesDict model.refusedErrorFixes (fixableFilesInProject model.fixAllResultProject) model.reviewErrorsAfterSuppression of
+            ( newFailedFixesDict, Just { file, error, fixedSource } ) ->
+                let
+                    newProject : Project
+                    newProject =
+                        addUpdatedFileToProject { file | source = fixedSource } model.fixAllResultProject
+                in
+                if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse model.fixAllResultProject) then
+                    -- There is a new module that failed to parse in the
+                    -- project when we updated the fixed file. This means
+                    -- that our fix introduced a syntactical regression that
+                    -- we were not successful in preventing earlier.
+                    Nothing
+
+                else if not <| List.isEmpty (changesToElm model.fixAllResultProject newProject) then
+                    Just
+                        { failedFixesDict = newFailedFixesDict
+                        , newModel =
+                            addFixedErrorForFile
+                                file.path
+                                error
+                                { model | fixAllResultProject = newProject }
+                        }
+
+                else
+                    applyAllFixes
+                        newFailedFixesDict
+                        ({ model | fixAllResultProject = newProject }
+                            |> addFixedErrorForFile file.path error
+                            |> runReview { fixesAllowed = True } newProject
+                        )
+
+            ( newFailedFixesDict, Nothing ) ->
                 Just
                     { failedFixesDict = newFailedFixesDict
-                    , newModel =
-                        addFixedErrorForFile
-                            file.path
-                            error
-                            { model | fixAllResultProject = newProject }
+                    , newModel = model
                     }
 
-            else
-                applyAllFixes
-                    newFailedFixesDict
-                    ({ model | fixAllResultProject = newProject }
-                        |> addFixedErrorForFile file.path error
-                        |> runReview { fixesAllowed = True } newProject
-                    )
 
-        ( newFailedFixesDict, Nothing ) ->
-            Just
-                { failedFixesDict = newFailedFixesDict
-                , newModel = model
-                }
+shouldStopFindingFixes : Model -> Bool
+shouldStopFindingFixes model =
+    case model.fixMode of
+        Mode_DontFix ->
+            True
+
+        Mode_Fix ->
+            not (Dict.isEmpty model.fixAllErrors)
+
+        Mode_FixAll ->
+            case model.fixLimit of
+                Just fixLimit ->
+                    Dict.size model.fixAllErrors >= fixLimit
+
+                Nothing ->
+                    False
 
 
 type ElmJsonChange
