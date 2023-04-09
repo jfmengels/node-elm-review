@@ -1139,30 +1139,18 @@ fixOneByOne model =
 
 applyFixesAfterReview : Model -> Bool -> ( Model, Cmd msg )
 applyFixesAfterReview model allowPrintingSingleFix =
-    case applyAllFixes Dict.empty model of
-        Just { failedFixesDict, newModel } ->
-            case diff model.project newModel.fixAllResultProject of
-                [] ->
-                    makeReport failedFixesDict newModel
+    case diff model.project model.fixAllResultProject of
+        [] ->
+            makeReport Dict.empty model
 
-                diffs ->
-                    let
-                        modelWithOldProject : Model
-                        modelWithOldProject =
-                            { newModel | project = model.project }
-                    in
-                    if allowPrintingSingleFix then
-                        sendFixPrompt modelWithOldProject diffs
+        diffs ->
+            if allowPrintingSingleFix then
+                sendFixPrompt model diffs
 
-                    else
-                        ( { modelWithOldProject | errorAwaitingConfirmation = AwaitingFixAll }
-                        , sendFixPromptForMultipleFixes modelWithOldProject diffs (countErrors modelWithOldProject.fixAllErrors)
-                        )
-
-        Nothing ->
-            ( model
-            , abort "Got an error while trying to fix all automatic fixes. One of them made the code invalid. I suggest fixing the errors manually, or using `--fix` but with a lot of precaution."
-            )
+            else
+                ( { model | errorAwaitingConfirmation = AwaitingFixAll }
+                , sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
+                )
 
 
 sendFixPrompt : Model -> List FixedFile -> ( Model, Cmd msg )
