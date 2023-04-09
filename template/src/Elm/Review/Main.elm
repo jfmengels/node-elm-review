@@ -1139,18 +1139,22 @@ fixOneByOne model =
 
 applyFixesAfterReview : Model -> Bool -> ( Model, Cmd msg )
 applyFixesAfterReview model allowPrintingSingleFix =
-    case diff model.project model.fixAllResultProject of
-        [] ->
-            makeReport Dict.empty model
+    if Dict.isEmpty model.fixAllErrors then
+        makeReport Dict.empty model
 
-        diffs ->
-            if allowPrintingSingleFix then
-                sendFixPrompt model diffs
+    else
+        case diff model.project model.fixAllResultProject of
+            [] ->
+                makeReport Dict.empty model
 
-            else
-                ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-                , sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
-                )
+            diffs ->
+                if allowPrintingSingleFix then
+                    sendFixPrompt model diffs
+
+                else
+                    ( { model | errorAwaitingConfirmation = AwaitingFixAll }
+                    , sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
+                    )
 
 
 sendFixPrompt : Model -> List FixedFile -> ( Model, Cmd msg )
