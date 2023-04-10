@@ -490,13 +490,13 @@ addSuppressedPrefix error previous =
 
 addFixPrefix : Dict String Review.Fix.Problem -> Mode -> Error -> List Text -> List Text
 addFixPrefix fixProblemDict mode error previous =
-    case error.fixesHash of
-        Just fixKey ->
-            case mode of
-                Fixing ->
-                    previous
+    case mode of
+        Fixing ->
+            previous
 
-                Reviewing ->
+        Reviewing ->
+            case error.fixesHash of
+                Just fixKey ->
                     if Dict.member fixKey fixProblemDict then
                         -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
                         ("(FIX FAILED) "
@@ -512,8 +512,8 @@ addFixPrefix fixProblemDict mode error previous =
                         )
                             :: previous
 
-        Nothing ->
-            previous
+                Nothing ->
+                    previous
 
 
 reasonFromProblem : Review.Fix.Problem -> String
