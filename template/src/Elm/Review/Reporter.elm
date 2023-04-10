@@ -449,13 +449,13 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
 
         fixFailMessage : List Text
         fixFailMessage =
-            case error.fixesHash of
-                Just fixKey ->
-                    case mode of
-                        Fixing ->
-                            []
+            case mode of
+                Fixing ->
+                    []
 
-                        Reviewing ->
+                Reviewing ->
+                    case error.fixesHash of
+                        Just fixKey ->
                             case Dict.get fixKey fixProblemDict of
                                 Just problem ->
                                     [ Text.from "\n\n"
@@ -467,8 +467,8 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
                                 Nothing ->
                                     []
 
-                Nothing ->
-                    []
+                        Nothing ->
+                            []
     in
     List.concat
         [ formatErrorTitle fixProblemDict mode error
