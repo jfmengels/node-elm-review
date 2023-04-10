@@ -256,27 +256,18 @@ classifyFixesHelp fixProblemDict errors acc =
             acc
 
         error :: rest ->
-            let
-                isInvalid : Bool
-                isInvalid =
-                    case error.fixesHash of
-                        Just fixesHash ->
-                            Dict.member fixesHash fixProblemDict
+            case error.fixFailure of
+                Just _ ->
+                    classifyFixesHelp
+                        fixProblemDict
+                        rest
+                        { invalidFixableErrors = error :: acc.invalidFixableErrors, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
 
-                        Nothing ->
-                            False
-            in
-            if isInvalid then
-                classifyFixesHelp
-                    fixProblemDict
-                    rest
-                    { invalidFixableErrors = error :: acc.invalidFixableErrors, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
-
-            else
-                classifyFixesHelp
-                    fixProblemDict
-                    rest
-                    { invalidFixableErrors = acc.invalidFixableErrors, hasIgnoredFixableErrors = True }
+                Nothing ->
+                    classifyFixesHelp
+                        fixProblemDict
+                        rest
+                        { invalidFixableErrors = acc.invalidFixableErrors, hasIgnoredFixableErrors = True }
 
 
 pluralize : Int -> String -> String
@@ -454,18 +445,13 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
                     []
 
                 Reviewing ->
-                    case error.fixesHash of
-                        Just fixKey ->
-                            case Dict.get fixKey fixProblemDict of
-                                Just problem ->
-                                    [ Text.from "\n\n"
-                                    , ("I failed to apply the automatic fix because " ++ reasonFromProblem problem)
-                                        |> Text.from
-                                        |> Text.inYellow
-                                    ]
-
-                                Nothing ->
-                                    []
+                    case error.fixFailure of
+                        Just problem ->
+                            [ Text.from "\n\n"
+                            , ("I failed to apply the automatic fix because " ++ reasonFromProblem problem)
+                                |> Text.from
+                                |> Text.inYellow
+                            ]
 
                         Nothing ->
                             []
