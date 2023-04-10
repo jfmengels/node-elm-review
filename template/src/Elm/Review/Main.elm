@@ -331,6 +331,7 @@ getConfigurationError rule =
                 , details = configurationError.details
                 , range = Range.emptyRange
                 , fixesHash = Nothing
+                , fixFailure = Nothing
                 , suppressed = False
                 }
 
@@ -1690,6 +1691,7 @@ fromReviewError suppressedErrors links error =
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , fixesHash = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
+    , fixFailure = Rule.errorFixFailure error
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
 

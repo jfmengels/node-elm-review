@@ -45,6 +45,7 @@ type alias Error =
     , details : List String
     , range : Range
     , fixesHash : Maybe String
+    , fixFailure : Maybe Review.Fix.Problem
     , suppressed : Bool
     }
 

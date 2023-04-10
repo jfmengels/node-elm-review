@@ -25,6 +25,7 @@ suite =
                             , end = { row = 2, column = 10 }
                             }
                         , fixesHash = Just "some-value"
+                        , fixFailure = Nothing
                         , suppressed = False
                         }
 

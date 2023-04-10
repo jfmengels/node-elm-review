@@ -103,6 +103,7 @@ a = Debug.log "debug" 1"""
                             , end = { row = 2, column = 10 }
                             }
                       , fixesHash = Nothing
+                      , fixFailure = Nothing
                       , suppressed = False
                       }
                     ]
@@ -171,6 +172,7 @@ a = Debug.log "debug" 1"""
                             , end = { row = 2, column = 10 }
                             }
                       , fixesHash = Nothing
+                      , fixFailure = Nothing
                       , suppressed = False
                       }
                     ]
@@ -239,6 +241,7 @@ a =
                             , end = { row = 10, column = 18 }
                             }
                       , fixesHash = Nothing
+                      , fixFailure = Nothing
                       , suppressed = False
                       }
                     ]
@@ -316,6 +319,7 @@ b = foo <| Debug.log "other debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         , { ruleName = "NoDebug"
@@ -327,6 +331,7 @@ b = foo <| Debug.log "other debug" 1"""
                                 , end = { row = 3, column = 17 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -417,6 +422,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -437,6 +443,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -457,6 +464,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -590,6 +598,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -657,6 +666,7 @@ globalErrorTest =
                             , end = { row = 0, column = 0 }
                             }
                       , fixesHash = Nothing
+                      , fixFailure = Nothing
                       , suppressed = False
                       }
                     ]
@@ -755,6 +765,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = True
                           }
                         ]
@@ -824,6 +835,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = True
                           }
                         ]
@@ -844,6 +856,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -943,6 +956,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = True
                           }
                         ]
@@ -963,6 +977,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -1062,6 +1077,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = True
                           }
                         ]
@@ -1082,6 +1098,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , fixesHash = Just "some-value"
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -1188,6 +1205,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                                 , end = { row = 2, column = 17 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -1240,6 +1258,7 @@ a = "🔧" ++ 1"""
                                 , end = { row = 2, column = 8 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
@@ -1294,6 +1313,7 @@ a = "🔧" ++ "🔧
                                 , end = { row = 4, column = 7 }
                                 }
                           , fixesHash = Nothing
+                          , fixFailure = Nothing
                           , suppressed = False
                           }
                         ]
