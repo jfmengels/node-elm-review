@@ -496,21 +496,22 @@ addFixPrefix fixProblemDict mode error previous =
 
         Reviewing ->
             case error.fixesHash of
-                Just fixKey ->
-                    if Dict.member fixKey fixProblemDict then
-                        -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                        ("(FIX FAILED) "
-                            |> Text.from
-                            |> Text.inYellow
-                        )
-                            :: previous
+                Just _ ->
+                    case error.fixFailure of
+                        Just _ ->
+                            -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
+                            ("(FIX FAILED) "
+                                |> Text.from
+                                |> Text.inYellow
+                            )
+                                :: previous
 
-                    else
-                        ("(fix) "
-                            |> Text.from
-                            |> Text.inBlue
-                        )
-                            :: previous
+                        Nothing ->
+                            ("(fix) "
+                                |> Text.from
+                                |> Text.inBlue
+                            )
+                                :: previous
 
                 Nothing ->
                     previous
