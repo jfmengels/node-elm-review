@@ -767,7 +767,9 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 |> makeReport
 
                         NotAwaiting ->
-                            fixOneByOne model
+                            -- Should not be possible?
+                            runReview { fixesAllowed = False } model.project model
+                                |> makeReport
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
