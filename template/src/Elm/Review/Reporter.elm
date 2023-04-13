@@ -44,7 +44,7 @@ type alias Error =
     , message : String
     , details : List String
     , range : Range
-    , fixesHash : Maybe String
+    , providesFix : Bool
     , fixFailure : Maybe Review.Fix.Problem
     , suppressed : Bool
     }
@@ -495,26 +495,25 @@ addFixPrefix fixProblemDict mode error previous =
             previous
 
         Reviewing ->
-            case error.fixesHash of
-                Just _ ->
-                    case error.fixFailure of
-                        Just _ ->
-                            -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
-                            ("(FIX FAILED) "
-                                |> Text.from
-                                |> Text.inYellow
-                            )
-                                :: previous
+            if error.providesFix then
+                case error.fixFailure of
+                    Just _ ->
+                        -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
+                        ("(FIX FAILED) "
+                            |> Text.from
+                            |> Text.inYellow
+                        )
+                            :: previous
 
-                        Nothing ->
-                            ("(fix) "
-                                |> Text.from
-                                |> Text.inBlue
-                            )
-                                :: previous
+                    Nothing ->
+                        ("(fix) "
+                            |> Text.from
+                            |> Text.inBlue
+                        )
+                            :: previous
 
-                Nothing ->
-                    previous
+            else
+                previous
 
 
 reasonFromProblem : Review.Fix.Problem -> String
@@ -808,7 +807,7 @@ totalNumberOfErrorsHelp files acc =
 
 fixableErrors : List FileWithError -> List Error
 fixableErrors files =
-    List.concatMap (.errors >> List.filter (\error -> error.fixesHash /= Nothing)) files
+    List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
 formatReports : Dict String Review.Fix.Problem -> DetailsMode -> List FileWithError -> List Text

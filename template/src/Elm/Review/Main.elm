@@ -330,7 +330,7 @@ getConfigurationError rule =
                 , message = configurationError.message
                 , details = configurationError.details
                 , range = Range.emptyRange
-                , fixesHash = Nothing
+                , providesFix = False
                 , fixFailure = Nothing
                 , suppressed = False
                 }
@@ -1690,7 +1690,7 @@ fromReviewError suppressedErrors links error =
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
-    , fixesHash = Maybe.map Reporter.hashFixes (Rule.errorFixes error)
+    , providesFix = Rule.errorFixes error /= Nothing
     , fixFailure = Rule.errorFixFailure error
     , suppressed = SuppressedErrors.member error suppressedErrors
     }

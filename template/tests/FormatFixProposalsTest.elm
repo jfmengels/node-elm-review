@@ -24,7 +24,7 @@ suite =
                             { start = { row = 2, column = 5 }
                             , end = { row = 2, column = 10 }
                             }
-                        , fixesHash = Just "some-value"
+                        , providesFix = True
                         , fixFailure = Nothing
                         , suppressed = False
                         }

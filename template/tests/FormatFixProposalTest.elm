@@ -25,7 +25,7 @@ suite =
                             { start = { row = 2, column = 5 }
                             , end = { row = 2, column = 10 }
                             }
-                        , fixesHash = Just "some-value"
+                        , providesFix = True
                         , fixFailure = Nothing
                         , suppressed = False
                         }
@@ -128,7 +128,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                             { start = { row = 2, column = 1 }
                             , end = { row = 2, column = 2 }
                             }
-                        , fixesHash = Just "some-value"
+                        , providesFix = True
                         , fixFailure = Nothing
                         , suppressed = False
                         }
