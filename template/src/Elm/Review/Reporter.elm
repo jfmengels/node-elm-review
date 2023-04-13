@@ -201,7 +201,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
           else
             Nothing
-        , if not (Set.isEmpty rulesWithInvalidFixes) then
+        , if mode == Fixing && not (Set.isEmpty rulesWithInvalidFixes) then
             Just
                 [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n- "
                     ++ String.join "\n- " (Set.toList rulesWithInvalidFixes)
@@ -430,9 +430,6 @@ formatErrorWithExtract detailsMode mode source error =
         fixFailMessage =
             case mode of
                 Fixing ->
-                    []
-
-                Reviewing ->
                     case error.fixFailure of
                         Just problem ->
                             [ Text.from "\n\n"
@@ -443,6 +440,9 @@ formatErrorWithExtract detailsMode mode source error =
 
                         Nothing ->
                             []
+
+                Reviewing ->
+                    []
     in
     List.concat
         [ formatErrorTitle mode error
@@ -489,17 +489,13 @@ addFixPrefix mode error previous =
                         :: previous
 
                 Nothing ->
-                     previous
+                    previous
 
         Reviewing ->
             if error.providesFix then
                 case error.fixFailure of
                     Just _ ->
-                        ("(FIX FAILED) "
-                            |> Text.from
-                            |> Text.inYellow
-                        )
-                            :: previous
+                        previous
 
                     Nothing ->
                         ("(fix) "
@@ -806,7 +802,7 @@ fixableErrors files =
     List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
-formatReports : DetailsMode -> Mode->List FileWithError -> List Text
+formatReports : DetailsMode -> Mode -> List FileWithError -> List Text
 formatReports detailsMode mode files =
     case files of
         [] ->

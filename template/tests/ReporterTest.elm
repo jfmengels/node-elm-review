@@ -644,7 +644,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
-        , test "should mention a fix is failing when the error provides one" <|
+        , test "should mention a fix is failing when the error provides one in fix mode" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
                   , source = Reporter.Source """module FileA exposing (a)
@@ -711,6 +711,66 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug](#E8C338)
+
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
+                        }
+        , test "should not mention an error is fixable when the fix fails in review mode" <|
+            \() ->
+                [ { path = Reporter.FilePath "src/FileA.elm"
+                  , source = Reporter.Source """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+                  , errors =
+                        [ { ruleName = "NoDebug"
+                          , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+                          , message = "Do not use Debug"
+                          , details =
+                                [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum."
+                                , "Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula."
+                                ]
+                          , range =
+                                { start = { row = 2, column = 5 }
+                                , end = { row = 2, column = 10 }
+                                }
+                          , providesFix = True
+                          , fixFailure = Just Review.Fix.HasCollisionsInFixRanges
+                          , suppressed = False
+                          }
+                        ]
+                  }
+                ]
+                    |> Reporter.formatReport
+                        { suppressedErrors = SuppressedErrors.empty
+                        , unsuppressMode = UnsuppressMode.UnsuppressNone
+                        , originalNumberOfSuppressedErrors = 0
+                        , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
+                        , errorsHaveBeenFixedPreviously = False
+                        }
+                    |> expect
+                        { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
+
+I found 1 error in 1 file."""
+                        , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](#FF0000)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum cursus erat ullamcorper, commodo leo quis, sollicitudin eros. Sed semper mattis ex, vitae dignissim lectus. Integer eu risus augue. Nam egestas lacus non lacus molestie mattis. Phasellus magna dui, ultrices eu massa nec, interdum tincidunt eros. Aenean rutrum a purus nec cursus. Integer ullamcorper leo non lectus dictum, in vulputate justo vulputate. Donec ullamcorper finibus quam sed dictum.
+
+Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollicitudin eros at, mattis tortor. Ut lacinia ornare lectus in vestibulum. Nam congue ultricies dolor, in venenatis nulla sagittis nec. In ac leo sit amet diam iaculis ornare eu non odio. Proin sed orci et urna tincidunt tincidunt quis a lacus. Donec euismod odio nulla, sit amet iaculis lorem interdum sollicitudin. Vivamus bibendum quam urna, in tristique lacus iaculis id. In tempor lectus ipsum, vehicula bibendum magna pretium vitae. Cras ullamcorper rutrum nunc non sollicitudin. Curabitur tempus eleifend nunc, sed ornare nisl tincidunt vel. Maecenas eu nisl ligula.
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
