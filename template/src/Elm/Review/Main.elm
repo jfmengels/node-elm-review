@@ -304,6 +304,7 @@ I recommend you take a look at the following documents:
                                 , originalNumberOfSuppressedErrors = 0
                                 , detailsMode = flags.detailsMode
                                 , errorsHaveBeenFixedPreviously = False
+                                , mode = Reporter.Reviewing
                                 }
                                 [ { path = Reporter.ConfigurationError
                                   , source = Reporter.Source ""
@@ -966,6 +967,7 @@ makeReport model =
                     , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
                     , detailsMode = newModel.detailsMode
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+                    , mode = fixModeToReportFixMode model.fixMode
                     }
                     filesWithError
                     |> encodeReport
@@ -992,6 +994,19 @@ makeReport model =
         |> Encode.object
         |> reviewReport
     )
+
+
+fixModeToReportFixMode : FixMode -> Reporter.Mode
+fixModeToReportFixMode fixMode =
+    case fixMode of
+        Mode_DontFix ->
+            Reporter.Reviewing
+
+        Mode_Fix ->
+            Reporter.Fixing
+
+        Mode_FixAll ->
+            Reporter.Fixing
 
 
 encodeErrorByFile :

@@ -45,6 +45,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -73,6 +74,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = True
                     }
                 |> expect
@@ -117,6 +119,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -185,6 +188,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -248,6 +252,7 @@ a =
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -342,6 +347,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -469,6 +475,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -602,6 +609,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -665,6 +673,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -738,6 +747,7 @@ globalErrorTest =
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -770,6 +780,7 @@ suppressedTests =
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
                     , detailsMode = Reporter.WithDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                     []
@@ -794,6 +805,7 @@ There is still [1 suppressed error](#FFA500) to address."""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
                     , detailsMode = Reporter.WithDetails
+                    , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
                     []
@@ -836,6 +848,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -926,6 +939,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1046,6 +1060,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1166,6 +1181,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1270,6 +1286,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1322,6 +1339,7 @@ a = "🔧" ++ 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1376,6 +1394,7 @@ a = "🔧" ++ "🔧
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
+                        , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect

@@ -157,10 +157,11 @@ formatReport :
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
     , errorsHaveBeenFixedPreviously : Bool
+    , mode : Mode
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, mode, errorsHaveBeenFixedPreviously } files =
     let
         numberOfErrors : Int
         numberOfErrors =
