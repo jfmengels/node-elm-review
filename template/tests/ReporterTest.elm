@@ -673,7 +673,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , mode = Reporter.Reviewing
+                        , mode = Reporter.Fixing
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect

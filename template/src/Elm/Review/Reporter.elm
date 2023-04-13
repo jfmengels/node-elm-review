@@ -181,7 +181,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             { invalidFixableErrors, hasIgnoredFixableErrors } =
                 classifyFixes (fixableErrors files)
         in
-        [ formatReports detailsMode filesWithErrors
+        [ formatReports detailsMode mode filesWithErrors
             |> Just
         , if showUnsuppressedWarning unsuppressMode files then
             Just
@@ -805,20 +805,20 @@ fixableErrors files =
     List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
-formatReports : DetailsMode -> List FileWithError -> List Text
-formatReports detailsMode files =
+formatReports : DetailsMode -> Mode->List FileWithError -> List Text
+formatReports detailsMode mode files =
     case files of
         [] ->
             []
 
         [ file ] ->
-            formatReportForFileWithExtract detailsMode Reviewing file
+            formatReportForFileWithExtract detailsMode mode file
 
         firstFile :: secondFile :: restOfFiles ->
             List.concat
-                [ formatReportForFileWithExtract detailsMode Reviewing firstFile
+                [ formatReportForFileWithExtract detailsMode mode firstFile
                 , fileSeparator firstFile.path secondFile.path
-                , formatReports detailsMode (secondFile :: restOfFiles)
+                , formatReports detailsMode mode (secondFile :: restOfFiles)
                 ]
 
 
