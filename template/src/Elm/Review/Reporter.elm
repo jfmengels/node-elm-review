@@ -30,7 +30,7 @@ import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
-import Set
+import Set exposing (Set)
 
 
 {-| Contents of an error. Convert the errors from
@@ -178,7 +178,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
                     |> List.filter (.errors >> List.isEmpty >> not)
                     |> List.sortBy (.path >> filePath)
 
-            { invalidFixableErrors, hasIgnoredFixableErrors } =
+            { rulesWithInvalidFixes, hasIgnoredFixableErrors } =
                 classifyFixes (fixableErrors files)
         in
         [ formatReports detailsMode mode filesWithErrors
@@ -201,18 +201,10 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
           else
             Nothing
-        , if not (List.isEmpty invalidFixableErrors) then
-            let
-                ruleNames : List String
-                ruleNames =
-                    invalidFixableErrors
-                        |> List.map .ruleName
-                        |> Set.fromList
-                        |> Set.toList
-            in
+        , if not (Set.isEmpty rulesWithInvalidFixes) then
             Just
                 [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n- "
-                    ++ String.join "\n- " ruleNames
+                    ++ String.join "\n- " (Set.toList rulesWithInvalidFixes)
                   )
                     |> Text.from
                     |> Text.inYellow
@@ -234,20 +226,20 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             |> List.map Text.toRecord
 
 
-classifyFixes : List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
+classifyFixes : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
 classifyFixes errors =
     let
-        { invalidFixableErrors, hasIgnoredFixableErrors } =
+        { rulesWithInvalidFixes, hasIgnoredFixableErrors } =
             classifyFixesHelp
                 errors
-                { invalidFixableErrors = [], hasIgnoredFixableErrors = False }
+                { rulesWithInvalidFixes = Set.empty, hasIgnoredFixableErrors = False }
     in
-    { invalidFixableErrors = List.reverse invalidFixableErrors
+    { rulesWithInvalidFixes = rulesWithInvalidFixes
     , hasIgnoredFixableErrors = hasIgnoredFixableErrors
     }
 
 
-classifyFixesHelp : List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool } -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
+classifyFixesHelp : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool } -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
 classifyFixesHelp errors acc =
     case errors of
         [] ->
@@ -258,12 +250,12 @@ classifyFixesHelp errors acc =
                 Just _ ->
                     classifyFixesHelp
                         rest
-                        { invalidFixableErrors = error :: acc.invalidFixableErrors, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
+                        { rulesWithInvalidFixes = Set.insert error.ruleName acc.rulesWithInvalidFixes, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
 
                 Nothing ->
                     classifyFixesHelp
                         rest
-                        { invalidFixableErrors = acc.invalidFixableErrors, hasIgnoredFixableErrors = True }
+                        { rulesWithInvalidFixes = acc.rulesWithInvalidFixes, hasIgnoredFixableErrors = True }
 
 
 pluralize : Int -> String -> String
