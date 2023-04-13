@@ -2,7 +2,7 @@ module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
-    , FileWithError, hashFixes
+    , FileWithError, Range, hashFixes
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -25,7 +25,6 @@ module Elm.Review.Reporter exposing
 -}
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -166,18 +165,18 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
         numberOfErrors : Int
         numberOfErrors =
             totalNumberOfErrors files
-
-        filesWithErrors : List FileWithError
-        filesWithErrors =
-            files
-                |> List.filter (.errors >> List.isEmpty >> not)
-                |> List.sortBy (.path >> filePath)
     in
     if numberOfErrors == 0 then
         formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenFixedPreviously
 
     else
         let
+            filesWithErrors : List FileWithError
+            filesWithErrors =
+                files
+                    |> List.filter (.errors >> List.isEmpty >> not)
+                    |> List.sortBy (.path >> filePath)
+
             { invalidFixableErrors, hasIgnoredFixableErrors } =
                 classifyFixes (fixableErrors files)
         in

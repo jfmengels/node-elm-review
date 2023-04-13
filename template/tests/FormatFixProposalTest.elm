@@ -1,6 +1,5 @@
 module FormatFixProposalTest exposing (suite)
 
-import Dict
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import FormatTester exposing (expect)
 import Test exposing (Test, describe, test)

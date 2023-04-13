@@ -1,6 +1,5 @@
 module ReporterTest exposing (suite)
 
-import Dict
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.UnsuppressMode as UnsuppressMode

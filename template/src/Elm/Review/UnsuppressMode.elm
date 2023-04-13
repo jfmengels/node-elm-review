@@ -1,6 +1,6 @@
 module Elm.Review.UnsuppressMode exposing (UnsuppressMode(..), decoder)
 
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode
 import Set exposing (Set)
 
 
