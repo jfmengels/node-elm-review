@@ -158,11 +158,10 @@ formatReport :
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
     , errorsHaveBeenFixedPreviously : Bool
-    , fixProblemDict : Dict String Review.Fix.Problem
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fixProblemDict } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously } files =
     let
         numberOfErrors : Int
         numberOfErrors =
@@ -180,9 +179,9 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
     else
         let
             { invalidFixableErrors, hasIgnoredFixableErrors } =
-                classifyFixes fixProblemDict (fixableErrors files)
+                classifyFixes (fixableErrors files)
         in
-        [ formatReports fixProblemDict detailsMode filesWithErrors
+        [ formatReports detailsMode filesWithErrors
             |> Just
         , if showUnsuppressedWarning unsuppressMode files then
             Just
@@ -235,12 +234,11 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             |> List.map Text.toRecord
 
 
-classifyFixes : Dict String Review.Fix.Problem -> List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
-classifyFixes fixProblemDict errors =
+classifyFixes : List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
+classifyFixes errors =
     let
         { invalidFixableErrors, hasIgnoredFixableErrors } =
             classifyFixesHelp
-                fixProblemDict
                 errors
                 { invalidFixableErrors = [], hasIgnoredFixableErrors = False }
     in
@@ -249,8 +247,8 @@ classifyFixes fixProblemDict errors =
     }
 
 
-classifyFixesHelp : Dict String Review.Fix.Problem -> List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool } -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
-classifyFixesHelp fixProblemDict errors acc =
+classifyFixesHelp : List Error -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool } -> { invalidFixableErrors : List Error, hasIgnoredFixableErrors : Bool }
+classifyFixesHelp errors acc =
     case errors of
         [] ->
             acc
@@ -259,13 +257,11 @@ classifyFixesHelp fixProblemDict errors acc =
             case error.fixFailure of
                 Just _ ->
                     classifyFixesHelp
-                        fixProblemDict
                         rest
                         { invalidFixableErrors = error :: acc.invalidFixableErrors, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
 
                 Nothing ->
                     classifyFixesHelp
-                        fixProblemDict
                         rest
                         { invalidFixableErrors = acc.invalidFixableErrors, hasIgnoredFixableErrors = True }
 
@@ -363,15 +359,15 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
         |> List.map Text.toRecord
 
 
-formatReportForFileWithExtract : Dict String Review.Fix.Problem -> DetailsMode -> Mode -> FileWithError -> List Text
-formatReportForFileWithExtract fixProblemDict detailsMode mode file =
+formatReportForFileWithExtract : DetailsMode -> Mode -> FileWithError -> List Text
+formatReportForFileWithExtract detailsMode mode file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) file.path error.range ]
-                    , formatErrorWithExtract fixProblemDict detailsMode mode file.source error
+                    , formatErrorWithExtract detailsMode mode file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -407,15 +403,15 @@ header isFirstError filePath_ range =
             |> Text.from
 
 
-formatIndividualError : Dict String Review.Fix.Problem -> DetailsMode -> Source -> Error -> List TextContent
-formatIndividualError fixProblemDict detailsMode source error =
-    formatErrorWithExtract fixProblemDict detailsMode Reviewing source error
+formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
+formatIndividualError detailsMode source error =
+    formatErrorWithExtract detailsMode Reviewing source error
         |> Text.simplify
         |> List.map Text.toRecord
 
 
-formatErrorWithExtract : Dict String Review.Fix.Problem -> DetailsMode -> Mode -> Source -> Error -> List Text
-formatErrorWithExtract fixProblemDict detailsMode mode source error =
+formatErrorWithExtract : DetailsMode -> Mode -> Source -> Error -> List Text
+formatErrorWithExtract detailsMode mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -457,21 +453,21 @@ formatErrorWithExtract fixProblemDict detailsMode mode source error =
                             []
     in
     List.concat
-        [ formatErrorTitle fixProblemDict mode error
+        [ formatErrorTitle mode error
         , codeExtract_
         , details
         , fixFailMessage
         ]
 
 
-formatErrorTitle : Dict String Review.Fix.Problem -> Mode -> Error -> List Text
-formatErrorTitle fixProblemDict mode error =
+formatErrorTitle : Mode -> Error -> List Text
+formatErrorTitle mode error =
     [ Text.from error.ruleName
         |> Text.inRed
         |> Text.withLink error.ruleLink
     , Text.from (": " ++ error.message)
     ]
-        |> addFixPrefix fixProblemDict mode error
+        |> addFixPrefix mode error
         |> addSuppressedPrefix error
 
 
@@ -488,8 +484,8 @@ addSuppressedPrefix error previous =
         previous
 
 
-addFixPrefix : Dict String Review.Fix.Problem -> Mode -> Error -> List Text -> List Text
-addFixPrefix fixProblemDict mode error previous =
+addFixPrefix : Mode -> Error -> List Text -> List Text
+addFixPrefix mode error previous =
     case mode of
         Fixing ->
             previous
@@ -810,20 +806,20 @@ fixableErrors files =
     List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
-formatReports : Dict String Review.Fix.Problem -> DetailsMode -> List FileWithError -> List Text
-formatReports fixProblemDict detailsMode files =
+formatReports : DetailsMode -> List FileWithError -> List Text
+formatReports detailsMode files =
     case files of
         [] ->
             []
 
         [ file ] ->
-            formatReportForFileWithExtract fixProblemDict detailsMode Reviewing file
+            formatReportForFileWithExtract detailsMode Reviewing file
 
         firstFile :: secondFile :: restOfFiles ->
             List.concat
-                [ formatReportForFileWithExtract fixProblemDict detailsMode Reviewing firstFile
+                [ formatReportForFileWithExtract detailsMode Reviewing firstFile
                 , fileSeparator firstFile.path secondFile.path
-                , formatReports fixProblemDict detailsMode (secondFile :: restOfFiles)
+                , formatReports detailsMode (secondFile :: restOfFiles)
                 ]
 
 
@@ -850,7 +846,7 @@ formatFixProposal : DetailsMode -> File -> Error -> Source -> List TextContent
 formatFixProposal detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
-            [ formatReportForFileWithExtract Dict.empty
+            [ formatReportForFileWithExtract
                 detailsMode
                 Fixing
                 { path = file.path
@@ -934,7 +930,7 @@ formatFileDiff file =
             |> Text.inBlue
       ]
     , Text.from "Applied from the fixes for the following errors:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Dict.empty Fixing error) (List.reverse file.errors)
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse file.errors)
     , diff file.source file.fixedSource
     ]
         |> Text.join "\n\n"

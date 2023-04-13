@@ -306,7 +306,6 @@ I recommend you take a look at the following documents:
                                 , originalNumberOfSuppressedErrors = 0
                                 , detailsMode = flags.detailsMode
                                 , errorsHaveBeenFixedPreviously = False
-                                , fixProblemDict = Dict.empty
                                 }
                                 [ { path = Reporter.ConfigurationError
                                   , source = Reporter.Source ""
@@ -659,7 +658,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         ( model, Cmd.none )
 
                     else
-                        makeReport Dict.empty
+                        makeReport
                             { model
                                 | suppressedErrors = suppressedErrors
                                 , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode suppressedErrors model.reviewErrors
@@ -765,7 +764,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 , fixAllResultProject = model.project
                             }
                                 |> runReview { fixesAllowed = False } model.project
-                                |> makeReport Dict.empty
+                                |> makeReport
 
                         NotAwaiting ->
                             fixOneByOne model
@@ -913,7 +912,7 @@ reportOrFix model =
         Mode_DontFix ->
             model
                 |> CliCommunication.timerStart model.communicationKey "process-errors"
-                |> makeReport Dict.empty
+                |> makeReport
                 |> CliCommunication.timerEnd model.communicationKey "process-errors"
 
         Mode_Fix ->
@@ -923,8 +922,8 @@ reportOrFix model =
             applyFixesAfterReview model False
 
 
-makeReport : Dict String Fix.Problem -> Model -> ( Model, Cmd msg )
-makeReport failedFixesDict model =
+makeReport : Model -> ( Model, Cmd msg )
+makeReport model =
     let
         ( newModel, suppressedErrorsForJson ) =
             if List.isEmpty model.reviewErrorsAfterSuppression && model.writeSuppressionFiles then
@@ -967,7 +966,6 @@ makeReport failedFixesDict model =
                     , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
                     , detailsMode = newModel.detailsMode
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , fixProblemDict = failedFixesDict
                     }
                     filesWithError
                     |> encodeReport
@@ -1055,7 +1053,7 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeFixes >> Tuple.pair "fix")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode source (fromReviewError suppressedErrors links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
     ]
@@ -1070,7 +1068,7 @@ encodeConfigurationError detailsMode error =
         , ( "message", Encode.string error.message )
         , ( "details", Encode.list Encode.string error.details )
         , ( "region", encodeRange Range.emptyRange )
-        , ( "formatted", encodeReport (Reporter.formatIndividualError Dict.empty detailsMode (Reporter.Source "") error) )
+        , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode (Reporter.Source "") error) )
         ]
 
 
@@ -1135,18 +1133,18 @@ fixOneByOne model =
             )
 
         Nothing ->
-            makeReport Dict.empty model
+            makeReport model
 
 
 applyFixesAfterReview : Model -> Bool -> ( Model, Cmd msg )
 applyFixesAfterReview model allowPrintingSingleFix =
     if Dict.isEmpty model.fixAllErrors then
-        makeReport Dict.empty model
+        makeReport model
 
     else
         case diff model.project model.fixAllResultProject of
             [] ->
-                makeReport Dict.empty model
+                makeReport model
 
             diffs ->
                 if allowPrintingSingleFix then

@@ -44,7 +44,6 @@ a = Debug.log "debug" 1"""
                     { suppressedErrors = SuppressedErrors.empty
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -73,7 +72,6 @@ a = Debug.log "debug" 1"""
                     { suppressedErrors = SuppressedErrors.empty
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
                     , errorsHaveBeenFixedPreviously = True
                     }
@@ -118,7 +116,6 @@ a = Debug.log "debug" 1"""
                     { suppressedErrors = SuppressedErrors.empty
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -187,7 +184,6 @@ a = Debug.log "debug" 1"""
                     { suppressedErrors = SuppressedErrors.empty
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithoutDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -251,7 +247,6 @@ a =
                     { suppressedErrors = SuppressedErrors.empty
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithoutDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -346,7 +341,6 @@ a = Debug.log "debug" 1"""
                         { suppressedErrors = SuppressedErrors.empty
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -474,7 +468,6 @@ a = Debug.log "debug" 1"""
                         { suppressedErrors = SuppressedErrors.empty
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -608,7 +601,6 @@ a = Debug.log "debug" 1"""
                         { suppressedErrors = SuppressedErrors.empty
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -676,7 +668,6 @@ globalErrorTest =
                     { suppressedErrors = SuppressedErrors.empty
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithoutDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -709,7 +700,6 @@ suppressedTests =
                     { suppressedErrors = suppressedErrors
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -734,7 +724,6 @@ There is still [1 suppressed error](#FFA500) to address."""
                     { suppressedErrors = suppressedErrors
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
-                    , fixProblemDict = Dict.empty
                     , detailsMode = Reporter.WithDetails
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -777,7 +766,6 @@ a = Debug.log "debug" 1"""
 
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -868,7 +856,6 @@ a = Debug.log "debug" 1"""
 
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -989,7 +976,6 @@ a = Debug.log "debug" 1"""
 
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1110,7 +1096,6 @@ a = Debug.log "debug" 1"""
 
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1215,7 +1200,6 @@ a = "🔧" <| Debug.log "debug" 1"""
                         { suppressedErrors = SuppressedErrors.empty
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1268,7 +1252,6 @@ a = "🔧" ++ 1"""
                         { suppressedErrors = SuppressedErrors.empty
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1323,7 +1306,6 @@ a = "🔧" ++ "🔧
                         { suppressedErrors = SuppressedErrors.empty
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
-                        , fixProblemDict = Dict.empty
                         , detailsMode = Reporter.WithDetails
                         , errorsHaveBeenFixedPreviously = False
                         }
