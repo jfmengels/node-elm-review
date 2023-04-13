@@ -1,7 +1,6 @@
 module Elm.Review.CliCommunication exposing
     ( Key, decoder, dummy
     , send
-    , appliedFix
     , timerStart, timerEnd
     )
 
@@ -12,14 +11,12 @@ This is mostly done to provide feedback to the user like the number of applied f
 @docs Key, decoder, dummy
 
 @docs send
-@docs appliedFix
 @docs timerStart, timerEnd
 
 -}
 
 import Json.Decode
 import Json.Encode as Encode
-import Review.Rule as Rule
 
 
 type Key
@@ -54,18 +51,6 @@ timerStart key metric a =
 timerEnd : Key -> String -> a -> a
 timerEnd key metric a =
     logInPipe key [ ( "type", Encode.string "timer-end" ), ( "metric", Encode.string metric ) ] a
-
-
-appliedFix : Key -> Int -> Rule.ReviewError -> Rule.ReviewError
-appliedFix key errorCount error =
-    logInPipe
-        key
-        [ ( "type", Encode.string "apply-fix" )
-        , ( "ruleName", Encode.string (Rule.errorRuleName error) )
-        , ( "filePath", Encode.string (Rule.errorFilePath error) )
-        , ( "count", Encode.int errorCount )
-        ]
-        error
 
 
 logInPipe : Key -> List ( String, Json.Decode.Value ) -> a -> a

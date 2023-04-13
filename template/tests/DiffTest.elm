@@ -1,4 +1,4 @@
-module DiffTest exposing (..)
+module DiffTest exposing (basic, perf)
 
 import Elm.Review.Vendor.Diff exposing (..)
 import Expect exposing (Expectation)

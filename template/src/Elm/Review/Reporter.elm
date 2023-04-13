@@ -2,7 +2,7 @@ module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
-    , FileWithError, Range, hashFixes
+    , FileWithError, Range
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -47,29 +47,6 @@ type alias Error =
     , fixFailure : Maybe Review.Fix.Problem
     , suppressed : Bool
     }
-
-
-hashFixes : List Review.Fix.Fix -> String
-hashFixes fixes =
-    fixes
-        |> List.map (Review.Fix.toRecord >> hashFix)
-        |> String.join "$$$$$$elm-review$$$$$$"
-
-
-hashFix : { range : Range, replacement : String } -> String
-hashFix { range, replacement } =
-    hashRange range ++ "-" ++ replacement
-
-
-hashRange : Range -> String
-hashRange range =
-    [ range.start.row
-    , range.start.column
-    , range.end.row
-    , range.end.column
-    ]
-        |> List.map String.fromInt
-        |> String.join "-"
 
 
 {-| Represents a file.

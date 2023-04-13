@@ -493,10 +493,6 @@ type Msg
     | RequestedToKnowIfAFixConfirmationIsExpected
 
 
-type alias Source =
-    String
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -1320,82 +1316,6 @@ getPackageName deps =
 addElmFile : { a | path : String, source : String } -> Project -> Project
 addElmFile file project =
     Project.addModule { path = file.path, source = file.source } project
-
-
-fixableFilesInProject : Project -> Dict String { path : String, source : String }
-fixableFilesInProject project =
-    let
-        elmJson : { path : String, source : String }
-        elmJson =
-            Project.elmJson project
-                |> Maybe.map (\r -> { path = r.path, source = r.raw })
-                |> Maybe.withDefault { path = "$$Not a valid module name$$", source = "" }
-
-        readme : { path : String, source : String }
-        readme =
-            Project.readme project
-                |> Maybe.map (\r -> { path = r.path, source = r.content })
-                |> Maybe.withDefault { path = "$$Not a valid module name$$", source = "" }
-
-        moduleFiles : List ( String, { path : String, source : String } )
-        moduleFiles =
-            Project.modules project
-                |> List.map (\module_ -> ( module_.path, { path = module_.path, source = module_.source } ))
-    in
-    Dict.fromList (( elmJson.path, elmJson ) :: ( readme.path, readme ) :: moduleFiles)
-
-
-findFix :
-    Dict String Fix.Problem
-    -> RefusedErrorFixes
-    -> Dict String { path : String, source : String }
-    -> List Rule.ReviewError
-    ->
-        ( Dict String Fix.Problem
-        , Maybe
-            { file : { path : String, source : String }
-            , error : Rule.ReviewError
-            , fixedSource : String
-            }
-        )
-findFix failedFixesDict refusedErrorFixes files errors =
-    case errors of
-        [] ->
-            ( failedFixesDict, Nothing )
-
-        error :: restOfErrors ->
-            case Rule.errorFixes error of
-                Just fixes ->
-                    if RefusedErrorFixes.member error refusedErrorFixes then
-                        findFix failedFixesDict refusedErrorFixes files restOfErrors
-
-                    else
-                        case Dict.get (Rule.errorFilePath error) files of
-                            Nothing ->
-                                findFix failedFixesDict refusedErrorFixes files restOfErrors
-
-                            Just file ->
-                                case Fix.fix (Rule.errorTarget error) fixes file.source of
-                                    Fix.Errored problem ->
-                                        -- Ignore error if applying the fix results in a problem
-                                        findFix
-                                            (Dict.insert (Reporter.hashFixes fixes) problem failedFixesDict)
-                                            refusedErrorFixes
-                                            files
-                                            restOfErrors
-
-                                    Fix.Successful fixedSource ->
-                                        -- Return error and the result of the fix otherwise
-                                        ( failedFixesDict
-                                        , Just
-                                            { file = { path = file.path, source = file.source }
-                                            , error = error
-                                            , fixedSource = fixedSource
-                                            }
-                                        )
-
-                Nothing ->
-                    findFix failedFixesDict refusedErrorFixes files restOfErrors
 
 
 type alias FixedFile =

@@ -1,8 +1,8 @@
-module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, member, memberUsingRecord)
+module Elm.Review.RefusedErrorFixes exposing (RefusedErrorFixes, empty, insert, memberUsingRecord)
 
 {-| Keeps track of error fixes that the user refused to apply.
 
-@docs RefusedErrorFixes, empty, insert, member, memberUsingRecord
+@docs RefusedErrorFixes, empty, insert, memberUsingRecord
 
 -}
 
@@ -31,13 +31,6 @@ insert error (RefusedErrorFixes refusedErrorFixes) =
     refusedErrorFixes
         |> Set.insert (errorKey error)
         |> RefusedErrorFixes
-
-
-{-| Determine if the error has been refused.
--}
-member : ReviewError -> RefusedErrorFixes -> Bool
-member error (RefusedErrorFixes refusedErrorFixes) =
-    Set.member (errorKey error) refusedErrorFixes
 
 
 {-| Determine if the error has been refused.
