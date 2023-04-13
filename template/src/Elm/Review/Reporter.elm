@@ -488,7 +488,16 @@ addFixPrefix : Mode -> Error -> List Text -> List Text
 addFixPrefix mode error previous =
     case mode of
         Fixing ->
-            previous
+            case error.fixFailure of
+                Just _ ->
+                    ("(FIX FAILED) "
+                        |> Text.from
+                        |> Text.inYellow
+                    )
+                        :: previous
+
+                Nothing ->
+                     previous
 
         Reviewing ->
             if error.providesFix then
