@@ -494,7 +494,6 @@ addFixPrefix mode error previous =
             if error.providesFix then
                 case error.fixFailure of
                     Just _ ->
-                        -- TODO Give an explanation of what the problem was: parsing failure, invalid fix list, ...
                         ("(FIX FAILED) "
                             |> Text.from
                             |> Text.inYellow
