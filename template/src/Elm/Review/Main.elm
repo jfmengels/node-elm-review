@@ -565,29 +565,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ReceivedDependencies json ->
-            let
-                dependencyDecoder : Decode.Decoder Dependency
-                dependencyDecoder =
-                    Decode.map3 Dependency.create
-                        (Decode.field "name" Decode.string)
-                        (Decode.field "elmJson" Elm.Project.decoder)
-                        (Decode.field "docsJson" <| Decode.list Elm.Docs.decoder)
-
-                dependenciesDecoder : Decode.Decoder (List Dependency)
-                dependenciesDecoder =
-                    if model.ignoreProblematicDependencies then
-                        Decode.list
-                            (Decode.oneOf
-                                [ Decode.map Just dependencyDecoder
-                                , Decode.succeed Nothing
-                                ]
-                            )
-                            |> Decode.map (List.filterMap identity)
-
-                    else
-                        Decode.list dependencyDecoder
-            in
-            case Decode.decodeValue dependenciesDecoder json of
+            case Decode.decodeValue (dependenciesDecoder model.ignoreProblematicDependencies) json of
                 Err decodeError ->
                     ( model
                     , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
@@ -779,6 +757,29 @@ elmJsonDecoder =
         (Decode.field "path" Decode.string)
         (Decode.field "raw" Decode.string)
         (Decode.field "project" Elm.Project.decoder)
+
+
+dependenciesDecoder : Bool -> Decode.Decoder (List Dependency)
+dependenciesDecoder ignoreProblematicDependencies =
+    if ignoreProblematicDependencies then
+        Decode.list
+            (Decode.oneOf
+                [ Decode.map Just dependencyDecoder
+                , Decode.succeed Nothing
+                ]
+            )
+            |> Decode.map (List.filterMap identity)
+
+    else
+        Decode.list dependencyDecoder
+
+
+dependencyDecoder : Decode.Decoder Dependency
+dependencyDecoder =
+    Decode.map3 Dependency.create
+        (Decode.field "name" Decode.string)
+        (Decode.field "elmJson" Elm.Project.decoder)
+        (Decode.field "docsJson" <| Decode.list Elm.Docs.decoder)
 
 
 cacheFileRequest : Project -> String -> Encode.Value
