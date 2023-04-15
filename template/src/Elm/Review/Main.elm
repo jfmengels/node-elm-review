@@ -672,7 +672,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
             )
 
         UserConfirmedFix confirmation ->
-            case Decode.decodeValue confirmationDecoder confirmation of
+            case Decode.decodeValue (confirmationDecoder model.ignoreProblematicDependencies) confirmation of
                 Ok (Accepted rawFiles) ->
                     let
                         previousProject : Project
@@ -845,8 +845,8 @@ type Confirmation
     | Refused
 
 
-confirmationDecoder : Decode.Decoder Confirmation
-confirmationDecoder =
+confirmationDecoder : Bool -> Decode.Decoder Confirmation
+confirmationDecoder ignoreProblematicDependencies =
     Decode.field "answer" Decode.bool
         |> Decode.andThen
             (\accepted ->
