@@ -843,6 +843,7 @@ refuseError error model =
 type Confirmation
     = Accepted
         { rawFiles : List { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
+        , dependencies : Maybe (List Dependency)
         }
     | Refused
 
@@ -853,8 +854,9 @@ confirmationDecoder ignoreProblematicDependencies =
         |> Decode.andThen
             (\accepted ->
                 if accepted then
-                    Decode.map (\rawFiles -> Accepted { rawFiles = rawFiles })
+                    Decode.map2 (\rawFiles dependencies -> Accepted { rawFiles = rawFiles, dependencies = dependencies })
                         (Decode.field "files" (Decode.list Elm.Review.File.decode))
+                        (Decode.field "dependencies" (dependenciesDecoder ignoreProblematicDependencies) |> Decode.maybe)
 
                 else
                     Decode.succeed Refused
