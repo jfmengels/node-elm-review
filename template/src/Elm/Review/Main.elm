@@ -673,7 +673,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue (confirmationDecoder model.ignoreProblematicDependencies) confirmation of
-                Ok (Accepted { rawFiles }) ->
+                Ok (Accepted { rawFiles, dependencies }) ->
                     let
                         previousProject : Project
                         previousProject =
@@ -681,7 +681,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
                         newProject : Project
                         newProject =
-                            List.foldl addUpdatedFileToProject previousProject rawFiles
+                            List.foldl (\file acc -> addUpdatedFileToProject dependencies file acc) previousProject rawFiles
                     in
                     if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse previousProject) then
                         -- There is a new file that failed to parse in the
@@ -1260,8 +1260,8 @@ encodeChangedFile changedFile =
         ]
 
 
-addUpdatedFileToProject : { a | path : String, source : String } -> Project -> Project
-addUpdatedFileToProject file project =
+addUpdatedFileToProject : Maybe (List Dependency) -> { a | path : String, source : String } -> Project -> Project
+addUpdatedFileToProject dependencies file project =
     if Just file.path == (Project.readme project |> Maybe.map .path) then
         Project.addReadme { path = file.path, content = file.source } project
 
@@ -1271,10 +1271,24 @@ addUpdatedFileToProject file project =
                 if file.path == oldElmJson.path then
                     case Decode.decodeString Elm.Project.decoder file.source of
                         Ok newElmJson ->
-                            List.foldl
-                                Project.removeDependency
-                                (Project.addElmJson { path = file.path, raw = file.source, project = newElmJson } project)
-                                (removedDependencies oldElmJson.project newElmJson)
+                            let
+                                withUpdatedElmJson : Project
+                                withUpdatedElmJson =
+                                    Project.addElmJson
+                                        { path = file.path, raw = file.source, project = newElmJson }
+                                        project
+                            in
+                            case dependencies of
+                                Just deps ->
+                                    List.foldl
+                                        Project.addDependency
+                                        (Project.removeDependencies withUpdatedElmJson)
+                                        deps
+
+                                Nothing ->
+                                    -- If dependencies is Nothing, then the code in autofix.js
+                                    -- did not detect any change in the dependencies.
+                                    withUpdatedElmJson
 
                         Err _ ->
                             -- TODO Error
@@ -1285,37 +1299,6 @@ addUpdatedFileToProject file project =
 
             Nothing ->
                 addElmFile file project
-
-
-removedDependencies : Elm.Project.Project -> Elm.Project.Project -> List String
-removedDependencies old new =
-    Set.diff (projectDependencies old) (projectDependencies new)
-        |> Set.toList
-
-
-projectDependencies : Elm.Project.Project -> Set String
-projectDependencies project =
-    case project of
-        Elm.Project.Application application ->
-            List.concat
-                [ getPackageName application.depsDirect
-                , getPackageName application.depsIndirect
-                , getPackageName application.testDepsDirect
-                , getPackageName application.testDepsIndirect
-                ]
-                |> Set.fromList
-
-        Elm.Project.Package packageInfo ->
-            List.concat
-                [ getPackageName packageInfo.deps
-                , getPackageName packageInfo.testDeps
-                ]
-                |> Set.fromList
-
-
-getPackageName : Elm.Project.Deps a -> List String
-getPackageName deps =
-    List.map (Tuple.first >> Elm.Package.toString) deps
 
 
 addElmFile : { a | path : String, source : String } -> Project -> Project
