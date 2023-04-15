@@ -673,7 +673,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue (confirmationDecoder model.ignoreProblematicDependencies) confirmation of
-                Ok (Accepted rawFiles) ->
+                Ok (Accepted { rawFiles }) ->
                     let
                         previousProject : Project
                         previousProject =
@@ -841,7 +841,9 @@ refuseError error model =
 
 
 type Confirmation
-    = Accepted (List { path : String, source : String, ast : Maybe Elm.Syntax.File.File })
+    = Accepted
+        { rawFiles : List { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
+        }
     | Refused
 
 
@@ -851,8 +853,8 @@ confirmationDecoder ignoreProblematicDependencies =
         |> Decode.andThen
             (\accepted ->
                 if accepted then
-                    Decode.field "files" (Decode.list Elm.Review.File.decode)
-                        |> Decode.map Accepted
+                    Decode.map (\rawFiles -> Accepted { rawFiles = rawFiles })
+                        (Decode.field "files" (Decode.list Elm.Review.File.decode))
 
                 else
                     Decode.succeed Refused
