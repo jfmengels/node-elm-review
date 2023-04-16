@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.10.0] - 2023-04-16
+
+Now requires `jfmengels/elm-review` v2.13.0.
+
+- Fixes are now no longer applied in the CLI, but are entirely handled by the `jfmengels/elm-review` package.
+This should improve some incorrect behavior where fixes were not applied as expected.
+- Re-organization of how fixes to `elm.json` are handled in autofix mode.
+
 ## [2.9.2] - 2023-03-21
 
 `elm-review new-rule` now creates a more helpful starting rule. It can also generate a project rule if you think that
@@ -89,6 +97,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.10.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.0
 [2.9.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.1
 [2.9.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.0
 [2.8.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.8.4
