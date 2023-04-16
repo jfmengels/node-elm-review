@@ -11,11 +11,11 @@ when inside the directory containing this file.
 
 -}
 
-import NoUnused.Exports
+import NoUnused.Patterns
 import Review.Rule exposing (Rule)
 
 
 config : List Rule
 config =
-    [ NoUnused.Exports.rule
+    [ NoUnused.Patterns.rule
     ]
