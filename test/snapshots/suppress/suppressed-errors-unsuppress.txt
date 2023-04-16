@@ -1,6 +1,6 @@
 -- ELM-REVIEW ERROR --------------------------------------------- elm.json:12:14
 
-(unsuppressed) NoUnused.Dependencies: Unused dependency `elm/time`
+(unsuppressed) (fix) NoUnused.Dependencies: Unused dependency `elm/time`
 
 11|             "elm/html": "1.0.0",
 12|             "elm/time": "1.0.0"

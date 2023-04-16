@@ -12,8 +12,8 @@ pointed at.
 
 ────────────────────────────────────────────────────────────── src/Main.elm:28:7
 
-NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is not
-used.
+(fix) NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is
+not used.
 
 27|     | Decrement
 28|     | UnusedCustomType

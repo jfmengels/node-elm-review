@@ -7,7 +7,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `h1` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -48,7 +48,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables"
             },
             ": Imported variable `h1` is not used\n\n10|         , -- h1 is unused\n11|           h1\n              ",
             {
@@ -63,7 +63,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `span` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -104,7 +104,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables"
             },
             ": Imported variable `span` is not used\n\n12|         , -- span is unused\n13|           span\n              ",
             {
@@ -124,7 +124,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Top-level variable `b` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -165,7 +165,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables"
             },
             ": Top-level variable `b` is not used\n\n8| b =\n   ",
             {
@@ -180,7 +180,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Top-level variable `c` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -221,7 +221,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Variables"
             },
             ": Top-level variable `c` is not used\n\n12| c =\n    ",
             {
@@ -241,7 +241,7 @@
         {
           "rule": "NoUnused.Dependencies",
           "message": "Unused dependency `elm/time`",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Dependencies",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Dependencies",
           "details": [
             "To remove it, I recommend running the following command:",
             "    elm-json uninstall elm/time"
@@ -256,15 +256,34 @@
               "column": 22
             }
           },
+          "fix": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "column": 1
+                },
+                "end": {
+                  "line": 100000000,
+                  "column": 1
+                }
+              },
+              "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.2\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
+            }
+          ],
           "formatted": [
             {
               "string": "(unsuppressed) ",
               "color": "#FFA500"
             },
             {
+              "string": "(fix) ",
+              "color": "#33BBC8"
+            },
+            {
               "string": "NoUnused.Dependencies",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Dependencies"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.29/NoUnused-Dependencies"
             },
             ": Unused dependency `elm/time`\n\n11|             \"elm/html\": \"1.0.0\",\n12|             \"elm/time\": \"1.0.0\"\n                 ",
             {
