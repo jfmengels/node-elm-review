@@ -23,3 +23,9 @@ test('should escape spaces', () => {
   const output = PathHelpers.format(input);
   expect(output).toEqual('some\\ path');
 });
+
+test('should escape *', () => {
+  const input = 'some*path';
+  const output = PathHelpers.format(input);
+  expect(output).toEqual('some\\*path');
+});
