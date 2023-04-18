@@ -9,17 +9,17 @@ test('should leave the path untouched if it does not contain odd characters', ()
 test('should escape single quotes', () => {
   const input = "Don't-do-that";
   const output = PathHelpers.format(input);
-  expect(output).toEqual('Don\\\'t-do-that');
+  expect(output).toEqual("Don\\'t-do-that");
 });
 
 test('should escape double quotes', () => {
-  const input = 'Don\"t-do-that';
+  const input = 'Don"t-do-that';
   const output = PathHelpers.format(input);
-  expect(output).toEqual('Don\\\"t-do-that');
+  expect(output).toEqual('Don\\"t-do-that');
 });
 
 test('should escape spaces', () => {
-  const input = "some path";
+  const input = 'some path';
   const output = PathHelpers.format(input);
   expect(output).toEqual('some\\ path');
 });
