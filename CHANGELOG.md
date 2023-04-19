@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.1] - 2023-04-19
+
+Improved error message when the version of the `jfmengels/elm-review` Elm package is not supported. 
+
 ## [2.10.0] - 2023-04-16
 
 Now requires `jfmengels/elm-review` v2.13.0.
@@ -97,6 +101,7 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
+[2.10.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.1
 [2.10.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.0
 [2.9.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.1
 [2.9.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.9.0
