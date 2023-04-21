@@ -85,6 +85,7 @@
     "ora": "^5.4.0",
     "path-key": "^3.1.1",
     "prompts": "^2.2.1",
+    "rimraf": "^5.0.0",
     "strip-ansi": "^6.0.0",
     "temp": "^0.9.1",
     "terminal-link": "^2.1.1",
