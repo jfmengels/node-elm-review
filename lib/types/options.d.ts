@@ -40,6 +40,7 @@ export type Options = {
   template: Template | null;
   initPath: () => Path;
   suppressedErrorsFolder: () => Path;
+  buildFolder: () => Path;
   elmModulePath: (string) => Path;
   elmParserPath: (string) => Path;
   generatedCodePackageJson: () => Path;
