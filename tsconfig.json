@@ -2,6 +2,7 @@
   "compilerOptions": {
     "outDir": "./built",
     "allowJs": true,
+    "checkJs": true,
     "target": "es5"
   },
   "include": ["./lib/**/*"]
