@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "outDir": "./built",
     "allowJs": true,
     "checkJs": true,
-    "target": "es5"
+    "noEmit": true
   },
   "include": ["./lib/**/*"]
 }
