@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
+    "resolveJsonModule": true,
     "noEmit": true
   },
   "include": ["./lib/**/*"]
