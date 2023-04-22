@@ -2,9 +2,6 @@
 
 var spawn = require("cross-spawn");
 var elmBinaryName = "elm";
-var fs = require("fs");
-var path = require("path");
-var temp = require("temp").track();
 
 var defaultOptions = {
   spawn: spawn,
@@ -19,8 +16,6 @@ var defaultOptions = {
   docs: undefined,
   optimize: undefined,
 };
-
-var supportedOptions = Object.keys(defaultOptions);
 
 function prepareSources(sources) {
   if (!(sources instanceof Array || typeof sources === "string")) {
@@ -94,61 +89,6 @@ function compile(sources, options) {
   }
 }
 
-function getSuffix(outputPath, defaultSuffix) {
-  if (outputPath) {
-    return path.extname(outputPath) || defaultSuffix;
-  } else {
-    return defaultSuffix;
-  }
-}
-
-// write compiled Elm to a string output
-// returns a Promise which will contain a Buffer of the text
-// If you want html instead of js, use options object to set
-// output to a html file instead
-// creates a temp file and deletes it after reading
-function compileToString(sources, options) {
-  var suffix = getSuffix(options.output, '.js');
-  return new Promise(function (resolve, reject) {
-      temp.open({ suffix: suffix }, function (err, info) {
-          if (err) {
-              return reject(err);
-          }
-          options.output = info.path;
-          options.processOpts = { stdio: 'inherit' };
-          var compiler;
-          try {
-              compiler = compile(sources, options);
-          }
-          catch (compileError) {
-              return reject(compileError);
-          }
-          compiler.on("close", function (exitCode) {
-              if (exitCode !== 0) {
-                  return reject('Compilation failed');
-              }
-              else if (options.verbose) {
-                  console.log(output);
-              }
-              fs.readFile(info.path, { encoding: "utf8" }, function (err, data) {
-                  return err ? reject(err) : resolve(data);
-              });
-          });
-      });
-  });
-}
-
-
-function compileToStringSync(sources, options) {
-  const suffix = getSuffix(options.output, '.js');
-
-  const file = temp.openSync({ suffix });
-  options.output = file.path;
-  compileSync(sources, options);
-
-  return fs.readFileSync(file.path, { encoding: "utf8" });
-}
-
 function flatten(array) {
   return array.reduce((res, element) => res.concat(element), [])
 }
@@ -181,7 +121,5 @@ function compilerArgsFromOptions(options) {
 }
 
 module.exports = {
-  compile,
-  compileToString: compileToString,
-  compileToStringSync: compileToStringSync,
+  compile
 };
