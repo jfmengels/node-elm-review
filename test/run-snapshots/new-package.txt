@@ -14,8 +14,8 @@
 ✔ Adding .gitignore
 - Adding GitHub Actions
 ✔ Adding GitHub Actions
-- Adding LICENSE
-✔ Adding LICENSE
+- Adding LICENSE npx license BSD-3-Clause
+✔ Adding LICENSE npx license BSD-3-Clause
 - Adding elm-review configuration
 ✔ Adding elm-review configuration
 - Adding maintenance scripts
