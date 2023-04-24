@@ -17,7 +17,7 @@ export type Options = {
   watch: boolean,
   watchConfig: boolean,
   color: boolean,
-  subcommand: Subcommand,
+  subcommand: Subcommand | null,
   namespace: string,
   compiler: string | undefined,
   elmFormatPath: string | undefined,
@@ -76,4 +76,4 @@ export type Template = {
   reference: string | null,
 }
 
-export type Subcommand = string | null;
+export type Subcommand = 'init' | 'new-package' | 'new-rule' | 'suppress';
