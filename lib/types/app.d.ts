@@ -34,4 +34,4 @@ export type FileReceipt = {
 }
 
 export type SubscribePort = function;
-export type SendPort<T> = { send: (T) => void };
+export type SendPort<T> = { send: (data: T) => void };
