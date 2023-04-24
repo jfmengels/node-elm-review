@@ -8,7 +8,6 @@ export type Model = {
   filesProposedByCurrentFix: FilesProposedByCurrentFix
 }
 
-// TODO Simplify this to an enum
 export type ReviewState
   = { type: 'idle' }
   | { type: 'ongoing', shouldRunAfterNewReview: boolean }
@@ -42,3 +41,6 @@ export type Readme = {
   path: FilePath,
   content: string
 }
+
+
+export type Msg = any
