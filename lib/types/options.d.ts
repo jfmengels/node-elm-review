@@ -33,7 +33,7 @@ export type Options = {
   newRuleName: string | null,
   ruleType: RuleType | undefined,
 
-  userSrc: Path,
+  userSrc: () => Path,
   usedConfig: boolean,
   template: Template | null,
   initPath: () => Path,
