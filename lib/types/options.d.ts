@@ -1,3 +1,5 @@
+import type { Path } from './path';
+
 export type Options = {
   debug: boolean,
   showBenchmark: boolean,
@@ -75,5 +77,3 @@ export type Template = {
 }
 
 export type Subcommand = string | null;
-
-export type Path = string;
