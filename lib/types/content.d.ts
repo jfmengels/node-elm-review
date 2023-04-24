@@ -4,10 +4,10 @@ export type ElmFile = {
   path: Path,
   source: Source,
   ast: Ast | null,
-  lastUpdatedTime?: Date
+  lastUpdatedTime?: Date | null
 }
 
-export type Ast = object;
+export type Ast = any;
 
 export type Readme = {
   path: Path,
