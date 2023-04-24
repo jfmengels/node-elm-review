@@ -23,11 +23,7 @@ export type ExitRequest = {
 
 export type AppUnsubscribeFunctions = Array<function>;
 
-export type FilesProposedByCurrentFix = Array<FileId>;
-
-export type Path = string;
-
-export type FileId = string;
+export type FilesProposedByCurrentFix = Array<{path: Path, source: Source }>;
 
 export type Source = string;
 
