@@ -31,25 +31,7 @@ diff --color ./lib/app-wrapper.js ../node-elm-review-with-ts/lib/app-wrapper.js
 < function unsubscribe(port) {
 ---
 > function unsubscribe(port: string | number) {
-diff --color ./lib/autofix.js ../node-elm-review-with-ts/lib/autofix.js
-16c16
-< function askConfirmationToFixWithOptions(options, app, elmVersion) {
-<   return async (data) => {
----
-> function askConfirmationToFixWithOptions(options: { fixAllWithoutPrompt: any; projectToReview: () => any; }, app: { ports: { userConfirmedFix: { send: (arg0: { answer: boolean; files?: any; dependencies?: any; }) => void; }; }; }, elmVersion) {
->   return async (data: { confirmationMessage: any; clearFixLine: any; changedFiles: any; count: number; }) => {
-85c85
-<         filesToFix.map((file) => {
----
->         filesToFix.map((file: { path: string; source: any; }) => {
-126c126
-< function checkIfAFixConfirmationIsStillExpected(app) {
----
-> function checkIfAFixConfirmationIsStillExpected(app: { ports: { fixConfirmationStatus: any; askForFixConfirmationStatus: any; }; }) {
-134c134
-< function formatFileContent(options, file, filePath) {
----
-> function formatFileContent(options: { elmFormatPath: string; elmJsonPath: any; }, file: { source: any; path: any; }, filePath) {
+
 diff --color ./lib/benchmark.js ../node-elm-review-with-ts/lib/benchmark.js
 6c6
 < function start(options, name) {
