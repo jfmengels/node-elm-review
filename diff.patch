@@ -32,15 +32,6 @@ diff --color ./lib/app-wrapper.js ../node-elm-review-with-ts/lib/app-wrapper.js
 ---
 > function unsubscribe(port: string | number) {
 
-diff --color ./lib/benchmark.js ../node-elm-review-with-ts/lib/benchmark.js
-6c6
-< function start(options, name) {
----
-> function start(options: { showBenchmark: any; }, name: string) {
-12c12
-< function end(options, name) {
----
-> function end(options: { showBenchmark: any; }, name: string) {
 diff --color ./lib/build.js ../node-elm-review-with-ts/lib/build.js
 26c26
 <   options,
