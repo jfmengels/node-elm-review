@@ -1,20 +1,3 @@
-diff --color ./lib/anonymize.js ../node-elm-review-with-ts/lib/anonymize.js
-15c15
-< function pathsAndVersions(options, string) {
----
-> function pathsAndVersions(options: { forTests: any; }, string: string) {
-24c24
-< function anonymizePath(options, filePath) {
----
-> function anonymizePath(options: { forTests: any; }, filePath) {
-32c32
-< function replaceVersion(string) {
----
-> function replaceVersion(string: string) {
-37c37
-< function version(options) {
----
-> function version(options: { forTests: any; packageJsonVersion: any; }) {
 diff --color ./lib/app-wrapper.js ../node-elm-review-with-ts/lib/app-wrapper.js
 12c12
 <     init: (options, elmModulePath, flags) =>
