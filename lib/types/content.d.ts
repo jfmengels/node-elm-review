@@ -21,3 +21,7 @@ export type Dependencies = Dependency[];
 export type Dependency = {};
 
 export type LinksToRuleDocs = { [string]: string };
+
+export type Source = string;
+
+export type Ast = any;
