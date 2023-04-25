@@ -1,19 +1,9 @@
 
-/**
- * @typedef { import("./types/options.d.ts").Options } Options
- * @typedef { import("./types/path").Path } Path
- * @typedef { import("./types/state").FilesProposedByCurrentFix } FilesProposedByCurrentFix
- * @typedef { import("./types/content").ElmFile } ElmFile
- * @typedef { import("./types/content").Ast } Ast
- * @typedef { import("./types/content").Readme } Readme
- * @typedef { import("./types/content").ElmJson } ElmJson
- * @typedef { import("./types/content").Dependencies } Dependencies
- * @typedef { import("./types/content").LinksToRuleDocs } LinksToRuleDocs
- * @typedef { import("./types/suppressed").SuppressedErrorsFile } SuppressedErrorsFile
- */
-
-import { ElmFile, ElmJson } from "./content"
-import { SuppressedErrorsFile } from "./suppressed"
+import type { Options } from "./types/options"
+import type { Path } from "./types/path"
+import type { FilesProposedByCurrentFix } from "./types/state"
+import type { Ast, ElmFile, Readme, ElmJson, Dependencies, LinksToRuleDocs } from "./types/content"
+import type { SuppressedErrorsFile } from "./types/suppressed"
 
 export type App = {
   ports: Ports
