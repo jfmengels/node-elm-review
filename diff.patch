@@ -33,10 +33,6 @@ diff --color ./lib/app-wrapper.js ../node-elm-review-with-ts/lib/app-wrapper.js
 > function unsubscribe(port: string | number) {
 diff --color ./lib/autofix.js ../node-elm-review-with-ts/lib/autofix.js
 16c16
-<   subscribe: (options, app, elmVersion) => {
----
->   subscribe: (options: { fixAllWithoutPrompt: any; projectToReview: () => any; }, app: { ports: { askConfirmationToFix: any; }; }, elmVersion) => {
-24,25c24,25
 < function askConfirmationToFixWithOptions(options, app, elmVersion) {
 <   return async (data) => {
 ---

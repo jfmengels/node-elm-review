@@ -1,5 +1,10 @@
 import type { Path } from './path';
 
+export type File = {
+  path: Path,
+  source: Source,
+}
+
 export type ElmFile = {
   path: Path,
   source: Source,
