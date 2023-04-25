@@ -1,4 +1,4 @@
-import type { ElmFile, Readme } from './content';
+import type { ElmFile, Readme, Source, Ast } from './content';
 import type { Path } from './path';
 
 export type Model = {
@@ -24,9 +24,5 @@ export type ExitRequest = {
 export type AppUnsubscribeFunctions = Array<function>;
 
 export type FilesProposedByCurrentFix = Array<{path: Path, source: Source }>;
-
-export type Source = string;
-
-export type Ast = any;
 
 export type Msg = any
