@@ -1,0 +1,1043 @@
+diff --color ./lib/anonymize.js ../node-elm-review-with-ts/lib/anonymize.js
+15c15
+< function pathsAndVersions(options, string) {
+---
+> function pathsAndVersions(options: { forTests: any; }, string: string) {
+24c24
+< function anonymizePath(options, filePath) {
+---
+> function anonymizePath(options: { forTests: any; }, filePath) {
+32c32
+< function replaceVersion(string) {
+---
+> function replaceVersion(string: string) {
+37c37
+< function version(options) {
+---
+> function version(options: { forTests: any; packageJsonVersion: any; }) {
+diff --color ./lib/app-wrapper.js ../node-elm-review-with-ts/lib/app-wrapper.js
+12c12
+<     init: (options, elmModulePath, flags) =>
+---
+>     init: (options: { watch: any; }, elmModulePath, flags) =>
+30c30
+< function init(Worker, options, elmModulePath, flags) {
+---
+> function init(Worker: new (arg0: any,arg1: { workerData: { elmModulePath: any; flags: any; }; }) => any, options: { watch: any; }, elmModulePath, flags) {
+45c45
+<   get(_, port) {
+---
+>   get(_, port: string | number) {
+54c54
+< function initWithWorker(Worker, elmModulePath, flags) {
+---
+> function initWithWorker(Worker: new (arg0: any,arg1: { workerData: { elmModulePath: any; flags: any; }; }) => any, elmModulePath, flags) {
+64c64
+<       listeners[port].forEach((fn) => fn(data));
+---
+>       listeners[port].forEach((fn: (arg0: any) => any) => fn(data));
+73c73
+< function send(port) {
+---
+> function send(port: string | number) {
+81c81
+< function subscribe(port) {
+---
+> function subscribe(port: string | number) {
+87c87
+< function unsubscribe(port) {
+---
+> function unsubscribe(port: string | number) {
+diff --color ./lib/autofix.js ../node-elm-review-with-ts/lib/autofix.js
+16c16
+<   subscribe: (options, app, elmVersion) => {
+---
+>   subscribe: (options: { fixAllWithoutPrompt: any; projectToReview: () => any; }, app: { ports: { askConfirmationToFix: any; }; }, elmVersion) => {
+24,25c24,25
+< function askConfirmationToFixWithOptions(options, app, elmVersion) {
+<   return async (data) => {
+---
+> function askConfirmationToFixWithOptions(options: { fixAllWithoutPrompt: any; projectToReview: () => any; }, app: { ports: { userConfirmedFix: { send: (arg0: { answer: boolean; files?: any; dependencies?: any; }) => void; }; }; }, elmVersion) {
+>   return async (data: { confirmationMessage: any; clearFixLine: any; changedFiles: any; count: number; }) => {
+85c85
+<         filesToFix.map((file) => {
+---
+>         filesToFix.map((file: { path: string; source: any; }) => {
+126c126
+< function checkIfAFixConfirmationIsStillExpected(app) {
+---
+> function checkIfAFixConfirmationIsStillExpected(app: { ports: { fixConfirmationStatus: any; askForFixConfirmationStatus: any; }; }) {
+134c134
+< function formatFileContent(options, file, filePath) {
+---
+> function formatFileContent(options: { elmFormatPath: string; elmJsonPath: any; }, file: { source: any; path: any; }, filePath) {
+diff --color ./lib/benchmark.js ../node-elm-review-with-ts/lib/benchmark.js
+6c6
+< function start(options, name) {
+---
+> function start(options: { showBenchmark: any; }, name: string) {
+12c12
+< function end(options, name) {
+---
+> function end(options: { showBenchmark: any; }, name: string) {
+diff --color ./lib/build.js ../node-elm-review-with-ts/lib/build.js
+26c26
+<   options,
+---
+>   options: { localElmReviewSrc: any; debug: any; },
+29c29
+<   sourceDirectories
+---
+>   sourceDirectories: any[]
+60c60
+<       (resultHash, {hash}) => resultHash.update(hash),
+---
+>       (resultHash: { update: (arg0: any) => any; }, {hash}) => resultHash.update(hash),
+68c68
+< function build(options) {
+---
+> function build(options: { template: any; usedConfig: any; }) {
+87c87
+< async function buildLocalProject(options) {
+---
+> async function buildLocalProject(options: { userSrc: () => any; elmJsonPath: any; elmModulePath: (arg0: string) => any; forceBuild: any; }) {
+92c92
+<     (error) => {
+---
+>     (error: { code: string; }) => {
+172c172
+< async function buildFromGitHubTemplate(options) {
+---
+> async function buildFromGitHubTemplate(options: { template: any; pathToTemplateElmJson: (arg0: any) => any; templateElmModulePath: (arg0: any) => any; }) {
+220c220
+<       'source-directories': reviewElmJson['source-directories'].map((dir) =>
+---
+>       'source-directories': reviewElmJson['source-directories'].map((dir: string) =>
+263c263
+<   options,
+---
+>   options: { userSrc?: () => any; elmJsonPath?: any; elmModulePath?: (arg0: string) => any; forceBuild?: any; template?: any; pathToTemplateElmJson?: (arg0: any) => any; templateElmModulePath?: (arg0: any) => any; },
+267c267
+<   reviewElmJson
+---
+>   reviewElmJson: { dependencies: any; }
+287c287
+< function writeElmJsonFile(options, userSrc, elmJsonPath, elmJson) {
+---
+> function writeElmJsonFile(options: { localElmReviewSrc: any; }, userSrc, elmJsonPath, elmJson: { [x: string]: any[]; dependencies?: any; }) {
+297c297
+< function updateSourceDirectories(options, userSrc, elmJson) {
+---
+> function updateSourceDirectories(options: { localElmReviewSrc: any; }, userSrc, elmJson: { [x: string]: any[]; }) {
+316c316
+< function unique(array) {
+---
+> function unique(array: any[]) {
+340c340
+<   options,
+---
+>   options: { debug: any; report: string; watch: any; },
+343c343
+<   compileTargets,
+---
+>   compileTargets: string[],
+345c345
+<   isReviewAppApp
+---
+>   isReviewAppApp: boolean
+368c368
+<       compileProcess.stderr.on('data', (data) => {
+---
+>       compileProcess.stderr.on('data', (data: string) => {
+373c373
+<     compileProcess.on('close', (exitCode) => {
+---
+>     compileProcess.on('close', (exitCode: number) => {
+419c419
+< function compilationError(options, stderr) {
+---
+> function compilationError(options: { userSrc: (arg0: any) => any; report: string; debug: any; }, stderr: string) {
+458c458
+< function validateElmReviewVersion(options, reviewElmJsonPath, reviewElmJson) {
+---
+> function validateElmReviewVersion(options: { localElmReviewSrc: any; template: { repoName: any; pathToFolder?: ""; }; } | ({ userSrc: () => any; elmJsonPath: any; elmModulePath: (arg0: string) => any; forceBuild: any; }) | ({ template: any; pathToTemplateElmJson: (arg0: any) => any; templateElmModulePath: (arg0: any) => any; }), reviewElmJsonPath, reviewElmJson: { type: string; dependencies: { direct: { [x: string]: any; }; }; }) {
+512c512
+< async function buildElmParser(options, reviewElmJson) {
+---
+> async function buildElmParser(options: { elmParserPath: (arg0: any) => any; elmJsonPath: any; generatedCodePackageJson: () => any; }, reviewElmJson: { dependencies: { direct: { [x: string]: any; }; indirect: { [x: string]: any; }; }; }) {
+527c527
+<     (error) => {
+---
+>     (error: { code: string; }) => {
+578c578
+<   options,
+---
+>   options: { elmParserPath: (arg0: any) => any; elmJsonPath: any; generatedCodePackageJson: () => any; },
+580c580
+<   parseElmElmJson,
+---
+>   parseElmElmJson: { [x: string]: any[]; },
+diff --color ./lib/cache.js ../node-elm-review-with-ts/lib/cache.js
+5c5
+< async function getOrCompute(folder, key, fn) {
+---
+> async function getOrCompute(folder, key, fn: () => any) {
+25c25
+< const ensuredFolders = new Set();
+---
+> const ensuredFolders: Set<any> = new Set();
+diff --color ./lib/debug.js ../node-elm-review-with-ts/lib/debug.js
+9c9
+< function log(message) {
+---
+> function log(message: { watch: any; debug: any; report: string; }) {
+diff --color ./lib/elm-binary.js ../node-elm-review-with-ts/lib/elm-binary.js
+8c8
+< function getElmBinary(options) {
+---
+> function getElmBinary(options: { compiler: any; elmJsonPath: any; }) {
+51c51
+< function trimVersion(version) {
+---
+> function trimVersion(version: string) {
+diff --color ./lib/elm-communication.js ../node-elm-review-with-ts/lib/elm-communication.js
+10c10
+< function create(options) {
+---
+> function create(options: { debug: any; showBenchmark: any; }) {
+diff --color ./lib/elm-files.js ../node-elm-review-with-ts/lib/elm-files.js
+30,31c30,31
+< function flatMap(array, fn) {
+<   return array.reduce((result, item) => result.concat(fn(item)), []);
+---
+> function flatMap(array: any[], fn: { (directory: any): any; (directory: any): any[]; (arg0: any): any; }) {
+>   return array.reduce((result: string | any[], item) => result.concat(fn(item)), []);
+48c48
+< async function getProjectFiles(options, elmSyntaxVersion) {
+---
+> async function getProjectFiles(options: { elmJsonPath: any; directoriesToAnalyze: string | any[]; elmParserPath: (arg0: any) => any; }, elmSyntaxVersion) {
+65c65
+<     sourceDirectories.map((dir) => findFiles(isFromCliArguments, dir))
+---
+>     sourceDirectories.map((dir: string) => findFiles(isFromCliArguments, dir))
+95c95
+<     ...new Set(flatMap(filesInDirectories, (directory) => directory.files))
+---
+>     ...new Set(flatMap(filesInDirectories, (directory: { files: any; }) => directory.files))
+123c123
+< async function readElmJson(options) {
+---
+> async function readElmJson(options: { elmJsonPath: any; elmJsonPathWasSpecified: any; }) {
+151,154c151,154
+<   options,
+<   elmParserPath,
+<   relativePathToElmJson,
+<   filePath
+---
+>   options: { watch: any; },
+>   elmParserPath: { encoding: string; reviver: any; },
+>   relativePathToElmJson: undefined,
+>   filePath: undefined
+176c176
+<   const source = await FS.readFile(filePath).catch((error) => {
+---
+>   const source = await FS.readFile(filePath).catch((error: { message: any; }) => {
+193c193
+< function readAst(options, elmParserPath, source) {
+---
+> function readAst(options: { fileCachePath: () => any; }, elmParserPath, source) {
+200c200
+< async function getReadme(options, directoryContainingElmJson) {
+---
+> async function getReadme(options: { readmePath: any; }, directoryContainingElmJson) {
+209c209
+< function getSourceDirectories(options, elmJson) {
+---
+> function getSourceDirectories(options: { directoriesToAnalyze: any[]; }, elmJson) {
+225c225
+< function standardSourceDirectories(options, elmJson) {
+---
+> function standardSourceDirectories(options: { projectToReview: () => any; }, elmJson: { [x: string]: any; type: string; }) {
+243c243
+< function findFiles(isFromCliArguments, directory) {
+---
+> function findFiles(isFromCliArguments: boolean, directory: string) {
+256c256
+< async function findForCliArguments(directory, path_) {
+---
+> async function findForCliArguments(directory: string, path_: string) {
+287c287
+< async function findFromFolder(directory, path_) {
+---
+> async function findFromFolder(directory: string, path_: string) {
+299c299
+<   return fsStat(filePath).then((fileStat) => fileStat.mtime);
+---
+>   return fsStat(filePath).then((fileStat: { mtime: any; }) => fileStat.mtime);
+diff --color ./lib/error-message.js ../node-elm-review-with-ts/lib/error-message.js
+5,6c5,8
+< class CustomError extends Error {
+<   constructor(title, message, path) {
+---
+> class CustomError extends Error {
+> title: any;
+> path: any;
+>   constructor(title: string, message: string, path: undefined) {
+14c16
+< function report(options, err, defaultPath) {
+---
+> function report(options: { report: string; debug: any; forTests: any; }, err, defaultPath) {
+32c34
+< function unexpectedError(err) {
+---
+> function unexpectedError(err: { stack: string; }) {
+51c53
+< const formatHuman = (debug, error) =>
+---
+> const formatHuman = (debug, error: { title: string | any[]; message: string; }) =>
+59c61
+< function stacktrace(debug, error) {
+---
+> function stacktrace(debug, error: { stack: string; }) {
+67c69
+< const formatJson = (debug, error, defaultPath) => {
+---
+> const formatJson = (debug, error: { title: any; path: any; message: string; stack: any; }, defaultPath: undefined) => {
+diff --color ./lib/flags.js ../node-elm-review-with-ts/lib/flags.js
+430c430
+< function buildFlag(subcommand, flag) {
+---
+> function buildFlag(subcommand, flag: { name: string; boolean: boolean; color: any; sections: string[]; description: string[]; argName?: undefined; mayBeUsedSeveralTimes?: undefined; usesEquals?: undefined; initDescription?: undefined; newPackageDescription?: undefined; alias?: undefined; } | { name: string; boolean: boolean; argName: string; mayBeUsedSeveralTimes: boolean; usesEquals: boolean; color: any; sections: string[]; description: string[]; initDescription?: undefined; newPackageDescription?: undefined; alias?: undefined; } | { name: string; boolean: boolean; argName: string; mayBeUsedSeveralTimes: boolean; usesEquals: boolean; color: any; sections: string[]; description: string[]; initDescription: string[]; newPackageDescription?: undefined; alias?: undefined; } | { name: string; boolean: boolean; argName: string; mayBeUsedSeveralTimes: boolean; usesEquals: boolean; color: any; sections: string[]; description: string[]; initDescription: string[]; newPackageDescription: string[]; alias?: undefined; } | { name: string; alias: string; boolean: boolean; color: any; sections: string[]; description: string[]; argName?: undefined; mayBeUsedSeveralTimes?: undefined; usesEquals?: undefined; initDescription?: undefined; newPackageDescription?: undefined; } | { name: string; boolean: boolean; sections: any[]; description: any[]; color?: undefined; argName?: undefined; mayBeUsedSeveralTimes?: undefined; usesEquals?: undefined; initDescription?: undefined; newPackageDescription?: undefined; alias?: undefined; } | { name: string; boolean: boolean; argName: string; mayBeUsedSeveralTimes: boolean; usesEquals: boolean; color: any; sections: any[]; description: any[]; initDescription?: undefined; newPackageDescription?: undefined; alias?: undefined; } | { name: string; boolean: boolean; argName: string; mayBeUsedSeveralTimes: boolean; usesEquals: boolean; sections: any[]; description: any[]; color?: undefined; initDescription?: undefined; newPackageDescription?: undefined; alias?: undefined; }) {
+451c451
+< function buildFlagsArgs(flag) {
+---
+> function buildFlagsArgs(flag: { boolean: any; usesEquals: any; argName: string | number; }) {
+diff --color ./lib/fs-wrapper.js ../node-elm-review-with-ts/lib/fs-wrapper.js
+13c13
+< async function readJsonFile(file, reviver = null) {
+---
+> async function readJsonFile(file: { watch: any; } | { elmJsonPath: any; directoriesToAnalyze: string | any[]; elmParserPath: (arg0: any) => any; }, reviver = null) {
+38c38
+< function readFile(file, options = 'utf8') {
+---
+> function readFile(file: { elmJsonPath: any; directoriesToAnalyze: string | any[]; elmParserPath: (arg0: any) => any; }, options = 'utf8') {
+60c60
+< function writeJson(file, content, space, replacer) {
+---
+> function writeJson(file, content, space: string | number, replacer: (this: any,key: string,value: any) => any) {
+diff --color ./lib/init.js ../node-elm-review-with-ts/lib/init.js
+18c18
+< async function promptAndCreate(options) {
+---
+> async function promptAndCreate(options: { initPath: () => any; template: any; }) {
+46c46
+< async function createFromTemplate(options, template, directory) {
+---
+> async function createFromTemplate(options: { initPath: () => any; template: any; }, template, directory) {
+63c63
+<     'source-directories': reviewElmJson['source-directories'].map((dir) =>
+---
+>     'source-directories': reviewElmJson['source-directories'].map((dir: string) =>
+81c81
+< function logInit(options, directory) {
+---
+> function logInit(options: { template: any; }, directory) {
+105c105
+< async function create(options, directory, template) {
+---
+> async function create(options: { initPath: () => any; template: any; }, directory, template: string) {
+116c116
+< async function createElmJson(options, directory) {
+---
+> async function createElmJson(options: { initPath: () => any; template: any; }, directory) {
+142c142
+< function createReviewConfig(directory, template) {
+---
+> function createReviewConfig(directory, template: string) {
+diff --color ./lib/min-version.js ../node-elm-review-with-ts/lib/min-version.js
+17c17
+< function updateToAtLeastMinimalVersion(version) {
+---
+> function updateToAtLeastMinimalVersion(version: { split: (arg0: string) => [any,any]; }) {
+36c36
+< function validate(options, elmJsonPath, version) {
+---
+> function validate(options: { template: any; }, elmJsonPath, version: { split: (arg0: string) => [any,any]; }) {
+diff --color ./lib/module-cache.js ../node-elm-review-with-ts/lib/module-cache.js
+6c6
+< function subscribe(options, app) {
+---
+> function subscribe(options: string | number | { fileCachePath: () => any; } | (() => void), app: { ports: { cacheFile: any; }; }) {
+13c13
+< async function cacheFile(options, fileHash, ast) {
+---
+> async function cacheFile(options: { fileCachePath: () => any; } | (() => void), fileHash, ast: undefined) {
+diff --color ./lib/new-package.js ../node-elm-review-with-ts/lib/new-package.js
+15c15
+< async function newPackage(options) {
+---
+> async function newPackage(options: { prefilledAnswers: { authorName: any; packageName: any; license: any; }; newRuleName: any; }) {
+36c36
+<     ).then((a) => a.authorName));
+---
+>     ).then((a: { authorName: any; }) => a.authorName));
+61c61
+<     ).then((a) => a.license));
+---
+>     ).then((a: { license: any; }) => a.license));
+98c98
+< function validatePackageName(packageName) {
+---
+> function validatePackageName(packageName: { startsWith: (arg0: string) => any; }) {
+143c143
+<   options,
+---
+>   options: { ruleType: any; forTests: any; debug: any; },
+146c146
+<   ruleName,
+---
+>   ruleName: string,
+303c303
+< function elmJson(authorName, packageName, ruleName, license) {
+---
+> function elmJson(authorName, packageName, ruleName: string, license) {
+323c323
+< function readme(authorName, packageName, ruleName) {
+---
+> function readme(authorName, packageName, ruleName: string) {
+359c359
+< function packageJson(options, packageName) {
+---
+> function packageJson(options: { packageJsonVersion: any; }, packageName) {
+diff --color ./lib/new-rule.js ../node-elm-review-with-ts/lib/new-rule.js
+12c12
+< async function create(options) {
+---
+> async function create(options: { newRuleName: any; ruleType: any; }) {
+41c41
+< function readElmJson(options) {
+---
+> function readElmJson(options: { elmJsonPath: any; }) {
+55c55
+< function validateRuleName(ruleName) {
+---
+> function validateRuleName(ruleName: string) {
+137c137
+< async function addRule(options, elmJson, ruleName, ruleType) {
+---
+> async function addRule(options: { elmJsonPath: any; }, elmJson: { [x: string]: any; name: string; type: string; }, ruleName: string, ruleType) {
+206c206
+< function injectRuleInPreview(dir, elmJson, ruleName) {
+---
+> function injectRuleInPreview(dir, elmJson: { [x: string]: any; name?: string; type?: string; }, ruleName: string) {
+224c224
+< function injectRuleInReadme(dir, elmJson, ruleName, content) {
+---
+> function injectRuleInReadme(dir, elmJson: { [x: string]: any; name?: any; type?: string; version?: any; }, ruleName: string, content: string) {
+234,235c234,235
+< function insertRuleDescription(elmJson, ruleName, lines) {
+<   const rulesSectionIndex = lines.findIndex((line) =>
+---
+> function insertRuleDescription(elmJson: { name: any; version: any; } | { [x: string]: any; name?: any; type?: string; version?: any; }, ruleName, lines: { findIndex: (arg0: (line: any) => boolean) => any; splice: (arg0: any,arg1: number,arg2: string) => void; }) {
+>   const rulesSectionIndex = lines.findIndex((line: string) =>
+257c257
+< function alreadyHasRuleDescription(ruleName, rulesSectionIndex, lines) {
+---
+> function alreadyHasRuleDescription(ruleName, rulesSectionIndex: number, lines: any[]) {
+267c267
+< function findNextSectionIndex(previousSectionIndex, lines) {
+---
+> function findNextSectionIndex(previousSectionIndex: number, lines: { slice: (arg0: any) => { (): any; new(): any; findIndex: { (arg0: (line: any) => boolean): any; new(): any; }; }; length: any; }) {
+270c270
+<     .findIndex((line) => /^#+/.test(line));
+---
+>     .findIndex((line: string) => /^#+/.test(line));
+282,284c282,284
+<   elmJson,
+<   ruleName,
+<   lines
+---
+>   elmJson: { [x: string]: any[]; },
+>   ruleName: string,
+>   lines: { join: (arg0: string) => { (): any; new(): any; includes: { (arg0: string): any; new(): any; }; }; } | string[]
+296,297c296,297
+< function insertImport(configurationPath, ruleName, lines) {
+<   const firstImportIndex = lines.findIndex((line) => line.startsWith('import'));
+---
+> function insertImport(configurationPath, ruleName: string, lines: { [x: string]: { startsWith: (arg0: string) => any; }; findIndex: (arg0: (line: any) => any) => any; length: number; slice: (arg0: any,arg1: any) => any; splice: (arg0: any,arg1: number,arg2: any) => void; } | ({ join: (arg0: string) => { (): any; new (): any; includes: { (arg0: string): any; new (): any; }; }; }) | string[]) {
+>   const firstImportIndex = lines.findIndex((line: { startsWith: (arg0: string) => any; }) => line.startsWith('import'));
+323,324c323,324
+< function insertRuleInConfigList(ruleName, someOtherRule, lines) {
+<   const indexOfOtherRuleExample = lines.findIndex((line) =>
+---
+> function insertRuleInConfigList(ruleName: string, someOtherRule, lines: { [x: string]: any; findIndex: (arg0: (line: any) => any) => any; splice: (arg0: any,arg1: number,arg2: string) => void; } | ({ join: (arg0: string) => { (): any; new (): any; includes: { (arg0: string): any; new (): any; }; }; })) {
+>   const indexOfOtherRuleExample = lines.findIndex((line: { includes: (arg0: string) => any; }) =>
+345c345
+< function newSourceFile(fullPackageName, ruleName, ruleType) {
+---
+> function newSourceFile(fullPackageName: string, ruleName: string, ruleType: string) {
+400c400
+< function moduleRuleTemplate(ruleName) {
+---
+> function moduleRuleTemplate(ruleName: string) {
+428c428
+< function projectRuleTemplate(ruleName) {
+---
+> function projectRuleTemplate(ruleName: string) {
+491c491
+< function newTestFile(ruleName) {
+---
+> function newTestFile(ruleName: string) {
+526c526
+< function ruleDescription(packageName, packageVersion, ruleName) {
+---
+> function ruleDescription(packageName, packageVersion, ruleName: string) {
+diff --color ./lib/optimize-js.js ../node-elm-review-with-ts/lib/optimize-js.js
+6c6
+< async function optimize(options, elmModulePath, isReviewAppApp) {
+---
+> async function optimize(options: { debug: any; localElmReviewSrc: any; }, elmModulePath, isReviewAppApp) {
+diff --color ./lib/options.js ../node-elm-review-with-ts/lib/options.js
+40c40
+< function compute(processArgv) {
+---
+> function compute(processArgv: { slice: (arg0: number) => { (): any; new(): any; includes: { (arg0: string): any; new(): any; }; }; }) {
+47,48c47,48
+<       .filter((flag) => flag.alias)
+<       .reduce((object, flag) => {
+---
+>       .filter((flag: { alias: any; }) => flag.alias)
+>       .reduce((object: { [x: string]: any; }, flag: { name: string | number; alias: any; }) => {
+53,54c53,54
+<       .filter((flag) => flag.boolean)
+<       .map((flag) => flag.name),
+---
+>       .filter((flag: { boolean: any; }) => flag.boolean)
+>       .map((flag: { name: any; }) => flag.name),
+290c290
+< function parseUnsuppress(args) {
+---
+> function parseUnsuppress(args: { [x: string]: any; unsuppress: any; }) {
+298c298
+< function listOfStrings(input) {
+---
+> function listOfStrings(input: { split: (arg0: string) => any; reduce: (arg0: (acc: any,subArray: any) => any[],arg1: any[]) => any; }) {
+313c313
+< function parseTemplate(subcommand, string) {
+---
+> function parseTemplate(subcommand, string: string) {
+327c327
+<   Flags.flags.find((flag) => flag.name === 'template')
+---
+>   Flags.flags.find((flag: { name: string; }) => flag.name === 'template')
+342c342
+< function findElmJsonPath(args, subcommand) {
+---
+> function findElmJsonPath(args: { elmjson: any; help: any; }, subcommand: string) {
+358c358
+<   const allFlagNames = new Set(Flags.flags.map((flag) => flag.name));
+---
+>   const allFlagNames = new Set(Flags.flags.map((flag: { name: any; }) => flag.name));
+360c360
+<   return (flag) => {
+---
+>   return (flag: string) => {
+378c378
+< function unknownFlagMessage(name) {
+---
+> function unknownFlagMessage(name: string) {
+405c405
+< function unknownShortHandFlagCheck(flag) {
+---
+> function unknownShortHandFlagCheck(flag: string) {
+419c419
+<   const aliases = Flags.flags.map((flag) => flag.alias).filter(Boolean);
+---
+>   const aliases = Flags.flags.map((flag: { alias: any; }) => flag.alias).filter(Boolean);
+433c433
+<               .map((a) => chalk.greenBright('-' + a))
+---
+>               .map((a: string) => chalk.greenBright('-' + a))
+444c444
+< function suggestions(flag) {
+---
+> function suggestions(flag: string) {
+446c446
+<     .map((f) => ({
+---
+>     .map((f: { name: any; }) => ({
+450c450
+<     .sort((a, b) => {
+---
+>     .sort((a: { distance: number; }, b: { distance: number; }) => {
+462c462
+<     .map((f) => chalk.greenBright(`    --${f.name}${Flags.buildFlagsArgs(f)}`));
+---
+>     .map((f: { name: any; }) => chalk.greenBright(`    --${f.name}${Flags.buildFlagsArgs(f)}`));
+465c465
+< function checkForMissingArgs(subcommand, args) {
+---
+> function checkForMissingArgs(subcommand, args: { [x: string]: any; }) {
+467,468c467,468
+<     .filter((flag) => flag.boolean === false)
+<     .forEach((flag) => {
+---
+>     .filter((flag: { boolean: boolean; }) => flag.boolean === false)
+>     .forEach((flag: { name: string | number; mayBeUsedSeveralTimes: any; }) => {
+501c501
+< function checkForInvalidArgs(subcommand, args) {
+---
+> function checkForInvalidArgs(subcommand, args: { report: any; }) {
+514c514
+<   Flags.flags.find((flag) => flag.name === 'report')
+---
+>   Flags.flags.find((flag: { name: string; }) => flag.name === 'report')
+521c521
+< function parseGitHubAuth(subcommand, gitHubAuth) {
+---
+> function parseGitHubAuth(subcommand, gitHubAuth: string) {
+535c535
+<   Flags.flags.find((flag) => flag.name === 'github-auth')
+---
+>   Flags.flags.find((flag: { name: string; }) => flag.name === 'github-auth')
+diff --color ./lib/os-helpers.js ../node-elm-review-with-ts/lib/os-helpers.js
+1c1
+< function makePathOsAgnostic(path_) {
+---
+> function makePathOsAgnostic(path_: string) {
+diff --color ./lib/parse-elm.js ../node-elm-review-with-ts/lib/parse-elm.js
+11c11
+< const queue = [];
+---
+> const queue: ({ source: any; elmParserPath: any; callback: (error: any, result: any) => void; })[] = [];
+34c34
+< function prepareWorkers(Worker) {
+---
+> function prepareWorkers(Worker: new (arg0: any) => any) {
+85c85
+< async function runWorker(availableWorker, queueItem) {
+---
+> async function runWorker(availableWorker: { busy: boolean; worker: { removeAllListeners: (arg0: string) => void; once: (arg0: string,arg1: { (result: any): void; (error: any): void; }) => void; postMessage: (arg0: { source: any; elmParserPath: any; }) => void; }; }, queueItem: { source: any; elmParserPath: any; callback: any; }) {
+diff --color ./lib/parse-elm-worker.js ../node-elm-review-with-ts/lib/parse-elm-worker.js
+10c10
+< parentPort.on('message', (queueItem) => {
+---
+> parentPort.on('message', (queueItem: { source: any; elmParserPath: any; }) => {
+diff --color ./lib/path-helpers.js ../node-elm-review-with-ts/lib/path-helpers.js
+10c10
+< function format(path) {
+---
+> function format(path: string) {
+diff --color ./lib/project-dependencies.js ../node-elm-review-with-ts/lib/project-dependencies.js
+7c7
+< async function collect(options, elmJson, elmVersion) {
+---
+> async function collect(options: { report: string; }, elmJson: { [x: string]: any; type: string; dependencies: { direct: any; indirect: any; }; }, elmVersion) {
+diff --color ./lib/project-json-files.js ../node-elm-review-with-ts/lib/project-json-files.js
+25c25
+< function getElmJson(options, elmVersion, name, packageVersion) {
+---
+> function getElmJson(options: { packageJsonVersion: any; }, elmVersion, name, packageVersion) {
+53c53
+< const elmJsonInElmHomePromises = new Map();
+---
+> const elmJsonInElmHomePromises: Map<string, any> = new Map();
+81c81
+< function getDocsJson(options, elmVersion, name, packageVersion) {
+---
+> function getDocsJson(options: { packageJsonVersion: any; }, elmVersion, name, packageVersion) {
+114c114
+<   cacheLocation,
+---
+>   cacheLocation: string | number | { fileCachePath: () => any; } | (() => void),
+117c117
+<   file
+---
+>   file: string
+127c127
+< async function cacheFile(cacheLocation, json) {
+---
+> async function cacheFile(cacheLocation: string | number | { fileCachePath: () => any; } | (() => void), json) {
+142c142
+<   options,
+---
+>   options: { packageJsonVersion: any; },
+146c146
+<   file
+---
+>   file: string
+diff --color ./lib/remote-template.js ../node-elm-review-with-ts/lib/remote-template.js
+20c20
+< function getRelevantCommit(options, template) {
+---
+> function getRelevantCommit(options: { gitHubUser: any; gitHubPassword: any; }, template: { reference: any; }) {
+29c29
+< async function findDefaultBranch(options, template) {
+---
+> async function findDefaultBranch(options: { gitHubUser: any; gitHubPassword: any; }, template: { repoName: any; }) {
+35c35
+<   ).then((body) => body.default_branch);
+---
+>   ).then((body: { default_branch: any; }) => body.default_branch);
+38c38
+< function getLatestCommitForReference(options, template, reference) {
+---
+> function getLatestCommitForReference(options: { gitHubUser: any; gitHubPassword: any; }, template: { repoName: any; }, reference) {
+43c43
+<     (responseBody) => {
+---
+>     (responseBody: { message: string; }) => {
+51c51
+<   ).then((body) => body.sha);
+---
+>   ).then((body: { sha: any; }) => body.sha);
+58c58
+<   template,
+---
+>   template: { repoName: any; pathToFolder: any; },
+88c88
+< async function downloadTemplateElmJson(options, template, commit) {
+---
+> async function downloadTemplateElmJson(options, template: { repoName: any; pathToFolder: any; }, commit) {
+95c95
+<     .catch((error) => {
+---
+>     .catch((error: { name: string; response: { statusCode: number; }; }) => {
+114c114
+<     .then((response) => {
+---
+>     .then((response: { body: string; }) => {
+171,172c171,172
+<   options,
+<   template,
+---
+>   options: { subcommand: string; },
+>   template: { repoName: any; pathToFolder?: ""; },
+175c175
+<   reviewElmJson
+---
+>   reviewElmJson: { [x: string]: any[]; }
+185,186c185,186
+<   options,
+<   template,
+---
+>   options: { subcommand: string; },
+>   template: { repoName: any; pathToFolder?: ""; },
+189c189
+<   directory
+---
+>   directory: string
+203c203
+<     fileListing.map((fileOrDir) => {
+---
+>     fileListing.map((fileOrDir: { type: string; name: { endsWith: (arg0: string) => any; }; download_url: any; }) => {
+229c229
+<     https.get(url, function (response) {
+---
+>     https.get(url, function (response: { pipe: (arg0: any) => void; }) {
+238c238
+< function makeGitHubApiRequest(options, url, handleNotFound) {
+---
+> function makeGitHubApiRequest(options: { gitHubUser: any; gitHubPassword: any; }, url: string, handleNotFound: { (): string[]; (responseBody: any): string[]; (arg0: any): any; }) {
+247,248c247,248
+<     .then((response) => response.body)
+<     .catch((error) => {
+---
+>     .then((response: { body: any; }) => response.body)
+>     .catch((error: { response: { statusCode: any; body: any; }; name: string; }) => {
+diff --color ./lib/report.js ../node-elm-review-with-ts/lib/report.js
+8c8
+< async function report(options, result) {
+---
+> async function report(options: { report: string; }, result: { errors: any; extracts: any; }) {
+25c25
+< function print(options, json) {
+---
+> function print(options: { reportOnOneLine: any; debug: any; forTests: any; } | { report: string; }, json: { type: any; errors: any; extracts?: any; }) {
+31c31
+<             .map((errorForFile) => {
+---
+>             .map((errorForFile: { errors: any[]; path: any; }) => {
+71c71
+< function safeConsoleLog(message) {
+---
+> function safeConsoleLog(message: string) {
+diff --color ./lib/result-cache.js ../node-elm-review-with-ts/lib/result-cache.js
+13,14c13,14
+< const resultCache = new Map();
+< const promisesToResolve = new Map();
+---
+> const resultCache: Map<any, any> = new Map();
+> const promisesToResolve: Map<any, (value: unknown) => void> = new Map();
+16c16
+< async function load(options, appHash) {
+---
+> async function load(options: { debug: any; directoriesToAnalyze: string | any[]; ignoredDirs: string | any[]; ignoredFiles: string | any[]; resultCacheFolder: any; resultCachePath: (arg0: any) => any; rulesFilter: { includes: (arg0: any) => any; }; }, appHash) {
+37c37
+<       worker.on('message', (cacheKey) => {
+---
+>       worker.on('message', (cacheKey: string) => {
+54c54
+<   global.loadResultFromCache = (ruleName, ruleId) => {
+---
+>   global.loadResultFromCache = (ruleName: string, ruleId: string) => {
+58c58
+<   global.saveResultToCache = (ruleName, ruleId, cacheEntry) => {
+---
+>   global.saveResultToCache = (ruleName: string, ruleId: string, cacheEntry) => {
+84c84
+<     files = files.filter((fileCachePath) =>
+---
+>     files = files.filter((fileCachePath: string | string[]) =>
+92c92
+<     files.map((name) =>
+---
+>     files.map((name: string | any[]) =>
+107c107
+< function key(ruleName, ruleId) {
+---
+> function key(ruleName: string, ruleId: string) {
+111c111
+< async function saveToFile(options, data) {
+---
+> async function saveToFile(options: { debug: any; } | (() => void), data: { filePath: any; cacheEntry: any; cacheKey: any; }) {
+diff --color ./lib/result-cache-json.js ../node-elm-review-with-ts/lib/result-cache-json.js
+6c6
+< function replacer(key, value) {
+---
+> function replacer(key, value: number) {
+54,55c54,55
+< function prudentListToArray(xs) {
+<   const out = [];
+---
+> function prudentListToArray(xs: { b: any; a: any; c: any; $: number; }) {
+>   const out: any[] = [];
+71c71
+< function reviver(_, value) {
+---
+> function reviver(_, value: { $: string; a: any; startsWith: (arg0: string) => any; slice: (arg0: number) => any; }) {
+98c98
+< function _ListFromArrayPROD(array) {
+---
+> function _ListFromArrayPROD(array: string | any[]) {
+diff --color ./lib/review-dependencies.js ../node-elm-review-with-ts/lib/review-dependencies.js
+32c32
+<   elmJsonForReviewDependencies
+---
+>   elmJsonForReviewDependencies: { find: (arg0: (elmJson: any) => boolean) => any; }
+37c37
+<         (elmJson) => elmJson.name === depName
+---
+>         (elmJson: { name: any; }) => elmJson.name === depName
+50c50
+<       exposedModules.forEach((moduleName) => {
+---
+>       exposedModules.forEach((moduleName: string | number) => {
+59c59
+< function linkToModule(dependencyName, packageVersion, moduleName) {
+---
+> function linkToModule(dependencyName, packageVersion, moduleName: string) {
+diff --color ./lib/runner.js ../node-elm-review-with-ts/lib/runner.js
+41,43c41,43
+<   options,
+<   app,
+<   elmJsonData,
+---
+>   options: { debug?: any; enableExtract?: any; resultCachePath?: any; fixLimit?: any; unsuppress?: any; showBenchmark?: any; detailsMode?: any; report?: any; rulesFilter?: any; ignoreProblematicDependencies?: any; directoriesToAnalyze: any; ignoredDirs?: any; ignoredFiles?: any; watch?: any; elmJsonPath?: any; elmParserPath?: (arg0: any) => any; },
+>   app: { ports: { collectElmJson: { send: (arg0: any) => void; }; collectReadme: { send: (arg0: any) => void; }; collectDependencies: { send: (arg0: any) => void; }; collectSuppressedErrors: { send: (arg0: any) => void; }; collectLinks: { send: (arg0: any) => void; }; acknowledgeFileReceipt: { subscribe: (arg0: (file: any) => Promise<void>) => void; unsubscribe: (arg0: (file: any) => Promise<void>) => void; }; collectFile: { send: (arg0: any) => void; }; }; },
+>   elmJsonData: { path: string; raw: any; project: any; },
+45,47c45,47
+<   elmFiles,
+<   dependencies,
+<   suppressedErrors,
+---
+>   elmFiles: any[],
+>   dependencies: string | any[],
+>   suppressedErrors: string | any[],
+50,51c50,51
+<   const filesPendingReceiptAcknowledgement = new Set(
+<     elmFiles.map((file) => file.path)
+---
+>   const filesPendingReceiptAcknowledgement: Set<any> = new Set(
+>     elmFiles.map((file: { path: any; }) => file.path)
+81c81
+<     async function acknowledgeFileReceipt(file) {
+---
+>     async function acknowledgeFileReceipt(file: { path: any; cacheRequest: { source: any; ast: any; }; }) {
+100c100
+< async function initializeApp(options, elmModulePath, reviewElmJson, appHash) {
+---
+> async function initializeApp(options: { debug?: any; enableExtract?: any; resultCachePath?: any; fixLimit?: any; unsuppress?: any; showBenchmark?: any; detailsMode?: any; report?: any; rulesFilter?: any; ignoreProblematicDependencies?: any; directoriesToAnalyze: any; ignoredDirs?: any; ignoredFiles?: any; watch?: any; elmJsonPath?: any; elmParserPath?: (arg0: any) => any; }, elmModulePath, reviewElmJson: { [x: string]: any; dependencies: { direct: { [x: string]: any; }; indirect: { [x: string]: any; }; }; }, appHash) {
+132c132
+<     AppState.subscribe(app.ports.reviewReport, (result) => {
+---
+>     AppState.subscribe(app.ports.reviewReport, (result: { suppressedErrors: any; }) => {
+197c197
+< function fixMode(options) {
+---
+> function fixMode(options: { fix: any; fixAll: any; }) {
+diff --color ./lib/run-review.js ../node-elm-review-with-ts/lib/run-review.js
+15c15
+< async function runReview(options, app) {
+---
+> async function runReview(options: { watch: any; subcommand: string; report: string; suppressedErrorsFolder: () => any; }, app: { ports: { suppressionsResponse: any; startGeneratingSuppressions: any; reviewReport: any; startReview: any; }; }) {
+61c61
+< function startReview(options, app) {
+---
+> function startReview(options: { report: string; }, app: { ports: { startReview: { send: (arg0: any) => any; }; }; }) {
+diff --color ./lib/state.js ../node-elm-review-with-ts/lib/state.js
+68c68
+< function update(message) {
+---
+> function update(message: { [x: string]: any;[x: number]: string; unsubscribeFunction?: any; exitCode?: any; files?: any; readme?: any; fileId?: any; changedFiles?: any; }) {
+210,211c210,211
+< function updateFilesInCache(files) {
+<   files.forEach((file) => {
+---
+> function updateFilesInCache(files: any[]) {
+>   files.forEach((file: { path: { endsWith: (arg0: string) => any; }; source: any; ast: any; lastUpdatedTime: any; }) => {
+245c245
+< function subscribe(port, subscriptionFunction) {
+---
+> function subscribe(port: { subscribe: (arg0: any) => void; unsubscribe: (arg0: any) => any; }, subscriptionFunction: undefined) {
+268c268
+< function readmeChanged(readme) {
+---
+> function readmeChanged(readme: { content: any; }) {
+diff --color ./lib/styled-message.js ../node-elm-review-with-ts/lib/styled-message.js
+8c8
+< function clearAndLog(options, message, clearFixLine) {
+---
+> function clearAndLog(options: { watch: any; debug: any; report: string; }, message, clearFixLine) {
+19c19
+< function log(options, message) {
+---
+> function log(options: { color: boolean; report: any; } | { watch: any; debug: any; report: string; }, message) {
+26c26
+< function styleMessage(colorEnabled, message) {
+---
+> function styleMessage(colorEnabled: boolean, message: any[]) {
+28c28
+<     .map((part) => {
+---
+>     .map((part: { string: any; href: any; }) => {
+44c44
+< function withStyling(part) {
+---
+> function withStyling(part: { color: any; }) {
+52c52
+< function wrapLinesForTerminal(message) {
+---
+> function wrapLinesForTerminal(message: string) {
+55c55
+<     .map((paragraph) => {
+---
+>     .map((paragraph: string) => {
+diff --color ./lib/suppressed-errors.js ../node-elm-review-with-ts/lib/suppressed-errors.js
+20c20
+< async function write(options, items) {
+---
+> async function write(options: { subcommand: string; template: any; rulesFilter: any; suppressedErrorsFolder: () => any; }, items: { rule: any; suppressions: any; }[]) {
+32c32
+<   await FS.mkdirp(suppressedErrorsFolder).catch((error) => {
+---
+>   await FS.mkdirp(suppressedErrorsFolder).catch((error: { code: string; }) => {
+59c59
+< function formatJson(suppressions) {
+---
+> function formatJson(suppressions: any[]) {
+76c76
+< function suppressionSorting(a, b) {
+---
+> function suppressionSorting(a: { count: number; filePath: string; }, b: { count: number; filePath: any; }) {
+85c85
+< function formatCountSuppression(suppression) {
+---
+> function formatCountSuppression(suppression: { count: any; filePath: any; }) {
+91c91
+< async function read(options) {
+---
+> async function read(options: { subcommand: string; suppressedErrorsFolder: () => any; rulesFilter: { includes: (arg0: any) => any; }; }) {
+135c135
+< function checkForUncommittedSuppressions(options) {
+---
+> function checkForUncommittedSuppressions(options: { suppressedErrorsFolder: () => any; }) {
+diff --color ./lib/template-dependencies.js ../node-elm-review-with-ts/lib/template-dependencies.js
+21c21
+< async function get(options, elmJsonDependencies, pathToElmJson) {
+---
+> async function get(options: { localElmReviewSrc: any; dependenciesCachePath: () => any; }, elmJsonDependencies, pathToElmJson) {
+31c31
+< function computeDependencies(options, pathToElmJson) {
+---
+> function computeDependencies(options: { localElmReviewSrc: any; }, pathToElmJson) {
+55c55
+<     .then((dependencies) => {
+---
+>     .then((dependencies: { direct: { [x: string]: any; }; indirect: { [x: string]: any; }; }) => {
+65c65
+< function formatElmJsonError(error, options) {
+---
+> function formatElmJsonError(error: { stderr: { toString: () => string; }; message: any; }, options: { debug: any; }) {
+90c90
+< async function addElmSyntax(options, pathToElmJson, elmSyntaxVersion) {
+---
+> async function addElmSyntax(options: { report?: string; debug: any; }, pathToElmJson, elmSyntaxVersion) {
+114c114
+< async function add(options, pathToElmJson) {
+---
+> async function add(options: { report?: string; debug: any; }, pathToElmJson) {
+161c161
+< async function update(options, pathToElmJson) {
+---
+> async function update(options: { [x: number]: string; unsubscribeFunction?: () => any; exitCode?: any; files?: any; readme?: any; fileId?: any; changedFiles?: any; subcommand?: any; } | { [type]: string; readme: { content: any; }; } | { [type]: string; } | { [type]: string; changedFiles: any; }, pathToElmJson: undefined) {
+188c188
+< function spawnElmJsonAsync(options, args, onError) {
+---
+> function spawnElmJsonAsync(options: { report: string; debug: any; }, args: any[], onError: { (error: any): never; (error: any): never; (error: any): never; (error: any): never; (error: any): never; (arg0: any): any; }) {
+193c193
+<       onProgress: (percentage) => {
+---
+>       onProgress: (percentage: number) => {
+206c206
+<     }).catch((error) => {
+---
+>     }).catch((error: { message: any; }) => {
+232c232
+<           child.stdout.on('data', (chunk) => {
+---
+>           child.stdout.on('data', (chunk: { toString: () => string; }) => {
+236c236
+<           child.stderr.on('data', (chunk) => {
+---
+>           child.stderr.on('data', (chunk: { toString: () => string; }) => {
+240c240
+<           child.on('close', (code, signal) => {
+---
+>           child.on('close', (code: number, signal) => {
+256c256
+<     .catch((error) => {
+---
+>     .catch((error: { message: { startsWith: (arg0: string) => any; }; }) => {
+281c281
+< function exitReason(code, signal) {
+---
+> function exitReason(code: number, signal) {
+Common subdirectories: ./lib/types and ../node-elm-review-with-ts/lib/types
+diff --color ./lib/watch.js ../node-elm-review-with-ts/lib/watch.js
+14c14
+<   options,
+---
+>   options: { elmJsonPath: any; report: string; debug: any; readmePath: any; suppressedErrorsFolder: () => any; },
+23c23
+<   rebuildAndRewatch,
+---
+>   rebuildAndRewatch: () => void,
+260,262c260,262
+<   options,
+<   {reviewElmJson, reviewElmJsonPath},
+<   rebuildAndRewatch
+---
+>   options: { watchConfig: any; userSrc: () => any; report: string; debug: any; },
+>   {reviewElmJson, reviewElmJsonPath}: { reviewElmJson: any; reviewElmJsonPath: any; },
+>   rebuildAndRewatch: { (): Promise<void>; (): void; }
