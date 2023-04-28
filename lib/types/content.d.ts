@@ -19,7 +19,11 @@ export type Readme = {
   content: string
 }
 
-export type ElmJson = {};
+export type ElmJsonData = {
+  path: Path,
+  raw: string,
+  project: unknown
+};
 
 export type Dependencies = Dependency[];
 
