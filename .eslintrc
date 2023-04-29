@@ -1,6 +1,9 @@
 {
-  "extends": "xo",
-  "plugins": ["prettier", "unicorn"],
+  "extends": [
+    "xo",
+    "prettier"
+  ],
+  "plugins": ["unicorn"],
   "ignorePatterns": [
     "**/node_modules/",
     "**/elm-stuff/",
