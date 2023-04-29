@@ -1,12 +1,9 @@
 {
-  "extends": [
-    "xo",
-    "prettier"
-  ],
-  "plugins": [
-    "node",
-    "unicorn"
-  ],
+  "extends": ["xo", "prettier"],
+  "plugins": ["node", "unicorn"],
+  "env": {
+    "node": true
+  },
   "ignorePatterns": [
     "**/node_modules/",
     "**/elm-stuff/",
