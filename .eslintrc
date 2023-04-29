@@ -1,6 +1,13 @@
 {
   "extends": "xo",
   "plugins": ["prettier", "unicorn"],
+  "ignorePatterns": [
+    "**/node_modules/",
+    "**/elm-stuff/",
+    "test/run-snapshots",
+    "test/snapshots",
+    "vendor/node-elm-compiler.js"
+  ],
   "rules": {
     "complexity": "off",
     "import/extensions": "off",

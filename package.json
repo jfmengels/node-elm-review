@@ -8,7 +8,9 @@
   "scripts": {
     "flow": "flow check",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
-    "test": "npm run elm-tests && tsc && xo && npm run flow && npm run elm-format && npm run -s test-run",
+    "test": "npm run elm-tests && tsc && npm run eslint && prettier . --check && npm run flow && npm run elm-format && npm run -s test-run",
+    "eslint": "eslint .",
+    "eslint-fix": "eslint . --fix",
     "tsc-watch": "tsc --watch",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-run": "npx jest && (cd test/ && ./run.sh)",
