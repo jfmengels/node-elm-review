@@ -1,35 +1,35 @@
-import type { Path } from './path';
+import type {Path} from './path';
 
 export type File = {
-  path: Path,
-  source: Source,
-}
+  path: Path;
+  source: Source;
+};
 
 export type ElmFile = {
-  path: Path,
-  source: Source,
-  ast: Ast | null,
-  lastUpdatedTime?: Date | null
-}
+  path: Path;
+  source: Source;
+  ast: Ast | null;
+  lastUpdatedTime?: Date | null;
+};
 
 export type Ast = any;
 
 export type Readme = {
-  path: Path,
-  content: string
-}
+  path: Path;
+  content: string;
+};
 
 export type ElmJsonData = {
-  path: Path,
-  raw: string,
-  project: unknown
+  path: Path;
+  raw: string;
+  project: unknown;
 };
 
 export type Dependencies = Dependency[];
 
 export type Dependency = {};
 
-export type LinksToRuleDocs = { [string]: string };
+export type LinksToRuleDocs = {[string]: string};
 
 export type Source = string;
 

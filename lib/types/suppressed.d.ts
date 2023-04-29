@@ -1,11 +1,11 @@
-import type { Path } from './path';
+import type {Path} from './path';
 
 export type SuppressedErrorsFile = {
-  rule: string,
-  suppressions: Suppression[]
-}
+  rule: string;
+  suppressions: Suppression[];
+};
 
 export type Suppression = {
-  count: number,
-  filePath: Path
-}
+  count: number;
+  filePath: Path;
+};

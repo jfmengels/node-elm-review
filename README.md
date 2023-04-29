@@ -68,7 +68,6 @@ You can use the same mechanics to try out a single rule before adding the depend
 npx elm-review --template jfmengels/elm-review-unused/example --rules NoUnused.Variables
 ```
 
-
 ## Configuration
 
 `elm-review` is configured through a `review/` folder in your project. It is a self-contained Elm project where you can
@@ -92,7 +91,6 @@ config =
     , Another.Rule.rule { ruleOptions = [] }
     ]
 ```
-
 
 ## Get started
 
@@ -128,7 +126,6 @@ elm install authorName/packageName
 
 Before you start adding rules or an unfamiliar existing configuration, I suggest reading the rest of this document, especially the section on [when to enable a rule](#when-to-write-or-enable-a-rule).
 
-
 ## Run a review
 
 Once you're done configuring, run `elm-review` to analyze your project.
@@ -143,12 +140,12 @@ elm-review --fix # Analyze your project and potentially proposes automatic fixes
 elm-review --help # for more information and the available flags
 ```
 
-
 ## Which parts of the project will be analyzed?
 
 `elm-review` targets a project, and therefore requires an `elm.json`. By default, it will review all the Elm files of the project and of the tests.
-  - For packages: all the Elm files in `src/` and `tests/`
-  - For applications: all the Elm files in `tests/` and in the project's `elm.json`'s `source-directories`
+
+- For packages: all the Elm files in `src/` and `tests/`
+- For applications: all the Elm files in `tests/` and in the project's `elm.json`'s `source-directories`
 
 If you wish to, you can list the directories you wish to have reviewed, so as to review additional directories or to remove ignore some of directories, by adding them as arguments to the command line.
 
@@ -167,33 +164,29 @@ The recommended way to use `elm-review` is without arguments. It is best not to 
 
 If you add files that are not part of the project, you may run into different problems, such as conflicting module names (two `Main.elm` files), relying on different dependencies, etc. It is best to run `elm-review` once for each project, and depending on your needs, with different configurations (using the `--config` flag).
 
-
 ## Exit status
 
 If any rule from your configuration reports an error in one of the analyzed files, the process will exit with status 1. Otherwise, it will exit with status 0.
 
 If the process fails for any other reason (crash, misconfiguration, ...), it will exit with status 1.
 
-
 ## Why is there a need for a review/ directory?
 
 When the CLI looks at your configuration, it is in practice compiling an application using the configuration in your project, then running that application to analyze your project.
 
 The CLI need at least two pieces of information from your configuration:
-  - An `elm.json` file to know the external packages your configuration depends upon (like the ones that contain the rules you enabled), and the Elm version of your project
-  - A `ReviewConfig.elm` file that sets the rules to enforce for your project
+
+- An `elm.json` file to know the external packages your configuration depends upon (like the ones that contain the rules you enabled), and the Elm version of your project
+- A `ReviewConfig.elm` file that sets the rules to enforce for your project
 
 Your custom rules, unless you want to share them in the Elm package registry, should be in the `review/` directory too, so as not to pollute your project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
-
 
 [`elm-review`]: https://github.com/jfmengels/elm-review
 [`elm-format`]: https://github.com/avh4/elm-format
 
-
 ## Tooling integration
 
 If you are interested in using `elm-review` inside a different environment than a terminal (like editors, CI, other Elm tools, ...), check out the documentation for [tooling integration](./documentation/tooling-integration.md).
-
 
 ## Thanks
 

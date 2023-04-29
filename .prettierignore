@@ -4,5 +4,8 @@
 **/elm-stuff
 **/node_modules
 **/elm.json
-**/fixed-elm.json
+**/elm-tooling.json
 **/suppressed
+**/suppressed
+test/**/*.json
+test/temporary/
