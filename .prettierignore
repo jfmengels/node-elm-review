@@ -6,6 +6,5 @@
 **/elm.json
 **/elm-tooling.json
 **/suppressed
-**/suppressed
 test/**/*.json
 test/temporary/

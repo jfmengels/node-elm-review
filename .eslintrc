@@ -9,6 +9,7 @@
     "**/elm-stuff/",
     "test/run-snapshots",
     "test/snapshots",
+    "test/temporary",
     "vendor/node-elm-compiler.js"
   ],
   "rules": {
