@@ -15,6 +15,7 @@
     "comma-dangle": "off",
     "curly": "off",
     "quotes": "off",
+    "arrow-body-style": "off",
     "prettier/prettier": "off",
     "object-shorthand": "off",
     "operator-linebreak": "off",
