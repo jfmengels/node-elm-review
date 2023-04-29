@@ -14,6 +14,7 @@
     "indent": "off",
     "comma-dangle": "off",
     "curly": "off",
+    "quotes": "off",
     "prettier/prettier": "off",
     "object-shorthand": "off",
     "operator-linebreak": "off",
