@@ -64,10 +64,13 @@
     ],
     "rules": {
       "complexity": "off",
+      "import/extensions": "off",
       "max-params": "off",
       "promise/prefer-await-to-then": "off",
       "unicorn/no-fn-reference-in-iterator": "off",
-      "unicorn/no-reduce": "off"
+      "unicorn/no-reduce": "off",
+      "unicorn/prefer-module": "off",
+      "unicorn/prefer-node-protocol": "off"
     }
   },
   "dependencies": {
