@@ -3,7 +3,10 @@
     "xo",
     "prettier"
   ],
-  "plugins": ["unicorn"],
+  "plugins": [
+    "node",
+    "unicorn"
+  ],
   "ignorePatterns": [
     "**/node_modules/",
     "**/elm-stuff/",
