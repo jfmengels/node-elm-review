@@ -2,14 +2,14 @@
 
 ## [2.10.1] - 2023-04-19
 
-Improved error message when the version of the `jfmengels/elm-review` Elm package is not supported. 
+Improved error message when the version of the `jfmengels/elm-review` Elm package is not supported.
 
 ## [2.10.0] - 2023-04-16
 
 Now requires `jfmengels/elm-review` v2.13.0.
 
 - Fixes are now no longer applied in the CLI, but are entirely handled by the `jfmengels/elm-review` package.
-This should improve some incorrect behavior where fixes were not applied as expected.
+  This should improve some incorrect behavior where fixes were not applied as expected.
 - Re-organization of how fixes to `elm.json` are handled in autofix mode.
 
 ## [2.9.2] - 2023-03-21
@@ -18,8 +18,8 @@ This should improve some incorrect behavior where fixes were not applied as expe
 you will need that. This change also applies to the rule created using `elm-review new-package`.
 
 Bug fixes:
-- Fix watch issue on Windows by [@bdukes](https://github.com/bdukes) [#107]
 
+- Fix watch issue on Windows by [@bdukes](https://github.com/bdukes) [#107]
 
 ## [2.9.1] - 2022-12-20
 
@@ -31,7 +31,7 @@ Now requires `jfmengels/elm-review` v2.11.0.
 
 - Adds a file-system cache for the linting results, which improves performance by quite a bit.
 - Improve the error message when indicated that the package version is not supported
-- Fix a problem where in watch and fix mode, the CLI sometimes remained stuck. 
+- Fix a problem where in watch and fix mode, the CLI sometimes remained stuck.
 
 ## [2.8.4] - 2022-12-02
 
@@ -62,13 +62,14 @@ This release is partially announced by [this announcement blog post](https://jfm
 - Introduce `--extract` to extract data from the project (needs to be run with `--report=json`)
 - Include the information of how long a rule ran for when running with `--benchmark-info`
 - More tests folders are now included. Before, `elm-review` looked at the source-directories plus the `tests/` folder in the root of the Elm project.
-Instead, `elm-review` will now look for a `tests/` folder next to every source-directory. This should accommodate projects with multiple Elm subprojects.
+  Instead, `elm-review` will now look for a `tests/` folder next to every source-directory. This should accommodate projects with multiple Elm subprojects.
 
 ## [2.7.6] - 2022-10-12
 
 Updated the packages created by `elm-review new-package` to
+
 - use `elm-explorations/test` v2
-- include [`NoConfusingPrefixOperator`](https://package.elm-lang.org/packages/jfmengels/elm-review-common/latest/NoConfusingPrefixOperator) in the default `ReviewConfig`. 
+- include [`NoConfusingPrefixOperator`](https://package.elm-lang.org/packages/jfmengels/elm-review-common/latest/NoConfusingPrefixOperator) in the default `ReviewConfig`.
 
 ## [2.7.5] - 2022-09-10
 
@@ -91,11 +92,9 @@ Updated the packages created by `elm-review new-package` to
 - Added colors to the output of `elm-review suppress`
 - Fixed issue where fix proposals were unnecessarily indented
 
-
 ## [2.7.2] - 2022-04-26
 
 - Added mentions of `elm-review` starter configurations
-
 
 ## Missing changelog
 
@@ -115,9 +114,7 @@ Help would be appreciated to fill the blanks!
 [2.7.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.4
 [2.7.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.3
 [2.7.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.7.2
-
 [#107]: https://github.com/jfmengels/node-elm-review/pull/107
 [#80]: https://github.com/jfmengels/node-elm-review/pull/80
 [#79]: https://github.com/jfmengels/node-elm-review/issue/79
-
 [9bdc37b98c5e29f00e9485cf78bce0a3ff715761]: https://github.com/jfmengels/node-elm-review/commit/9bdc37b98c5e29f00e9485cf78bce0a3ff715761

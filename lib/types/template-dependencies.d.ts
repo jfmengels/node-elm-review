@@ -1,1 +1,1 @@
-export type TemplateDependenciesError = Err & { stderr : string };
+export type TemplateDependenciesError = Err & {stderr: string};
