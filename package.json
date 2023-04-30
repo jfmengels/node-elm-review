@@ -92,7 +92,6 @@
     "prompts": "^2.2.1",
     "rimraf": "^5.0.0",
     "strip-ansi": "^6.0.0",
-    "temp": "^0.9.1",
     "terminal-link": "^2.1.1",
     "which": "^2.0.2",
     "wrap-ansi": "^6.2.0"
