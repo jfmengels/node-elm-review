@@ -50,7 +50,7 @@ export type Options = {
   dependenciesCachePath: () => Path;
   elmJsonPath: Path;
   elmJsonPathWasSpecified: boolean;
-  readmePath: () => Path;
+  readmePath: Path;
   projectToReview: () => Path;
   directoriesToAnalyze: Path[];
   fileCachePath: () => Path;
