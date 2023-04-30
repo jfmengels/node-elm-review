@@ -41,6 +41,7 @@ export type Options = {
   initPath: () => Path;
   suppressedErrorsFolder: () => Path;
   buildFolder: () => Path;
+  buildFolderForParserApp: () => Path;
   elmModulePath: (string) => Path;
   elmParserPath: (string) => Path;
   generatedCodePackageJson: () => Path;
