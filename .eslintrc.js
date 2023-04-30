@@ -27,6 +27,7 @@ module.exports = {
     'operator-linebreak': 'off',
     'max-params': 'off',
     'arrow-parens': 'off',
+    'no-warning-comments': 'off',
     'promise/prefer-await-to-then': 'off',
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-reduce': 'off',
