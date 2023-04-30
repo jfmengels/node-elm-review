@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @typedef { import("./types/options").Options } Options
+ */
+
 var spawn = require('cross-spawn');
 var elmBinaryName = 'elm';
 
@@ -111,12 +115,23 @@ function compile(sources, options) {
   }
 }
 
+/**
+ * Flattens a nested array into a single-level array.
+ *
+ * @template T
+ * @param {Array<Array<T>>} array - The nested array to flatten.
+ * @returns {Array<T>} The flattened array.
+ */
 function flatten(array) {
   return array.reduce((res, element) => res.concat(element), []);
 }
 
-// Converts an object of key/value pairs to an array of arguments suitable
-// to be passed to child_process.spawn for elm-make.
+/**
+ * Converts an object of key/value pairs to an array of arguments suitable
+ * to be passed to child_process.spawn for elm-make.
+ * @param {Options} options
+ * @returns {string[]}
+ */
 function compilerArgsFromOptions(options) {
   return flatten(
     Object.entries(options).map(function ([opt, value]) {
