@@ -7,18 +7,23 @@ export type Section =
   | 'init'
   | 'new-rule'
   | 'new-package'
-  | 'hidden'
   | 'suppress-subcommand';
 
 export type Flag = {
   name: string;
   alias?: string;
-  color?: Chalk;
-  sections: Section[];
   description: string[];
   initDescription?: string[];
   newPackageDescription?: string[];
-} & BooleanFlag;
+} & BooleanFlag &
+  DisplayableFlag;
+
+export type DisplayableFlag =
+  | {sections?: null}
+  | {
+      color: Chalk;
+      sections: Section[];
+    };
 
 export type BooleanFlag =
   | {
