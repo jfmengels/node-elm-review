@@ -1,6 +1,8 @@
 module.exports = {
-  extends: ['xo', 'prettier'],
-  plugins: ['node', 'unicorn'],
+  root: true,
+  extends: ['xo', 'prettier', 'plugin:@typescript-eslint/recommended'],
+  plugins: ['node', 'unicorn', '@typescript-eslint'],
+  parser: '@typescript-eslint/parser',
   env: {
     node: true
   },
@@ -29,7 +31,8 @@ module.exports = {
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-reduce': 'off',
     'unicorn/prefer-module': 'off',
-    'unicorn/prefer-node-protocol': 'off'
+    'unicorn/prefer-node-protocol': 'off',
+    '@typescript-eslint/no-var-requires': 'off'
   },
   globals: {
     test: 'readonly',
