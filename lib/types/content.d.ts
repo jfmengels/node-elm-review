@@ -27,7 +27,7 @@ export type ElmJsonData = {
 
 export type Dependencies = Dependency[];
 
-export type Dependency = {};
+export type Dependency = unknown;
 
 export type LinksToRuleDocs = {[string]: string};
 
