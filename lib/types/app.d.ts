@@ -34,9 +34,9 @@ export type FileReceipt = {
 };
 
 export type AutofixRequest = {
-  confirmationMessage: any;
+  confirmationMessage: unknown;
   clearFixLine: boolean;
-  changedFiles: any;
+  changedFiles: unknown;
   count: number;
 };
 
