@@ -9,30 +9,32 @@ export type Section =
   | 'new-package'
   | 'suppress-subcommand';
 
-export type Flag = {
+export type Flag = BaseFlag & SingleOrMulti & Display;
+
+export type BaseFlag = {
   name: string;
   alias?: string;
+};
+
+type Display = {sections: null} | DisplayableFlag;
+
+export type DisplayableFlag = {
+  sections: Section[];
+  color: Chalk;
   description: string[];
   initDescription?: string[];
   newPackageDescription?: string[];
-} & BooleanFlag &
-  DisplayableFlag;
+};
 
-export type DisplayableFlag =
-  | {sections?: null}
-  | {
-      color: Chalk;
-      sections: Section[];
-    };
+export type SingleOrMulti = Single | Multi;
 
-export type BooleanFlag =
-  | {
-      boolean: true;
-      mayBeUsedSeveralTimes?: false;
-    }
-  | {
-      boolean: false;
-      argName: string;
-      mayBeUsedSeveralTimes: boolean;
-      usesEquals: boolean;
-    };
+export type Single = {
+  boolean: true;
+};
+
+export type Multi = {
+  boolean: false;
+  argName: string;
+  mayBeUsedSeveralTimes: boolean;
+  usesEquals: boolean;
+};
