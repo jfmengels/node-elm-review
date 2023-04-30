@@ -19,7 +19,9 @@ export type Ports = {
   collectReadme: SendPort<Readme>;
   collectDependencies: SendPort<Dependencies>;
   collectFile: SendPort<ElmFile>;
+  removeFile: SendPort<Path>;
   collectSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
+  updateSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
   collectLinks: SendPort<LinksToRuleDocs>;
   userConfirmedFix: SendPort<FixConfirmation>;
 
