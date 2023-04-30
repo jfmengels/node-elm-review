@@ -1,4 +1,3 @@
-import type {Options} from './types/options';
 import type {Path} from './types/path';
 import type {FilesProposedByCurrentFix} from './types/state';
 import type {

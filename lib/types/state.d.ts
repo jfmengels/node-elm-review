@@ -1,4 +1,4 @@
-import type {ElmFile, Readme, Source, Ast} from './content';
+import type {ElmFile, Readme, Source} from './content';
 import type {Path} from './path';
 
 export type Model = {
