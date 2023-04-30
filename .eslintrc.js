@@ -32,7 +32,8 @@ module.exports = {
     'unicorn/no-reduce': 'off',
     'unicorn/prefer-module': 'off',
     'unicorn/prefer-node-protocol': 'off',
-    '@typescript-eslint/no-var-requires': 'off'
+    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-empty-function': 'off'
   },
   globals: {
     test: 'readonly',
