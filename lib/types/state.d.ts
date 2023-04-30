@@ -1,13 +1,14 @@
 import type {ElmFile, Readme, Source} from './content';
 import type {Path} from './path';
+import type from './state-type.js';
 
 export type Model = {
   elmFilesCacheForWatch: Map<Path, ElmFile>;
   reviewState: ReviewState;
   readme: Readme | null;
-  filesBeingWrittenToCache: Set;
+  filesBeingWrittenToCache: Set<FileId>;
   exitRequest: ExitRequest;
-  appUnsubscribeFunctions: AppUnsubscribeFunctions;
+  appUnsubscribeFunctions: Array<AppUnsubscribeFunction>;
   filesProposedByCurrentFix: FilesProposedByCurrentFix;
 };
 
@@ -21,8 +22,23 @@ export type ExitRequest = {
   exitCode: 1;
 };
 
-export type AppUnsubscribeFunctions = Array<function>;
+export type AppUnsubscribeFunction = function;
 
 export type FilesProposedByCurrentFix = Array<{path: Path; source: Source}>;
 
-export type Msg = any;
+export type FileId = string;
+
+export type Msg =
+  | {[type]: 'initializedApp'}
+  | {[type]: 'subscribe'; unsubscribeFunction: AppUnsubscribeFunction}
+  | {[type]: 'exitRequested'; exitCode: number}
+  | {[type]: 'writingToFileSystemCacheStarted'; fileId: FileId}
+  | {[type]: 'writingToFileSystemCacheFinished'; fileId: FileId}
+  | {[type]: 'filesWereUpdated'; files: ElmFile[]}
+  | {[type]: 'readmeChanged'; readme: Readme | null}
+  | {[type]: 'buildRestarted'}
+  | {[type]: 'reviewRequested'}
+  | {[type]: 'reviewFinished'}
+  | {[type]: 'fixProposalReceived'; changedFiles: FilesProposedByCurrentFix}
+  | {[type]: 'fixWasAccepted'}
+  | {[type]: 'fixWasRefused'};
