@@ -18,7 +18,7 @@ export type ReviewState =
 
 export type ExitRequest = {
   requested: boolean;
-  exitCode: 1;
+  exitCode: 0 | 1;
 };
 
 export type AppUnsubscribeFunction = function;
@@ -30,7 +30,7 @@ export type FileId = string;
 export type Msg =
   | {$: 'initializedApp'}
   | {$: 'subscribe'; unsubscribeFunction: AppUnsubscribeFunction}
-  | {$: 'exitRequested'; exitCode: number}
+  | {$: 'exitRequested'; exitCode: 0 | 1}
   | {$: 'writingToFileSystemCacheStarted'; fileId: FileId}
   | {$: 'writingToFileSystemCacheFinished'; fileId: FileId}
   | {$: 'filesWereUpdated'; files: ElmFile[]}
