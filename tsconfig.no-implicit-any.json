@@ -5,7 +5,6 @@
     "lib/benchmark.js",
     "lib/error-message.js",
     "lib/flags.js",
-    "lib/os-helpers.js",
     "lib/hash.js",
     "lib/help.js",
     "lib/os-helpers.js",
