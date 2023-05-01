@@ -34,6 +34,7 @@ module.exports = {
     'max-params': 'off',
     'arrow-parens': 'off',
     'no-warning-comments': 'off',
+    'prefer-const': 'off',
     'promise/prefer-await-to-then': 'off',
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-reduce': 'off',
