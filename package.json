@@ -8,8 +8,8 @@
   "scripts": {
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "test": "npm run elm-tests && tsc && npm run eslint && prettier . --check && npm run elm-format && npm run -s test-run",
-    "eslint": "eslint .",
-    "js-fix": "eslint . --fix && prettier . --write",
+    "eslint": "eslint . --report-unused-disable-directives",
+    "js-fix": "eslint . --report-unused-disable-directives --fix && prettier . --write",
     "tsc-watch": "tsc --watch",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-run": "npx jest && (cd test/ && ./run.sh)",
