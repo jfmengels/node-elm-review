@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @typedef { import("./types/options").Options } Options
+ * @typedef { import("../lib/types/options").Options } Options
  */
 
 var spawn = require('cross-spawn');
@@ -129,7 +129,7 @@ function flatten(array) {
 /**
  * Converts an object of key/value pairs to an array of arguments suitable
  * to be passed to child_process.spawn for elm-make.
- * @param {Options} options
+ * @param {typeof defaultOptions} options
  * @returns {string[]}
  */
 function compilerArgsFromOptions(options) {
