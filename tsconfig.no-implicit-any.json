@@ -9,6 +9,8 @@
     "lib/hash.js",
     "lib/help.js",
     "lib/os-helpers.js",
-    "test/**/*"
+    "new-package/elm-review-package-tests/**/*.js",
+    "test/**/*",
+    "jest.config.js"
   ]
 }

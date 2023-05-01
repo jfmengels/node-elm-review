@@ -16,11 +16,15 @@
     "types": ["node", "jest"]
   },
   "include": [
-    "./lib/**/*",
-    "test/**/*"
+    "lib/**/*",
+    "new-package/elm-review-package-tests/**/*.js",
+    "test/**/*",
+    "jest.config.js"
   ],
   "exclude": [
     "node_modules",
-    "**/elm-stuff/"
+    "**/elm-stuff/",
+    ".eslintrc.js",
+    "new-package/elm-review-package-tests/check-previews-compile.js"
   ]
 }

@@ -12,7 +12,9 @@ module.exports = {
     'test/run-snapshots',
     'test/snapshots',
     'test/temporary',
-    'vendor/node-elm-compiler.js'
+    'vendor/node-elm-compiler.js',
+    '.eslintrc.js',
+    'new-package/elm-review-package-tests/check-previews-compile.js'
   ],
   rules: {
     complexity: 'off',
