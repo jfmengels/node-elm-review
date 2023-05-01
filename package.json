@@ -97,7 +97,10 @@
     "wrap-ansi": "^6.2.0"
   },
   "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/fast-levenshtein": "^0.0.2",
     "@types/jest": "^29.5.1",
+    "@types/minimist": "^1.2.2",
     "@types/node": "^18.15.13",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
