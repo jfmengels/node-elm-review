@@ -9,5 +9,6 @@
     "lib/hash.js",
     "lib/help.js",
     "lib/os-helpers.js",
+    "test/**/*"
   ]
 }

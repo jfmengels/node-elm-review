@@ -12,7 +12,15 @@
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
-    "target": "es2015"
+    "target": "es2015",
+    "types": ["node", "jest"]
   },
-  "include": ["./lib/**/*"]
+  "include": [
+    "./lib/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/elm-stuff/"
+  ]
 }
