@@ -3,6 +3,10 @@ module.exports = {
   extends: ['xo', 'prettier', 'plugin:@typescript-eslint/recommended'],
   plugins: ['node', 'unicorn', '@typescript-eslint'],
   parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: true,
+    tsconfigRootDir: __dirname
+  },
   env: {
     node: true
   },
@@ -37,7 +41,9 @@ module.exports = {
     'unicorn/prefer-node-protocol': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}]
+    '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
+    '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    'default-case': 'off'
   },
   globals: {
     test: 'readonly',
