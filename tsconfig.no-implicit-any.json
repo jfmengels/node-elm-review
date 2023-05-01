@@ -1,5 +1,8 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": true
+  },
   "include": [
     "lib/anonymize.js",
     "lib/benchmark.js",
@@ -8,8 +11,6 @@
     "lib/hash.js",
     "lib/help.js",
     "lib/os-helpers.js",
-    "new-package/elm-review-package-tests/**/*.js",
-    "test/**/*",
     "jest.config.js"
   ]
 }
