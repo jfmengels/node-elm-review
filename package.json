@@ -28,7 +28,7 @@
     "/ast-codec/src/**/*.elm",
     "/ast-codec/elm.json",
     "/bin/",
-    "/lib/",
+    "/lib/**/*.js",
     "/parseElm/**/*.elm",
     "/parseElm/elm.json",
     "/new-package/elm-review-package-tests/",
