@@ -48,9 +48,9 @@ export type Options = {
   templateElmModulePath: (string) => Path;
   pathToTemplateElmJson: (string) => Path;
   dependenciesCachePath: () => Path;
-  elmJsonPath: Path;
+  elmJsonPath: Path | null;
   elmJsonPathWasSpecified: boolean;
-  readmePath: Path;
+  readmePath: Path | null;
   projectToReview: () => Path;
   directoriesToAnalyze: Path[];
   fileCachePath: () => Path;
