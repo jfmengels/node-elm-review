@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.2] - 2023-05-05
+
+Replace some npm dependencies.
+
 ## [2.10.1] - 2023-04-19
 
 Improved error message when the version of the `jfmengels/elm-review` Elm package is not supported.
