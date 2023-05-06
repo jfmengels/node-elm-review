@@ -26,7 +26,7 @@ export type Options = {
   forceBuild: boolean;
   report: ReportMode;
   reportOnOneLine: boolean;
-  rulesFilter: string[];
+  rulesFilter: string[] | null;
   ignoredDirs: string[];
   ignoredFiles: string[];
   ignoreProblematicDependencies: boolean;
