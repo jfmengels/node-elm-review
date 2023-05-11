@@ -11,6 +11,7 @@
     "lib/hash.js",
     "lib/help.js",
     "lib/os-helpers.js",
+    "lib/promisify-port.js",
     "jest.config.js"
   ]
 }
