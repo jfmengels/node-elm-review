@@ -60,6 +60,10 @@ export type Options = {
   gitHubPassword: string | undefined;
 };
 
+export type OptionsForRunningElmReview = Omit<Options, 'elmJsonPath'> & {
+  elmJsonPath: Path;
+};
+
 export type DetailsMode = 'without-details' | 'with-details';
 
 export type ReportMode = 'json' | null;
