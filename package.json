@@ -80,7 +80,6 @@
     "chokidar": "^3.5.2",
     "cross-spawn": "^7.0.3",
     "elm-tooling": "^1.6.0",
-    "fast-levenshtein": "^3.0.0",
     "find-up": "^4.1.0",
     "folder-hash": "^3.3.0",
     "fs-extra": "^9.0.0",
