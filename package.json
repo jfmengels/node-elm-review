@@ -99,7 +99,6 @@
   },
   "devDependencies": {
     "@types/chalk": "^2.2.0",
-    "@types/fast-levenshtein": "^0.0.2",
     "@types/jest": "^29.5.1",
     "@types/minimist": "^1.2.2",
     "@types/node": "^18.15.13",
