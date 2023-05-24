@@ -80,7 +80,7 @@
     "chokidar": "^3.5.2",
     "cross-spawn": "^7.0.3",
     "elm-tooling": "^1.6.0",
-    "fast-levenshtein": "^3.0.0",
+    "fastest-levenshtein": "^1.0.16",
     "find-up": "^4.1.0",
     "folder-hash": "^3.3.0",
     "fs-extra": "^9.0.0",
@@ -99,7 +99,6 @@
   },
   "devDependencies": {
     "@types/chalk": "^2.2.0",
-    "@types/fast-levenshtein": "^0.0.2",
     "@types/jest": "^29.5.1",
     "@types/minimist": "^1.2.2",
     "@types/node": "^18.15.13",
