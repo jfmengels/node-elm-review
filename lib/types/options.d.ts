@@ -26,7 +26,7 @@ export type Options = {
   forceBuild: boolean;
   report: ReportMode;
   reportOnOneLine: boolean;
-  rulesFilter: string[];
+  rulesFilter: string[] | null;
   ignoredDirs: string[];
   ignoredFiles: string[];
   ignoreProblematicDependencies: boolean;
@@ -48,9 +48,9 @@ export type Options = {
   templateElmModulePath: (string) => Path;
   pathToTemplateElmJson: (string) => Path;
   dependenciesCachePath: () => Path;
-  elmJsonPath: Path;
+  elmJsonPath: Path | null;
   elmJsonPathWasSpecified: boolean;
-  readmePath: Path;
+  readmePath: Path | null;
   projectToReview: () => Path;
   directoriesToAnalyze: Path[];
   fileCachePath: () => Path;
@@ -58,6 +58,10 @@ export type Options = {
 
   gitHubUser: string | undefined;
   gitHubPassword: string | undefined;
+};
+
+export type OptionsForRunningElmReview = Omit<Options, 'elmJsonPath'> & {
+  elmJsonPath: Path;
 };
 
 export type DetailsMode = 'without-details' | 'with-details';
