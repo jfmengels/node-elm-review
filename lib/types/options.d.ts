@@ -42,11 +42,11 @@ export type Options = {
   suppressedErrorsFolder: () => Path;
   buildFolder: () => Path;
   buildFolderForParserApp: () => Path;
-  elmModulePath: (string) => Path;
-  elmParserPath: (string) => Path;
+  elmModulePath: (appHash: string) => Path;
+  elmParserPath: (elmSyntaxVersion: string) => Path;
   generatedCodePackageJson: () => Path;
-  templateElmModulePath: (string) => Path;
-  pathToTemplateElmJson: (string) => Path;
+  templateElmModulePath: (commit: string) => Path;
+  pathToTemplateElmJson: (commit: string) => Path;
   dependenciesCachePath: () => Path;
   elmJsonPath: Path | null;
   elmJsonPathWasSpecified: boolean;
@@ -54,7 +54,7 @@ export type Options = {
   projectToReview: () => Path;
   directoriesToAnalyze: Path[];
   fileCachePath: () => Path;
-  resultCachePath: (string) => Path;
+  resultCachePath: (appHash: string) => Path;
 
   gitHubUser: string | undefined;
   gitHubPassword: string | undefined;
