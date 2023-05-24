@@ -10,7 +10,9 @@
     "lib/flags.js",
     "lib/hash.js",
     "lib/help.js",
+    "lib/min-version.js",
     "lib/os-helpers.js",
+    "lib/path-helpers.js",
     "lib/promisify-port.js",
     "jest.config.js"
   ]
