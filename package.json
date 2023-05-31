@@ -84,7 +84,7 @@
     "find-up": "^4.1.0",
     "folder-hash": "^3.3.0",
     "fs-extra": "^9.0.0",
-    "glob": "^7.1.4",
+    "glob": "^10.2.6",
     "got": "^11.8.5",
     "graceful-fs": "^4.2.11",
     "minimist": "^1.2.6",
