@@ -29,6 +29,9 @@ import Set exposing (Set)
 -- PORTS
 
 
+port requestReadingFiles : List String -> Cmd msg
+
+
 port collectFile : (Decode.Value -> msg) -> Sub msg
 
 
@@ -292,7 +295,12 @@ I recommend you take a look at the following documents:
       else
         case List.filterMap getConfigurationError config of
             [] ->
-                cmd
+                Cmd.batch
+                    [ cmd
+
+                    -- TODO Don't trigger when the other cmd is `abort`
+                    , rules |> List.concatMap Rule.ruleRequestedFiles |> Set.fromList |> Set.toList |> requestReadingFiles
+                    ]
 
             configurationErrors ->
                 abortForConfigurationErrors <|
