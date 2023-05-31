@@ -28,6 +28,7 @@ export type App = {
 };
 
 export type Ports = {
+  requestReadingFiles: SubscribePort<string[]>;
   collectElmJson: SendPort<ElmJson>;
   collectReadme: SendPort<Readme>;
   collectDependencies: SendPort<Dependencies>;
