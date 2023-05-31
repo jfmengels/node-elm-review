@@ -46,6 +46,11 @@ export type PackageElmJson = {
 
 export type SourceDirectories = Array<Path>;
 
+export type ArbitraryFile = {
+  path: Path;
+  content: string;
+};
+
 export type Dependencies = Dependency[];
 
 export type Dependency = unknown;
