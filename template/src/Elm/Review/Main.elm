@@ -44,7 +44,7 @@ port collectElmJson : (Decode.Value -> msg) -> Sub msg
 port collectReadme : (Decode.Value -> msg) -> Sub msg
 
 
-port collectArbitraryFiles : (Decode.Value -> msg) -> Sub msg
+port collectExtraFiles : (Decode.Value -> msg) -> Sub msg
 
 
 port collectDependencies : (Decode.Value -> msg) -> Sub msg
@@ -494,7 +494,7 @@ type Msg
     | RemovedFile String
     | ReceivedElmJson Decode.Value
     | ReceivedReadme Decode.Value
-    | ReceivedArbitraryFiles Decode.Value
+    | ReceivedExtraFiles Decode.Value
     | ReceivedDependencies Decode.Value
     | ReceivedSuppressedErrors Decode.Value
     | UpdateSuppressedErrors Decode.Value
@@ -576,7 +576,7 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
-        ReceivedArbitraryFiles rawFiles ->
+        ReceivedExtraFiles rawFiles ->
             let
                 decoder : Decode.Decoder { path : String, content : String }
                 decoder =
@@ -586,7 +586,7 @@ update msg model =
             in
             case Decode.decodeValue (Decode.list decoder) rawFiles of
                 Ok files ->
-                    ( { model | project = Project.addArbitraryFiles files model.project }
+                    ( { model | project = Project.addExtraFiles files model.project }
                     , Cmd.none
                     )
 
@@ -1513,7 +1513,7 @@ subscriptions =
         , removeFile RemovedFile
         , collectElmJson ReceivedElmJson
         , collectReadme ReceivedReadme
-        , collectArbitraryFiles ReceivedArbitraryFiles
+        , collectExtraFiles ReceivedExtraFiles
         , collectDependencies ReceivedDependencies
         , collectSuppressedErrors ReceivedSuppressedErrors
         , updateSuppressedErrors UpdateSuppressedErrors
