@@ -9,7 +9,7 @@ import type {
   LinksToRuleDocs
 } from './types/content';
 import type {SuppressedErrorsFile} from './suppressed';
-import {ArbitraryFile} from './content';
+import {ExtraFile} from './content';
 import {StyledMessage} from './styled-message';
 
 export type Elm = {
@@ -38,7 +38,7 @@ export type Ports = {
   collectSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
   updateSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
   collectLinks: SendPort<LinksToRuleDocs>;
-  collectArbitraryFiles: SendPort<ArbitraryFile[]>;
+  collectExtraFiles: SendPort<ExtraFile[]>;
   userConfirmedFix: SendPort<FixConfirmation>;
 
   startGeneratingSuppressions: SendPort<null>;
