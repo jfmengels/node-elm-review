@@ -1388,6 +1388,9 @@ diff before after =
                 [ beforeReadme
                 , beforeElmJson
                 , before
+                    |> Project.extraFiles
+                    |> List.map (\file -> ( file.path, { path = file.path, source = file.content } ))
+                , before
                     |> Project.modules
                     |> List.map (\mod -> ( mod.path, { path = mod.path, source = mod.source } ))
                 ]
@@ -1398,6 +1401,9 @@ diff before after =
             List.concat
                 [ afterReadme
                 , afterElmJson
+                , after
+                    |> Project.extraFiles
+                    |> List.map (\file -> ( file.path, file.content ))
                 , after
                     |> Project.modules
                     |> List.map (\mod -> ( mod.path, mod.source ))
