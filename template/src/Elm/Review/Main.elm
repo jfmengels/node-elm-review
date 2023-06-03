@@ -1291,6 +1291,7 @@ encodeChangedFile changedFile =
 
 addUpdatedFileToProject : Maybe (List Dependency) -> { a | path : String, source : String } -> Project -> Project
 addUpdatedFileToProject dependencies file project =
+    -- TODO Support extra files
     if Just file.path == (Project.readme project |> Maybe.map .path) then
         Project.addReadme { path = file.path, content = file.source } project
 
