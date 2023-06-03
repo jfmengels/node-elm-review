@@ -1442,6 +1442,7 @@ groupErrorsByFile project errors =
 
                     Nothing ->
                         []
+                , List.map (\file -> { path = file.path, source = file.content }) (Project.extraFiles project)
                 , Project.modulesThatFailedToParse project
                 ]
     in
