@@ -1291,12 +1291,14 @@ encodeChangedFile changedFile =
 
 addUpdatedFileToProject : Maybe (List Dependency) -> { a | path : String, source : String } -> Project -> Project
 addUpdatedFileToProject dependencies file project =
-    -- TODO Support extra files
     if Just file.path == (Project.readme project |> Maybe.map .path) then
         Project.addReadme { path = file.path, content = file.source } project
 
     else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
         updateElmJsonFile dependencies file project
+
+    else if List.any (\extraFile -> extraFile.path == file.path) (Project.extraFiles project) then
+        Project.addExtraFiles [ { path = file.path, content = file.source } ] project
 
     else
         addElmFile file project
