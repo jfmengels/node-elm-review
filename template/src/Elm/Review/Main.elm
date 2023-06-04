@@ -1295,40 +1295,34 @@ addUpdatedFileToProject dependencies file project =
     if Just file.path == (Project.readme project |> Maybe.map .path) then
         Project.addReadme { path = file.path, content = file.source } project
 
-    else
-        case Project.elmJson project of
-            Just oldElmJson ->
-                if file.path == oldElmJson.path then
-                    case Decode.decodeString Elm.Project.decoder file.source of
-                        Ok newElmJson ->
-                            let
-                                withUpdatedElmJson : Project
-                                withUpdatedElmJson =
-                                    Project.addElmJson
-                                        { path = file.path, raw = file.source, project = newElmJson }
-                                        project
-                            in
-                            case dependencies of
-                                Just deps ->
-                                    List.foldl
-                                        Project.addDependency
-                                        (Project.removeDependencies withUpdatedElmJson)
-                                        deps
-
-                                Nothing ->
-                                    -- If dependencies is Nothing, then the code in autofix.js
-                                    -- did not detect any change in the dependencies.
-                                    withUpdatedElmJson
-
-                        Err _ ->
-                            -- TODO Error
+    else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
+        case Decode.decodeString Elm.Project.decoder file.source of
+            Ok newElmJson ->
+                let
+                    withUpdatedElmJson : Project
+                    withUpdatedElmJson =
+                        Project.addElmJson
+                            { path = file.path, raw = file.source, project = newElmJson }
                             project
+                in
+                case dependencies of
+                    Just deps ->
+                        List.foldl
+                            Project.addDependency
+                            (Project.removeDependencies withUpdatedElmJson)
+                            deps
 
-                else
-                    addElmFile file project
+                    Nothing ->
+                        -- If dependencies is Nothing, then the code in autofix.js
+                        -- did not detect any change in the dependencies.
+                        withUpdatedElmJson
 
-            Nothing ->
-                addElmFile file project
+            Err _ ->
+                -- TODO Error
+                project
+
+    else
+        addElmFile file project
 
 
 addElmFile : { a | path : String, source : String } -> Project -> Project
