@@ -7,8 +7,8 @@
     "dependencies": {
         "direct": {
             "elm/core": "1.0.5",
-            "jfmengels/elm-review": "2.13.0",
-            "stil4m/elm-syntax": "7.2.9"
+            "jfmengels/elm-review": "2.13.1",
+            "stil4m/elm-syntax": "7.3.2"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
@@ -19,7 +19,6 @@
             "elm/random": "1.0.0",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.3",
-            "elm-community/list-extra": "8.7.0",
             "elm-explorations/test": "2.1.1",
             "miniBill/elm-unicode": "1.0.3",
             "rtfeldman/elm-hex": "1.0.0",
