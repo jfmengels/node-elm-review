@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Improved guidance after using `elm-review init --template <some-template>`
+
 ## [2.10.2] - 2023-05-05
 
 Replace some npm dependencies.

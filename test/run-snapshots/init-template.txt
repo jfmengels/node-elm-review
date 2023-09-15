@@ -1,1 +1,16 @@
 All done! I have created a review project at review/ for you.
+
+You chose to use someone's review configuration which can be great to get started
+but don't forget to review the configuration to make sure it fits your needs,
+both by removing rules you disagree with and by finding new rules to aid you.
+You can do so by editing review/src/ReviewConfig.elm.
+
+I recommend you take a look at the following documents:
+  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
+  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule
+
+By starting out with this configuration, you may end up with too many errors to handle at once.
+I recommend you use a mix of the following approaches:
+  - Enable rules one by one by commenting them out at first
+  - Use elm-review suppress to suppress existing errors but prevent future ones (see elm-review suppress --help).
+
