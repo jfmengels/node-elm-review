@@ -781,19 +781,34 @@ fixableErrors files =
 
 formatReports : DetailsMode -> Mode -> List FileWithError -> List Text
 formatReports detailsMode mode files =
+    formatReportsEndingWith [] detailsMode mode files
+
+
+formatReportsEndingWith : List (List Text) -> DetailsMode -> Mode -> List FileWithError -> List Text
+formatReportsEndingWith soFarReverse detailsMode mode files =
     case files of
         [] ->
-            []
+            soFarReverse |> reverseThenConcat
 
-        [ file ] ->
-            formatReportForFileWithExtract detailsMode mode file
+        [ firstFile ] ->
+            formatReportForFileWithExtract detailsMode mode firstFile
+                :: soFarReverse
+                |> reverseThenConcat
 
         firstFile :: secondFile :: restOfFiles ->
-            List.concat
-                [ formatReportForFileWithExtract detailsMode mode firstFile
-                , fileSeparator firstFile.path secondFile.path
-                , formatReports detailsMode mode (secondFile :: restOfFiles)
-                ]
+            formatReportsEndingWith
+                (fileSeparator firstFile.path secondFile.path
+                    :: formatReportForFileWithExtract detailsMode mode firstFile
+                    :: soFarReverse
+                )
+                detailsMode
+                mode
+                (secondFile :: restOfFiles)
+
+
+reverseThenConcat : List (List a) -> List a
+reverseThenConcat reverseLists =
+    List.foldl (++) [] reverseLists
 
 
 fileSeparator : FilePath -> FilePath -> List Text
