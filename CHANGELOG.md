@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 
-- Improved guidance after using `elm-review init --template <some-template>`
+## [2.10.3] - 2023-09-26
+
+- Fixed crash when too many errors were reported.
+- Improved guidance after using `elm-review init --template <some-template>`.
 
 ## [2.10.2] - 2023-05-05
 
@@ -108,7 +111,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.10.2...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.10.3...HEAD
+[2.10.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.3
 [2.10.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.2
 [2.10.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.1
 [2.10.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.0
