@@ -14,6 +14,7 @@
     "lib/os-helpers.js",
     "lib/path-helpers.js",
     "lib/promisify-port.js",
+    "lib/state.js",
     "lib/styled-message.js",
     "jest.config.js"
   ]
