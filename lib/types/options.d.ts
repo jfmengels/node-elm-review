@@ -24,6 +24,7 @@ export type Options = {
   packageJsonVersion: string;
   localElmReviewSrc: string | undefined;
   forceBuild: boolean;
+  offline: boolean;
   report: ReportMode;
   reportOnOneLine: boolean;
   rulesFilter: string[];
