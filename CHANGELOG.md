@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed a crash when using `--template` from the same repository but from two different paths. 
+
 ## [2.10.3] - 2023-09-26
 
 - Fixed crash when too many errors were reported.
