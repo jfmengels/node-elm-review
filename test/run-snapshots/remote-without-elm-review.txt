@@ -1,8 +1,17 @@
 - Fetching template information
-✖ Fetching template information
--- MISSING ELM-REVIEW DEPENDENCY -----------------------------------------------
+✔ Build finished! Now reviewing your project...
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:11:11
 
-The template's configuration does not include jfmengels/elm-review in its direct dependencies.
+(fix) NoUnused.Variables: Imported variable `span` is not used
 
-Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author.
+10|           -- span is unused
+11|         , span
+              ^^^^
+12|         , text
 
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+I found 1 error in 1 file.

@@ -1,8 +1,63 @@
 {
-  "type": "error",
-  "title": "MISSING ELM-REVIEW DEPENDENCY",
-  "path": "<local-path>/test/project-with-errors/review/elm.json",
-  "message": [
-    "The template's configuration does not include jfmengels/elm-review in its direct dependencies.\n\nMaybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."
-  ]
+  "type": "review-errors",
+  "errors": [
+    {
+      "path": "src/Main.elm",
+      "errors": [
+        {
+          "rule": "NoUnused.Variables",
+          "message": "Imported variable `span` is not used",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.0/NoUnused-Variables",
+          "details": [
+            "You should either use this value somewhere, or remove it at the location I pointed at."
+          ],
+          "region": {
+            "start": {
+              "line": 11,
+              "column": 11
+            },
+            "end": {
+              "line": 11,
+              "column": 15
+            }
+          },
+          "fix": [
+            {
+              "range": {
+                "start": {
+                  "line": 9,
+                  "column": 14
+                },
+                "end": {
+                  "line": 11,
+                  "column": 15
+                }
+              },
+              "string": ""
+            }
+          ],
+          "formatted": [
+            {
+              "string": "(fix) ",
+              "color": "#33BBC8"
+            },
+            {
+              "string": "NoUnused.Variables",
+              "color": "#FF0000",
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.0/NoUnused-Variables"
+            },
+            ": Imported variable `span` is not used\n\n10|           -- span is unused\n11|         , span\n              ",
+            {
+              "string": "^^^^",
+              "color": "#FF0000"
+            },
+            "\n12|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
+        }
+      ]
+    }
+  ],
+  "extracts": {}
 }
