@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-- Fixed a crash when using `--template` from the same repository but from two different paths. 
+## [2.11.0] **BETA** - 2023-10-16
+
+- Add an `offline` mode to prevent `elm-review` from making any HTTP requests. This is useful for CI environments that should not have access to the internet, where you only want to run `elm-review` without arguments.
+- Replaced the internally used `elm-json` dependency with `elm-solve-deps-wasm`, which should be more reliable, re-enable support for old MacOS versions as well as improve performance.
+- Fixed a crash when using `--template` from the same repository but from two different paths.
+
+This is a **BETA** release, so I expect things to break. Please report any issues you encounter on the #elm-review channel on the Elm Slack.
 
 ## [2.10.3] - 2023-09-26
 
