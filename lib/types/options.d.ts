@@ -48,7 +48,7 @@ export type Options = {
   generatedCodePackageJson: () => Path;
   templateElmModulePath: (string) => Path;
   pathToTemplateElmJson: (string) => Path;
-  dependenciesCachePath: () => Path;
+  dependenciesCachePath: (string) => Path;
   elmJsonPath: Path;
   elmJsonPathWasSpecified: boolean;
   readmePath: Path;
