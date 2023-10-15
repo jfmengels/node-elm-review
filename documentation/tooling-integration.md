@@ -18,7 +18,7 @@ The CLI creates a bunch of cache inside `elm-stuff/generated-code/jfmengels/elm-
 - `file-cache/`: Caching of the file's ASTs.
 - `review-applications/`: Caching of the project's configuration. This is the application we build by compiling the source code in the CLI's `template/` directory.
 - `result-cache/`: Caching of the results of each module's analysis for every rule.
-- `dependencies-cache/`: Caching of the dependencies of the project's configuration computed by `elm-json`. `elm-json` is a bit slow, and doesn't work great offline. This is done so we don't have to compute the dependencies again if the configuration changed but not `review/elm.json`.
+- `dependencies-cache/`: Caching of data related to Elm dependencies computed by `elm-solve-deps-wasm` (or `elm-json` prior to `2.11.0`).
 - `elm-parser/`: Caching of the parser application. This is the application we build by compiling with the user's version of `stil4m/elm-syntax`, and the name of the file reflect the version. This is used to parallelize the parsing of the files, which is kind of slow, at startup.
 
 Namespacing things means that data will unfortunately be duplicated, but it is meant to prevent different tools from stepping on each other's toes by saving the same files at the same time as another, potentially corrupting the files.
