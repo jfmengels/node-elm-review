@@ -91,6 +91,9 @@ You can customize the review command with the following flags:
     --no-details
         Hide the details from error reports for a more compact view.
 
+    --offline
+        Prevent making network calls.
+
     --ignore-dirs <dir1,dir2,...>
         Ignore the reports of all rules for the specified directories.
 
