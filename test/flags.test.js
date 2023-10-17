@@ -115,3 +115,17 @@ test('Using the same flag twice', async () => {
   const output = await TestCli.runAndExpectError('--config a/ --config b/');
   expect(output).toMatchFile(testName('duplicate-flags'));
 });
+
+test('Using both --template and --offline (regular run)', async () => {
+  const output = await TestCli.runAndExpectError(
+    '--template jfmengels/elm-review-unused/example --offline'
+  );
+  expect(output).toMatchFile(testName('template-and-offline-run'));
+});
+
+test('Using both --template and --offline (init)', async () => {
+  const output = await TestCli.runAndExpectError(
+    'init --template jfmengels/elm-review-unused/example --offline'
+  );
+  expect(output).toMatchFile(testName('template-and-offline-init'));
+});

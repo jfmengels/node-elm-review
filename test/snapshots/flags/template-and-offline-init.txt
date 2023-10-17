@@ -1,0 +1,13 @@
+-- COMMAND REQUIRES NETWORK ACCESS ---------------------------------------------
+
+I can't use --template in offline mode, as I need network access to download the
+external template.
+
+If you have the configuration locally on your computer, you can run it by
+pointing to it with --config.
+
+Otherwise, I recommend you try to gain network access and initialize your
+configuration to be able to run it offline afterwards:
+
+    elm-review init --template jfmengels/elm-review-unused/example
+
