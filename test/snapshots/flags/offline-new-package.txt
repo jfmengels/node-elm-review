@@ -1,0 +1,7 @@
+-- COMMAND REQUIRES NETWORK ACCESS ---------------------------------------------
+
+I can't use new-package in offline mode, as I need network access to perform a
+number of steps.
+
+I recommend you try to gain network access and try again.
+

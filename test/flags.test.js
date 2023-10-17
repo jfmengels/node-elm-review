@@ -129,3 +129,8 @@ test('Using both --template and --offline (init)', async () => {
   );
   expect(output).toMatchFile(testName('template-and-offline-init'));
 });
+
+test('Using both new-package and --offline', async () => {
+  const output = await TestCli.runAndExpectError('new-package --offline');
+  expect(output).toMatchFile(testName('offline-new-package'));
+});
