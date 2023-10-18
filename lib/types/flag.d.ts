@@ -7,7 +7,8 @@ export type Section =
   | 'init'
   | 'new-rule'
   | 'new-package'
-  | 'suppress-subcommand';
+  | 'suppress-subcommand'
+  | 'prepare-offline';
 
 export type Flag = BaseFlag & SingleOrMulti & Display;
 

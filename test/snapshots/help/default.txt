@@ -26,6 +26,9 @@ You are using elm-review <version>.
     elm-review new-rule [RULE-NAME]
         Adds a new rule to your review configuration or review package.
 
+    elm-review prepare-offline
+        Prepares running elm-review in offline mode using --offline.
+
 You can customize the review command with the following flags:
 
     --unsuppress
@@ -92,7 +95,8 @@ You can customize the review command with the following flags:
         Hide the details from error reports for a more compact view.
 
     --offline
-        Prevent making network calls.
+        Prevent making network calls. You might need to run
+        elm-review prepare-offline beforehand to avoid problems.
 
     --ignore-dirs <dir1,dir2,...>
         Ignore the reports of all rules for the specified directories.

@@ -78,4 +78,9 @@ export type Template = {
   reference: string | null;
 };
 
-export type Subcommand = 'init' | 'new-package' | 'new-rule' | 'suppress';
+export type Subcommand =
+  | 'init'
+  | 'new-package'
+  | 'new-rule'
+  | 'suppress'
+  | 'prepare-offline';
