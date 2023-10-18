@@ -28,3 +28,8 @@ test('new-rule --help', async () => {
   const output = await TestCli.run('new-rule --help');
   expect(output).toMatchFile(testName('new-rule'));
 });
+
+test('prepare-offline --help', async () => {
+  const output = await TestCli.run('prepare-offline --help');
+  expect(output).toMatchFile(testName('prepare-offline'));
+});

@@ -1,0 +1,14 @@
+The prepare-offline command allows the tool to run in offline mode using
+the --offline flag.
+
+This will build the review configuration application and download the
+dependencies of the project to review. It requires network access.
+
+If you change your the review configuration, you might need to re-run this
+command to work again in offline mode.
+
+You can customize the new-rule command with the following flags:
+
+    --compiler <path-to-elm>
+        Specify the path to the elm compiler.
+
