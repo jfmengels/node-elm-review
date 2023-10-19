@@ -25,6 +25,7 @@
     "node_modules",
     "**/elm-stuff/",
     ".eslintrc.js",
-    "new-package/elm-review-package-tests/check-previews-compile.js"
+    "new-package/elm-review-package-tests/check-previews-compile.js",
+    "test/temporary"
   ]
 }
