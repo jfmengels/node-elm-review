@@ -5,6 +5,7 @@ set -e
 CWD=$(pwd)
 CMD="elm-review --no-color"
 TMP="$CWD/temporary"
+ELM_HOME="$CWD/elm-home"
 SNAPSHOTS="$CWD/run-snapshots"
 SUBCOMMAND="$1"
 REPLACE_SCRIPT="node $CWD/replace-local-path.js"
@@ -137,6 +138,7 @@ function createAndGoIntoFolder {
 }
 
 rm -rf "$TMP" \
+      "$ELM_HOME" \
       "$CWD/config-empty/elm-stuff" \
       "$CWD/config-error-debug/elm-stuff" \
       "$CWD/config-error-unknown-module/elm-stuff" \
