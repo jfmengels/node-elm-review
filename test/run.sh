@@ -5,7 +5,7 @@ set -e
 CWD=$(pwd)
 CMD="elm-review --no-color"
 TMP="$CWD/temporary"
-ELM_HOME="$CWD/elm-home"
+ELM_HOME="$TMP/elm-home"
 SNAPSHOTS="$CWD/run-snapshots"
 SUBCOMMAND="$1"
 REPLACE_SCRIPT="node $CWD/replace-local-path.js"
@@ -58,7 +58,7 @@ function runAndRecord {
     local ARGS=$3
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
+    eval "ELM_HOME=$ELM_HOME $LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
         | $REPLACE_SCRIPT \
         > "$SNAPSHOTS/$FILE"
 }
@@ -138,7 +138,6 @@ function createAndGoIntoFolder {
 }
 
 rm -rf "$TMP" \
-      "$ELM_HOME" \
       "$CWD/config-empty/elm-stuff" \
       "$CWD/config-error-debug/elm-stuff" \
       "$CWD/config-error-unknown-module/elm-stuff" \
