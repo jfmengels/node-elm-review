@@ -411,3 +411,5 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "Using both --config and --template" \
     "--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review" \
     "remote-configuration-with-config-flag"
+
+rm -rf "$TMP"
