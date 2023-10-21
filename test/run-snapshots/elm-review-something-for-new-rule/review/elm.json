@@ -28,7 +28,7 @@
             "elm/regex": "1.0.0",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.3",
-            "elm-explorations/test": "2.1.1",
+            "elm-explorations/test": "2.1.2",
             "miniBill/elm-unicode": "1.0.3",
             "pzp1997/assoc-list": "1.0.0",
             "rtfeldman/elm-hex": "1.0.0",
