@@ -18,6 +18,7 @@
     "lib/parse-elm.js",
     "lib/parse-elm-worker.js",
     "lib/path-helpers.js",
+    "lib/project-json-files.js",
     "lib/promisify-port.js",
     "lib/styled-message.js",
     "jest.config.js"
