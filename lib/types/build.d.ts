@@ -1,5 +1,5 @@
 import type {Path} from './types/path';
-import type {ApplicationElmJson} from "./content";
+import type {ApplicationElmJson} from './content';
 
 export type BuildResult = {
   elmModulePath: Path | null;

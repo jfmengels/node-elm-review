@@ -1,6 +1,6 @@
 import type {Path} from './path';
 import type {ElmVersion} from './types/elm-version';
-import type {ApplicationDependencies} from "./build";
+import type {ApplicationDependencies} from './build';
 
 export type File = {
   path: Path;
@@ -33,7 +33,7 @@ export type ApplicationElmJson = {
   'source-directories': Array<Path>;
   dependencies: ApplicationDependencies;
   'test-dependencies': ApplicationDependencies;
-}
+};
 
 export type ApplicationDependencies = {
   direct: Record<string, string>;
@@ -42,7 +42,7 @@ export type ApplicationDependencies = {
 
 export type PackageElmJson = {
   type: 'package';
-}
+};
 
 export type SourceDirectories = Array<Path>;
 

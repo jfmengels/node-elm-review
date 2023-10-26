@@ -9,6 +9,7 @@
     "lib/sync-get.js",
     "lib/sync-get-worker.js",
     "lib/error-message.js",
+    "lib/parse-elm.js",
     "lib/flags.js",
     "lib/hash.js",
     "lib/help.js",
