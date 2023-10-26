@@ -10,6 +10,7 @@
     "lib/sync-get-worker.js",
     "lib/error-message.js",
     "lib/flags.js",
+    "lib/fs-wrapper.js",
     "lib/hash.js",
     "lib/help.js",
     "lib/min-version.js",
