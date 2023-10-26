@@ -95,7 +95,7 @@
     "strip-ansi": "^6.0.0",
     "terminal-link": "^2.1.1",
     "which": "^2.0.2",
-    "wrap-ansi": "^6.2.0"
+    "wrap-ansi": "^7.0.0"
   },
   "devDependencies": {
     "@types/chalk": "^2.2.0",
