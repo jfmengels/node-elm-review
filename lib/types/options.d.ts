@@ -48,9 +48,9 @@ export type Options = {
   generatedCodePackageJson: () => Path;
   templateElmModulePath: (string) => Path;
   pathToTemplateElmJson: (string) => Path;
-  elmJsonPath: Path;
   elmJsonPathWasSpecified: boolean;
-  readmePath: Path;
+  elmJsonPath: Path | null;
+  readmePath: Path | null;
   projectToReview: () => Path;
   directoriesToAnalyze: Path[];
   fileCachePath: () => Path;
@@ -58,6 +58,11 @@ export type Options = {
 
   gitHubUser: string | undefined;
   gitHubPassword: string | undefined;
+};
+
+export type ReviewOptions = Options & {
+  elmJsonPath: Path;
+  readmePath: Path;
 };
 
 export type DetailsMode = 'without-details' | 'with-details';
