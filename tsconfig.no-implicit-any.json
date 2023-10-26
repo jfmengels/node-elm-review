@@ -21,6 +21,7 @@
     "lib/path-helpers.js",
     "lib/project-json-files.js",
     "lib/promisify-port.js",
+    "lib/state.js",
     "lib/styled-message.js",
     "jest.config.js"
   ]

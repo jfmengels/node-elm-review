@@ -10,7 +10,7 @@ export type File = {
 export type ElmFile = {
   path: Path;
   source: Source;
-  ast: Ast | null;
+  ast?: Ast;
   lastUpdatedTime?: Date | null;
 };
 
