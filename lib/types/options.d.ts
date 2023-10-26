@@ -11,7 +11,7 @@ export type Options = {
   fixLimit: number | undefined;
   fixAll: boolean;
   fixAllWithoutPrompt: boolean;
-  unsuppress: boolean;
+  unsuppress: boolean | Array<string>;
   suppressCheckAfterTests: boolean;
   detailsMode: DetailsMode;
   watch: boolean;
@@ -27,7 +27,7 @@ export type Options = {
   offline: boolean;
   report: ReportMode;
   reportOnOneLine: boolean;
-  rulesFilter: string[];
+  rulesFilter: string[] | null;
   ignoredDirs: string[];
   ignoredFiles: string[];
   ignoreProblematicDependencies: boolean;

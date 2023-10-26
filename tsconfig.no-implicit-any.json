@@ -14,6 +14,7 @@
     "lib/hash.js",
     "lib/help.js",
     "lib/min-version.js",
+    "lib/options.js",
     "lib/os-helpers.js",
     "lib/parse-elm.js",
     "lib/parse-elm-worker.js",
