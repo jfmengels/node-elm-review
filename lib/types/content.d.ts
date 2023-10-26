@@ -1,4 +1,6 @@
 import type {Path} from './path';
+import type {ElmVersion} from './types/elm-version';
+import type {ApplicationDependencies} from "./build";
 
 export type File = {
   path: Path;
@@ -20,8 +22,29 @@ export type Readme = {
 export type ElmJsonData = {
   path: Path;
   raw: string;
-  project: unknown;
+  project: ElmJson;
 };
+
+export type ElmJson = ApplicationElmJson | PackageElmJson;
+
+export type ApplicationElmJson = {
+  type: 'application';
+  'elm-version': ElmVersion;
+  'source-directories': Array<Path>;
+  dependencies: ApplicationDependencies;
+  'test-dependencies': ApplicationDependencies;
+}
+
+export type ApplicationDependencies = {
+  direct: Record<string, string>;
+  indirect: Record<string, string>;
+};
+
+export type PackageElmJson = {
+  type: 'package';
+}
+
+export type SourceDirectories = Array<Path>;
 
 export type Dependencies = Dependency[];
 

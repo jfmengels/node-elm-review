@@ -1,5 +1,6 @@
 import type {Path} from './types/path';
 import type {ElmVersion} from './types/elm-version';
+import type {ApplicationDependencies, SourceDirectories} from "./content";
 
 export type BuildResult = {
   elmModulePath: Path | null;
@@ -13,12 +14,7 @@ export type AppHash = string;
 export type ReviewElmJson = {
   type: 'application';
   'elm-version': ElmVersion;
-  'source-directories': Array<Path>;
+  'source-directories': SourceDirectories;
   dependencies: ApplicationDependencies;
   'test-dependencies': ApplicationDependencies;
-};
-
-export type ApplicationDependencies = {
-  direct: Record<string, string>;
-  indirect: Record<string, string>;
 };
