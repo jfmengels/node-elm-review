@@ -23,6 +23,7 @@
     "lib/promisify-port.js",
     "lib/state.js",
     "lib/styled-message.js",
+    "lib/suppressed-errors.js",
     "jest.config.js"
   ]
 }

@@ -9,6 +9,7 @@ import type {
   LinksToRuleDocs
 } from './types/content';
 import type {SuppressedErrorsFile} from './types/suppressed';
+import {StyledMessage} from './styled-message';
 
 export type App = {
   ports: Ports;
@@ -25,6 +26,12 @@ export type Ports = {
   collectLinks: SendPort<LinksToRuleDocs>;
   userConfirmedFix: SendPort<FixConfirmation>;
 
+  startGeneratingSuppressions: SendPort<null>;
+  suppressionsResponse: SubscribePort<unknown>;
+
+  startReview: SendPort<null>;
+  reviewReport: SubscribePort<unknown>;
+
   acknowledgeFileReceipt: SubscribePort<FileReceipt>;
   askConfirmationToFix: SubscribePort<AutofixRequest>;
 };
@@ -35,9 +42,9 @@ export type FileReceipt = {
 };
 
 export type AutofixRequest = {
-  confirmationMessage: unknown;
+  confirmationMessage: StyledMessage;
   clearFixLine: boolean;
-  changedFiles: unknown;
+  changedFiles: FilesProposedByCurrentFix;
   count: number;
 };
 
