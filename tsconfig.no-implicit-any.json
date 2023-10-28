@@ -6,6 +6,9 @@
   "include": [
     "lib/anonymize.js",
     "lib/benchmark.js",
+    "lib/cache.js",
+    "lib/debug.js",
+    "lib/elm-files.js",
     "lib/sync-get.js",
     "lib/sync-get-worker.js",
     "lib/error-message.js",
