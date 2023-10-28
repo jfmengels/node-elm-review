@@ -11,6 +11,18 @@ import type {
 import type {SuppressedErrorsFile} from './types/suppressed';
 import {StyledMessage} from './styled-message';
 
+export type Elm = {
+  Elm: {
+    Elm: {
+      Review: {
+        Main: {
+          init: (flags: Flags) => App;
+        };
+      };
+    };
+  };
+};
+
 export type App = {
   ports: Ports;
 };
@@ -34,6 +46,11 @@ export type Ports = {
 
   acknowledgeFileReceipt: SubscribePort<FileReceipt>;
   askConfirmationToFix: SubscribePort<AutofixRequest>;
+  cacheFile: SubscribePort<unknown>;
+  fixConfirmationStatus: SubscribePort<unknown>;
+  abort: SubscribePort<unknown>;
+  abortWithDetails: SubscribePort<unknown>;
+  abortForConfigurationErrors: SubscribePort<unknown>;
 };
 
 export type FileReceipt = {

@@ -17,6 +17,7 @@
     "lib/fs-wrapper.js",
     "lib/hash.js",
     "lib/help.js",
+    "lib/load-compiled-app.js",
     "lib/min-version.js",
     "lib/options.js",
     "lib/os-helpers.js",
