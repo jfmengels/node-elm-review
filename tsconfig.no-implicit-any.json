@@ -8,6 +8,7 @@
     "lib/benchmark.js",
     "lib/cache.js",
     "lib/debug.js",
+    "lib/elm-communication.js",
     "lib/elm-files.js",
     "lib/sync-get.js",
     "lib/sync-get-worker.js",
