@@ -99,7 +99,7 @@ foldProjectContexts new previous =
     {}
 
 
-expressionVisitor : Node Expression -> ProjectContext -> ( List (Rule.Error {}), ProjectContext )
+expressionVisitor : Node Expression -> ModuleContext -> ( List (Rule.Error {}), ModuleContext )
 expressionVisitor node context =
     case Node.value node of
         _ ->

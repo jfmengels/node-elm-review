@@ -19,15 +19,15 @@
             "elm/random": "1.0.0",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.3",
-            "elm-explorations/test": "2.1.2",
-            "miniBill/elm-unicode": "1.0.3",
+            "elm-explorations/test": "2.2.0",
+            "miniBill/elm-unicode": "1.1.0",
             "rtfeldman/elm-hex": "1.0.0",
             "stil4m/structured-writer": "1.0.3"
         }
     },
     "test-dependencies": {
         "direct": {
-            "elm-explorations/test": "2.1.2"
+            "elm-explorations/test": "2.2.0"
         },
         "indirect": {}
     }
