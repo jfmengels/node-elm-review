@@ -931,7 +931,7 @@ runReview { fixesAllowed } initialProject model =
             else
                 model.project
         , fixAllResultProject = project
-        , fixAllErrors = Debug.log "fixed" fixedErrors
+        , fixAllErrors = fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
     }
