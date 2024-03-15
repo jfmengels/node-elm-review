@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Improve the error message when failing to update suppression files.
+
 ## [2.11.0] - 2024-03-15
 
 - Add an `offline` mode to prevent `elm-review` from making any HTTP requests. This is useful for CI environments that should not have access to the internet, where you only want to run `elm-review` without arguments.

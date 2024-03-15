@@ -54,8 +54,17 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
 });
 
 test('Running with unsupported version of suppression files should exit with failure', async () => {
-  const output = await TestCli.runAndExpectError('', {
-    project: 'project-with-unsupported-suppression-version'
-  });
-  expect(output).toMatchFile(testName('unsupported-suppression-version'));
+  // In this setup, running `elm-review` should update a suppression file because
+  // an unused variables issue has been fixed. It should however fail because
+  // write permission has been removed from `review/suppressed/NoUnused.Variables.json`
+  const project = 'project-with-suppressed-errors-no-write';
+  const filePath = path.resolve(
+    __dirname,
+    project,
+    'review/suppressed/NoUnused.Variables.json'
+  );
+  childProcess.execSync(`chmod -w ${filePath}`);
+
+  const output = await TestCli.runAndExpectError('', {project});
+  expect(output).toMatchFile(testName('write-failure'));
 });

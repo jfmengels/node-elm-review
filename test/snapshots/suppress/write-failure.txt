@@ -1,0 +1,8 @@
+-- FAILED TO UPDATE SUPPRESSION FILE -------------------------------------------
+
+I tried updating the suppression file in the review/suppressed/ folder, but failed to write to review/suppressed/NoUnused.Variables.json.
+
+Please check that elm-review has write permissions to that file and folder. In case it helps, here's the error I encountered:
+
+  Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'
+
