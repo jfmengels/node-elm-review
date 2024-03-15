@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## [2.11.0] **BETA** - 2023-10-16
+## [2.11.0] - 2024-03-15
 
 - Add an `offline` mode to prevent `elm-review` from making any HTTP requests. This is useful for CI environments that should not have access to the internet, where you only want to run `elm-review` without arguments.
+- Introduce `prepare-offline` subcommand to have `elm-review` fetch and pre-build all the necessary data when it has network access to prepare for being run using `elm-review --offline`.
 - Replaced the internally used `elm-json` dependency with `elm-solve-deps-wasm`, which should be more reliable, re-enable support for old MacOS versions as well as improve performance.
 - Fixed a crash when using `--template` from the same repository but from two different paths.
-
-This is a **BETA** release, so I expect things to break. Please report any issues you encounter on the #elm-review channel on the Elm Slack.
+- Fixed an issue where project rules created using `elm-review new-rule` mixed the `ModuleContext` and `ProjectContext`.
 
 ## [2.10.3] - 2023-09-26
 
