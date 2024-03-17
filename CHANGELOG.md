@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Removed the dependency on `fs-extra`.
+
 ## [2.11.1] - 2024-03-16
 
 - Fixed a crash when running in watch mode related to not being able to fetch cache results.
