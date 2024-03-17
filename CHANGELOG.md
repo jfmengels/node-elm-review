@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.11.1] - 2024-03-16
+
 - Fixed a crash when running in watch mode related to not being able to fetch cache results.
 - Improve the error message when failing to update suppression files.
 
