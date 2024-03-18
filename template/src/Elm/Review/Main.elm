@@ -1298,6 +1298,7 @@ addUpdatedFileToProject dependencies file project =
         updateElmJsonFile dependencies file project
 
     else if List.any (\extraFile -> extraFile.path == file.path) (Project.extraFiles project) then
+        -- TODO If the file is an Elm file, then we should probably ALSO add it as an Elm file
         Project.addExtraFiles [ { path = file.path, content = file.source } ] project
 
     else
