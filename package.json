@@ -85,6 +85,7 @@
     "folder-hash": "^3.3.0",
     "fs-extra": "^9.0.0",
     "glob": "^10.2.6",
+    "globby": "^13.2.2",
     "got": "^11.8.5",
     "graceful-fs": "^4.2.11",
     "minimist": "^1.2.6",
