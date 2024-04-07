@@ -29,7 +29,7 @@ import Set exposing (Set)
 -- PORTS
 
 
-port requestReadingFiles : List String -> Cmd msg
+port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedFolders : List String } -> Cmd msg
 
 
 port collectFile : (Decode.Value -> msg) -> Sub msg
@@ -302,7 +302,7 @@ I recommend you take a look at the following documents:
                     [ cmd
 
                     -- TODO Don't trigger when the other cmd is `abort`
-                    , rules |> List.concatMap Rule.ruleRequestedFiles |> Set.fromList |> Set.toList |> requestReadingFiles
+                    , rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
                     ]
 
             configurationErrors ->
