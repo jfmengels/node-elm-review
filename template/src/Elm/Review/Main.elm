@@ -29,7 +29,7 @@ import Set exposing (Set)
 -- PORTS
 
 
-port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedFolders : List String } -> Cmd msg
+port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedDirectories : List String } -> Cmd msg
 
 
 port collectFile : (Decode.Value -> msg) -> Sub msg
