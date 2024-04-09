@@ -14,10 +14,12 @@ export type ElmFile = {
   lastUpdatedTime?: Date | null;
 };
 
-export type Readme = {
+export type NonElmFile = {
   path: Path;
   content: string;
 };
+
+export type Readme = NonElmFile;
 
 export type ElmJsonData = {
   path: Path;
@@ -46,9 +48,9 @@ export type PackageElmJson = {
 
 export type SourceDirectories = Array<Path>;
 
-export type ArbitraryFile = {
-  path: Path;
-  content: string;
+export type ExtraFileRequest = {
+  files: {pattern: string; included: boolean}[];
+  excludedDirectories: string[];
 };
 
 export type Dependencies = Dependency[];
