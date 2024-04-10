@@ -8,8 +8,8 @@
         "direct": {
             "elm/core": "1.0.5",
             "elm/project-metadata-utils": "1.0.2",
-            "jfmengels/elm-review": "2.13.1",
-            "jfmengels/elm-review-unused": "1.2.2",
+            "jfmengels/elm-review": "2.13.2",
+            "jfmengels/elm-review-unused": "1.2.3",
             "stil4m/elm-syntax": "7.3.2"
         },
         "indirect": {
