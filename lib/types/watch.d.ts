@@ -13,6 +13,6 @@ export type WatchOptions = {
   elmFiles: ElmFile[];
   sourceDirectories: Path[];
   reviewElmJson: ApplicationElmJson;
-  reviewElmJsonPath: Path;
+  reviewElmJsonPath: Path | null;
   requestedExtraFiles: ExtraFileRequest[];
 };
