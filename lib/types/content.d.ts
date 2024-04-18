@@ -1,5 +1,5 @@
 import type {Path} from './path';
-import type {ElmVersion} from './types/elm-version';
+import type {ElmVersion} from './elm-version';
 import type {ApplicationDependencies} from './build';
 
 export type File = {

@@ -1,4 +1,4 @@
-import type {Path} from './types/path';
+import type {Path} from './path';
 import type {ApplicationElmJson} from './content';
 
 export type BuildResult = {

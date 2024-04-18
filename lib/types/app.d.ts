@@ -1,5 +1,5 @@
-import type {Path} from './types/path';
-import type {FilesProposedByCurrentFix} from './types/state';
+import type {Path} from './path';
+import type {FilesProposedByCurrentFix} from './state';
 import type {
   Ast,
   ElmFile,
@@ -7,7 +7,7 @@ import type {
   ElmJson,
   Dependencies,
   LinksToRuleDocs
-} from './types/content';
+} from './content';
 import type {SuppressedErrorsFile} from './suppressed';
 import {ExtraFile} from './content';
 import {StyledMessage} from './styled-message';
