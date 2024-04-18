@@ -578,15 +578,16 @@ update msg model =
 
         ReceivedExtraFiles rawFiles ->
             let
-                decoder : Decode.Decoder { path : String, content : String }
+                decoder : Decode.Decoder ( String, String )
                 decoder =
-                    Decode.map2 (\path content -> { path = path, content = content })
+                    -- TODO Pass as record from JS
+                    Decode.map2 Tuple.pair
                         (Decode.field "path" Decode.string)
                         (Decode.field "content" Decode.string)
             in
             case Decode.decodeValue (Decode.list decoder) rawFiles of
                 Ok files ->
-                    ( { model | project = Project.addExtraFiles files model.project }
+                    ( { model | project = Project.addExtraFiles (Dict.fromList files) model.project }
                     , Cmd.none
                     )
 
@@ -1297,9 +1298,9 @@ addUpdatedFileToProject dependencies file project =
     else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
         updateElmJsonFile dependencies file project
 
-    else if List.any (\extraFile -> extraFile.path == file.path) (Project.extraFiles project) then
+    else if Dict.member file.path (Project.extraFiles project) then
         -- TODO If the file is an Elm file, then we should probably ALSO add it as an Elm file
-        Project.addExtraFiles [ { path = file.path, content = file.source } ] project
+        Project.addExtraFiles (Dict.singleton file.path file.source) project
 
     else
         addElmFile file project
@@ -1348,75 +1349,70 @@ type alias FixedFile =
 diff : Project -> Project -> List FixedFile
 diff before after =
     let
-        beforeReadme : List ( String, { path : String, source : String } )
+        beforeReadme : Dict String String
         beforeReadme =
             case Project.readme before of
                 Just readme ->
-                    [ ( readme.path, { path = readme.path, source = readme.content } ) ]
+                    Dict.singleton readme.path readme.content
 
                 Nothing ->
-                    []
+                    Dict.empty
 
-        afterReadme : List ( String, String )
+        afterReadme : Dict String String
         afterReadme =
             case Project.readme after of
                 Just readme ->
-                    [ ( readme.path, readme.content ) ]
+                    Dict.singleton readme.path readme.content
 
                 Nothing ->
-                    []
+                    Dict.empty
 
-        beforeElmJson : List ( String, { path : String, source : String } )
+        beforeElmJson : Dict String String
         beforeElmJson =
             case Project.elmJson before of
-                Just readme ->
-                    [ ( readme.path, { path = readme.path, source = readme.raw } ) ]
+                Just elmJson ->
+                    Dict.singleton elmJson.path elmJson.raw
 
                 Nothing ->
-                    []
+                    Dict.empty
 
-        afterElmJson : List ( String, String )
+        afterElmJson : Dict String String
         afterElmJson =
             case Project.elmJson after of
                 Just elmJson ->
-                    [ ( elmJson.path, elmJson.raw ) ]
+                    Dict.singleton elmJson.path elmJson.raw
 
                 Nothing ->
-                    []
+                    Dict.empty
 
-        beforeModules : Dict String { path : String, source : String }
+        beforeModules : Dict String String
         beforeModules =
-            List.concat
-                [ beforeReadme
-                , beforeElmJson
-                , before
-                    |> Project.extraFiles
-                    |> List.map (\file -> ( file.path, { path = file.path, source = file.content } ))
-                , before
-                    |> Project.modules
-                    |> List.map (\mod -> ( mod.path, { path = mod.path, source = mod.source } ))
-                ]
-                |> Dict.fromList
+            -- TODO Avoid intermediary states
+            [ beforeReadme
+            , beforeElmJson
+            , Project.extraFiles before
+            , before
+                |> Project.modules
+                |> List.foldl (\mod acc -> Dict.insert mod.path mod.source acc) Dict.empty
+            ]
+                |> List.foldl Dict.union Dict.empty
 
         fixedSources : Dict String String
         fixedSources =
-            List.concat
-                [ afterReadme
-                , afterElmJson
-                , after
-                    |> Project.extraFiles
-                    |> List.map (\file -> ( file.path, file.content ))
-                , after
-                    |> Project.modules
-                    |> List.map (\mod -> ( mod.path, mod.source ))
-                ]
-                |> Dict.fromList
+            [ afterReadme
+            , afterElmJson
+            , Project.extraFiles after
+            , after
+                |> Project.modules
+                |> List.foldl (\mod acc -> Dict.insert mod.path mod.source acc) Dict.empty
+            ]
+                |> List.foldl Dict.union Dict.empty
     in
     Dict.merge
         (\_ _ acc -> acc)
-        (\_ beforeModule fixedSource acc ->
-            if beforeModule.source /= fixedSource then
-                { path = beforeModule.path, source = beforeModule.source, fixedSource = fixedSource } :: acc
+        (\path beforeSource fixedSource acc ->
+            if beforeSource /= fixedSource then
+                { path = path, source = beforeSource, fixedSource = fixedSource } :: acc
 
             else
                 acc
@@ -1451,7 +1447,7 @@ groupErrorsByFile project errors =
 
                     Nothing ->
                         []
-                , List.map (\file -> { path = file.path, source = file.content }) (Project.extraFiles project)
+                , Dict.foldr (\path source acc -> { path = path, source = source } :: acc) [] (Project.extraFiles project)
                 , Project.modulesThatFailedToParse project
                 ]
     in
