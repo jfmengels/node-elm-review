@@ -73,7 +73,7 @@ export type FixConfirmation =
   | {
       answer: true;
       files: FilesProposedByCurrentFix;
-      dependencies: Dependencies;
+      dependencies: Dependencies | undefined;
     };
 
 export type SubscribePort = function;
