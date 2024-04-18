@@ -6,7 +6,8 @@ import type {
   Readme,
   ElmJson,
   Dependencies,
-  LinksToRuleDocs
+  LinksToRuleDocs,
+  ElmJsonData
 } from './content';
 import type {SuppressedErrorsFile} from './suppressed';
 import {ExtraFile} from './content';
@@ -30,7 +31,7 @@ export type App = {
 
 export type Ports = {
   requestReadingFiles: SubscribePort<string[]>;
-  collectElmJson: SendPort<ElmJson>;
+  collectElmJson: SendPort<ElmJsonData>;
   collectReadme: SendPort<Readme>;
   collectDependencies: SendPort<Dependencies>;
   collectFile: SendPort<ElmFile>;
