@@ -1298,12 +1298,8 @@ addUpdatedFileToProject dependencies file project =
     else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
         updateElmJsonFile dependencies file project
 
-    else if Dict.member file.path (Project.extraFiles project) then
-        -- TODO If the file is an Elm file, then we should probably ALSO add it as an Elm file
-        Project.addExtraFiles (Dict.singleton file.path file.source) project
-
     else
-        addElmFile file project
+        Project.updateFile { path = file.path, source = file.source } project
 
 
 updateElmJsonFile : Maybe (List Dependency) -> { a | source : String, path : String } -> Project -> Project
