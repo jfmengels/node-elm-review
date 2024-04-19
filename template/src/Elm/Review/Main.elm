@@ -1158,7 +1158,7 @@ applyFixesAfterReview model allowPrintingSingleFix =
         makeReport model
 
     else
-        case diff model.project model.fixAllResultProject of
+        case Project.diff { before = model.project, after = model.fixAllResultProject } of
             [] ->
                 makeReport model
 
@@ -1180,20 +1180,20 @@ sendFixPrompt model diffs =
 
         OneError filePath error ->
             case find (\diff_ -> diff_.path == filePath) diffs of
-                Just { source, fixedSource } ->
+                Just { before, after } ->
                     ( { model | errorAwaitingConfirmation = AwaitingError error }
                     , [ ( "confirmationMessage"
                         , Reporter.formatFixProposal
                             model.detailsMode
-                            { path = Reporter.FilePath filePath, source = Reporter.Source source }
+                            { path = Reporter.FilePath filePath, source = Reporter.Source before }
                             (fromReviewError model.suppressedErrors model.links error)
-                            (Reporter.Source fixedSource)
+                            (Reporter.Source after)
                             |> encodeReport
                         )
                       , ( "changedFiles"
                         , Encode.list encodeChangedFile
                             [ { path = Reporter.FilePath filePath
-                              , source = Reporter.Source fixedSource
+                              , source = Reporter.Source after
                               }
                             ]
                         )
@@ -1217,15 +1217,15 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
         changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
         changedFiles =
             List.map
-                (\{ path, source, fixedSource } ->
+                (\{ path, before, after } ->
                     { path =
                         if path == "GLOBAL ERROR" then
                             Reporter.Global
 
                         else
                             Reporter.FilePath path
-                    , source = Reporter.Source source
-                    , fixedSource = Reporter.Source fixedSource
+                    , source = Reporter.Source before
+                    , fixedSource = Reporter.Source after
                     , errors =
                         Dict.get path model.fixAllErrors
                             |> Maybe.withDefault []
@@ -1337,86 +1337,9 @@ addElmFile file project =
 
 type alias FixedFile =
     { path : String
-    , source : String
-    , fixedSource : String
+    , before : String
+    , after : String
     }
-
-
-diff : Project -> Project -> List FixedFile
-diff before after =
-    let
-        beforeReadme : Dict String String
-        beforeReadme =
-            case Project.readme before of
-                Just readme ->
-                    Dict.singleton readme.path readme.content
-
-                Nothing ->
-                    Dict.empty
-
-        afterReadme : Dict String String
-        afterReadme =
-            case Project.readme after of
-                Just readme ->
-                    Dict.singleton readme.path readme.content
-
-                Nothing ->
-                    Dict.empty
-
-        beforeElmJson : Dict String String
-        beforeElmJson =
-            case Project.elmJson before of
-                Just elmJson ->
-                    Dict.singleton elmJson.path elmJson.raw
-
-                Nothing ->
-                    Dict.empty
-
-        afterElmJson : Dict String String
-        afterElmJson =
-            case Project.elmJson after of
-                Just elmJson ->
-                    Dict.singleton elmJson.path elmJson.raw
-
-                Nothing ->
-                    Dict.empty
-
-        beforeModules : Dict String String
-        beforeModules =
-            -- TODO Avoid intermediary states
-            [ beforeReadme
-            , beforeElmJson
-            , Project.extraFiles before
-            , before
-                |> Project.modules
-                |> List.foldl (\mod acc -> Dict.insert mod.path mod.source acc) Dict.empty
-            ]
-                |> List.foldl Dict.union Dict.empty
-
-        fixedSources : Dict String String
-        fixedSources =
-            [ afterReadme
-            , afterElmJson
-            , Project.extraFiles after
-            , after
-                |> Project.modules
-                |> List.foldl (\mod acc -> Dict.insert mod.path mod.source acc) Dict.empty
-            ]
-                |> List.foldl Dict.union Dict.empty
-    in
-    Dict.merge
-        (\_ _ acc -> acc)
-        (\path beforeSource fixedSource acc ->
-            if beforeSource /= fixedSource then
-                { path = path, source = beforeSource, fixedSource = fixedSource } :: acc
-
-            else
-                acc
-        )
-        (\_ _ acc -> acc)
-        beforeModules
-        fixedSources
-        []
 
 
 groupErrorsByFile : Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
