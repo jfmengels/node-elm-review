@@ -577,17 +577,9 @@ update msg model =
                     ( model, Cmd.none )
 
         ReceivedExtraFiles rawFiles ->
-            let
-                decoder : Decode.Decoder ( String, String )
-                decoder =
-                    -- TODO Pass as record from JS
-                    Decode.map2 Tuple.pair
-                        (Decode.field "path" Decode.string)
-                        (Decode.field "content" Decode.string)
-            in
-            case Decode.decodeValue (Decode.list decoder) rawFiles of
+            case Decode.decodeValue (Decode.dict Decode.string) rawFiles of
                 Ok files ->
-                    ( { model | project = Project.addExtraFiles (Dict.fromList files) model.project }
+                    ( { model | project = Project.addExtraFiles files model.project }
                     , Cmd.none
                     )
 

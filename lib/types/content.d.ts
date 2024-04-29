@@ -19,6 +19,8 @@ export type NonElmFile = {
   content: string;
 };
 
+export type NonElmFiles = {[String]: String};
+
 export type Readme = NonElmFile;
 
 export type ElmJsonData = {
