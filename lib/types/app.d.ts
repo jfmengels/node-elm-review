@@ -4,14 +4,12 @@ import type {
   Ast,
   ElmFile,
   Readme,
-  ElmJson,
   Dependencies,
   LinksToRuleDocs,
   ElmJsonData,
   NonElmFiles
 } from './content';
 import type {SuppressedErrorsFile} from './suppressed';
-import {ExtraFile} from './content';
 import {StyledMessage} from './styled-message';
 
 export type Elm = {

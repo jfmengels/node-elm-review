@@ -19,7 +19,7 @@ export type NonElmFile = {
   content: string;
 };
 
-export type NonElmFiles = {[String]: String};
+export type NonElmFiles = {[string]: string};
 
 export type Readme = NonElmFile;
 
