@@ -547,7 +547,7 @@ update msg model =
                     ( model, abort <| Decode.errorToString err )
 
         RemovedFile path ->
-            ( { model | project = Project.removeModule path model.project }, Cmd.none )
+            ( { model | project = Project.removeFile path model.project }, Cmd.none )
 
         ReceivedElmJson rawElmJson ->
             case Decode.decodeValue elmJsonDecoder rawElmJson of
