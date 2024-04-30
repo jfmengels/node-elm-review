@@ -7,7 +7,8 @@ import type {
   ElmJson,
   Dependencies,
   LinksToRuleDocs,
-  ElmJsonData
+  ElmJsonData,
+  NonElmFiles
 } from './content';
 import type {SuppressedErrorsFile} from './suppressed';
 import {ExtraFile} from './content';
@@ -39,7 +40,7 @@ export type Ports = {
   collectSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
   updateSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
   collectLinks: SendPort<LinksToRuleDocs>;
-  collectExtraFiles: SendPort<ExtraFile[]>;
+  collectExtraFiles: SendPort<NonElmFiles>;
   userConfirmedFix: SendPort<FixConfirmation>;
 
   startGeneratingSuppressions: SendPort<null>;
