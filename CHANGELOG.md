@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- The `--ignore-dirs` and `--ignore-files` flags now support absolute paths. Thanks [@jamesrweb](https://github.com/jamesrweb)!
+
 ## [2.11.1] - 2024-03-16
 
 - Fixed a crash when running in watch mode related to not being able to fetch cache results.
