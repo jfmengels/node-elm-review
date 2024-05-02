@@ -8,3 +8,4 @@
 **/suppressed
 test/**/*.json
 test/temporary/
+vendor/exit.js
