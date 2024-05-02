@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - The `--ignore-dirs` and `--ignore-files` flags now support absolute paths. Thanks [@jamesrweb](https://github.com/jamesrweb)!
+- Fixed an issue where the CLI output would sometimes be cut off abruptly. Thanks [@BrianHicks](https://github.com/BrianHicks)!
 
 ## [2.11.1] - 2024-03-16
 
