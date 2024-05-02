@@ -4,6 +4,7 @@
 
 - The `--ignore-dirs` and `--ignore-files` flags now support absolute paths. Thanks [@jamesrweb](https://github.com/jamesrweb)!
 - Fixed an issue where the CLI output would sometimes be cut off abruptly. Thanks [@BrianHicks](https://github.com/BrianHicks)!
+- When using `--watch` and `--report=json`, reviews will now be triggered when files are changed even when the contents are triggered, to make it easier for editors to integrate `elm-review`.
 
 ## [2.11.1] - 2024-03-16
 
