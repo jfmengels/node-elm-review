@@ -17,6 +17,7 @@ module.exports = {
     'test/snapshots',
     'test/temporary',
     'vendor/node-elm-compiler.js',
+    'vendor/exit.js',
     '.eslintrc.js',
     'new-package/elm-review-package-tests/check-previews-compile.js'
   ],

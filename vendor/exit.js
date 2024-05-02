@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /*
  * exit
  * https://github.com/cowboy/node-exit
