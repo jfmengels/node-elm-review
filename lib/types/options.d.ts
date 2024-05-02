@@ -28,8 +28,8 @@ export type Options = {
   report: ReportMode;
   reportOnOneLine: boolean;
   rulesFilter: string[] | null;
-  ignoredDirs: string[];
-  ignoredFiles: string[];
+  ignoredDirs: () => string[];
+  ignoredFiles: () => string[];
   ignoreProblematicDependencies: boolean;
   prefilledAnswers: NewPackagePrefilledAnswers;
 
