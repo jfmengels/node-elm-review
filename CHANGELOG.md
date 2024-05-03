@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.11.2] - 2024-05-03
+
 - The `--ignore-dirs` and `--ignore-files` flags now support absolute paths. Thanks [@jamesrweb](https://github.com/jamesrweb)!
 - Fixed an issue where the CLI output would sometimes be cut off abruptly. Thanks [@BrianHicks](https://github.com/BrianHicks)!
 - When using `--watch` and `--report=json`, reviews will now be triggered when files are changed even when the contents are triggered, to make it easier for editors to integrate `elm-review`.
@@ -128,7 +130,10 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.10.3...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.11.2...HEAD
+[2.11.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.2
+[2.11.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.1
+[2.11.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.0
 [2.10.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.3
 [2.10.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.2
 [2.10.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.10.1
