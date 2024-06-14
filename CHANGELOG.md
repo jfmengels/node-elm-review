@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.12.0] - 2024-06-14
+
+Now requires `jfmengels/elm-review` v2.14.0.
+
+- Now supports analyzing arbitrary files that the project doesn't analyze by default.
+
 ## [2.11.2] - 2024-05-03
 
 - The `--ignore-dirs` and `--ignore-files` flags now support absolute paths. Thanks [@jamesrweb](https://github.com/jamesrweb)!
@@ -130,7 +136,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.11.2...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.12.0...HEAD
+[2.12.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.12.0
 [2.11.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.2
 [2.11.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.1
 [2.11.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.0
