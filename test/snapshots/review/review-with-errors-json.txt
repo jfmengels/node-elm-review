@@ -43,39 +43,6 @@
       "path": "src/Main.elm",
       "errors": [
         {
-          "rule": "NoUnused.CustomTypeConstructors",
-          "message": "Type constructor `UnusedCustomType` is not used.",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors",
-          "details": [
-            "This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
-          ],
-          "region": {
-            "start": {
-              "line": 29,
-              "column": 7
-            },
-            "end": {
-              "line": 29,
-              "column": 23
-            }
-          },
-          "formatted": [
-            {
-              "string": "NoUnused.CustomTypeConstructors",
-              "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors"
-            },
-            ": Type constructor `UnusedCustomType` is not used.\n\n28|     | Decrement\n29|     | UnusedCustomType\n          ",
-            {
-              "string": "^^^^^^^^^^^^^^^^",
-              "color": "#FF0000"
-            },
-            "\n\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
-          ],
-          "suppressed": false,
-          "originallySuppressed": false
-        },
-        {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `span` is not used",
           "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-Variables",
@@ -123,6 +90,39 @@
               "color": "#FF0000"
             },
             "\n12|         , text\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
+          ],
+          "suppressed": false,
+          "originallySuppressed": false
+        },
+        {
+          "rule": "NoUnused.CustomTypeConstructors",
+          "message": "Type constructor `UnusedCustomType` is not used.",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors",
+          "details": [
+            "This type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
+          ],
+          "region": {
+            "start": {
+              "line": 29,
+              "column": 7
+            },
+            "end": {
+              "line": 29,
+              "column": 23
+            }
+          },
+          "formatted": [
+            {
+              "string": "NoUnused.CustomTypeConstructors",
+              "color": "#FF0000",
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.8/NoUnused-CustomTypeConstructors"
+            },
+            ": Type constructor `UnusedCustomType` is not used.\n\n28|     | Decrement\n29|     | UnusedCustomType\n          ",
+            {
+              "string": "^^^^^^^^^^^^^^^^",
+              "color": "#FF0000"
+            },
+            "\n\nThis type constructor is never used. It might be handled everywhere it might appear, but there is no location where this value actually gets created."
           ],
           "suppressed": false,
           "originallySuppressed": false
