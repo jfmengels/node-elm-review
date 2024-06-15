@@ -9,7 +9,9 @@ export type PortFromElm<DataOut> = {
   unsubscribe: CallbackFn<DataOut>;
 };
 
-type CallbackFn<T> = (cb: (data: T) => void) => void;
+export type CallbackFn<T> = (cb: Listened<T>) => void;
+
+export type Listened<T> = (data: T) => void;
 
 export type PortToElm<DataIn> = {
   send: (data: DataIn) => void;

@@ -11,6 +11,7 @@ export type Options = {
   fixLimit: number | undefined;
   fixAll: boolean;
   fixAllWithoutPrompt: boolean;
+  fixMode?: 'fix' | 'fixAll' | 'dontfix';
   unsuppress: boolean | Array<string>;
   suppressCheckAfterTests: boolean;
   detailsMode: DetailsMode;
@@ -55,9 +56,12 @@ export type Options = {
   directoriesToAnalyze: Path[];
   fileCachePath: () => Path;
   resultCachePath: (string) => Path;
+  resultCacheFolder?: string;
 
   gitHubUser: string | undefined;
   gitHubPassword: string | undefined;
+
+  writeSuppressionFiles?: boolean;
 };
 
 export type ReviewOptions = Options & {
@@ -67,7 +71,7 @@ export type ReviewOptions = Options & {
 
 export type DetailsMode = 'without-details' | 'with-details';
 
-export type ReportMode = 'json' | null;
+export type ReportMode = 'json' | 'human' | null;
 
 export type NewPackagePrefilledAnswers = {
   authorName: string | undefined;
