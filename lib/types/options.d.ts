@@ -43,11 +43,11 @@ export type Options = {
   suppressedErrorsFolder: () => Path;
   buildFolder: () => Path;
   buildFolderForParserApp: () => Path;
-  elmModulePath: (string) => Path;
-  elmParserPath: (string) => Path;
+  elmModulePath: (appHash: string) => Path;
+  elmParserPath: (elmSyntaxVersion: string) => Path;
   generatedCodePackageJson: () => Path;
-  templateElmModulePath: (string) => Path;
-  pathToTemplateElmJson: (string) => Path;
+  templateElmModulePath: (commit: string) => Path;
+  pathToTemplateElmJson: (commit: string) => Path;
   elmJsonPathWasSpecified: boolean;
   elmJsonPath: Path | null;
   readmePath: Path | null;
