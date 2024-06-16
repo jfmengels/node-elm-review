@@ -1,3 +1,4 @@
+import type {AppHash} from './build';
 import type {Path} from './path';
 
 export type Options = {
@@ -44,7 +45,7 @@ export type Options = {
   suppressedErrorsFolder: () => Path;
   buildFolder: () => Path;
   buildFolderForParserApp: () => Path;
-  elmModulePath: (appHash: string) => Path;
+  elmModulePath: (appHash: AppHash) => Path;
   elmParserPath: (elmSyntaxVersion: string) => Path;
   generatedCodePackageJson: () => Path;
   templateElmModulePath: (commit: string) => Path;

@@ -11,6 +11,7 @@ import type {
 } from './content';
 import type {SuppressedErrorsFile} from './suppressed';
 import {StyledMessage} from './styled-message';
+import type {Listened} from './promisify-port';
 
 export type Elm = {
   Elm: {
@@ -77,4 +78,4 @@ export type FixConfirmation =
     };
 
 export type SubscribePort = function;
-export type SendPort<T> = {send: (data: T) => void};
+export type SendPort<T> = {send: Listened<T>};
