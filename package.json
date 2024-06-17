@@ -3,7 +3,7 @@
   "version": "2.12.0",
   "description": "Run elm-review from Node.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=14.17"
   },
   "scripts": {
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
@@ -19,7 +19,8 @@
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null) && (cd template/ && elm-test)",
     "test-run": "npx jest && (cd test/ && ./run.sh)",
     "test-run-record": "(cd test/ && ./run.sh record)",
-    "prepare": "elm-tooling install"
+    "prepare": "elm-tooling install",
+    "check-engines": "ls-engines"
   },
   "repository": {
     "type": "git",
@@ -118,6 +119,7 @@
     "eslint-plugin-unicorn": "^46.0.0",
     "jest": "^27.3.1",
     "jest-file-snapshot": "^0.5.0",
+    "ls-engines": "^0.9.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4",

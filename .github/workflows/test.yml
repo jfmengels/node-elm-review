@@ -44,3 +44,6 @@ jobs:
 
     - name: Run tests
       run: npm test
+
+    - name: Test nodejs version requirements
+      run: npm check-engines
