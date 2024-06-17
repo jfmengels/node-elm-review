@@ -43,7 +43,7 @@ jobs:
       run: npx --no-install elm-tooling install
 
     - name: Test nodejs version requirements
-      run: npm check-engines
+      run: npm run check-engines
 
     - name: Run tests
       run: npm test
