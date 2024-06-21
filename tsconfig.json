@@ -3,7 +3,11 @@
     "allowJs": true,
     "alwaysStrict": true,
     "checkJs": true,
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "target": "es2020",
+    "lib": ["ES2020"],
+    "esModuleInterop": false,
     "noEmit": true,
     "noImplicitThis": true,
     "resolveJsonModule": true,
@@ -12,7 +16,6 @@
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
-    "target": "es2015",
     "types": ["node", "jest"]
   },
   "include": [
