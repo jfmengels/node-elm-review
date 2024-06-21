@@ -1,9 +1,5 @@
 'use strict';
 
-/**
- * @typedef { import("../lib/types/options").Options } Options
- */
-
 var spawn = require('cross-spawn');
 var elmBinaryName = 'elm';
 
