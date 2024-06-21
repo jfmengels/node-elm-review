@@ -34,7 +34,7 @@ export type ElmJson = ApplicationElmJson | PackageElmJson;
 export type ApplicationElmJson = {
   type: 'application';
   'elm-version': ElmVersion;
-  'source-directories': Array<Path>;
+  'source-directories': Path[];
   dependencies: ApplicationDependencies;
   'test-dependencies': ApplicationDependencies;
 };
@@ -48,7 +48,7 @@ export type PackageElmJson = {
   type: 'package';
 };
 
-export type SourceDirectories = Array<Path>;
+export type SourceDirectories = Path[];
 
 export type ExtraFileRequest = {
   files: {pattern: string; included: boolean}[];

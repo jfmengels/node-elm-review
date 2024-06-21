@@ -1,4 +1,4 @@
-export type StyledMessage = Array<StyledMessagePart>;
+export type StyledMessage = StyledMessagePart[];
 
 export type StyledMessagePart = string | FormattedString;
 

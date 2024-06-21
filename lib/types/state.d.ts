@@ -7,7 +7,7 @@ export type Model = {
   readme: Readme | null;
   filesBeingWrittenToCache: Set<FileId>;
   exitRequest: ExitRequest;
-  appUnsubscribeFunctions: Array<AppUnsubscribeFunction>;
+  appUnsubscribeFunctions: AppUnsubscribeFunction[];
   filesProposedByCurrentFix: FilesProposedByCurrentFix;
 };
 
@@ -23,7 +23,7 @@ export type ExitRequest = {
 
 export type AppUnsubscribeFunction = function;
 
-export type FilesProposedByCurrentFix = Array<{path: Path; source: Source}>;
+export type FilesProposedByCurrentFix = {path: Path; source: Source}[];
 
 export type FileId = string;
 

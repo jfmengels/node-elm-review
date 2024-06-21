@@ -119,8 +119,8 @@ function compile(sources, options) {
  * Flattens a nested array into a single-level array.
  *
  * @template T
- * @param {Array<Array<T>>} array - The nested array to flatten.
- * @returns {Array<T>} The flattened array.
+ * @param {T[][]} array - The nested array to flatten.
+ * @returns {T[]} The flattened array.
  */
 function flatten(array) {
   return array.reduce((res, element) => res.concat(element), []);

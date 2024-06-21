@@ -11,7 +11,7 @@ export type Options = {
   fixLimit: number | undefined;
   fixAll: boolean;
   fixAllWithoutPrompt: boolean;
-  unsuppress: boolean | Array<string>;
+  unsuppress: boolean | string[];
   suppressCheckAfterTests: boolean;
   detailsMode: DetailsMode;
   watch: boolean;
