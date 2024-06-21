@@ -6,6 +6,7 @@
   "engines": {
     "node": ">=14.17"
   },
+  "packageManager": "npm@10.7.0",
   "scripts": {
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "test": "npm-run-all --print-name --silent elm-tests elm-format tsc eslint-check prettier-check test-run",
