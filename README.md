@@ -112,7 +112,7 @@ elm-review init --template jfmengels/elm-review-config/package
 ```
 
 Once you have set up an initial configuration, you can add new rules. As `elm-review` does not
-[come with built-in rules](https://github.com/jfmengels/elm-review/blob/main/documentation/design/no-built-in-rules.md),
+[come with built-in rules](https://github.com/jfmengels/elm-review/blob/master/documentation/design/no-built-in-rules.md),
 you can look for packages with rules on the [Elm package registry](https://package.elm-lang.org/) by searching for packages named `elm-review-`.
 
 Once you've found a package that you like, you can install it with the `elm install` command, just like any other Elm project dependency.
