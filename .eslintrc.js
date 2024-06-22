@@ -5,6 +5,7 @@ module.exports = {
     'turbo',
     'plugin:n/recommended',
     'plugin:security/recommended-legacy',
+    'plugin:@eslint-community/eslint-comments/recommended',
     'plugin:promise/recommended',
     'prettier',
     'plugin:@typescript-eslint/recommended'
@@ -61,6 +62,7 @@ module.exports = {
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     'default-case': 'off',
     'n/shebang': 'off', // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
+    '@eslint-community/eslint-comments/require-description': 'error',
 
     // TODO: Promise rules that should eventually get turned on.
     'promise/catch-or-return': 'off',
