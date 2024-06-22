@@ -1,3 +1,8 @@
+// TODO [eslint@>9.5]: Use `.ts` extension to get more type checking for this file.
+// TODO [engine:node@>=18]: Upgrade `tseslint`.
+// TODO [engine:node@>=18]: Use `eslint-define-config` to get type checking for this file.
+// TODO [engine:node@>=18]: Use `eslint-plugin-jsdoc` to get JSDoc linting.
+
 module.exports = {
   root: true,
   extends: [
@@ -56,6 +61,7 @@ module.exports = {
     'unicorn/no-reduce': 'off',
     'unicorn/prefer-module': 'off',
     'unicorn/prefer-node-protocol': 'error',
+    'unicorn/expiring-todo-comments': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
