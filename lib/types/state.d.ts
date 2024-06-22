@@ -21,7 +21,7 @@ export type ExitRequest = {
   exitCode: 0 | 1;
 };
 
-export type AppUnsubscribeFunction = function;
+export type AppUnsubscribeFunction = () => void;
 
 export type FilesProposedByCurrentFix = {path: Path; source: Source}[];
 
