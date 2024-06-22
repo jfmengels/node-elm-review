@@ -11,7 +11,7 @@
         "template/**/*.elm"
       ]
     },
-    "test": {
+    "testing": {
       "dependsOn": [
         "elm-tests",
         "elm-format",

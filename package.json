@@ -8,6 +8,7 @@
   },
   "packageManager": "npm@10.7.0",
   "scripts": {
+    "test": "turbo testing",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "eslint-check": "eslint . --report-unused-disable-directives",
     "eslint-fix": "npm run eslint-check -- --fix",
