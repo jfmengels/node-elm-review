@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Fixed an issue where the initial rule created with `elm-review new-package` was always a module rule, even when it was requested to be a project rule. Thanks [@mateusfpleite](https://github.com/mateusfpleite)
+- Plenty of behind the scenes improvement to the maintenance of the repository. Thanks [@lishaduck](https://github.com/lishaduck) for all of those.
+
 ## [2.12.0] - 2024-06-14
 
 Now requires `jfmengels/elm-review` v2.14.0.
