@@ -4,10 +4,11 @@ module.exports = {
     'xo', // Should we also use eslint-config-xo-typescript?
     'turbo',
     'plugin:n/recommended',
+    'plugin:security/recommended-legacy',
     'prettier',
     'plugin:@typescript-eslint/recommended'
   ],
-  plugins: ['n', 'unicorn', '@typescript-eslint'],
+  plugins: ['n', 'security', 'unicorn', '@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: true,
@@ -53,7 +54,13 @@ module.exports = {
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     'default-case': 'off',
     // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
-    'n/shebang': 'off'
+    'n/shebang': 'off',
+
+    // Security issues that should eventually get fixed.
+    'security/detect-object-injection': 'off',
+    'security/detect-non-literal-fs-filename': 'off',
+    'security/detect-non-literal-require': 'off',
+    'security/detect-unsafe-regex': 'off' // TODO: Add `eslint-plugin-regexp` and fix these issues.
   },
   overrides: [
     {
