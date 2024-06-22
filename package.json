@@ -4,9 +4,10 @@
   "description": "Run elm-review from Node.js",
   "type": "commonjs",
   "engines": {
-    "node": ">=14.17"
+    "node": ">=14.18"
   },
-  "packageManager": "npm@10.7.0",
+  "enginesStrict": true,
+  "packageManager": "npm@8.19.4",
   "scripts": {
     "test": "turbo run testing",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
