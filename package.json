@@ -8,7 +8,7 @@
   },
   "packageManager": "npm@10.7.0",
   "scripts": {
-    "test": "turbo testing",
+    "test": "turbo run testing",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "eslint-check": "eslint . --report-unused-disable-directives",
     "eslint-fix": "npm run eslint-check -- --fix",
@@ -17,7 +17,8 @@
     "tsc": "tsc && tsc --project tsconfig.no-implicit-any.json",
     "tsc-watch": "tsc --watch",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
-    "test-run": "npx jest && (cd test/ && ./run.sh)",
+    "jest": "npx jest",
+    "test-run": "(cd test/ && ./run.sh)",
     "test-run-record": "(cd test/ && ./run.sh record)",
     "prepare": "elm-tooling install",
     "check-engines": "ls-engines"

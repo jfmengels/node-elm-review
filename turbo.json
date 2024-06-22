@@ -18,6 +18,7 @@
         "tsc",
         "eslint-check",
         "prettier-check",
+        "jest",
         "test-run"
       ]
     },
@@ -37,7 +38,7 @@
       "inputs": ["lib/*", ".prettierrc.json", ".prettierignore"]
     },
     "tsc": {
-      "inputs": ["lib/*", "tsconfig.json"]
+      "inputs": ["lib/*", "tsconfig.json", "tsconfig.*.json"]
     },
     "tsc-watch": {
       "inputs": ["lib/*", "tsconfig.json"],
