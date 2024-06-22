@@ -5,10 +5,11 @@ module.exports = {
     'turbo',
     'plugin:n/recommended',
     'plugin:security/recommended-legacy',
+    'plugin:promise/recommended',
     'prettier',
     'plugin:@typescript-eslint/recommended'
   ],
-  plugins: ['n', 'security', 'unicorn', '@typescript-eslint'],
+  plugins: ['n', 'security', 'promise', 'unicorn', '@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: true,
@@ -43,7 +44,10 @@ module.exports = {
     'arrow-parens': 'off',
     'no-warning-comments': 'off',
     'prefer-const': 'off',
+    'promise/no-return-in-finally': 'error',
+    'promise/valid-params': 'error',
     'promise/prefer-await-to-then': 'off',
+    'no-return-await': 'off',
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-reduce': 'off',
     'unicorn/prefer-module': 'off',
@@ -53,10 +57,13 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     'default-case': 'off',
-    // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
-    'n/shebang': 'off',
+    'n/shebang': 'off', // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
 
-    // Security issues that should eventually get fixed.
+    // TODO: Promise rules that should eventually get turned on.
+    'promise/catch-or-return': 'off',
+    'promise/always-return': 'off',
+
+    // TODO: Security issues that should eventually get fixed.
     'security/detect-object-injection': 'off',
     'security/detect-non-literal-fs-filename': 'off',
     'security/detect-non-literal-require': 'off',
