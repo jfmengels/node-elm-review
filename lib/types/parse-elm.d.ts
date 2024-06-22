@@ -1,6 +1,6 @@
 import {Path} from './path';
-import {ElmFile, Source} from './content';
-import {SendPort, SubscribePort} from './app';
+import {ElmFile, Source, type ElmJson} from './content';
+import type {SendPort, SubscribePort} from './promisify-port';
 
 export type ParseJob = {
   elmParserPath: Path;
@@ -8,8 +8,10 @@ export type ParseJob = {
   callback: callback;
 };
 
-export function callback(error: Err): void;
-export function callback(error: undefined, result: ElmFile): void;
+interface callback {
+  (error: Error): void;
+  (error: undefined, result: ElmFile): void;
+}
 
 export type ParserApp = {
   ports: ParserPorts;

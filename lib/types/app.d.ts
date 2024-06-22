@@ -11,6 +11,8 @@ import type {
 } from './content';
 import type {SuppressedErrorsFile} from './suppressed';
 import {StyledMessage} from './styled-message';
+import type {Flags} from './flags';
+import type {SendPort, SubscribePort} from './promisify-port';
 
 export type Elm = {
   Elm: {
@@ -75,6 +77,3 @@ export type FixConfirmation =
       files: FilesProposedByCurrentFix;
       dependencies: Dependencies | undefined;
     };
-
-export type SubscribePort = function;
-export type SendPort<T> = {send: (data: T) => void};

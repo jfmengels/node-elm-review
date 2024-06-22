@@ -1,16 +1,16 @@
 export type PortsToPromise<DataIn, DataOut> = {
-  subscribeTo: PortFromElm<DataOut>;
-  sendThrough: PortToElm<DataIn>;
+  subscribeTo: SubscribePort<DataOut>;
+  sendThrough: SendPort<DataIn>;
   data: DataIn;
 };
 
-export type PortFromElm<DataOut> = {
+export type SubscribePort<DataOut> = {
   subscribe: CallbackFn<DataOut>;
   unsubscribe: CallbackFn<DataOut>;
 };
 
 type CallbackFn<T> = (cb: (data: T) => void) => void;
 
-export type PortToElm<DataIn> = {
+export type SendPort<DataIn> = {
   send: (data: DataIn) => void;
 };

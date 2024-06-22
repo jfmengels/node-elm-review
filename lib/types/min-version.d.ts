@@ -1,4 +1,4 @@
 /**
- * A major.minor version string, e.g. "1.0"
+ * A major.minor version string, e.g. "1.0.0"
  */
-export type VersionString = string;
+export type VersionString = `${number}.${number}.${number}`;

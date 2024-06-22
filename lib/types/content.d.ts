@@ -1,6 +1,5 @@
 import type {Path} from './path';
 import type {ElmVersion} from './elm-version';
-import type {ApplicationDependencies} from './build';
 
 export type File = {
   path: Path;
@@ -19,7 +18,7 @@ export type NonElmFile = {
   content: string;
 };
 
-export type NonElmFiles = {[string]: string};
+export type NonElmFiles = {[x: string]: string};
 
 export type Readme = NonElmFile;
 
@@ -59,7 +58,7 @@ export type Dependencies = Dependency[];
 
 export type Dependency = unknown;
 
-export type LinksToRuleDocs = {[string]: string};
+export type LinksToRuleDocs = {[x: string]: string};
 
 export type Source = string;
 
