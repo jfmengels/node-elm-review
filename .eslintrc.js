@@ -48,6 +48,7 @@ module.exports = {
     'promise/no-nesting': 'warn',
     'promise/no-return-in-finally': 'error',
     'promise/valid-params': 'error',
+    'promise/prefer-await-to-callbacks': 'warn',
     'promise/prefer-await-to-then': 'off',
     'no-return-await': 'off',
     'unicorn/no-fn-reference-in-iterator': 'off',

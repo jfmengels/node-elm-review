@@ -31,21 +31,22 @@ function runWithoutTestMode(args, options) {
   return internalExec(args, options);
 }
 
-function internalExec(args, options = {}) {
+async function internalExec(args, options = {}) {
   // Overriding FORCE_COLOR because Jest forcefully adds it as well,
   // which otherwise enables colors when we don't want it.
   const colorFlag = 'FORCE_COLOR=' + (options.colors ? '1' : '0');
-  return exec(
-    [colorFlag, cli, reportMode(options), colors(options), args].join(' '),
-    {
-      ...options,
-      cwd: cwdFromOptions(options)
-    }
-  )
-    .then((result) => result.stdout)
-    .catch((error) => {
-      throw error.stdout;
-    });
+  try {
+    const result = await exec(
+      [colorFlag, cli, reportMode(options), colors(options), args].join(' '),
+      {
+        ...options,
+        cwd: cwdFromOptions(options)
+      }
+    );
+    return result.stdout;
+  } catch (error) {
+    throw error.stdout;
+  }
 }
 
 function cwdFromOptions(options) {
