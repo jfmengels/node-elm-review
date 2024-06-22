@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require('node:path');
 const TestCli = require('./jest-helpers/cli');
 
 function testName(name) {

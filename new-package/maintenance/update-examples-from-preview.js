@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const path = require('path');
+const path = require('node:path');
 const fs = require('fs-extra');
 const root = path.resolve(__dirname, '..');
 const packageElmJson = require(`${root}/elm.json`);

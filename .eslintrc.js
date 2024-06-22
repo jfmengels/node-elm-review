@@ -47,7 +47,7 @@ module.exports = {
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-reduce': 'off',
     'unicorn/prefer-module': 'off',
-    'unicorn/prefer-node-protocol': 'off',
+    'unicorn/prefer-node-protocol': 'error',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],

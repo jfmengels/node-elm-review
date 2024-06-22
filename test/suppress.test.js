@@ -1,5 +1,5 @@
-const path = require('path');
-const childProcess = require('child_process');
+const path = require('node:path');
+const childProcess = require('node:child_process');
 const TestCli = require('./jest-helpers/cli');
 
 function testName(name) {
