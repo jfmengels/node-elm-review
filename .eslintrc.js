@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  extends: ['xo', 'prettier', 'plugin:@typescript-eslint/recommended'],
+  extends: ['xo', 'turbo', 'prettier', 'plugin:@typescript-eslint/recommended'],
   plugins: ['node', 'unicorn', '@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {

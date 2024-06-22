@@ -13,25 +13,34 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup Node.js environment
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 16.x
+        cache: 'npm'
 
     - name: Cache ~/.elm
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.elm
-        key: elm-ubuntu-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
+        key: elm-${{ runner.os }}-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
 
     - name: Cache node_modules
       id: cache-node_modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: node_modules
-        key: node_modules-ubuntu-${{ hashFiles('package-lock.json') }}
+        key: node_modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+    - name: Cache turbo build setup
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        key: ${{ runner.os }}-turbo-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-turbo-
 
     - name: npm ci
       if: steps.cache-node_modules.outputs.cache-hit != 'true'
@@ -42,8 +51,11 @@ jobs:
     - name: elm-tooling install
       run: npx --no-install elm-tooling install
 
+    - name: Install turbo
+      run: npm install -g turbo
+
     - name: Test nodejs version requirements
-      run: npm run check-engines
+      run: turbo run check-engines
 
     - name: Run tests
-      run: npm test
+      run: turbo run test

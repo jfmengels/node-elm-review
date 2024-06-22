@@ -35,3 +35,5 @@ test/elm-review-*.tgz
 .idea/
 ElmjutsuDumMyM0DuL3.elm
 .vscode/
+
+.turbo

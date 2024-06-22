@@ -1,0 +1,82 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["NO_COLOR", "LOCAL_ELM_REVIEW_SRC", "ELM_HOME"],
+  "tasks": {
+    "elm-format": {
+      "inputs": [
+        "ast-codec/**/*.elm",
+        "init-templates/**/*.elm",
+        "parseElm/**/*.elm",
+        "review/**/*.elm",
+        "template/**/*.elm"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "elm-tests",
+        "elm-format",
+        "tsc",
+        "eslint-check",
+        "prettier-check",
+        "test-run"
+      ]
+    },
+    "eslint-check": {
+      "inputs": ["lib/*", ".eslintrc.js"]
+    },
+    "eslint-fix": {
+      "inputs": ["lib/*", ".eslintrc.js"]
+    },
+    "js-fix": {
+      "dependsOn": ["eslint-fix", "prettier-fix"]
+    },
+    "prettier-check": {
+      "inputs": ["lib/*", ".prettierrc.json", ".prettierignore"]
+    },
+    "prettier-fix": {
+      "inputs": ["lib/*", ".prettierrc.json", ".prettierignore"]
+    },
+    "tsc": {
+      "inputs": ["lib/*", "tsconfig.json"]
+    },
+    "tsc-watch": {
+      "inputs": ["lib/*", "tsconfig.json"],
+      "persistent": true
+    },
+    "elm-tests": {
+      "inputs": ["template/"]
+    },
+    "test-run": {
+      "inputs": [
+        "ast-codec/",
+        "bin/",
+        "init-templates/",
+        "lib/",
+        "new-package/",
+        "parseElm/",
+        "review/",
+        "template/",
+        "test/",
+        "vendor/"
+      ]
+    },
+    "test-run-record": {
+      "inputs": [
+        "ast-codec/",
+        "bin/",
+        "init-templates/",
+        "lib/",
+        "new-package/",
+        "parseElm/",
+        "review/",
+        "template/",
+        "test/",
+        "vendor/"
+      ]
+    },
+    "prepare": {},
+    "check-engines": {
+      "inputs": ["package.json"]
+    }
+  }
+}
