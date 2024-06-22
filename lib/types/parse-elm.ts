@@ -1,6 +1,6 @@
-import {Path} from './path';
-import {ElmFile, Source, type ElmJson} from './content';
-import type {SendPort, SubscribePort} from './promisify-port';
+import {ElmFile, Source, type ElmJson} from './content.js';
+import {Path} from './path.js';
+import type {SendPort, SubscribePort} from './promisify-port.js';
 
 export type ParseJob = {
   elmParserPath: Path;

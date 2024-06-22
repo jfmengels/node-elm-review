@@ -1,7 +1,13 @@
 module.exports = {
   root: true,
-  extends: ['xo', 'turbo', 'prettier', 'plugin:@typescript-eslint/recommended'],
-  plugins: ['node', 'unicorn', '@typescript-eslint'],
+  extends: [
+    'xo', // Should we also use eslint-config-xo-typescript?
+    'turbo',
+    'plugin:n/recommended',
+    'prettier',
+    'plugin:@typescript-eslint/recommended'
+  ],
+  plugins: ['n', 'unicorn', '@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: true,
@@ -45,8 +51,18 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
-    'default-case': 'off'
+    'default-case': 'off',
+    // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
+    'n/shebang': 'off'
   },
+  overrides: [
+    {
+      files: ['./new-package/**/*.js'],
+      rules: {
+        'n/no-process-exit': 'off'
+      }
+    }
+  ],
   globals: {
     test: 'readonly',
     expect: 'readonly'

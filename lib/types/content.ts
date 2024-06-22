@@ -1,5 +1,5 @@
-import type {Path} from './path';
-import type {ElmVersion} from './elm-version';
+import type {ElmVersion} from './elm-version.js';
+import type {Path} from './path.js';
 
 export type File = {
   path: Path;

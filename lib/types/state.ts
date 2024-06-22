@@ -1,5 +1,5 @@
-import type {ElmFile, Readme, Source} from './content';
-import type {Path} from './path';
+import type {ElmFile, Readme, Source} from './content.js';
+import type {Path} from './path.js';
 
 export type Model = {
   elmFilesCacheForWatch: Map<Path, ElmFile>;

@@ -1,18 +1,18 @@
-import type {Path} from './path';
-import type {FilesProposedByCurrentFix} from './state';
 import type {
   Ast,
-  ElmFile,
-  Readme,
   Dependencies,
-  LinksToRuleDocs,
+  ElmFile,
   ElmJsonData,
-  NonElmFiles
-} from './content';
-import type {SuppressedErrorsFile} from './suppressed';
-import {StyledMessage} from './styled-message';
-import type {Flags} from './flags';
-import type {SendPort, SubscribePort} from './promisify-port';
+  LinksToRuleDocs,
+  NonElmFiles,
+  Readme
+} from './content.js';
+import type {Flags} from './flags.js';
+import type {Path} from './path.js';
+import type {SendPort, SubscribePort} from './promisify-port.js';
+import type {FilesProposedByCurrentFix} from './state.js';
+import {StyledMessage} from './styled-message.js';
+import type {SuppressedErrorsFile} from './suppressed.js';
 
 export type Elm = {
   Elm: {
