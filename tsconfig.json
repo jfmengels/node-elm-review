@@ -16,6 +16,8 @@
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["node", "jest"]
   },
   "include": [
