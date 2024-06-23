@@ -69,6 +69,7 @@ module.exports = {
     'default-case': 'off',
     'n/shebang': 'off', // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
     '@eslint-community/eslint-comments/require-description': 'error',
+    strict: ['error', 'global'],
 
     // TODO: Once there are no more `any`s, start enforcing these rules.
     '@typescript-eslint/no-unsafe-assignment': 'off',
