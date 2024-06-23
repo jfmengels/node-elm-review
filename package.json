@@ -2,32 +2,30 @@
   "name": "elm-review",
   "version": "2.12.0",
   "description": "Run elm-review from Node.js",
-  "type": "commonjs",
-  "engines": {
-    "node": ">=14.18"
-  },
-  "enginesStrict": true,
-  "packageManager": "npm@8.19.4",
-  "scripts": {
-    "test": "turbo run testing",
-    "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
-    "eslint-check": "eslint . --report-unused-disable-directives --max-warnings=0",
-    "eslint-fix": "npm run eslint-check -- --fix",
-    "prettier-check": "prettier . --check",
-    "prettier-fix": "prettier . --write",
-    "tsc": "tsc && tsc --project tsconfig.no-implicit-any.json",
-    "tsc-watch": "tsc --watch",
-    "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
-    "jest": "npx jest",
-    "test-run": "(cd test/ && ./run.sh)",
-    "test-run-record": "(cd test/ && ./run.sh record)",
-    "prepare": "elm-tooling install",
-    "check-engines": "ls-engines"
+  "keywords": [
+    "elm",
+    "review",
+    "elm-review",
+    "lint",
+    "linter",
+    "check",
+    "cli",
+    "AST"
+  ],
+  "homepage": "https://github.com/jfmengels/node-elm-review#readme",
+  "bugs": {
+    "url": "https://github.com/jfmengels/node-elm-review/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jfmengels/node-elm-review.git"
   },
+  "funding": {
+    "url": "https://github.com/sponsors/jfmengels"
+  },
+  "license": "BSD-3-Clause",
+  "author": "Jeroen Engels",
+  "type": "commonjs",
   "bin": {
     "elm-review": "bin/elm-review"
   },
@@ -45,25 +43,22 @@
     "/vendor/",
     "/template/src/**/*.elm"
   ],
-  "keywords": [
-    "elm",
-    "review",
-    "elm-review",
-    "lint",
-    "linter",
-    "check",
-    "cli",
-    "AST"
-  ],
-  "author": "Jeroen Engels",
-  "funding": {
-    "url": "https://github.com/sponsors/jfmengels"
+  "scripts": {
+    "check-engines": "ls-engines",
+    "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
+    "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
+    "eslint-check": "eslint . --report-unused-disable-directives --max-warnings=0",
+    "eslint-fix": "npm run eslint-check -- --fix",
+    "jest": "npx jest",
+    "prepare": "elm-tooling install",
+    "prettier-check": "prettier . --check",
+    "prettier-fix": "prettier . --write",
+    "test": "turbo run testing",
+    "test-run": "(cd test/ && ./run.sh)",
+    "test-run-record": "(cd test/ && ./run.sh record)",
+    "tsc": "tsc && tsc --project tsconfig.no-implicit-any.json",
+    "tsc-watch": "tsc --watch"
   },
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/jfmengels/node-elm-review/issues"
-  },
-  "homepage": "https://github.com/jfmengels/node-elm-review#readme",
   "dependencies": {
     "chalk": "^4.0.0",
     "chokidar": "^3.5.2",
@@ -116,5 +111,10 @@
     "turbo": "^2.0.4",
     "typescript": "~5.5.2",
     "uglify-js": "^3.18.0"
-  }
+  },
+  "packageManager": "npm@8.19.4",
+  "engines": {
+    "node": ">=14.18"
+  },
+  "enginesStrict": true
 }
