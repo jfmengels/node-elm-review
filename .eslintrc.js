@@ -12,6 +12,7 @@ module.exports = {
     'plugin:security/recommended-legacy',
     'plugin:@eslint-community/eslint-comments/recommended',
     'plugin:promise/recommended',
+    'plugin:unicorn/recommended',
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
     'prettier'
@@ -30,8 +31,7 @@ module.exports = {
     'test/run-snapshots',
     'test/snapshots',
     'test/temporary',
-    'vendor/node-elm-compiler.js',
-    'vendor/exit.js',
+    'vendor/',
     '.eslintrc.js',
     'new-package/elm-review-package-tests/check-previews-compile.js'
   ],
@@ -70,6 +70,18 @@ module.exports = {
     'n/shebang': 'off', // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
     '@eslint-community/eslint-comments/require-description': 'error',
     strict: ['error', 'global'],
+    'unicorn/import-style': [
+      'error',
+      {
+        styles: {
+          chalk: {
+            named: true
+          }
+        }
+      }
+    ],
+    'unicorn/no-null': 'off',
+    'unicorn/prevent-abbreviations': 'off',
 
     // TODO: Once there are no more `any`s, start enforcing these rules.
     '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -88,7 +100,11 @@ module.exports = {
     'security/detect-object-injection': 'off',
     'security/detect-non-literal-fs-filename': 'off',
     'security/detect-non-literal-require': 'off',
-    'security/detect-unsafe-regex': 'off' // TODO: Add `eslint-plugin-regexp` and fix these issues.
+    'security/detect-unsafe-regex': 'off', // TODO: Add `eslint-plugin-regexp` and fix these issues.
+
+    // TODO: Enable rules that require newer versions of Node.js when we bump the minimum version.
+    'unicorn/prefer-string-replace-all': 'off', // TODO [engine:node@>=15]: Enable this rule.
+    'unicorn/prefer-at': 'off' // TODO [engine:node@>=16.6]: Enable this rule.
   },
   overrides: [
     {

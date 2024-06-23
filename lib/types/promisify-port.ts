@@ -9,7 +9,7 @@ export type SubscribePort<DataOut> = {
   unsubscribe: CallbackFn<DataOut>;
 };
 
-type CallbackFn<T> = (cb: (data: T) => void) => void;
+type CallbackFn<T> = (callback: (data: T) => void) => void;
 
 export type SendPort<DataIn> = {
   send: (data: DataIn) => void;

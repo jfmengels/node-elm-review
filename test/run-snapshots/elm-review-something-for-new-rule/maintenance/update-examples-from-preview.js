@@ -18,7 +18,9 @@ if (require.main === module) {
 
 function copyPreviewsToExamples() {
   const previewFolders = findPreviewConfigurations();
-  previewFolders.forEach(copyPreviewToExample);
+  for (const folder of previewFolders) {
+    copyPreviewToExample(folder);
+  }
 }
 
 function copyPreviewToExample(pathToPreviewFolder) {
