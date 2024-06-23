@@ -12,14 +12,14 @@ module.exports = {
     'plugin:security/recommended-legacy',
     'plugin:@eslint-community/eslint-comments/recommended',
     'plugin:promise/recommended',
-    'prettier',
-    'plugin:@typescript-eslint/recommended'
+    'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:@typescript-eslint/stylistic-type-checked',
+    'prettier'
   ],
   plugins: ['n', 'security', 'promise', 'unicorn', '@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: true,
-    tsconfigRootDir: __dirname
+    EXPERIMENTAL_useProjectService: true
   },
   env: {
     node: true
@@ -66,11 +66,21 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     'default-case': 'off',
     'n/shebang': 'off', // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
     '@eslint-community/eslint-comments/require-description': 'error',
 
-    // TODO: Promise rules that should eventually get turned on.
+    // TODO: Once there are no more `any`s, start enforcing these rules.
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
+
+    // TODO: Enable stricter promise rules.
+    '@typescript-eslint/no-misused-promises': 'off',
+    '@typescript-eslint/no-floating-promises': 'off',
     'promise/catch-or-return': 'off',
     'promise/always-return': 'off',
 
@@ -84,7 +94,8 @@ module.exports = {
     {
       files: ['./new-package/**/*.js'],
       rules: {
-        'n/no-process-exit': 'off'
+        'n/no-process-exit': 'off',
+        '@typescript-eslint/unbound-method': 'off' // TODO: Fix this warning. @lishaduck just got confused.
       }
     }
   ],

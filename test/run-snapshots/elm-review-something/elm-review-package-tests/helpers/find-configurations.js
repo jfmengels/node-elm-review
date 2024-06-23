@@ -10,6 +10,9 @@ module.exports = {
   findPreviewConfigurations
 };
 
+/**
+ * @returns {string[]}
+ */
 function findPreviewConfigurations() {
   return glob
     .sync(`${root}/preview*/**/elm.json`, {

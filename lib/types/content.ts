@@ -18,7 +18,7 @@ export type NonElmFile = {
   content: string;
 };
 
-export type NonElmFiles = {[x: string]: string};
+export type NonElmFiles = Record<string, string>;
 
 export type Readme = NonElmFile;
 
@@ -58,7 +58,7 @@ export type Dependencies = Dependency[];
 
 export type Dependency = unknown;
 
-export type LinksToRuleDocs = {[x: string]: string};
+export type LinksToRuleDocs = Record<string, string>;
 
 export type Source = string;
 

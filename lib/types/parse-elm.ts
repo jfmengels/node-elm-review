@@ -5,13 +5,13 @@ import type {SendPort, SubscribePort} from './promisify-port.js';
 export type ParseJob = {
   elmParserPath: Path;
   source: Source;
-  callback: callback;
+  callback: Callback;
 };
 
-interface callback {
+type Callback = {
   (error: Error): void;
   (error: undefined, result: ElmFile): void;
-}
+};
 
 export type ParserApp = {
   ports: ParserPorts;
