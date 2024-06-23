@@ -28,6 +28,9 @@
     "eslint-fix": {
       "inputs": ["lib/*", ".eslintrc.js"]
     },
+    "js-check": {
+      "dependsOn": ["eslint-check", "prettier-check"]
+    },
     "js-fix": {
       "dependsOn": ["eslint-fix", "prettier-fix"]
     },
@@ -46,6 +49,9 @@
     },
     "elm-tests": {
       "inputs": ["template/"]
+    },
+    "jest": {
+      "inputs": ["lib/", "test/"]
     },
     "test-run": {
       "inputs": [

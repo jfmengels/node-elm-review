@@ -10,7 +10,7 @@
   "scripts": {
     "test": "turbo run testing",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
-    "eslint-check": "eslint . --report-unused-disable-directives",
+    "eslint-check": "eslint . --report-unused-disable-directives --max-warnings=0",
     "eslint-fix": "npm run eslint-check -- --fix",
     "prettier-check": "prettier . --check",
     "prettier-fix": "prettier . --write",
