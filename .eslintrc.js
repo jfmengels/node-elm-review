@@ -50,7 +50,6 @@ module.exports = {
     'max-params': 'off',
     'arrow-parens': 'off',
     'no-warning-comments': 'off',
-    'prefer-const': 'off',
     'promise/no-nesting': 'warn',
     'promise/no-return-in-finally': 'error',
     'promise/valid-params': 'error',
