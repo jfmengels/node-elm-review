@@ -57,6 +57,7 @@ module.exports = {
     'promise/prefer-await-to-callbacks': 'warn',
     'promise/prefer-await-to-then': 'off',
     'no-return-await': 'off',
+    '@typescript-eslint/return-await': ['error', 'always'],
     'unicorn/no-fn-reference-in-iterator': 'off',
     'unicorn/no-reduce': 'off',
     'unicorn/prefer-module': 'off',
