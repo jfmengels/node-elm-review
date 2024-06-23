@@ -30,6 +30,7 @@ module.exports = {
     'new-package/elm-review-package-tests/check-previews-compile.js'
   ],
   rules: {
+    // Style disagreements with XO.
     complexity: 'off',
     'import/extensions': 'off',
     indent: 'off',
@@ -44,6 +45,7 @@ module.exports = {
     'arrow-parens': 'off',
     'no-warning-comments': 'off',
     'prefer-const': 'off',
+    'promise/no-nesting': 'warn',
     'promise/no-return-in-finally': 'error',
     'promise/valid-params': 'error',
     'promise/prefer-await-to-then': 'off',
