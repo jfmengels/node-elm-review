@@ -82,6 +82,7 @@ module.exports = {
     ],
     'unicorn/no-null': 'off',
     'unicorn/prevent-abbreviations': 'off',
+    'no-fallthrough': 'off', // TS checks for this, and TSESLint doesn't provide an alternative.
 
     // TODO: Once there are no more `any`s, start enforcing these rules.
     '@typescript-eslint/no-unsafe-assignment': 'off',
