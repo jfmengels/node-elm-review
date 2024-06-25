@@ -19,7 +19,7 @@ export type Elm = {
     Elm: {
       Review: {
         Main: {
-          init: (flags: Flags) => App;
+          init: (flags: {flags: Flags}) => App;
         };
       };
     };
@@ -47,14 +47,14 @@ export type Ports = {
   suppressionsResponse: SubscribePort<unknown>;
 
   startReview: SendPort<null>;
-  reviewReport: SubscribePort<unknown>;
+  reviewReport: SubscribePort<{suppressedErrors: SuppressedErrorsFile[]}>;
 
   acknowledgeFileReceipt: SubscribePort<FileReceipt>;
   askConfirmationToFix: SubscribePort<AutofixRequest>;
   cacheFile: SubscribePort<unknown>;
   fixConfirmationStatus: SubscribePort<unknown>;
-  abort: SubscribePort<unknown>;
-  abortWithDetails: SubscribePort<unknown>;
+  abort: SubscribePort<string>;
+  abortWithDetails: SubscribePort<{title: string; message: string}>;
   abortForConfigurationErrors: SubscribePort<unknown>;
 };
 
