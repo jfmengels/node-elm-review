@@ -10,6 +10,11 @@
 
 'use strict';
 
+/**
+ * @param {number} exitCode
+ * @param {Array<NodeJS.WriteStream>} [streams=undefined]
+ * @returns {never}
+ */
 module.exports = function exit(exitCode, streams) {
   if (!streams) { streams = [process.stdout, process.stderr]; }
   var drainCount = 0;
