@@ -19,6 +19,7 @@
     "lib/help.js",
     "lib/load-compiled-app.js",
     "lib/min-version.js",
+    "lib/new-rule.js",
     "lib/options.js",
     "lib/os-helpers.js",
     "lib/parse-elm.js",
