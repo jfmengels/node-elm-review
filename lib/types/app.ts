@@ -55,7 +55,9 @@ export type Ports = {
   fixConfirmationStatus: SubscribePort<unknown>;
   abort: SubscribePort<string>;
   abortWithDetails: SubscribePort<{title: string; message: string}>;
-  abortForConfigurationErrors: SubscribePort<unknown>;
+  abortForConfigurationErrors: SubscribePort<
+    {errors: unknown[]; path: unknown}[] & StyledMessage
+  >;
 };
 
 export type FileReceipt = {
