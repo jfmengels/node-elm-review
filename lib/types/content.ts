@@ -1,4 +1,4 @@
-import type {ElmVersion} from './elm-version.js';
+import type {VersionString} from './version.js';
 import type {Path} from './path.js';
 
 export type File = {
@@ -32,16 +32,18 @@ export type ElmJson = ApplicationElmJson | PackageElmJson;
 
 export type ApplicationElmJson = {
   type: 'application';
-  'elm-version': ElmVersion;
+  'elm-version': VersionString;
   'source-directories': Path[];
   dependencies: ApplicationDependencies;
   'test-dependencies': ApplicationDependencies;
 };
 
 export type ApplicationDependencies = {
-  direct: Record<string, string>;
-  indirect: Record<string, string>;
+  direct: DependencyList;
+  indirect: DependencyList;
 };
+
+export type DependencyList = Record<string, VersionString>;
 
 export type PackageElmJson = {
   type: 'package';
