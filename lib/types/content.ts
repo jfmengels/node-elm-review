@@ -1,4 +1,4 @@
-import type {VersionString} from './version.js';
+import type {VersionRange, VersionString} from './version.js';
 import type {Path} from './path.js';
 
 export type File = {
@@ -39,14 +39,25 @@ export type ApplicationElmJson = {
 };
 
 export type ApplicationDependencies = {
-  direct: DependencyList;
-  indirect: DependencyList;
+  direct: ApplicationDependencyList;
+  indirect: ApplicationDependencyList;
 };
 
-export type DependencyList = Record<string, VersionString>;
+export type ApplicationDependencyList = Record<PackageName, VersionString>;
+export type PackageDependencyList = Record<PackageName, VersionRange>;
+
+export type PackageName = `${string}/${string}`;
 
 export type PackageElmJson = {
   type: 'package';
+  name: PackageName;
+  summary: string;
+  license: string;
+  version: VersionString;
+  'exposed-modules': (string | Record<string, string>)[];
+  'elm-version': VersionRange;
+  dependencies: PackageDependencyList;
+  'test-dependencies': PackageDependencyList;
 };
 
 export type SourceDirectories = Path[];
