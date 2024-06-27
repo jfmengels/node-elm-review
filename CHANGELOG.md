@@ -2,8 +2,8 @@
 
 ## [Unreleased]
 
-- Fixed an issue where the initial rule created with `elm-review new-package` was always a module rule, even when it was requested to be a project rule. Thanks [@mateusfpleite](https://github.com/mateusfpleite)
-- Plenty of behind the scenes improvement to the maintenance of the repository. Thanks [@lishaduck](https://github.com/lishaduck) for all of those.
+- Fixed an issue where the initial rule created with `elm-review new-package` was always a module rule, even when it was requested to be a project rule. Thanks to [@mateusfpleite](https://github.com/mateusfpleite)!
+- Plenty of behind the scenes improvement to the maintenance of the repository. Thanks to [@lishaduck](https://github.com/lishaduck) for all of those.
 
 ## [2.12.0] - 2024-06-14
 
@@ -163,4 +163,3 @@ Help would be appreciated to fill the blanks!
 [#107]: https://github.com/jfmengels/node-elm-review/pull/107
 [#80]: https://github.com/jfmengels/node-elm-review/pull/80
 [#79]: https://github.com/jfmengels/node-elm-review/issue/79
-[9bdc37b98c5e29f00e9485cf78bce0a3ff715761]: https://github.com/jfmengels/node-elm-review/commit/9bdc37b98c5e29f00e9485cf78bce0a3ff715761
