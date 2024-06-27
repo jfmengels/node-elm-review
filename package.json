@@ -53,7 +53,7 @@
     "prepare": "elm-tooling install",
     "prettier-check": "prettier . --check",
     "prettier-fix": "prettier . --write",
-    "test": "turbo run testing",
+    "test": "turbo run testing --continue",
     "test-run": "(cd test/ && ./run.sh)",
     "test-run-record": "(cd test/ && ./run.sh record)",
     "tsc": "tsc && tsc --project tsconfig.no-implicit-any.json",
