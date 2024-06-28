@@ -13,17 +13,17 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
 
       # Re-use node_modules between runs until package-lock.json changes.
       - name: Cache node_modules
         id: internal-cache-node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: node_modules
           key: internal-node_modules-ubuntu-latest.x-${{ hashFiles('package-lock.json') }}
@@ -32,7 +32,7 @@ jobs:
       # review/elm.json changes. The Elm compiler saves downloaded Elm packages
       # to ~/.elm, and elm-tooling saves downloaded tool executables there.
       - name: Cache ~/.elm
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ~/.elm
           key: elm-${{ hashFiles('elm.json', 'elm-tooling.json', 'review/elm.json') }}
@@ -70,17 +70,17 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
 
       # Re-use node_modules between runs until package-lock.json changes.
       - name: Cache node_modules
         id: internal-cache-node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: node_modules
           key: internal-node_modules-ubuntu-latest.x-${{ hashFiles('package-lock.json') }}
@@ -89,7 +89,7 @@ jobs:
       # review/elm.json changes. The Elm compiler saves downloaded Elm packages
       # to ~/.elm, and elm-tooling saves downloaded tool executables there.
       - name: Cache ~/.elm
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ~/.elm
           key: elm-${{ hashFiles('elm.json', 'elm-tooling.json', 'review/elm.json') }}
@@ -116,7 +116,7 @@ jobs:
         run: npx --no-install elm-tooling install
 
       - name: Check if package needs to be published
-        uses: dillonkearns/elm-publish-action@v1
+        uses: dillonkearns/elm-publish-action@2e6b7857073da5b88cc46fc789967bd7046f15df # v1.0.3
         id: publish
         with:
           dry-run: true
@@ -129,7 +129,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: Elm Publish
         if: steps.publish.outputs.is-publishable == 'true'
-        uses: dillonkearns/elm-publish-action@v1
+        uses: dillonkearns/elm-publish-action@2e6b7857073da5b88cc46fc789967bd7046f15df # v1.0.3
         with:
           # Token provided by GitHub
           github-token: ${{ secrets.GITHUB_TOKEN }}
