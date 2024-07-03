@@ -1,0 +1,45 @@
+---
+# To get started with Dependabot version updates, you"ll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: 'npm' # See documentation for possible values
+    directories: # Location of package manifests
+      - '/'
+    schedule:
+      interval: 'daily'
+    groups:
+      chalk:
+        patterns:
+          - 'chalk'
+          - 'strip-ansi'
+          - 'wrap-ansi'
+      typescript-eslint:
+        patterns:
+          - '@typescript-eslint/*'
+  - package-ecosystem: 'github-actions' # See documentation for possible values
+    directories: # Location of package manifests
+      - '/' # Strangely, this is how to specify "./.github/workflows/*.ya?ml"
+      - '/new-package'
+    schedule:
+      interval: 'daily'
+    groups:
+      github-actions:
+        patterns:
+          - 'actions/*'
+  - package-ecosystem: 'elm' # See documentation for possible values
+    directories: # Location of package manifests
+      - '/ast-codec'
+      - '/new-package/review-config-templates/2.3.0'
+      - 'parseElm'
+      - 'review'
+      - 'template'
+    schedule:
+      interval: 'daily'
+    groups:
+      elm:
+        patterns:
+          - 'elm/*'
