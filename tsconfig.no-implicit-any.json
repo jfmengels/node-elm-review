@@ -33,6 +33,7 @@
     "lib/styled-message.js",
     "lib/suppressed-errors.js",
     "vendor/exit.js",
+    "vendor/node-elm-compiler.js",
     "jest.config.js"
   ]
 }

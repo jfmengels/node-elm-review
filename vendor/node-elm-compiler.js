@@ -1,8 +1,14 @@
 'use strict';
 
+/**
+ * @import {CompileOptions, ProcessOptions, Sources, Spawner} from './types/node-elm-compiler'
+ */
+
+// @ts-ignore - I'm offline right now.
 var spawn = require('cross-spawn');
 var elmBinaryName = 'elm';
 
+/** @satisfies {Partial<CompileOptions>} */
 var defaultOptions = {
   spawn: spawn,
   cwd: undefined,
@@ -17,18 +23,27 @@ var defaultOptions = {
   optimize: undefined
 };
 
+/**
+ * @param {Sources} sources
+ * @returns {string[]}
+ */
 function prepareSources(sources) {
-  if (!(sources instanceof Array || typeof sources === 'string')) {
-    throw 'compile() received neither an Array nor a String for its sources argument.';
-  }
-
   return typeof sources === 'string' ? [sources] : sources;
 }
 
+/**
+ * @param {CompileOptions} options
+ * @param {Spawner} spawnFn
+ * @returns {CompileOptions}
+ */
 function prepareOptions(options, spawnFn) {
   return Object.assign({}, defaultOptions, options, {spawn: spawnFn});
 }
 
+/**
+ * @param {Sources} sources
+ * @param {CompileOptions} options
+ */
 function prepareProcessArgs(sources, options) {
   var preparedSources = prepareSources(sources);
   var compilerArgs = compilerArgsFromOptions(options);
@@ -38,6 +53,10 @@ function prepareProcessArgs(sources, options) {
   );
 }
 
+/**
+ * @param {CompileOptions} options
+ * @returns {ProcessOptions}
+ */
 function prepareProcessOpts(options) {
   var env = Object.assign({LANG: 'en_US.UTF-8'}, process.env);
   return Object.assign(
@@ -46,6 +65,12 @@ function prepareProcessOpts(options) {
   );
 }
 
+/**
+ * @param {Sources} sources
+ * @param {CompileOptions} options
+ * @param {string} pathToElm
+ * @returns {NodeJS.Process}
+ */
 function runCompiler(sources, options, pathToElm) {
   if (typeof options.spawn !== 'function') {
     throw (
@@ -65,6 +90,10 @@ function runCompiler(sources, options, pathToElm) {
   return options.spawn(pathToElm, processArgs, processOpts);
 }
 
+/**
+ * @param {string | { code: string | undefined, message: string }} err
+ * @param {string} pathToElm
+ */
 function compilerErrorToString(err, pathToElm) {
   if (typeof err === 'object' && typeof err.code === 'string') {
     switch (err.code) {
@@ -95,6 +124,10 @@ function compilerErrorToString(err, pathToElm) {
   }
 }
 
+/**
+ * @param {Sources} sources
+ * @param {CompileOptions} options
+ */
 function compile(sources, options) {
   var optionsWithDefaults = prepareOptions(options, options.spawn || spawn);
   var pathToElm = options.pathToElm || elmBinaryName;
@@ -102,7 +135,7 @@ function compile(sources, options) {
   try {
     return runCompiler(sources, optionsWithDefaults, pathToElm).on(
       'error',
-      function (err) {
+      function (/** @type {unknown} */ err) {
         throw err;
       }
     );
@@ -125,7 +158,7 @@ function flatten(array) {
 /**
  * Converts an object of key/value pairs to an array of arguments suitable
  * to be passed to child_process.spawn for elm-make.
- * @param {typeof defaultOptions} options
+ * @param {CompileOptions} options
  * @returns {string[]}
  */
 function compilerArgsFromOptions(options) {
@@ -156,6 +189,7 @@ function compilerArgsFromOptions(options) {
           case 'optimize':
             return ['--optimize'];
           case 'runtimeOptions':
+            // @ts-expect-error - TS doesn't get what we're doing here.
             return ['+RTS', ...value, '-RTS'];
           default:
             throw new Error(
