@@ -47,7 +47,10 @@ export type Ports = {
   suppressionsResponse: SubscribePort<SuppressedErrorsFile[]>;
 
   startReview: SendPort<null>;
-  reviewReport: SubscribePort<{suppressedErrors: SuppressedErrorsFile[]}>;
+  reviewReport: SubscribePort<{
+    suppressedErrors: SuppressedErrorsFile[];
+    success: boolean;
+  }>;
 
   acknowledgeFileReceipt: SubscribePort<FileReceipt>;
   askConfirmationToFix: SubscribePort<AutofixRequest>;
