@@ -32,8 +32,7 @@ module.exports = {
     'test/snapshots',
     'test/temporary',
     'vendor/',
-    '.eslintrc.js',
-    'new-package/elm-review-package-tests/check-previews-compile.js'
+    '.eslintrc.js'
   ],
   rules: {
     // Style disagreements with XO.
@@ -112,6 +111,8 @@ module.exports = {
       files: ['./new-package/**/*.js'],
       rules: {
         'n/no-process-exit': 'off',
+        'n/no-missing-require': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/unbound-method': 'off' // TODO: Fix this warning. @lishaduck just got confused.
       }
     }

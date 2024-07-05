@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const path = require('path');
+const path = require('node:path');
 const Ansi = require('./helpers/ansi');
-const {execSync} = require('child_process');
+const {execSync} = require('node:child_process');
 const {findPreviewConfigurations} = require('./helpers/find-configurations');
 // @ts-ignore - Generated file.
 const packageDependencies = require('../elm.json').dependencies;
@@ -10,8 +10,9 @@ const packageDependencies = require('../elm.json').dependencies;
 const root = path.dirname(__dirname);
 
 // Find all elm.json files
-
-findPreviewConfigurations().forEach(checkThatExampleCompiles);
+for (const example of findPreviewConfigurations()) {
+  checkThatExampleCompiles(example);
+}
 
 function checkThatExampleCompiles(exampleConfiguration) {
   const exampleConfigurationElmJson = require(`${exampleConfiguration}/elm.json`);
@@ -49,7 +50,6 @@ and make the necessary changes to make it compile.`
       }
 
       success(exampleConfiguration);
-      return;
     } catch {
       console.log(
         `An error occurred while trying to check whether the ${Ansi.yellow(
@@ -67,7 +67,7 @@ function success(config) {
 }
 
 function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
-  Object.entries(packageDependencies).forEach(([depName, constraint]) => {
+  for (const [depName, constraint] of Object.entries(packageDependencies)) {
     if (!(depName in previewDependencies)) {
       console.error(
         `Dependency ${depName} is missing in the ${exampleConfiguration}/ configuration`
@@ -82,12 +82,13 @@ function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
       previewDependencies[depName]
     );
     delete previewDependencies[depName];
-  });
+  }
 
   const remainingKeys = Object.keys(previewDependencies);
-  if (remainingKeys.length !== 0) {
+  if (remainingKeys.length > 0) {
     console.error(
-      `There are extraneous dependencies in the ${exampleConfiguration}/ configuration: ${remainingKeys}`
+      // prettier-ignore
+      `There are extraneous dependencies in the ${exampleConfiguration}/ configuration: ${remainingKeys.join(', ')}`
     );
     process.exit(1);
   }
