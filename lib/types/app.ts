@@ -55,7 +55,8 @@ export type Ports = {
   acknowledgeFileReceipt: SubscribePort<FileReceipt>;
   askConfirmationToFix: SubscribePort<AutofixRequest>;
   cacheFile: SubscribePort<{source: string; ast: Ast}>;
-  fixConfirmationStatus: SubscribePort<unknown>;
+  fixConfirmationStatus: SubscribePort<boolean>;
+  askForFixConfirmationStatus: SendPort<null>;
   abort: SubscribePort<string>;
   abortWithDetails: SubscribePort<{title: string; message: string}>;
   abortForConfigurationErrors: SubscribePort<
