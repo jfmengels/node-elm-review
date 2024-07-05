@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /*
  * exit
  * https://github.com/cowboy/node-exit
@@ -12,13 +10,15 @@
 
 /**
  * @param {number} exitCode
- * @param {Array<NodeJS.WriteStream>} [streams=undefined]
+ * @param {Array<NodeJS.WriteStream>} [streams]
  * @returns {never}
  */
-module.exports = function exit(exitCode, streams) {
+module.exports = function exit(exitCode, streams = []) {
   if (!streams) { streams = [process.stdout, process.stderr]; }
   var drainCount = 0;
   // Actually exit if all streams are drained.
+  // @ts-expect-error - This is really `never | void`, but TS isn't smart enough to deal with that later on.
+  /** @return {never} */
   function tryToExit() {
     if (drainCount === streams.length) {
       process.exit(exitCode);
@@ -26,7 +26,7 @@ module.exports = function exit(exitCode, streams) {
   }
   streams.forEach(function(stream) {
     // Count drained streams now, but monitor non-drained streams.
-    if (stream.bufferSize === 0) {
+    if (stream.writableLength === 0) {
       drainCount++;
     } else {
       stream.write('', 'utf-8', function() {
@@ -35,7 +35,7 @@ module.exports = function exit(exitCode, streams) {
       });
     }
     // Prevent further writing.
-    stream.write = function() {};
+    stream.write = () => true;
   });
   // If all streams were already drained, exit now.
   tryToExit();
