@@ -35,10 +35,10 @@
       "dependsOn": ["eslint-fix", "prettier-fix"]
     },
     "prettier-check": {
-      "inputs": ["lib/*", ".prettierrc.json", ".prettierignore"]
+      "inputs": ["lib/*", "vendor/*", ".prettierrc.json", ".prettierignore"]
     },
     "prettier-fix": {
-      "inputs": ["lib/*", ".prettierrc.json", ".prettierignore"]
+      "inputs": ["lib/*", "vendor/*", ".prettierrc.json", ".prettierignore"]
     },
     "tsc": {
       "inputs": [
