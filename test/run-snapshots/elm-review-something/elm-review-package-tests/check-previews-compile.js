@@ -4,6 +4,7 @@ const path = require('path');
 const Ansi = require('./helpers/ansi');
 const {execSync} = require('child_process');
 const {findPreviewConfigurations} = require('./helpers/find-configurations');
+// @ts-ignore - Generated file.
 const packageDependencies = require('../elm.json').dependencies;
 
 const root = path.dirname(__dirname);
