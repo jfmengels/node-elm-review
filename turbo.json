@@ -23,10 +23,10 @@
       ]
     },
     "eslint-check": {
-      "inputs": ["lib/*", ".eslintrc.js"]
+      "inputs": ["lib/*", "vendor/*", ".eslintrc.js"]
     },
     "eslint-fix": {
-      "inputs": ["lib/*", ".eslintrc.js"]
+      "inputs": ["lib/*", "vendor/*", ".eslintrc.js"]
     },
     "js-check": {
       "dependsOn": ["eslint-check", "prettier-check"]
