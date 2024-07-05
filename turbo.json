@@ -41,7 +41,12 @@
       "inputs": ["lib/*", ".prettierrc.json", ".prettierignore"]
     },
     "tsc": {
-      "inputs": ["lib/*", "tsconfig.json", "tsconfig.*.json"]
+      "inputs": [
+        "lib/*",
+        "new-package/elm-review-package-tests/**/*.js",
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ]
     },
     "tsc-watch": {
       "inputs": ["lib/*", "tsconfig.json"],
