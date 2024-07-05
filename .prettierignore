@@ -9,5 +9,4 @@
 test/**/*.json
 test/temporary/
 test/run-snapshots/
-vendor/exit.js
 .turbo
