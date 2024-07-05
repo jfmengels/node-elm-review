@@ -44,7 +44,7 @@ export type Ports = {
   userConfirmedFix: SendPort<FixConfirmation>;
 
   startGeneratingSuppressions: SendPort<null>;
-  suppressionsResponse: SubscribePort<unknown>;
+  suppressionsResponse: SubscribePort<SuppressedErrorsFile[]>;
 
   startReview: SendPort<null>;
   reviewReport: SubscribePort<{suppressedErrors: SuppressedErrorsFile[]}>;
