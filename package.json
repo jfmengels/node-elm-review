@@ -44,7 +44,7 @@
     "/template/src/**/*.elm"
   ],
   "scripts": {
-    "check-engines": "ls-engines",
+    "check-engines": "ls-engines --mode=ideal",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
     "eslint-check": "eslint . --report-unused-disable-directives --max-warnings=0",
