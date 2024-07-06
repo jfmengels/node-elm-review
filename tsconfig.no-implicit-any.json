@@ -29,6 +29,7 @@
     "lib/project-json-files.js",
     "lib/promisify-port.js",
     "lib/report.js",
+    "lib/result-cache-json.js",
     "lib/state.js",
     "lib/styled-message.js",
     "lib/suppressed-errors.js",
