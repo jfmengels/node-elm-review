@@ -115,7 +115,7 @@
   },
   "packageManager": "npm@8.19.4",
   "engines": {
-    "node": ">=14.18"
+    "node": ">=16 || 14 >=14.18"
   },
   "enginesStrict": true
 }
