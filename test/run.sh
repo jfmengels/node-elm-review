@@ -37,7 +37,9 @@ function runCommandAndCompareToSnapshot {
     (eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 \
         | $REPLACE_SCRIPT \
         > "$TMP/$FILE"
-    if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
+    local diffed
+    diffed="$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE" || true)"
+    if [ "$diffed" != "" ]
     then
         echo -e "\x1B[31m  ERROR\n  I found a different output than expected:\x1B[0m"
         echo -e "\n    \x1B[31mExpected:\x1B[0m\n"
@@ -46,7 +48,6 @@ function runCommandAndCompareToSnapshot {
         cat "$TMP/$FILE"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
         diff -p "$TMP/$FILE" "$SNAPSHOTS/$FILE"
-        exit 1
     else
       echo -e "  \x1B[92mOK\x1B[0m"
     fi
@@ -115,11 +116,13 @@ function checkFolderContents {
   if [ "$SUBCOMMAND" != "record" ]
   then
     echo -n "  Checking generated files are the same"
-    if [ "$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff")" != "" ]
+
+    local diffed
+    diffed="$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff" || true)"
+    if [ "$diffed" != "" ]
     then
         echo -e "\x1B[31m  ERROR\n  The generated files are different:\x1B[0m"
         diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff"
-        exit 1
     else
       echo -e "  \x1B[92mOK\x1B[0m"
     fi
@@ -215,29 +218,32 @@ $createTest "$CMD" \
 
 if [ "$SUBCOMMAND" != "record" ]
 then
-    if [ "$(diff -q "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm")" != "" ]
+    declare diffed
+    diffed="$(diff -q "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm" || true)"
+    if [ "$diffed" != "" ]
     then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output  for Main.elmthan expected:\x1B[0m"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
         diff -py "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm"
-        exit 1
     fi
-    if [ "$(diff -q "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm")" != "" ]
+    declare diffed
+    diffed="$(diff -q "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm" || true)"
+    if [ "$diffed" != "" ]
     then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Used.elm:\x1B[0m"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
         diff -py "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm"
-        exit 1
     fi
-    if [ "$(diff -q "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm")" != "" ]
+    declare diffed
+    diffed="$(diff -q "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm" || true)"
+    if [ "$diffed" != "" ]
     then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Unused.elm:\x1B[0m"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
         diff -py "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm"
-        exit 1
     fi
 fi
 
@@ -254,7 +260,7 @@ $createTest "$CMD" \
     "Fixing all errors for an entire rule should remove the suppression file" \
     "" \
     "suppressed-errors-after-fixed-errors-for-rule.txt"
-if [ -f review/suppressed/NoUnused.Dependencies.json ]; then
+if [ -f "./review/suppressed/NoUnused.Dependencies.json" ]; then
     echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
     exit 1
 fi
@@ -267,7 +273,9 @@ $createTest "$CMD" \
     "" \
     "suppressed-errors-after-fixed-errors-for-file.txt"
 
-if [ "$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json)" != "" ]; then
+declare diffed
+diffed="$(diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json || true)"
+if [ "$diffed" != "" ]; then
     echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json to have been updated"
     exit 1
 fi
