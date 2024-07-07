@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -eo pipefail
 
 CWD=$(pwd)
 CMD="elm-review --no-color"
@@ -34,7 +34,7 @@ function runCommandAndCompareToSnapshot {
       exit 1
     fi
 
-    eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
+    (eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 \
         | $REPLACE_SCRIPT \
         > "$TMP/$FILE"
     if [ "$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE")" != "" ]
