@@ -1,20 +1,20 @@
 #!/bin/bash
 
-set -eo pipefail
+set -euo pipefail
 
 CWD=$(pwd)
 CMD="elm-review --no-color"
 TMP="$CWD/temporary"
 ELM_HOME="$TMP/elm-home"
 SNAPSHOTS="$CWD/run-snapshots"
-SUBCOMMAND="$1"
+SUBCOMMAND="${1:-}"
 REPLACE_SCRIPT="node $CWD/replace-local-path.js"
 
 # If you get errors like rate limit exceeded, you can run these tests
 # with "GITHUB_AUTH=gitHubUserName:token"
 # Follow this guide: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 # to create an API token, and give it access to public repositories.
-if [ -z "${GITHUB_AUTH}" ]
+if [ -z "${GITHUB_AUTH:-}" ]
 then
   AUTH=""
 else
@@ -153,7 +153,7 @@ rm -rf "$TMP" \
 
 mkdir -p "$TMP"
 
-if [ "$1" == "record" ]
+if [ "$SUBCOMMAND" == "record" ]
 then
   createTest=runAndRecord
   rm -rf "$SNAPSHOTS" &> /dev/null
@@ -197,7 +197,7 @@ checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
 
 # FIXES
 
-if [ "$1" == "record" ]
+if [ "$SUBCOMMAND" == "record" ]
 then
   rm -rf "$SNAPSHOTS/project to fix"
   cp -r "$CWD/project-with-errors" "$SNAPSHOTS/project to fix"
@@ -213,7 +213,7 @@ $createTest "$CMD" \
     "--fix-all-without-prompt" \
     "fix-all.txt"
 
-if [ "$1" != "record" ]
+if [ "$SUBCOMMAND" != "record" ]
 then
     if [ "$(diff -q "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm")" != "" ]
     then
@@ -284,7 +284,7 @@ cd "$CWD"
 
 # new-package
 
-if [ "$1" == "record" ]
+if [ "$SUBCOMMAND" == "record" ]
 then
   cd "$SNAPSHOTS/"
 else
