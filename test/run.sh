@@ -215,7 +215,7 @@ $createTest "$CMD" \
 
 if [ "$1" != "record" ]
 then
-    if [ "$(diff -yq "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm")" != "" ]
+    if [ "$(diff -q "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm")" != "" ]
     then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output  for Main.elmthan expected:\x1B[0m"
@@ -223,7 +223,7 @@ then
         diff -py "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm"
         exit 1
     fi
-    if [ "$(diff -yq "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm")" != "" ]
+    if [ "$(diff -q "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm")" != "" ]
     then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Used.elm:\x1B[0m"
@@ -231,7 +231,7 @@ then
         diff -py "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm"
         exit 1
     fi
-    if [ "$(diff -yq "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm")" != "" ]
+    if [ "$(diff -q "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm")" != "" ]
     then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Unused.elm:\x1B[0m"
