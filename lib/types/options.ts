@@ -71,7 +71,7 @@ export type ReviewOptions = Options & {
 
 export type DetailsMode = 'without-details' | 'with-details';
 
-export type ReportMode = 'json' | 'human' | null;
+export type ReportMode = 'json' | 'ndjson' | 'human' | null;
 
 export type NewPackagePrefilledAnswers = {
   authorName: string | undefined;
