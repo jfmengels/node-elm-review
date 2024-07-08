@@ -1,4 +1,4 @@
-import type {MessagePort} from 'worker_threads';
+import type {ChildProcess, SpawnOptions} from 'node:child_process';
 import type {ReportMode} from '../../lib/types/options';
 
 export type CompileOptions = {
@@ -24,8 +24,8 @@ export interface ProcessOptions {
 
 export type Spawner = (
   pathToElm: string,
-  processArgs: string[],
+  processArgs: SpawnOptions,
   processOpts: ProcessOptions
-) => NodeJS.Process;
+) => ChildProcess;
 
 export type Sources = string | string[];

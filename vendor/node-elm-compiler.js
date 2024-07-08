@@ -1,10 +1,10 @@
 'use strict';
 
 /**
+ * @import {ChildProcess} from 'node:child_process'
  * @import {CompileOptions, ProcessOptions, Sources, Spawner} from './types/node-elm-compiler'
  */
 
-// @ts-ignore - I'm offline right now.
 var spawn = require('cross-spawn');
 var elmBinaryName = 'elm';
 
@@ -43,6 +43,7 @@ function prepareOptions(options, spawnFn) {
 /**
  * @param {Sources} sources
  * @param {CompileOptions} options
+ * @returns {string[]}
  */
 function prepareProcessArgs(sources, options) {
   var preparedSources = prepareSources(sources);
@@ -69,7 +70,7 @@ function prepareProcessOpts(options) {
  * @param {Sources} sources
  * @param {CompileOptions} options
  * @param {string} pathToElm
- * @returns {NodeJS.Process}
+ * @returns {ChildProcess}
  */
 function runCompiler(sources, options, pathToElm) {
   if (typeof options.spawn !== 'function') {
@@ -87,6 +88,7 @@ function runCompiler(sources, options, pathToElm) {
     console.log(['Running', pathToElm].concat(processArgs).join(' '));
   }
 
+  // @ts-expect-error -- processArgs is `string[]`, but spawn expects `SpawnOptions`.
   return options.spawn(pathToElm, processArgs, processOpts);
 }
 
