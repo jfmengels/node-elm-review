@@ -1,5 +1,4 @@
 #!/usr/bin/env node
 
-// TODO: With ESM, this should use TLA.
-
+// TODO(@lishaduck): With ESM, this should use TLA.
 require('../lib/main')();
