@@ -9,7 +9,7 @@ test('Regular run from inside the project', async () => {
   const output = await TestCli.runAndExpectError('', {
     project: 'project-with-errors/'
   });
-  expect(output).toMatchFile('review-with-errors');
+  expect(output).toMatchFile(testName('review-with-errors'));
 });
 
 test('Regular run from inside the project (JSON output)', async () => {
