@@ -1,3 +1,4 @@
+// @ts-check
 // TODO [eslint@>9.5]: Use `.ts` extension to get more type checking for this file.
 // TODO [engine:node@>=18]: Upgrade `tseslint`.
 // TODO [engine:node@>=18]: Use `eslint-define-config` to get type checking for this file.
@@ -31,8 +32,7 @@ module.exports = {
     'test/run-snapshots',
     'test/snapshots',
     'test/temporary',
-    'vendor/',
-    '.eslintrc.js'
+    'vendor/'
   ],
   rules: {
     // Style disagreements with XO.
@@ -114,6 +114,13 @@ module.exports = {
         'n/no-missing-require': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/unbound-method': 'off' // TODO: Fix this warning. @lishaduck just got confused.
+      }
+    },
+    {
+      files: ['.eslintrc.js'],
+      rules: {
+        camelcase: 'off',
+        '@typescript-eslint/prefer-nullish-coalescing': 'off' // It's not happy with how TS is set up on this config file.
       }
     }
   ],

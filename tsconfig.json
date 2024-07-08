@@ -30,5 +30,5 @@
     "test/**/*",
     "jest.config.js"
   ],
-  "exclude": ["node_modules", "**/elm-stuff/", ".eslintrc.js", "test/temporary"]
+  "exclude": ["node_modules", "**/elm-stuff/", "test/temporary"]
 }
