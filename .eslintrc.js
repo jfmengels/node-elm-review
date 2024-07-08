@@ -1,8 +1,8 @@
 // @ts-check
-// TODO [eslint@>9.5]: Use `.ts` extension to get more type checking for this file.
-// TODO [engine:node@>=18]: Upgrade `tseslint`.
-// TODO [engine:node@>=18]: Use `eslint-define-config` to get type checking for this file.
-// TODO [engine:node@>=18]: Use `eslint-plugin-jsdoc` to get JSDoc linting.
+// TODO(@lishaduck) [eslint@>9.5]: Use `.ts` extension to get more type checking for this file.
+// TODO(@lishaduck) [engine:node@>=18]: Upgrade `tseslint`.
+// TODO(@lishaduck) [engine:node@>=18]: Use `eslint-define-config` to get type checking for this file.
+// TODO(@lishaduck) [engine:node@>=18]: Use `eslint-plugin-jsdoc` to get JSDoc linting.
 
 module.exports = {
   root: true,
@@ -66,7 +66,7 @@ module.exports = {
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     'default-case': 'off',
-    'n/shebang': 'off', // TODO [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
+    'n/shebang': 'off', // TODO(@lishaduck) [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
     '@eslint-community/eslint-comments/require-description': 'error',
     strict: ['error', 'global'],
     'unicorn/import-style': [
@@ -83,28 +83,28 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'no-fallthrough': 'off', // TS checks for this, and TSESLint doesn't provide an alternative.
 
-    // TODO: Once there are no more `any`s, start enforcing these rules.
+    // TODO(@lishaduck): Once there are no more `any`s, start enforcing these rules.
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
     '@typescript-eslint/no-unsafe-call': 'off',
     '@typescript-eslint/no-unsafe-return': 'off',
 
-    // TODO: Enable stricter promise rules.
+    // TODO(@lishaduck): Enable stricter promise rules.
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
     'promise/catch-or-return': 'off',
     'promise/always-return': 'off',
 
-    // TODO: Security issues that should eventually get fixed.
+    // TODO(@lishaduck): Security issues that should eventually get fixed.
     'security/detect-object-injection': 'off',
     'security/detect-non-literal-fs-filename': 'off',
     'security/detect-non-literal-require': 'off',
-    'security/detect-unsafe-regex': 'off', // TODO: Add `eslint-plugin-regexp` and fix these issues.
+    'security/detect-unsafe-regex': 'off', // TODO(@lishaduck): Add `eslint-plugin-regexp` and fix these issues.
 
-    // TODO: Enable rules that require newer versions of Node.js when we bump the minimum version.
-    'unicorn/prefer-string-replace-all': 'off', // TODO [engine:node@>=15]: Enable this rule.
-    'unicorn/prefer-at': 'off' // TODO [engine:node@>=16.6]: Enable this rule.
+    // TODO(@lishaduck): Enable rules that require newer versions of Node.js when we bump the minimum version.
+    'unicorn/prefer-string-replace-all': 'off', // TODO(@lishaduck) [engine:node@>=15]: Enable this rule.
+    'unicorn/prefer-at': 'off' // TODO(@lishaduck) [engine:node@>=16.6]: Enable this rule.
   },
   overrides: [
     {
@@ -113,7 +113,7 @@ module.exports = {
         'n/no-process-exit': 'off',
         'n/no-missing-require': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/unbound-method': 'off' // TODO: Fix this warning. @lishaduck just got confused.
+        '@typescript-eslint/unbound-method': 'off' // TODO(@lishaduck): Fix this warning. I just got confused.
       }
     },
     {
