@@ -1,7 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.no-implicit-any.json"
   },
   "include": [
     "lib/anonymize.js",
