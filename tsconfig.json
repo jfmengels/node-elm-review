@@ -20,7 +20,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "incremental": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
   },
   "include": [
     "lib/**/*",
