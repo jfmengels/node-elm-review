@@ -73,6 +73,13 @@ module.exports = {
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     'default-case': 'off',
     'n/shebang': 'off', // TODO(@lishaduck) [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
+    '@typescript-eslint/ban-ts-comment': [
+      'warn',
+      {
+        'ts-expect-error': {descriptionFormat: '^\\(TS\\d+\\): .+$'},
+        'ts-check': false
+      }
+    ],
     'unicorn/expiring-todo-comments': 'warn',
     'todo-plz/ticket-ref': [
       'warn',

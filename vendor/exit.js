@@ -19,7 +19,7 @@ module.exports = function exit(exitCode, streams = []) {
   }
   var drainCount = 0;
   // Actually exit if all streams are drained.
-  // @ts-expect-error - This is really `never | void`, but TS isn't smart enough to deal with that later on.
+  // @ts-expect-error(TS2534): This is really `never | void`, but TS isn't smart enough to deal with that later on.
   /** @return {never} */
   function tryToExit() {
     if (drainCount === streams.length) {
