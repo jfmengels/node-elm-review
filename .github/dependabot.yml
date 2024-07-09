@@ -20,6 +20,11 @@ updates:
       typescript-eslint:
         patterns:
           - '@typescript-eslint/*'
+      turbo:
+        patterns:
+          - 'turbo'
+          - 'eslint-config-turbo'
+          - 'eslint-plugin-turbo'
   - package-ecosystem: 'github-actions' # See documentation for possible values
     directories: # Location of package manifests
       - '/' # Strangely, this is how to specify "./.github/workflows/*.ya?ml"
