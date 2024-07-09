@@ -10,7 +10,7 @@ updates:
     directories: # Location of package manifests
       - '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     groups:
       chalk:
         patterns:
@@ -30,7 +30,7 @@ updates:
       - '/' # Strangely, this is how to specify "./.github/workflows/*.ya?ml"
       - '/new-package'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     groups:
       github-actions:
         patterns:
@@ -43,7 +43,7 @@ updates:
       - 'review'
       - 'template'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     groups:
       elm:
         patterns:
