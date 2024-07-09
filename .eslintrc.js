@@ -88,7 +88,7 @@ module.exports = {
     'unicorn/import-style': ['off'], // TODO(@lishaduck): Re-enable this once we use ESM.
     'unicorn/no-null': 'off',
     'unicorn/prevent-abbreviations': 'off',
-    'no-fallthrough': 'off', // TS checks for this, and TSESLint doesn't provide an alternative.
+    'no-fallthrough': 'off', // TSESLint doesn't provide an alternative, and TS checks for this anyway.
 
     // TODO(@lishaduck): Once there are no more `any`s, start enforcing these rules.
     '@typescript-eslint/no-unsafe-assignment': 'off',
