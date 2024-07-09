@@ -85,16 +85,7 @@ module.exports = {
     ],
     '@eslint-community/eslint-comments/require-description': 'error',
     strict: ['error', 'global'],
-    'unicorn/import-style': [
-      'error',
-      {
-        styles: {
-          chalk: {
-            named: true
-          }
-        }
-      }
-    ],
+    'unicorn/import-style': ['off'], // TODO(@lishaduck): Re-enable this once we use ESM.
     'unicorn/no-null': 'off',
     'unicorn/prevent-abbreviations': 'off',
     'no-fallthrough': 'off', // TS checks for this, and TSESLint doesn't provide an alternative.
