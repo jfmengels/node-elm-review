@@ -18,7 +18,14 @@ module.exports = {
     'plugin:@typescript-eslint/stylistic-type-checked',
     'prettier'
   ],
-  plugins: ['n', 'security', 'promise', 'unicorn', '@typescript-eslint'],
+  plugins: [
+    'n',
+    'todo-plz',
+    'security',
+    'promise',
+    'unicorn',
+    '@typescript-eslint'
+  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     EXPERIMENTAL_useProjectService: true
@@ -59,7 +66,6 @@ module.exports = {
     'unicorn/no-array-reduce': 'off',
     'unicorn/prefer-module': 'off',
     'unicorn/prefer-node-protocol': 'error',
-    'unicorn/expiring-todo-comments': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
@@ -67,6 +73,16 @@ module.exports = {
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     'default-case': 'off',
     'n/shebang': 'off', // TODO(@lishaduck) [eslint-plugin-n@>=17]: Turn on 'n/hashbang'. For now, `shebang` is buggy.
+    'unicorn/expiring-todo-comments': 'warn',
+    'todo-plz/ticket-ref': [
+      'warn',
+      // Emulate `ban-untagged-todo` from deno_lint.
+      {
+        commentPattern: String.raw`(TODO|FIXME)\(@[a-zA-Z0-9_-]+\)( \[.+\])?:`,
+        terms: ['TODO', 'FIXME'],
+        description: 'For example: `TODO(@username): Make this awesomer.``'
+      }
+    ],
     '@eslint-community/eslint-comments/require-description': 'error',
     strict: ['error', 'global'],
     'unicorn/import-style': [
