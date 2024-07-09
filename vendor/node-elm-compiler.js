@@ -88,8 +88,12 @@ function runCompiler(sources, options, pathToElm) {
     console.log(['Running', pathToElm].concat(processArgs).join(' '));
   }
 
-  // @ts-expect-error -- processArgs is `string[]`, but spawn expects `SpawnOptions`.
-  return options.spawn(pathToElm, processArgs, processOpts);
+  return options.spawn(
+    pathToElm,
+    // @ts-expect-error(TS2559): processArgs is `string[]`, but spawn expects `SpawnOptions`.
+    processArgs,
+    processOpts
+  );
 }
 
 /**
@@ -191,8 +195,12 @@ function compilerArgsFromOptions(options) {
           case 'optimize':
             return ['--optimize'];
           case 'runtimeOptions':
-            // @ts-expect-error - TS doesn't get what we're doing here.
-            return ['+RTS', ...value, '-RTS'];
+            return [
+              '+RTS',
+              // @ts-expect-error(TS2488): TS doesn't get what we're doing here.
+              ...value,
+              '-RTS'
+            ];
           default:
             throw new Error(
               'node-elm-compiler was given an unrecognized Elm compiler option: ' +
