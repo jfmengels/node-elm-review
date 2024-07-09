@@ -28,7 +28,9 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    EXPERIMENTAL_useProjectService: true
+    // A stable, but experimental, option to speed up linting.
+    // It's also more feature complete, as it relies on the TypeScript Language Service.
+    EXPERIMENTAL_useProjectService: true // TODO(@lishaduck) [typescript-eslint@>=8]: Rename to `projectService`.
   },
   env: {
     node: true
