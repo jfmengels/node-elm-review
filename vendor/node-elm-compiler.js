@@ -195,12 +195,7 @@ function compilerArgsFromOptions(options) {
           case 'optimize':
             return ['--optimize'];
           case 'runtimeOptions':
-            return [
-              '+RTS',
-              // @ts-expect-error(TS2488): TS doesn't get what we're doing here.
-              ...value,
-              '-RTS'
-            ];
+            return ['+RTS', ...value, '-RTS'];
           default:
             throw new Error(
               'node-elm-compiler was given an unrecognized Elm compiler option: ' +
