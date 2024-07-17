@@ -5,6 +5,7 @@
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.no-implicit-any.json"
   },
   "include": [
+    "lib/types/**/*.ts",
     "lib/anonymize.js",
     "lib/benchmark.js",
     "lib/cache.js",
@@ -35,6 +36,16 @@
     "lib/state.js",
     "lib/styled-message.js",
     "lib/suppressed-errors.js",
+    "test/jest-helpers/cli.js",
+    "test/jest-helpers/types/cli.ts",
+    "test/flags.test.js",
+    "test/help.test.js",
+    "test/path-helpers.test.js",
+    "test/review-local-path.js",
+    "test/review.test.js",
+    "test/snapshotter.js",
+    "test/suppress.test.js",
+    "test/version.test.js",
     "vendor/exit.js",
     "vendor/node-elm-compiler.js",
     "jest.config.js"

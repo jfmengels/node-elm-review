@@ -1,7 +1,13 @@
 const TestCli = require('./jest-helpers/cli');
+const snapshotter = require('./snapshotter');
 
+/**
+ * @template {string} N
+ * @param {N} name
+ * @returns {`test/snapshots/flags/${N}.txt`}
+ */
 function testName(name) {
-  return `test/snapshots/flags/${name}.txt`;
+  return snapshotter.snapshotPath('flags', name);
 }
 
 test('Running with an unknown flag', async () => {

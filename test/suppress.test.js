@@ -1,9 +1,15 @@
 const path = require('node:path');
 const childProcess = require('node:child_process');
 const TestCli = require('./jest-helpers/cli');
+const snapshotter = require('./snapshotter');
 
+/**
+ * @template {string} N
+ * @param {N} name
+ * @returns {`test/snapshots/suppress/${N}.txt`}
+ */
 function testName(name) {
-  return `test/snapshots/suppress/${name}.txt`;
+  return snapshotter.snapshotPath('suppress', name);
 }
 
 test('Running on project with only suppressed errors remaining should not exit with failure', () => {

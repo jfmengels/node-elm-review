@@ -1,8 +1,14 @@
 const path = require('node:path');
 const TestCli = require('./jest-helpers/cli');
+const snapshotter = require('./snapshotter');
 
+/**
+ * @template {string} N
+ * @param {N} name
+ * @returns {`test/snapshots/review/${N}.txt`}
+ */
 function testName(name) {
-  return `test/snapshots/review/${name}.txt`;
+  return snapshotter.snapshotPath('review', name);
 }
 
 test('Regular run from inside the project', async () => {

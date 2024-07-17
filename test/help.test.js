@@ -1,7 +1,13 @@
 const TestCli = require('./jest-helpers/cli');
+const snapshotter = require('./snapshotter');
 
+/**
+ * @template {string} N
+ * @param {N} name
+ * @returns {`test/snapshots/help/${N}.txt`}
+ */
 function testName(name) {
-  return `test/snapshots/help/${name}.txt`;
+  return snapshotter.snapshotPath('help', name);
 }
 
 test('--help', async () => {
