@@ -62,7 +62,7 @@ runAndRecord() {
     local ARGS=$3
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    eval "ELM_HOME=$ELM_HOME $LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
+    (eval "ELM_HOME=$ELM_HOME $LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 \
         | replace_script \
         > "$SNAPSHOTS/$FILE"
 }
