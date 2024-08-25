@@ -8,7 +8,10 @@ TMP="$CWD/temporary"
 ELM_HOME="$TMP/elm-home"
 SNAPSHOTS="$CWD/run-snapshots"
 SUBCOMMAND="${1:-}"
-REPLACE_SCRIPT="node $CWD/replace-local-path.js"
+
+replace_script() {
+    sed "s|$(dirname "$(dirname "$(pwd)")")|<local-path>|g"
+}
 
 # If you get errors like rate limit exceeded, you can run these tests
 # with "GITHUB_AUTH=gitHubUserName:token"
@@ -35,7 +38,7 @@ runCommandAndCompareToSnapshot() {
     fi
 
     (eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 \
-        | $REPLACE_SCRIPT \
+        | replace_script \
         > "$TMP/$FILE"
     local diffed
     diffed="$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE" || true)"
@@ -60,7 +63,7 @@ runAndRecord() {
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
     eval "ELM_HOME=$ELM_HOME $LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" 2>&1 \
-        | $REPLACE_SCRIPT \
+        | replace_script \
         > "$SNAPSHOTS/$FILE"
 }
 
