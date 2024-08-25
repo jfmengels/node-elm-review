@@ -168,7 +168,7 @@ fi
 
 PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
 echo "Package path is $PACKAGE_PATH"
-npm install -g $PACKAGE_PATH
+npm install -g "$PACKAGE_PATH"
 
 # init
 
