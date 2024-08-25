@@ -21,7 +21,7 @@ else
   AUTH=" --github-auth $GITHUB_AUTH"
 fi
 
-function runCommandAndCompareToSnapshot {
+runCommandAndCompareToSnapshot() {
     local LOCAL_COMMAND=$1
     local TITLE=$2
     local ARGS=$3
@@ -53,7 +53,7 @@ function runCommandAndCompareToSnapshot {
     fi
 }
 
-function runAndRecord {
+runAndRecord() {
     local LOCAL_COMMAND=$1
     local TITLE=$2
     local ARGS=$3
@@ -64,7 +64,7 @@ function runAndRecord {
         > "$SNAPSHOTS/$FILE"
 }
 
-function createExtensiveTestSuite {
+createExtensiveTestSuite() {
     local LOCAL_COMMAND=$1
     local TITLE=$2
     local ARGS=$3
@@ -73,7 +73,7 @@ function createExtensiveTestSuite {
     createTestSuiteWithDifferentReportFormats "$LOCAL_COMMAND" "$TITLE (debug)" "$ARGS --debug" "$FILE-debug"
 }
 
-function createTestSuiteWithDifferentReportFormats {
+createTestSuiteWithDifferentReportFormats() {
     local LOCAL_COMMAND=$1
     local TITLE=$2
     local ARGS=$3
@@ -92,7 +92,7 @@ function createTestSuiteWithDifferentReportFormats {
         "$FILE-ndjson.txt"
 }
 
-function createTestSuiteForHumanAndJson {
+createTestSuiteForHumanAndJson() {
     local LOCAL_COMMAND=$1
     local TITLE=$2
     local ARGS=$3
@@ -107,12 +107,12 @@ function createTestSuiteForHumanAndJson {
         "$FILE-json.txt"
 }
 
-function initElmProject {
+initElmProject() {
   echo Y | npx --no-install elm init > /dev/null
   echo -e 'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n' > src/Main.elm
 }
 
-function checkFolderContents {
+checkFolderContents() {
   if [ "$SUBCOMMAND" != "record" ]
   then
     echo -n "  Checking generated files are the same"
@@ -129,7 +129,7 @@ function checkFolderContents {
   fi
 }
 
-function createAndGoIntoFolder {
+createAndGoIntoFolder() {
   if [ "$SUBCOMMAND" != "record" ]
   then
     mkdir -p "$TMP/$1"
