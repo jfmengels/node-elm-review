@@ -52,14 +52,7 @@ async function internalExec(args, options = {}) {
 
   try {
     const result = await exec(
-      [
-        colorFlag,
-        cli,
-        reportMode(options),
-        colors(options),
-        ...(args.includes('--compiler') ? [] : [elmPath()]),
-        args
-      ].join(' '),
+      [colorFlag, cli, reportMode(options), colors(options), args].join(' '),
       {
         ...options,
         cwd: cwdFromOptions(options)
@@ -69,19 +62,6 @@ async function internalExec(args, options = {}) {
   } catch (error) {
     throw error.stdout;
   }
-}
-
-function elmPath() {
-  const elmPath = path.resolve(
-    __dirname,
-    '..',
-    '..',
-    'node_modules',
-    '.bin',
-    'elm'
-  );
-
-  return `--compiler=${elmPath}`;
 }
 
 /**
