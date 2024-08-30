@@ -1,4 +1,4 @@
-import {ElmFile, Source, type ElmJson} from './content.js';
+import {ElmFile, Source} from './content.js';
 import {Path} from './path.js';
 import type {SendPort, SubscribePort} from './promisify-port.js';
 
@@ -18,6 +18,6 @@ export type ParserApp = {
 };
 
 type ParserPorts = {
-  requestParsing: SendPort<ElmJson>;
+  requestParsing: SendPort<string>;
   parseResult: SubscribePort<ElmFile>;
 };
