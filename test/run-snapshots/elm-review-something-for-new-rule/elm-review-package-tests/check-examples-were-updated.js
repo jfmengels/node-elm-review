@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const Ansi = require('./helpers/ansi');
 const {execSync} = require('node:child_process');
 const updateExamplesFromPreview = require('../maintenance/update-examples-from-preview');
+const Ansi = require('./helpers/ansi');
 
 const preCheckGitStatus = execSync('git status --porcelain').toString().trim();
 if (preCheckGitStatus !== '') {

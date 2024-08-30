@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const path = require('node:path');
-const Ansi = require('./helpers/ansi');
 const {execSync} = require('node:child_process');
-const {findPreviewConfigurations} = require('./helpers/find-configurations');
 const packageDependencies = require('../elm.json').dependencies;
+const Ansi = require('./helpers/ansi');
+const {findPreviewConfigurations} = require('./helpers/find-configurations');
 
 const root = path.dirname(__dirname);
 
