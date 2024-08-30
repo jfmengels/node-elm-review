@@ -9,4 +9,6 @@ function snapshotPath(group, name) {
   return `test/snapshots/${group}/${name}.txt`;
 }
 
-module.exports = {snapshotPath};
+module.exports = {
+  snapshotPath
+};

@@ -1,9 +1,3 @@
-module.exports = {
-  red,
-  green,
-  yellow
-};
-
 function red(text) {
   return '\u001B[31m' + text + '\u001B[39m';
 }
@@ -15,3 +9,9 @@ function green(text) {
 function yellow(text) {
   return '\u001B[33m' + text + '\u001B[39m';
 }
+
+module.exports = {
+  red,
+  green,
+  yellow
+};

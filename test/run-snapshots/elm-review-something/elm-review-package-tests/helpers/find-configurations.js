@@ -1,14 +1,10 @@
 const path = require('node:path');
-const glob = require('glob');
+const {glob} = require('glob');
 
 const root = path
   .resolve(__dirname, '../../')
   .replace(/.:/, '')
   .replace(/\\/g, '/');
-
-module.exports = {
-  findPreviewConfigurations
-};
 
 /**
  * @returns {string[]}
@@ -21,3 +17,7 @@ function findPreviewConfigurations() {
     })
     .map(path.dirname);
 }
+
+module.exports = {
+  findPreviewConfigurations
+};
