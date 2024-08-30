@@ -1,7 +1,7 @@
 export type Value = null | ValueStruct | number | string;
 export type ValueStruct = {
-  $: 1 | -1 | 0 | `$L`;
-  a?: string[] | string;
-  b?: ValueStruct;
-  c?: unknown;
+  readonly $: 1 | -1 | 0 | `$L`;
+  readonly a?: string[] | string;
+  readonly b?: ValueStruct;
+  readonly c?: unknown;
 };
