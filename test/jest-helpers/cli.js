@@ -14,8 +14,8 @@ expect.extend({toMatchFile});
  * @param {string} args
  * @param {Options} [options=undefined]
  */
-function run(args, options) {
-  return internalExec(`--FOR-TESTS ${args}`, options);
+async function run(args, options) {
+  return await internalExec(`--FOR-TESTS ${args}`, options);
 }
 
 /**
@@ -37,8 +37,8 @@ async function runAndExpectError(args, options) {
  * @param {string} args
  * @param {Options | undefined} [options=undefined]
  */
-function runWithoutTestMode(args, options) {
-  return internalExec(args, options);
+async function runWithoutTestMode(args, options) {
+  return await internalExec(args, options);
 }
 
 /**
