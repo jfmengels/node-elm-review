@@ -64,6 +64,7 @@ module.exports = {
     'promise/prefer-await-to-then': 'off',
     'no-return-await': 'off',
     '@typescript-eslint/return-await': ['error', 'always'],
+    '@typescript-eslint/promise-function-async': 'error',
     '@typescript-eslint/no-confusing-void-expression': 'error',
     'unicorn/no-array-callback-reference': 'off',
     'unicorn/no-array-reduce': 'off',

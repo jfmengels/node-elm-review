@@ -12,8 +12,8 @@ function testName(name) {
   return snapshotter.snapshotPath('suppress', name);
 }
 
-test('Running on project with only suppressed errors remaining should not exit with failure', () => {
-  return TestCli.run('', {
+test('Running on project with only suppressed errors remaining should not exit with failure', async () => {
+  return await TestCli.run('', {
     project: 'project-with-suppressed-errors'
   });
 });
