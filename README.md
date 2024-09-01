@@ -6,7 +6,7 @@ Run [`elm-review`] from Node.js.
 
 ## Installation
 
-```bash
+```sh
 # Save it to your package.json, if you use npm in your project.
 # This is the recommended way.
 npm install elm-review --save-dev
@@ -19,7 +19,7 @@ See [below](#try-it-out) if you want to try it out without installing it.
 
 ## Usage
 
-```bash
+```sh
 # Print the help
 elm-review --help
 
@@ -47,7 +47,7 @@ First of all, if you have `node` installed, it comes with `npx`, which lets you 
 You can also run a configuration you found on GitHub, using the `--template` flag. Even if you already have a configuration, you can use this to try out the rules from a new package before adding them to your configuration.
 For instance, if you want to find and remove the dead code in your project, you can use the [example configuration](https://github.com/jfmengels/elm-review-unused/tree/main/example) from the [`jfmengels/elm-review-unused` package](https://package.elm-lang.org/packages/jfmengels/elm-review-unused/latest/).
 
-```bash
+```sh
 npx elm-review --template jfmengels/elm-review-unused/example
 
 # You can even use the configuration to fix all the errors that can be auto-fixed.
@@ -56,15 +56,15 @@ npx elm-review --template jfmengels/elm-review-unused/example --fix-all
 
 If you are happy with the configuration, you can base your own configuration off of it, and then edit it:
 
-```bash
+```sh
 npx elm-review init --template jfmengels/elm-review-unused/example
 ```
 
-I **highly** recommend [reading this section on when to enable rules](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/#when-to-write-or-enable-a-rule) in your configuration though.
+I **highly** recommend reading [this section on when to enable rules][when-to-write-or-enable-a-rule] in your configuration though.
 
 You can use the same mechanics to try out a single rule before adding the dependency to your existing configuration and adding it to your configuration.
 
-```bash
+```sh
 npx elm-review --template jfmengels/elm-review-unused/example --rules NoUnused.Variables
 ```
 
@@ -100,7 +100,7 @@ which will add a `review` folder to your project.
 You can also use an existing configuration using `elm-review init --template <some configuration>`.
 I created [some configurations](https://github.com/jfmengels/elm-review-config) that I believe can be good **starting** points.
 
-```bash
+```sh
 # Start with an empty configuration
 elm-review init
 
@@ -117,14 +117,14 @@ you can look for packages with rules on the [Elm package registry](https://packa
 
 Once you've found a package that you like, you can install it with the `elm install` command, just like any other Elm project dependency.
 
-```bash
+```sh
 cd review/ # Go inside your review configuration directory
 elm install authorName/packageName
 # then update your `review/src/ReviewConfig.elm` to add the rule
 # as explained in the package's documentation
 ```
 
-Before you start adding rules or an unfamiliar existing configuration, I suggest reading the rest of this document, especially the section on [when to enable a rule](#when-to-write-or-enable-a-rule).
+Before you start adding rules or an unfamiliar existing configuration, I suggest reading the rest of this document, especially the section on [when to enable a rule][when-to-write-or-enable-a-rule].
 
 ## Run a review
 
@@ -134,7 +134,7 @@ You can also run `elm-review --fix`. The CLI will present you fixes for the erro
 
 Run `elm-review --help` for more information on the available flags.
 
-```bash
+```sh
 elm-review # Analyze your project
 elm-review --fix # Analyze your project and potentially proposes automatic fixes
 elm-review --help # for more information and the available flags
@@ -149,7 +149,7 @@ elm-review --help # for more information and the available flags
 
 If you wish to, you can list the directories you wish to have reviewed, so as to review additional directories or to remove ignore some of directories, by adding them as arguments to the command line.
 
-```bash
+```sh
 # Review `src/` if project is a package, or the "source-directories" otherwise, along with `tests/`
 elm-review
 # Review only the Elm files in the `src/Dashboard/`
@@ -181,13 +181,15 @@ The CLI need at least two pieces of information from your configuration:
 
 Your custom rules, unless you want to share them in the Elm package registry, should be in the `review/` directory too, so as not to pollute your project's dependencies. If they are in here, we need to include these custom rules and their dependencies in the application files.
 
-[`elm-review`]: https://github.com/jfmengels/elm-review
-[`elm-format`]: https://github.com/avh4/elm-format
-
 ## Tooling integration
 
 If you are interested in using `elm-review` inside a different environment than a terminal (like editors, CI, other Elm tools, ...), check out the documentation for [tooling integration](./documentation/tooling-integration.md).
 
 ## Thanks
 
-Thanks to @MartinSStewart for working on reducing the file cache size (and therefore speeding up the whole execution).
+Thanks to [**@MartinSStewart**][martinsstewart] for working on reducing the file cache size (and therefore speeding up the whole execution).
+
+[`elm-review`]: https://github.com/jfmengels/elm-review
+[`elm-format`]: https://github.com/avh4/elm-format
+[martinsstewart]: https://github.com/MartinSStewart
+[when-to-write-or-enable-a-rule]: https://package.elm-lang.org/packages/jfmengels/elm-review/latest/#when-to-write-or-enable-a-rule
