@@ -68,7 +68,7 @@
     "find-up": "^4.1.0",
     "folder-hash": "^3.3.0",
     "fs-extra": "^9.0.0",
-    "glob": "^10.2.6 || ^11.0.0",
+    "glob": "^10.2.6",
     "globby": "^13.2.2",
     "got": "^11.8.5",
     "graceful-fs": "^4.2.11",
@@ -108,7 +108,7 @@
     "eslint-plugin-unicorn": "^52.0.0",
     "jest": "^27.3.1",
     "jest-file-snapshot": "^0.5.0",
-    "ls-engines": "^0.9.2",
+    "ls-engines": "^0.9.3",
     "prettier": "^2.8.8",
     "turbo": "^2.0.5",
     "typescript": "~5.5.2",
@@ -117,6 +117,5 @@
   "packageManager": "npm@8.19.4",
   "engines": {
     "node": "14 >=14.21 || 16 >=16.20 || 18 || 20 || >=22"
-  },
-  "enginesStrict": true
+  }
 }
