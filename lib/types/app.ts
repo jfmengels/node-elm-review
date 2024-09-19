@@ -11,7 +11,7 @@ import type {Flags} from './flags.js';
 import type {Path} from './path.js';
 import type {SendPort, SubscribePort} from './promisify-port.js';
 import type {FilesProposedByCurrentFix} from './state.js';
-import {StyledMessage} from './styled-message.js';
+import type {StyledMessage} from './styled-message.js';
 import type {SuppressedErrorsFile} from './suppressed.js';
 
 export type Elm = {

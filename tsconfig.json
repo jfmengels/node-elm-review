@@ -19,6 +19,7 @@
     "strictNullChecks": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
+    "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node", "jest"],
     "incremental": true,
