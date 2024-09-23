@@ -54,6 +54,7 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
   );
   // Remove uncommitted suppression files
   childProcess.execSync(`git checkout HEAD ${folder}`);
+  throw output;
   expect(output).toMatchFile(
     testName('suppressed-errors-check-with-uncommitted-changes')
   );
