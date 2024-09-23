@@ -17,10 +17,11 @@
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
+    "strictBuiltinIteratorReturn": true,
+    "noUncheckedSideEffectImports": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "jest"],
     "incremental": true,
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
   },
