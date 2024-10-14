@@ -1,6 +1,6 @@
 -- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
 
-NoUnused.Modules: Module `Folder.Unused` is never used.
+NoUnused.Exports: Module `Folder.Unused` is never used.
 
 1| module Folder.Unused exposing (..)
           ^^^^^^^^^^^^^
@@ -27,8 +27,8 @@ pointed at.
 
 ────────────────────────────────────────────────────────────── src/Main.elm:29:7
 
-NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is not
-used.
+(fix) NoUnused.CustomTypeConstructors: Type constructor `UnusedCustomType` is
+not used.
 
 28|     | Decrement
 29|     | UnusedCustomType

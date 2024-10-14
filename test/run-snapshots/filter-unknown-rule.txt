@@ -4,6 +4,6 @@ You requested to only run several rules, but I could not find some of them.
 
 - NoUnused.Unknown. Did you mean:
   - NoUnused.Exports
-  - NoUnused.Modules
   - NoUnused.Patterns
+  - NoUnused.Variables
 

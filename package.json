@@ -49,7 +49,7 @@
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
     "eslint-check": "eslint . --report-unused-disable-directives --max-warnings=0",
     "eslint-fix": "npm run eslint-check -- --fix",
-    "jest": "npx jest",
+    "jest": "jest",
     "prepare": "elm-tooling install",
     "prettier-check": "prettier . --check",
     "prettier-fix": "prettier . --write",

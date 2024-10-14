@@ -24,7 +24,6 @@ initialModel =
 type Msg
     = Increment
     | Decrement
-    | UnusedCustomType
 
 
 update : Msg -> Model -> Model
@@ -35,9 +34,6 @@ update msg model =
 
         Decrement ->
             { model | count = model.count - 1 }
-
-        UnusedCustomType ->
-            model
 
 
 view : Model -> Html Msg

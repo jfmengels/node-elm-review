@@ -338,12 +338,12 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
 
 $createTest "$CMD" \
     "Filter rules with comma-separated list" \
-    "--rules NoUnused.Variables,NoUnused.Modules" \
+    "--rules NoUnused.Variables,NoUnused.Exports" \
     "filter-rules-comma.txt"
 
 $createTest "$CMD" \
     "Filter rules with multiple --rules calls" \
-    "--rules NoUnused.Variables --rules NoUnused.Modules" \
+    "--rules NoUnused.Variables --rules NoUnused.Exports" \
     "filter-rules-multiple-calls.txt"
 
 createTestSuiteWithDifferentReportFormats "$CMD" \

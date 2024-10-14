@@ -1,6 +1,6 @@
 -- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
 
-NoUnused.Modules: Module `Folder.Unused` is never used.
+NoUnused.Exports: Module `Folder.Unused` is never used.
 
 1| module Folder.Unused exposing (..)
           ^^^^^^^^^^^^^
