@@ -25,6 +25,22 @@ updates:
           - 'turbo'
           - 'eslint-config-turbo'
           - 'eslint-plugin-turbo'
+    ignore:
+      - dependency-name: '@typescript-eslint/*'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'fs-extra'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'chalk'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'strip-ansi'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'wrap-ansi'
+        update-types:
+          - version-update:semver-major
   - package-ecosystem: 'github-actions' # See documentation for possible values
     directories: # Location of package manifests
       - '/' # Strangely, this is how to specify "./.github/workflows/*.ya?ml"
