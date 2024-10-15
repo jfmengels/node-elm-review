@@ -39,12 +39,23 @@ updates:
     directories: # Location of package manifests
       - '/ast-codec'
       - '/new-package/review-config-templates/2.3.0'
-      - 'parseElm'
-      - 'review'
-      - 'template'
+      - '/parseElm'
+      - '/review'
+      - '/template'
+      - '/test/config-*/'
+      - '/test/project-*/'
     schedule:
       interval: 'weekly'
     groups:
       elm:
         patterns:
           - 'elm/*'
+      jfmengels/elm-review:
+        patterns:
+          - 'jfmengels/elm-review'
+      jfmengels/elm-review-rules:
+        patterns:
+          - 'jfmengels/elm-review-*'
+      stil4m/elm-syntax:
+        patterns:
+          - 'stil4m/elm-syntax'
