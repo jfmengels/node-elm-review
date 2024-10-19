@@ -10,6 +10,13 @@
         "parseElm/**/*.elm",
         "review/**/*.elm",
         "template/**/*.elm"
+      ],
+      "outputs": [
+        "ast-codec/**/*.elm",
+        "init-templates/**/*.elm",
+        "parseElm/**/*.elm",
+        "review/**/*.elm",
+        "template/**/*.elm"
       ]
     },
     "testing": {
@@ -24,10 +31,21 @@
       ]
     },
     "eslint-check": {
-      "inputs": ["lib/*", "vendor/*", ".eslintrc.js"]
+      "inputs": ["lib/", "vendor/", ".eslintrc.js"]
     },
     "eslint-fix": {
-      "inputs": ["lib/*", "vendor/*", ".eslintrc.js"]
+      "inputs": [
+        "lib/",
+        "new-package/elm-review-package-tests/**/*.js",
+        "test/",
+        "vendor/",
+        ".eslintrc.js"
+      ],
+      "outputs": [
+        "lib/",
+        "new-package/elm-review-package-tests/**/*.js",
+        "test/"
+      ]
     },
     "js-check": {
       "dependsOn": ["eslint-check", "prettier-check"]
@@ -36,25 +54,59 @@
       "dependsOn": ["eslint-fix", "prettier-fix"]
     },
     "prettier-check": {
-      "inputs": ["lib/*", "vendor/*", ".prettierrc.json", ".prettierignore"]
+      "inputs": [
+        "*.js",
+        "*.ts",
+        "*.json",
+        "*.md",
+        ".prettierrc.json",
+        ".prettierignore"
+      ],
+      "outputs": ["./node_modules/.cache/prettier/.prettier-cache"]
     },
     "prettier-fix": {
-      "inputs": ["lib/*", "vendor/*", ".prettierrc.json", ".prettierignore"]
+      "inputs": [
+        "*.js",
+        "*.ts",
+        "*.json",
+        "*.md",
+        ".prettierrc.json",
+        ".prettierignore"
+      ],
+      "outputs": [
+        "*.js",
+        "*.ts",
+        "*.json",
+        "*.md",
+        ".prettierrc.json",
+        "./node_modules/.cache/prettier/.prettier-cache"
+      ]
     },
     "tsc": {
       "inputs": [
-        "lib/*",
+        "lib/",
         "new-package/elm-review-package-tests/**/*.js",
+        "test/",
+        "jest.config.js",
         "tsconfig.json",
         "tsconfig.*.json"
-      ]
+      ],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
     },
     "tsc-watch": {
-      "inputs": ["lib/*", "tsconfig.json"],
+      "inputs": [
+        "lib/",
+        "new-package/elm-review-package-tests/**/*.js",
+        "test/",
+        "jest.config.js",
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"],
       "persistent": true
     },
     "elm-tests": {
-      "inputs": ["template/"]
+      "inputs": ["template/", "ast-codec/"]
     },
     "jest": {
       "inputs": ["lib/", "test/"]
@@ -85,7 +137,8 @@
         "template/",
         "test/",
         "vendor/"
-      ]
+      ],
+      "outputs": ["test/run-snapshots/*.txt"]
     },
     "prepare": {},
     "check-engines": {
