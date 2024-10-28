@@ -41,6 +41,15 @@ updates:
       - dependency-name: 'wrap-ansi'
         update-types:
           - version-update:semver-major
+      - dependency-name: 'which'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'ora'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'find-up'
+        update-types:
+          - version-update:semver-major
   - package-ecosystem: 'github-actions' # See documentation for possible values
     directories: # Location of package manifests
       - '/' # Strangely, this is how to specify "./.github/workflows/*.ya?ml"
