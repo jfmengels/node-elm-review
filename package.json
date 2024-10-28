@@ -79,7 +79,7 @@
     "rimraf": "^5.0.0",
     "strip-ansi": "^6.0.0",
     "terminal-link": "^2.1.1",
-    "which": "^2.0.2",
+    "which": "^5.0.0",
     "wrap-ansi": "^7.0.0"
   },
   "devDependencies": {
