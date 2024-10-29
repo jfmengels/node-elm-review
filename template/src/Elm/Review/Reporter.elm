@@ -205,15 +205,9 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
 classifyFixes : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
 classifyFixes errors =
-    let
-        { rulesWithInvalidFixes, hasIgnoredFixableErrors } =
-            classifyFixesHelp
-                errors
-                { rulesWithInvalidFixes = Set.empty, hasIgnoredFixableErrors = False }
-    in
-    { rulesWithInvalidFixes = rulesWithInvalidFixes
-    , hasIgnoredFixableErrors = hasIgnoredFixableErrors
-    }
+    classifyFixesHelp
+        errors
+        { rulesWithInvalidFixes = Set.empty, hasIgnoredFixableErrors = False }
 
 
 classifyFixesHelp : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool } -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
