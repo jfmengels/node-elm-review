@@ -120,6 +120,11 @@ If you wish to use automatic fixing, you can use the following flags:
         called without --fix-all.
         Fixed files will be reformatted using elm-format.
 
+    --fix-all-without-prompt
+        Same as --fix-all but fixes are applied without a prompt.
+        I recommend to commit all changes prior to running with this option and
+        to review the applied changes afterwards.
+
     --fix-limit=N
         Limit the number of fixes applied in a single batch to N.
 
