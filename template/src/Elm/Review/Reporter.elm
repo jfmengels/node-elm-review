@@ -140,11 +140,10 @@ formatReport :
     -> List TextContent
 formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, mode, errorsHaveBeenFixedPreviously } files =
     let
-        numberOfErrors : Int
-        numberOfErrors =
-            totalNumberOfErrors files
+        { numberOfFileErrors, numberOfGlobalErrors } =
+            countErrors files
     in
-    if numberOfErrors == 0 then
+    if numberOfFileErrors + numberOfGlobalErrors == 0 then
         formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenFixedPreviously
 
     else
@@ -189,18 +188,48 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
           else
             Nothing
-        , [ Text.from "I found "
-          , pluralize numberOfErrors "error" |> Text.from |> Text.inRed
-          , Text.from " in "
-          , pluralize (List.length filesWithErrors) "file" |> Text.from |> Text.inYellow
-          , Text.from "."
-          ]
-            |> Just
+        , Just (formatTally filesWithErrors numberOfFileErrors numberOfGlobalErrors)
         ]
             |> List.filterMap identity
             |> Text.join "\n\n"
             |> Text.simplify
             |> List.map Text.toRecord
+
+
+formatTally : List a -> Int -> Int -> List Text
+formatTally filesWithErrors numberOfFileErrors numberOfGlobalErrors =
+    Text.join ""
+        [ [ Text.from "I found " ]
+        , [ if numberOfFileErrors > 0 then
+                let
+                    numberOfFilesWithErrors : Int
+                    numberOfFilesWithErrors =
+                        if numberOfGlobalErrors > 0 then
+                            List.length filesWithErrors - 1
+
+                        else
+                            List.length filesWithErrors
+                in
+                Just
+                    [ pluralize numberOfFileErrors "error" |> Text.from |> Text.inRed
+                    , Text.from " in "
+                    , pluralize numberOfFilesWithErrors "file" |> Text.from |> Text.inYellow
+                    ]
+
+            else
+                Nothing
+          , if numberOfGlobalErrors > 0 then
+                Just
+                    [ pluralize numberOfGlobalErrors "global error" |> Text.from |> Text.inRed
+                    ]
+
+            else
+                Nothing
+          ]
+            |> List.filterMap identity
+            |> Text.join " and "
+        , [ Text.from "." ]
+        ]
 
 
 classifyFixes : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
@@ -753,19 +782,33 @@ underline gutterLength { start, end, lineContent } =
     ]
 
 
-totalNumberOfErrors : List FileWithError -> Int
-totalNumberOfErrors files =
-    totalNumberOfErrorsHelp files 0
+countErrors : List FileWithError -> { numberOfFileErrors : Int, numberOfGlobalErrors : Int }
+countErrors files =
+    countErrorsHelp files { numberOfFileErrors = 0, numberOfGlobalErrors = 0 }
 
 
-totalNumberOfErrorsHelp : List FileWithError -> Int -> Int
-totalNumberOfErrorsHelp files acc =
+countErrorsHelp : List FileWithError -> { numberOfFileErrors : Int, numberOfGlobalErrors : Int } -> { numberOfFileErrors : Int, numberOfGlobalErrors : Int }
+countErrorsHelp files acc =
     case files of
         [] ->
             acc
 
         file :: xs ->
-            totalNumberOfErrorsHelp xs (acc + List.length file.errors)
+            case file.path of
+                FilePath _ ->
+                    countErrorsHelp xs
+                        { numberOfFileErrors = acc.numberOfFileErrors + List.length file.errors
+                        , numberOfGlobalErrors = acc.numberOfGlobalErrors
+                        }
+
+                Global ->
+                    countErrorsHelp xs
+                        { numberOfFileErrors = acc.numberOfFileErrors
+                        , numberOfGlobalErrors = acc.numberOfGlobalErrors + List.length file.errors
+                        }
+
+                ConfigurationError ->
+                    countErrorsHelp xs acc
 
 
 fixableErrors : List FileWithError -> List Error
