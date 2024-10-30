@@ -26,28 +26,79 @@ updates:
           - 'eslint-config-turbo'
           - 'eslint-plugin-turbo'
     ignore:
+      # Requires higher engines:
       - dependency-name: '@typescript-eslint/*'
         update-types:
           - version-update:semver-major
-      - dependency-name: 'fs-extra'
+      - dependency-name: 'eslint'
         update-types:
           - version-update:semver-major
-      - dependency-name: 'chalk'
+      - dependency-name: 'eslint-config-xo'
         update-types:
           - version-update:semver-major
-      - dependency-name: 'strip-ansi'
+      - dependency-name: 'eslint-plugin-n'
         update-types:
           - version-update:semver-major
-      - dependency-name: 'wrap-ansi'
+      - dependency-name: 'eslint-plugin-promise'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'eslint-plugin-security'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'eslint-plugin-unicorn'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'glob'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'rimraf'
         update-types:
           - version-update:semver-major
       - dependency-name: 'which'
         update-types:
           - version-update:semver-major
-      - dependency-name: 'ora'
+
+      # ESM-only
+      - dependency-name: 'chalk'
         update-types:
           - version-update:semver-major
       - dependency-name: 'find-up'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'globby'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'got'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'ora'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'path-key'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'strip-ansi'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'terminal-link'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'wrap-ansi'
+        update-types:
+          - version-update:semver-major
+
+      # Mostly just need more work.
+      - dependency-name: 'chokidar' # See #250.
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'folder-hash'
+        # TODO(lishaduck): Supporting v5 should be trivial, I just need to do it.
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'fs-extra' # See #120.
+        update-types:
+          - version-update:semver-major
+      - dependency-name: 'prettier' # On #169 (todo list).
         update-types:
           - version-update:semver-major
   - package-ecosystem: 'github-actions' # See documentation for possible values
