@@ -309,19 +309,11 @@ I recommend you take a look at the following documents:
                 abortForConfigurationErrors <|
                     case flags.reportMode of
                         HumanReadable ->
-                            Reporter.formatReport
-                                { suppressedErrors = SuppressedErrors.empty
-                                , unsuppressMode = flags.unsuppressMode
-                                , originalNumberOfSuppressedErrors = 0
-                                , detailsMode = flags.detailsMode
-                                , errorsHaveBeenFixedPreviously = False
+                            Reporter.formatConfigurationErrors
+                                { detailsMode = flags.detailsMode
                                 , mode = Reporter.Reviewing
+                                , configurationErrors = configurationErrors
                                 }
-                                [ { path = Reporter.ConfigurationError
-                                  , source = Reporter.Source ""
-                                  , errors = configurationErrors
-                                  }
-                                ]
                                 |> encodeReport
 
                         Json ->

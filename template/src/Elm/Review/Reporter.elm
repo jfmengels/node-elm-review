@@ -2,7 +2,7 @@ module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
     , formatFixProposal, formatFixProposals
-    , FileWithError, Range
+    , FileWithError, Range, formatConfigurationErrors
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -194,6 +194,30 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             |> Text.join "\n\n"
             |> Text.simplify
             |> List.map Text.toRecord
+
+
+{-| Reports configuration errors reported by `elm-review` in a nice human-readable way.
+-}
+formatConfigurationErrors : { detailsMode : DetailsMode, mode : Mode, configurationErrors : List Error } -> List TextContent
+formatConfigurationErrors { detailsMode, mode, configurationErrors } =
+    let
+        filesWithErrors : List FileWithError
+        filesWithErrors =
+            [ { path = ConfigurationError
+              , source = Source ""
+              , errors = configurationErrors
+              }
+            ]
+    in
+    [ formatReports detailsMode mode filesWithErrors
+    , [ Text.from "I found "
+      , pluralize (List.length configurationErrors) "configuration error" |> Text.from |> Text.inRed
+      , Text.from "."
+      ]
+    ]
+        |> Text.join "\n\n"
+        |> Text.simplify
+        |> List.map Text.toRecord
 
 
 formatTally : List a -> Int -> Int -> List Text
