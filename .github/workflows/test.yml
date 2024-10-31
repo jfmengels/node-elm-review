@@ -53,7 +53,7 @@ jobs:
       if: steps.cache-node_modules.outputs.cache-hit != 'true'
       env:
         NO_ELM_TOOLING_INSTALL: 1
-      run: npm ci
+      run: npm ci --engine-strict
 
     - name: elm-tooling install
       run: npx --no-install elm-tooling install
