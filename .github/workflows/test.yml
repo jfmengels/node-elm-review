@@ -50,13 +50,13 @@ jobs:
         set-safe-directory: true
 
     - name: Setup Node.js environment
-      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
       with:
         node-version: 16.x
         cache: 'npm'
 
     - name: Cache ~/.elm
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
       with:
         path: ~/.elm
         key: elm-${{ runner.os }}-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
@@ -65,7 +65,7 @@ jobs:
 
     - name: Cache node_modules
       id: cache-node_modules
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
       with:
         path: node_modules
         key: node_modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -73,7 +73,7 @@ jobs:
           node_modules-${{ runner.os }}-
 
     - name: Cache turbo build setup
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
       with:
         path: .turbo
         key: ${{ runner.os }}-turbo-${{ github.sha }}
