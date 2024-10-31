@@ -60,6 +60,8 @@ jobs:
       with:
         path: ~/.elm
         key: elm-${{ runner.os }}-${{ hashFiles('**/elm.json', 'elm-tooling.json') }}
+        restore-keys: |
+          elm-${{ runner.os }}-
 
     - name: Cache node_modules
       id: cache-node_modules
@@ -67,6 +69,8 @@ jobs:
       with:
         path: node_modules
         key: node_modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          node_modules-${{ runner.os }}-
 
     - name: Cache turbo build setup
       uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
@@ -88,7 +92,7 @@ jobs:
     - name: Install turbo
       run: npm install -g turbo
 
-    - name: Test nodejs version requirements
+    - name: Test Node.js version requirements
       run: turbo run check-engines
 
     - name: Run tests
