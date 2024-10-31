@@ -27,6 +27,9 @@ updates:
           - 'eslint-plugin-turbo'
     ignore:
       # Requires higher engines:
+      - dependency-name: '@types/node'
+        update-types:
+          - version-update:semver-major
       - dependency-name: '@typescript-eslint/*'
         update-types:
           - version-update:semver-major
