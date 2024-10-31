@@ -41,7 +41,13 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - name: Git checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        submodules: recursive
+        clean: true
+        persist-credentials: false
+        set-safe-directory: true
 
     - name: Setup Node.js environment
       uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
