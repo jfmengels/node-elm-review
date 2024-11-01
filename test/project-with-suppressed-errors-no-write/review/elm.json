@@ -11,7 +11,7 @@
             "elm/project-metadata-utils": "1.0.2",
             "jfmengels/elm-review": "2.14.1",
             "jfmengels/elm-review-unused": "1.2.3",
-            "stil4m/elm-syntax": "7.3.6"
+            "stil4m/elm-syntax": "7.3.7"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
