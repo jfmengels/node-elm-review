@@ -5,5 +5,5 @@
 I found the elm.json associated with jfmengels/node-elm-review repository on GitHub,
 but I encountered a problem when parsing it:
 
-Unexpected token / in JSON at position 137
+Unexpected token / in JSON at position 135
 
