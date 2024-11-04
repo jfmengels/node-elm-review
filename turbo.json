@@ -91,7 +91,10 @@
         "tsconfig.json",
         "tsconfig.*.json"
       ],
-      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+      "outputs": [
+        "node_modules/.cache/tsbuildinfo.json",
+        "node_modules/.cache/tsbuildinfo.no-implicit-any.json"
+      ]
     },
     "tsc-watch": {
       "inputs": [
@@ -103,6 +106,20 @@
         "tsconfig.*.json"
       ],
       "outputs": ["node_modules/.cache/tsbuildinfo.json"],
+      "cache": false,
+      "persistent": true
+    },
+    "tsc-watch:strict": {
+      "inputs": [
+        "lib/",
+        "new-package/elm-review-package-tests/**/*.js",
+        "test/",
+        "jest.config.js",
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ],
+      "outputs": ["node_modules/.cache/tsbuildinfo.no-implicit-any.json"],
+      "cache": false,
       "persistent": true
     },
     "elm-tests": {

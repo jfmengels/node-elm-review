@@ -57,7 +57,8 @@
     "test-run": "(cd test/ && ./run.sh)",
     "test-run-record": "(cd test/ && ./run.sh record)",
     "tsc": "tsc && tsc --project tsconfig.no-implicit-any.json",
-    "tsc-watch": "tsc --watch"
+    "tsc-watch": "tsc --watch",
+    "tsc-watch:strict": "tsc --watch --project tsconfig.no-implicit-any.json"
   },
   "dependencies": {
     "chalk": "^4.0.0",
