@@ -37,6 +37,7 @@
     "lib/result-cache-json.js",
     "lib/result-cache-worker.js",
     "lib/review-dependencies.js",
+    "lib/runner.js",
     "lib/spinner.js",
     "lib/state.js",
     "lib/styled-message.js",
