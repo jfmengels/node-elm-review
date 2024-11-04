@@ -28,6 +28,7 @@
     "lib/load-compiled-app.js",
     "lib/main.js",
     "lib/min-version.js",
+    "lib/module-cache.js",
     "lib/new-package.js",
     "lib/new-rule.js",
     "lib/npx.js",
