@@ -16,6 +16,18 @@ if (require.main === module) {
 
 // Find all elm.json files
 
+/**
+ * @typedef {object} ApplicationElmJson
+ * @property {string[]} source-directories
+ * @property {DependencyList} dependencies
+ */
+
+/**
+ * @typedef {object} DependencyList
+ * @property {Record<string, string>} direct
+ * @property {Record<string, string>} indirect
+ */
+
 function copyPreviewsToExamples() {
   const previewFolders = findPreviewConfigurations();
   for (const folder of previewFolders) {
@@ -23,6 +35,9 @@ function copyPreviewsToExamples() {
   }
 }
 
+/**
+ * @param {string} pathToPreviewFolder
+ */
 function copyPreviewToExample(pathToPreviewFolder) {
   const pathToExampleFolder = `${pathToPreviewFolder}/`.replace(
     /preview/g,
@@ -32,7 +47,10 @@ function copyPreviewToExample(pathToPreviewFolder) {
   fs.copySync(pathToPreviewFolder, pathToExampleFolder, {overwrite: true});
 
   const pathToElmJson = path.resolve(pathToExampleFolder, 'elm.json');
-  const elmJson = fs.readJsonSync(pathToElmJson);
+  const elmJson =
+    /** @type {ApplicationElmJson} */ (
+      fs.readJsonSync(pathToElmJson)
+    );
 
   // Remove the source directory pointing to the package's src/
   elmJson['source-directories'] = elmJson['source-directories'].filter(

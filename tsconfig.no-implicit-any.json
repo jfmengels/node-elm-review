@@ -58,6 +58,7 @@
     "lib/template-dependencies.js",
     "lib/utils.js",
     "lib/watch.js",
+    "new-package/elm-review-package-tests/*.js",
     "test/jest-helpers/cli.js",
     "test/jest-helpers/types/cli.ts",
     "test/flags.test.js",
