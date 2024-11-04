@@ -5,7 +5,8 @@ import type {
   ElmJsonData,
   LinksToRuleDocs,
   NonElmFiles,
-  Readme
+  Readme,
+  Source
 } from './content.js';
 import type {Flags} from './flags.js';
 import type {Path} from './path.js';
@@ -54,7 +55,7 @@ export type Ports = {
 
   acknowledgeFileReceipt: SubscribePort<FileReceipt>;
   askConfirmationToFix: SubscribePort<AutofixRequest>;
-  cacheFile: SubscribePort<{source: string; ast: Ast}>;
+  cacheFile: SubscribePort<CacheRequest>;
   fixConfirmationStatus: SubscribePort<boolean>;
   askForFixConfirmationStatus: SendPort<null>;
   abort: SubscribePort<string>;
@@ -66,8 +67,10 @@ export type Ports = {
 
 export type FileReceipt = {
   path: Path;
-  cacheRequest: {source: string; ast: Ast} | null;
+  cacheRequest: CacheRequest | null;
 };
+
+export type CacheRequest = {source: Source; ast: Ast};
 
 export type AutofixRequest = {
   confirmationMessage: StyledMessage;
