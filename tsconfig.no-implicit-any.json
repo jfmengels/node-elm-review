@@ -32,6 +32,7 @@
     "lib/project-json-files.js",
     "lib/promisify-port.js",
     "lib/report.js",
+    "lib/result-cache.js",
     "lib/result-cache-json.js",
     "lib/result-cache-worker.js",
     "lib/spinner.js",
