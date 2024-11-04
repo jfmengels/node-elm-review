@@ -141,7 +141,7 @@ function compile(sources, options) {
   try {
     return runCompiler(sources, optionsWithDefaults, pathToElm).on(
       'error',
-      function (/** @type {unknown} */ err) {
+      function (err) {
         throw err;
       }
     );
