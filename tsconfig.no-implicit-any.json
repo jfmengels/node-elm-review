@@ -29,6 +29,7 @@
     "lib/parse-elm.js",
     "lib/parse-elm-worker.js",
     "lib/path-helpers.js",
+    "lib/project-dependencies.js",
     "lib/project-json-files.js",
     "lib/promisify-port.js",
     "lib/report.js",
