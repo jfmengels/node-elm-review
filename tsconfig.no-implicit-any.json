@@ -11,6 +11,7 @@
     "lib/cache.js",
     "lib/debug.js",
     "lib/dependency-provider.js",
+    "lib/elm-binary.js",
     "lib/elm-communication.js",
     "lib/elm-files.js",
     "lib/extra-files.js",
