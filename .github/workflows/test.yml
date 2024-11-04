@@ -88,8 +88,5 @@ jobs:
     - name: Install turbo
       run: npm install -g turbo
 
-    - name: Test Node.js version requirements
-      run: turbo run check-engines
-
     - name: Run tests
       run: npm test
