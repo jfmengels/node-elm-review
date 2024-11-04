@@ -47,10 +47,9 @@ function copyPreviewToExample(pathToPreviewFolder) {
   fs.copySync(pathToPreviewFolder, pathToExampleFolder, {overwrite: true});
 
   const pathToElmJson = path.resolve(pathToExampleFolder, 'elm.json');
-  const elmJson =
-    /** @type {ApplicationElmJson} */ (
-      fs.readJsonSync(pathToElmJson)
-    );
+  const elmJson = /** @type {ApplicationElmJson} */ (
+    fs.readJsonSync(pathToElmJson)
+  );
 
   // Remove the source directory pointing to the package's src/
   elmJson['source-directories'] = elmJson['source-directories'].filter(

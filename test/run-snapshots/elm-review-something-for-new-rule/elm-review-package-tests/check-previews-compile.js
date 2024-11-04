@@ -129,7 +129,5 @@ function checkConstraint(exampleConfiguration, depName, constraint, version) {
  * @param {string} version
  */
 function splitVersion(version) {
-  return version
-    .split('.')
-    .map((n) => Number.parseInt(n, 10));
+  return version.split('.').map((n) => Number.parseInt(n, 10));
 }
