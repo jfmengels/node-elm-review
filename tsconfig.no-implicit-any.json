@@ -39,6 +39,7 @@
     "lib/suppressed-errors.js",
     "lib/sync-get.js",
     "lib/sync-get-worker.js",
+    "lib/template-dependencies.js",
     "lib/utils.js",
     "test/jest-helpers/cli.js",
     "test/jest-helpers/types/cli.ts",
