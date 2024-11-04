@@ -133,6 +133,7 @@ function compilerErrorToString(err, pathToElm) {
 /**
  * @param {Sources} sources
  * @param {CompileOptions} options
+ * @returns {ChildProcess}
  */
 function compile(sources, options) {
   var optionsWithDefaults = prepareOptions(options, options.spawn || spawn);

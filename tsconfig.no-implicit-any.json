@@ -10,6 +10,7 @@
     "lib/app-wrapper.js",
     "lib/autofix.js",
     "lib/benchmark.js",
+    "lib/build.js",
     "lib/cache.js",
     "lib/debug.js",
     "lib/dependency-provider.js",
