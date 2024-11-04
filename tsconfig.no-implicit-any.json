@@ -57,6 +57,7 @@
     "lib/sync-get-worker.js",
     "lib/template-dependencies.js",
     "lib/utils.js",
+    "lib/watch.js",
     "test/jest-helpers/cli.js",
     "test/jest-helpers/types/cli.ts",
     "test/flags.test.js",
