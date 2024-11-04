@@ -18,6 +18,7 @@
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
     "strictBuiltinIteratorReturn": true,
+    "noImplicitAny": true,
     "noUncheckedSideEffectImports": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
