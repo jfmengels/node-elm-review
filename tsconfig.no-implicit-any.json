@@ -26,6 +26,7 @@
     "lib/min-version.js",
     "lib/new-rule.js",
     "lib/npx.js",
+    "lib/optimize-js.js",
     "lib/options.js",
     "lib/os-helpers.js",
     "lib/parse-elm.js",
