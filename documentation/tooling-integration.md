@@ -30,13 +30,10 @@ If you happen to know the path to these two executables, please run using
 - `--compiler <path-to-elm>`
 - `--elm-format-path <path-to-elm-format>`. `elm-format` is used to re-format files after they have been fixed (`--fix` or `--fix-all`). If you are not running that, you have no need to specify `--elm-format-path`. As you will see in a different section below, the JSON format will give you the necessary steps to perform a fix yourself.
 
-This will help the CLI by not trying several paths before succeeding. If you don't specify these, this is how the binaries are found:
+This will help the CLI by not trying several paths before succeeding. If you don't specify these, we prepend all `node_modules` from the current working directory down (e.g., in `/home/a/foo`, `/home/a/foo/node_modules/`,`/home/a/node_modules/`,`/home/node_modules/`, & `/node_modules/`) to the PATH, then run `which elm` or `which elm-format` respectively.
 
-- `elm`: We run `which elm` and use that path.
-- `elm-format`: We run `npx --no-install elm-format`, and fallback to a `elm-format`.
-
-If you are unsure that these paths are correct, then maybe omit these, as the CLI
-will not attempt to fallback to other paths.
+If you are unsure that your paths are correct, then it's better to omit them,
+as the CLI will not attempt to fallback to other paths.
 
 ## Format of the JSON
 
