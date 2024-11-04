@@ -26,6 +26,7 @@
     "lib/help.js",
     "lib/init.js",
     "lib/load-compiled-app.js",
+    "lib/main.js",
     "lib/min-version.js",
     "lib/new-package.js",
     "lib/new-rule.js",
