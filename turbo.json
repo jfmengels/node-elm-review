@@ -30,6 +30,16 @@
         "test-run"
       ]
     },
+    "testing:offline": {
+      "dependsOn": [
+        "elm-tests",
+        "elm-format",
+        "tsc",
+        "eslint-check",
+        "prettier-check",
+        "jest"
+      ]
+    },
     "eslint-check": {
       "inputs": ["lib/", "vendor/", ".eslintrc.js", "tsconfig.json"]
     },
