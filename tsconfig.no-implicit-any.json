@@ -27,6 +27,7 @@
     "lib/init.js",
     "lib/load-compiled-app.js",
     "lib/min-version.js",
+    "lib/new-package.js",
     "lib/new-rule.js",
     "lib/npx.js",
     "lib/optimize-js.js",
