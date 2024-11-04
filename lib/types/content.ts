@@ -54,7 +54,7 @@ export type PackageElmJson = {
   summary: string;
   license: string;
   version: VersionString;
-  'exposed-modules': (string | Record<string, string>)[];
+  'exposed-modules': string[] | Record<string, string[]>;
   'elm-version': VersionRange;
   dependencies: PackageDependencyList;
   'test-dependencies': PackageDependencyList;
