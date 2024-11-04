@@ -34,6 +34,7 @@
     "lib/project-dependencies.js",
     "lib/project-json-files.js",
     "lib/promisify-port.js",
+    "lib/remote-template.js",
     "lib/report.js",
     "lib/result-cache.js",
     "lib/result-cache-json.js",
