@@ -8,6 +8,7 @@
     "lib/types/**/*.ts",
     "lib/anonymize.js",
     "lib/app-wrapper.js",
+    "lib/autofix.js",
     "lib/benchmark.js",
     "lib/cache.js",
     "lib/debug.js",
