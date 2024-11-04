@@ -9,7 +9,7 @@ export type File = {
 export type ElmFile = {
   path: Path;
   source: Source;
-  ast?: Ast;
+  ast?: Ast | null;
   lastUpdatedTime?: Date | null;
 };
 
@@ -75,4 +75,4 @@ export type LinksToRuleDocs = Record<string, string>;
 
 export type Source = string;
 
-export type Ast = unknown;
+export type Ast = Record<string, unknown>;

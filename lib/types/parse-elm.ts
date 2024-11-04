@@ -1,5 +1,5 @@
-import {ElmFile, Source} from './content.js';
-import {Path} from './path.js';
+import type {Ast, ElmFile, Source} from './content.js';
+import type {Path} from './path.js';
 import type {SendPort, SubscribePort} from './promisify-port.js';
 
 export type ParseJob = {
@@ -10,7 +10,7 @@ export type ParseJob = {
 
 type Callback = {
   (error: Error): void;
-  (error: undefined, result: ElmFile): void;
+  (error: undefined, result: Ast): void;
 };
 
 export type ParserApp = {
