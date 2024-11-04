@@ -1,5 +1,5 @@
-import type {FixMode} from './fix.js';
-import type {OptionsBase} from './options.js';
+import type {FixMode} from './fix.ts';
+import type {OptionsBase} from './options.ts';
 
 export type Flags = OptionsBase & {
   resultCacheFolder: string;

@@ -1,6 +1,6 @@
-import type {Ast, ElmFile, Source} from './content.js';
-import type {Path} from './path.js';
-import type {SendPort, SubscribePort} from './promisify-port.js';
+import type {Ast, ElmFile, Source} from './content.ts';
+import type {Path} from './path.ts';
+import type {SendPort, SubscribePort} from './promisify-port.ts';
 
 export type ParseJob = {
   elmParserPath: Path;

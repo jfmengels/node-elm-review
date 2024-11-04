@@ -1,5 +1,5 @@
-import type {AppHash} from './build.js';
-import type {Path} from './path.js';
+import type {AppHash} from './build.ts';
+import type {Path} from './path.ts';
 
 export type OptionsBase = {
   debug: boolean;

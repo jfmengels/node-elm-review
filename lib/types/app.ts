@@ -7,13 +7,13 @@ import type {
   NonElmFiles,
   Readme,
   Source
-} from './content.js';
-import type {Flags} from './flags.js';
-import type {Path} from './path.js';
-import type {SendPort, SubscribePort} from './promisify-port.js';
-import type {FilesProposedByCurrentFix} from './state.js';
-import type {StyledMessage} from './styled-message.js';
-import type {SuppressedErrorsFile} from './suppressed.js';
+} from './content.ts';
+import type {Flags} from './flags.ts';
+import type {Path} from './path.ts';
+import type {SendPort, SubscribePort} from './promisify-port.ts';
+import type {FilesProposedByCurrentFix} from './state.ts';
+import type {StyledMessage} from './styled-message.ts';
+import type {SuppressedErrorsFile} from './suppressed.ts';
 
 export type Elm = {
   Elm: {

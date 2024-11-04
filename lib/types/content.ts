@@ -1,5 +1,5 @@
-import type {VersionRange, VersionString} from './version.js';
-import type {Path} from './path.js';
+import type {VersionRange, VersionString} from './version.ts';
+import type {Path} from './path.ts';
 
 export type File = {
   path: Path;

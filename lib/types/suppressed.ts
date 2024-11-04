@@ -1,4 +1,4 @@
-import type {Path} from './path.js';
+import type {Path} from './path.ts';
 
 export type SuppressedErrorsFile = {
   rule: string;

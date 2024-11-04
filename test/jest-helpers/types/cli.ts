@@ -1,4 +1,4 @@
-import type {ReportMode} from '../../../lib/types/options.js';
+import type {ReportMode} from '../../../lib/types/options.ts';
 
 export type Options = {
   project?: string;

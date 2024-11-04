@@ -1,4 +1,4 @@
-import type {Replacer} from './json.js';
+import type {Replacer} from './json.ts';
 import type {Path} from './path.ts';
 
 declare global {

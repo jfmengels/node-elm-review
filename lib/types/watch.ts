@@ -1,11 +1,11 @@
-import type {App} from './app.js';
+import type {App} from './app.ts';
 import type {
   ApplicationElmJson,
   ElmFile,
   ElmJsonData,
   ExtraFileRequest
-} from './content.js';
-import type {Path} from './path.js';
+} from './content.ts';
+import type {Path} from './path.ts';
 
 export type WatchOptions = {
   app: App;
