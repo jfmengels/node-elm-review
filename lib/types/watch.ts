@@ -1,4 +1,4 @@
-import type {App} from './app.ts';
+import type {ReviewApp} from './app.ts';
 import type {
   ApplicationElmJson,
   ElmFile,
@@ -8,7 +8,7 @@ import type {
 import type {Path} from './path.ts';
 
 export type WatchOptions = {
-  app: App;
+  app: ReviewApp;
   elmJsonData: ElmJsonData;
   elmFiles: ElmFile[];
   sourceDirectories: Path[];
