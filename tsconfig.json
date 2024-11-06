@@ -26,7 +26,8 @@
     "lib/**/*",
     "new-package/elm-review-package-tests/**/*.js",
     "test/**/*",
-    "jest.config.js"
+    "jest.config.js",
+    ".eslintrc.js"
   ],
   "exclude": ["node_modules", "**/elm-stuff/", "test/temporary"]
 }

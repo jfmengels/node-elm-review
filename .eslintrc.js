@@ -1,5 +1,5 @@
 // @ts-check
-// TODO(@lishaduck) [eslint@>9.5]: Use `.ts` extension to get more type checking for this file.
+// TODO(@lishaduck) [eslint@>=9.9]: Use `.ts` extension to get more type checking for this file.
 // TODO(@lishaduck) [engine:node@>=18]: Upgrade `tseslint`.
 // TODO(@lishaduck) [engine:node@>=18]: Use `eslint-define-config` to get type checking for this file.
 // TODO(@lishaduck) [engine:node@>=18]: Use `eslint-plugin-jsdoc` to get JSDoc linting.
@@ -157,6 +157,17 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['./*.js'],
+      rules: {
+        // Not compatible with JSDoc according https://github.com/typescript-eslint/typescript-eslint/issues/8955#issuecomment-2097518639
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/parameter-properties': 'off',
+        '@typescript-eslint/typedef': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off'
+      }
+    },
+    {
       files: ['./new-package/**/*.js'],
       rules: {
         'n/no-process-exit': 'off',
@@ -167,8 +178,7 @@ module.exports = {
     {
       files: ['.eslintrc.js'],
       rules: {
-        camelcase: 'off',
-        '@typescript-eslint/prefer-nullish-coalescing': 'off' // It's not happy with how TS is set up on this config file.
+        camelcase: 'off'
       }
     }
   ],
