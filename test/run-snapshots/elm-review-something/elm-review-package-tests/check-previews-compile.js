@@ -15,6 +15,7 @@ for (const example of findPreviewConfigurations()) {
 
 /**
  * @param {string} exampleConfiguration
+ * @returns {void}
  */
 function checkThatExampleCompiles(exampleConfiguration) {
   const exampleConfigurationElmJson = require(`${exampleConfiguration}/elm.json`);
@@ -66,6 +67,7 @@ and make the necessary changes to make it compile.`
 
 /**
  * @param {string} config
+ * @returns {void}
  */
 function success(config) {
   console.log(`${Ansi.green('✔')} ${path.relative(root, config)}/ compiles`);
@@ -74,6 +76,7 @@ function success(config) {
 /**
  * @param {string} exampleConfiguration
  * @param {Record<string, string>} previewDependencies
+ * @returns {void}
  */
 function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
   for (const [depName, constraint] of Object.entries(packageDependencies)) {
@@ -108,6 +111,7 @@ function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
  * @param {string} depName
  * @param {string} constraint
  * @param {string} version
+ * @returns {void}
  */
 function checkConstraint(exampleConfiguration, depName, constraint, version) {
   const [minVersion] = constraint.split(' <= v < ').map(splitVersion);
@@ -127,6 +131,7 @@ function checkConstraint(exampleConfiguration, depName, constraint, version) {
 
 /**
  * @param {string} version
+ * @returns {number[]}
  */
 function splitVersion(version) {
   return version.split('.').map((n) => Number.parseInt(n, 10));

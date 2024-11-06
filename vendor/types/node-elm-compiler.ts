@@ -1,17 +1,19 @@
 import type {ChildProcess, SpawnOptions} from 'node:child_process';
 import type {ReportMode} from '../../lib/types/options';
+import type {Path} from '../../lib/types/path';
+import type {Source} from '../../lib/types/content';
 
 export type CompileOptions = {
   spawn?: Spawner;
 
-  cwd: string;
-  output: string;
+  cwd: Path;
+  output: Path;
   debug: boolean;
   optimize: boolean;
   verbose: boolean;
   warn: boolean;
   report: ReportMode;
-  pathToElm: string;
+  pathToElm: Path;
   help?: undefined;
   docs?: undefined;
   processOpts: ProcessOptions;
@@ -23,9 +25,9 @@ export interface ProcessOptions {
 }
 
 export type Spawner = (
-  pathToElm: string,
+  pathToElm: Path,
   processArgs: SpawnOptions,
   processOpts: ProcessOptions
 ) => ChildProcess;
 
-export type Sources = string | string[];
+export type Sources = Source | Source[];

@@ -28,6 +28,9 @@ if (require.main === module) {
  * @property {Record<string, string>} indirect
  */
 
+/**
+ * @returns {void}
+ */
 function copyPreviewsToExamples() {
   const previewFolders = findPreviewConfigurations();
   for (const folder of previewFolders) {
@@ -37,6 +40,7 @@ function copyPreviewsToExamples() {
 
 /**
  * @param {string} pathToPreviewFolder
+ * @returns {void}
  */
 function copyPreviewToExample(pathToPreviewFolder) {
   const pathToExampleFolder = `${pathToPreviewFolder}/`.replace(

@@ -128,7 +128,9 @@ module.exports = {
     'no-unused-expressions': 'off', // This rule is replaced with the TSESlint version.
     '@typescript-eslint/no-unused-expressions': 'error', // Support TS stuff.
     '@typescript-eslint/no-throw-literal': 'error', // Recommended in v8 (w/rename to `only-throw-error`)
-    '@typescript-eslint/prefer-namespace-keyword': 'error', // Recommended in v8
+    '@typescript-eslint/prefer-find': 'error', // Recommended in v8
+    '@typescript-eslint/prefer-includes': 'error', // Recommended in v8
+    '@typescript-eslint/prefer-regexp-exec': 'error', // Recommended in v8
 
     // Unsafe
     '@typescript-eslint/no-unsafe-assignment': 'off', // Blocked on typescript-eslint/typescript-eslint#1682.

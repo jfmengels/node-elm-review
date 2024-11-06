@@ -8,10 +8,12 @@ import type {
   Readme,
   Source
 } from './content.ts';
-import type {ElmNamespace, ElmApp} from './elm-js.js';
+import type {ElmNamespace, ElmApp} from './elm-js.ts';
+import type {ErrorMessageInfo} from './error-message.ts';
 import type {Flags} from './flags.ts';
 import type {Path} from './path.ts';
 import type {SendPort, SubscribePort} from './promisify-port.ts';
+import type {ReportedError} from './report.ts';
 import type {FilesProposedByCurrentFix} from './state.ts';
 import type {StyledMessage} from './styled-message.ts';
 import type {SuppressedErrorsFile} from './suppressed.ts';
@@ -52,10 +54,8 @@ export type Ports = {
   fixConfirmationStatus: SubscribePort<boolean>;
   askForFixConfirmationStatus: SendPort<null>;
   abort: SubscribePort<string>;
-  abortWithDetails: SubscribePort<{title: string; message: string}>;
-  abortForConfigurationErrors: SubscribePort<
-    {errors: unknown[]; path: unknown}[] & StyledMessage
-  >;
+  abortWithDetails: SubscribePort<ErrorMessageInfo>;
+  abortForConfigurationErrors: SubscribePort<ReportedError[]>;
 };
 
 export type FileReceipt = {

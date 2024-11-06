@@ -67,12 +67,23 @@ export type ExtraFileRequest = {
   excludedDirectories: string[];
 };
 
+export type ProjectFiles = {
+  elmJsonData: ElmJsonData;
+  readme: Readme | null;
+  elmFiles: ElmFile[];
+  sourceDirectories: Path[];
+};
+
 export type Dependencies = Dependency[];
 
-export type Dependency = unknown;
+export type Dependency = {
+  name: PackageName;
+  docsJson: unknown;
+  elmJson: PackageElmJson;
+};
 
 export type LinksToRuleDocs = Record<string, string>;
 
-export type Source = string;
+export type Source = Path;
 
 export type Ast = Record<string, unknown>;

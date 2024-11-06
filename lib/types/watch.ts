@@ -1,18 +1,8 @@
-import type {ReviewApp} from './app.ts';
-import type {
-  ApplicationElmJson,
-  ElmFile,
-  ElmJsonData,
-  ExtraFileRequest
-} from './content.ts';
+import type {ApplicationElmJson} from './content.ts';
 import type {Path} from './path.ts';
+import type {RunOptions} from './runner.ts';
 
-export type WatchOptions = {
-  app: ReviewApp;
-  elmJsonData: ElmJsonData;
-  elmFiles: ElmFile[];
-  sourceDirectories: Path[];
+export type WatchOptions = RunOptions & {
   reviewElmJson: ApplicationElmJson;
   reviewElmJsonPath: Path | null;
-  requestedExtraFiles: ExtraFileRequest[];
 };
