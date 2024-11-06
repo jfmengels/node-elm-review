@@ -142,8 +142,6 @@ module.exports = {
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
     '@typescript-eslint/prefer-promise-reject-errors': 'off',
-    'promise/catch-or-return': 'off',
-    'promise/always-return': 'off',
 
     // TODO(@lishaduck): Security issues that should eventually get fixed.
     'security/detect-object-injection': 'off',
