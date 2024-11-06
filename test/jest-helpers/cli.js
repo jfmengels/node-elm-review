@@ -21,6 +21,7 @@ async function run(args, options) {
 /**
  * @param {string} args
  * @param {Options | undefined} [options=undefined]
+ * @returns {Promise<unknown>}
  */
 async function runAndExpectError(args, options) {
   try {
@@ -28,7 +29,7 @@ async function runAndExpectError(args, options) {
     throw new Error(
       `CLI did not exit with an exit code as expected. Here is its output:\n\n${output}`
     );
-  } catch (error) {
+  } catch (/** @type {unknown} */ error) {
     return error;
   }
 }
