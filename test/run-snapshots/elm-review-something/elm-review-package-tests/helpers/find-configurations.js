@@ -15,7 +15,7 @@ function findPreviewConfigurations() {
       ignore: ['**/elm-stuff/**'],
       nodir: true
     })
-    .map(path.dirname);
+    .map((val) => path.dirname(val));
 }
 
 module.exports = {

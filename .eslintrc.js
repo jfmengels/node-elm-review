@@ -160,9 +160,8 @@ module.exports = {
       files: ['./new-package/**/*.js'],
       rules: {
         'n/no-process-exit': 'off',
-        'n/no-missing-require': 'off',
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/unbound-method': 'off' // TODO(@lishaduck): Fix this warning. I just got confused.
+        'n/no-missing-require': 'off', // `require` of `elm.json`.
+        '@typescript-eslint/ban-ts-comment': 'off' // `require` of `elm.json`.
       }
     },
     {
