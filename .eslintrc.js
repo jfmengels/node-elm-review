@@ -28,6 +28,13 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
+    // Ensure JSDoc parsing is enabled.
+    jsDocParsingMode: 'all',
+
+    // Speed up ESLint CLI runs. This is opt-out in v8.
+    // The only known bugs are with project references, which we don't use.
+    automaticSingleRunInference: true,
+
     // A stable, but experimental, option to speed up linting.
     // It's also more feature complete, as it relies on the TypeScript Language Service.
     EXPERIMENTAL_useProjectService: true // TODO(@lishaduck) [typescript-eslint@>=8]: Rename to `projectService`.
@@ -72,7 +79,18 @@ module.exports = {
     'unicorn/prefer-node-protocol': 'error',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        args: 'all',
+        argsIgnorePattern: '^_',
+        caughtErrors: 'all',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true
+      }
+    ],
     '@typescript-eslint/switch-exhaustiveness-check': 'error',
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     'default-case': 'off',
@@ -101,15 +119,27 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/catch-error-name': ['error', {ignore: [/^err/i]}], // We use "error" for the result of `intoError` as well.
     'no-fallthrough': 'off', // TSESLint doesn't provide an alternative, and TS checks for this anyway.
+    'prefer-promise-reject-errors': 'off', // TSESlint provides an alternative.
 
+    // typescript-eslint v8, but now:
+    '@typescript-eslint/no-array-delete': 'error', // Recommended in v8
+    'no-loss-of-precision': 'error', // This rule handles numeric separators now
+    '@typescript-eslint/no-loss-of-precision': 'off', // This rule is redundant
+    'no-unused-expressions': 'off', // This rule is replaced with the TSESlint version.
+    '@typescript-eslint/no-unused-expressions': 'error', // Support TS stuff.
+    '@typescript-eslint/no-throw-literal': 'error', // Recommended in v8 (w/rename to `only-throw-error`)
+    '@typescript-eslint/prefer-namespace-keyword': 'error', // Recommended in v8
+
+    // Unsafe
+    '@typescript-eslint/no-unsafe-assignment': 'off', // Blocked on typescript-eslint/typescript-eslint#1682.
     // TODO(@lishaduck): Once there are no more `any`s, start enforcing these rules.
-    '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
 
     // TODO(@lishaduck): Enable stricter promise rules.
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
+    '@typescript-eslint/prefer-promise-reject-errors': 'off',
     'promise/catch-or-return': 'off',
     'promise/always-return': 'off',
 

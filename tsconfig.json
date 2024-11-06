@@ -17,7 +17,6 @@
     "useUnknownInCatchVariables": false,
     "noUncheckedSideEffectImports": true,
     "noFallthroughCasesInSwitch": true,
-    "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
