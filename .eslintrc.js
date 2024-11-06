@@ -119,6 +119,7 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/catch-error-name': ['error', {ignore: [/^err/i]}], // We use "error" for the result of `intoError` as well.
     'no-fallthrough': 'off', // TSESLint doesn't provide an alternative, and TS checks for this anyway.
+    'no-void': ['error', {allowAsStatement: true}],
 
     // `typescript-eslint` v8, but now:
     '@typescript-eslint/no-array-delete': 'error', // Recommended in v8
@@ -141,7 +142,6 @@ module.exports = {
 
     // TODO(@lishaduck): Enable stricter promise rules.
     '@typescript-eslint/no-misused-promises': 'off',
-    '@typescript-eslint/no-floating-promises': 'off',
 
     // TODO(@lishaduck): Security issues that should eventually get fixed.
     'security/detect-object-injection': 'off',
