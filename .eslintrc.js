@@ -119,18 +119,19 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/catch-error-name': ['error', {ignore: [/^err/i]}], // We use "error" for the result of `intoError` as well.
     'no-fallthrough': 'off', // TSESLint doesn't provide an alternative, and TS checks for this anyway.
-    'prefer-promise-reject-errors': 'off', // TSESlint provides an alternative.
 
-    // typescript-eslint v8, but now:
+    // `typescript-eslint` v8, but now:
     '@typescript-eslint/no-array-delete': 'error', // Recommended in v8
     'no-loss-of-precision': 'error', // This rule handles numeric separators now
     '@typescript-eslint/no-loss-of-precision': 'off', // This rule is redundant
     'no-unused-expressions': 'off', // This rule is replaced with the TSESlint version.
-    '@typescript-eslint/no-unused-expressions': 'error', // Support TS stuff.
+    '@typescript-eslint/no-unused-expressions': 'error', // Support TS stuff
     '@typescript-eslint/no-throw-literal': 'error', // Recommended in v8 (w/rename to `only-throw-error`)
     '@typescript-eslint/prefer-find': 'error', // Recommended in v8
     '@typescript-eslint/prefer-includes': 'error', // Recommended in v8
     '@typescript-eslint/prefer-regexp-exec': 'error', // Recommended in v8
+    'prefer-promise-reject-errors': 'off', // TSESlint provides an alternative
+    '@typescript-eslint/prefer-promise-reject-errors': 'error', // Recommended in v8
 
     // Unsafe
     '@typescript-eslint/no-unsafe-assignment': 'off', // Blocked on typescript-eslint/typescript-eslint#1682.
@@ -141,7 +142,6 @@ module.exports = {
     // TODO(@lishaduck): Enable stricter promise rules.
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
-    '@typescript-eslint/prefer-promise-reject-errors': 'off',
 
     // TODO(@lishaduck): Security issues that should eventually get fixed.
     'security/detect-object-injection': 'off',
