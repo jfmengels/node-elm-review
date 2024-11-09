@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Publicly document the `--fix-all-without-prompt` CLI flag. Please use it well!
+- The `--compiler` flag now additionally resolves the compiler path using the `PATH` environment variable (more easily enabling `elm-review --compiler lamdera` for instance).
 - Fixed an issue where the initial rule created with `elm-review new-package` was always a module rule, even when it was requested to be a project rule. Thanks to [@mateusfpleite](https://github.com/mateusfpleite)!
 - Plenty of behind the scenes improvement to the maintenance of the repository. Thanks to [@lishaduck](https://github.com/lishaduck) for all of those.
 

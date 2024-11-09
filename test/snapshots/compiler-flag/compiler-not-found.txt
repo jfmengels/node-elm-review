@@ -1,0 +1,5 @@
+-- ELM NOT FOUND ---------------------------------------------------------------
+
+I could not find the executable for the elm compiler at the location you specified:
+  notfound
+
