@@ -14,14 +14,14 @@ replace_script() {
 }
 
 # If you get errors like rate limit exceeded, you can run these tests
-# with "GITHUB_AUTH=gitHubUserName:token"
+# with "AUTH_GITHUB=gitHubUserName:token"
 # Follow this guide: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 # to create an API token, and give it access to public repositories.
-if [ -z "${GITHUB_AUTH:-}" ]
+if [ -z "${AUTH_GITHUB:-}" ]
 then
   AUTH=""
 else
-  AUTH=" --github-auth $GITHUB_AUTH"
+  AUTH=" --github-auth $AUTH_GITHUB"
 fi
 
 runCommandAndCompareToSnapshot() {
