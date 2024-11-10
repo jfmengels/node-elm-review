@@ -23,7 +23,7 @@ declare global {
 export type RuleName = string;
 export type RuleId = string;
 export type CacheEntry = unknown;
-export type CacheKey = `${RuleName}-${RuleId}}`;
+export type CacheKey = `${RuleName}-${RuleId}`;
 
 export type CacheData = {
   filePath: Path;
