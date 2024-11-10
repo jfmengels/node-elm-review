@@ -38,6 +38,10 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Git checkout
+      # Pin actions their full commit hashes to prevent supply-chain attacks.
+      # To update, find the latest tag on the releases page,
+      # then copy the full SHA and paste it back here (and update the comment).
+      # Alternatively, setup Dependabot for the `github-actions` ecosystem.
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         submodules: recursive
