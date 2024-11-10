@@ -13,7 +13,7 @@ expect.extend({toMatchFile});
 /**
  * @param {string} args
  * @param {Options} [options]
- * @returns
+ * @returns {Promise<string>}
  */
 async function run(args, options) {
   return await internalExec(`--FOR-TESTS ${args}`, options);
@@ -38,7 +38,7 @@ async function runAndExpectError(args, options) {
 /**
  * @param {string} args
  * @param {Options | undefined} [options]
- * @returns
+ * @returns {Promise<string>}
  */
 async function runWithoutTestMode(args, options) {
   return await internalExec(args, options);
@@ -47,7 +47,7 @@ async function runWithoutTestMode(args, options) {
 /**
  * @param {string} args
  * @param {Options} [options]
- * @returns
+ * @returns {Promise<string>}
  */
 async function internalExec(args, options = {}) {
   // Overriding FORCE_COLOR because Jest forcefully adds it as well,
@@ -70,7 +70,7 @@ async function internalExec(args, options = {}) {
 
 /**
  * @param {Options} options
- * @returns
+ * @returns {string | undefined}
  */
 function cwdFromOptions(options) {
   if (options.project) {
@@ -82,7 +82,7 @@ function cwdFromOptions(options) {
 
 /**
  * @param {Options} options
- * @returns
+ * @returns {string}
  */
 function reportMode(options) {
   if (!options.report) {
@@ -94,7 +94,7 @@ function reportMode(options) {
 
 /**
  * @param {Options} options
- * @returns
+ * @returns {"" | "--no-color"}
  */
 function colors(options) {
   if (options.colors) {
