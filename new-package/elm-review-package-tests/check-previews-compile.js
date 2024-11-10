@@ -99,9 +99,10 @@ function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
 
   const remainingKeys = Object.keys(previewDependencies);
   if (remainingKeys.length > 0) {
+    const extraneousDependencies = remainingKeys.join(', ');
+
     console.error(
-      // prettier-ignore
-      `There are extraneous dependencies in the ${exampleConfiguration}/ configuration: ${remainingKeys.join(', ')}`
+      `There are extraneous dependencies in the ${exampleConfiguration}/ configuration: ${extraneousDependencies}`
     );
     process.exit(1);
   }
