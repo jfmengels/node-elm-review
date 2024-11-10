@@ -47,7 +47,12 @@ function copyPreviewToExample(pathToPreviewFolder) {
     /preview/g,
     'example'
   );
-  fs.removeSync(pathToExampleFolder);
+
+  fs.rmSync(pathToExampleFolder, {
+    recursive: true,
+    force: true,
+    maxRetries: 10
+  });
   fs.copySync(pathToPreviewFolder, pathToExampleFolder, {overwrite: true});
 
   const pathToElmJson = path.resolve(pathToExampleFolder, 'elm.json');
