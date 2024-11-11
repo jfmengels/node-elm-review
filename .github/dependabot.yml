@@ -51,9 +51,6 @@ updates:
       - dependency-name: 'eslint-plugin-unicorn'
         update-types:
           - version-update:semver-major
-      - dependency-name: 'glob'
-        update-types:
-          - version-update:semver-major
       - dependency-name: 'which'
         update-types:
           - version-update:semver-major
