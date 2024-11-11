@@ -55,6 +55,7 @@ async function internalExec(args, options = {}) {
   const colorFlag = 'FORCE_COLOR=' + (options.colors ? '1' : '0');
 
   try {
+    // If this just uses child_process.exec, the shell scripts are pointless, and should be all migrated to Jest tests.
     const result = await exec(
       [colorFlag, cli, reportMode(options), colors(options), args].join(' '),
       {
