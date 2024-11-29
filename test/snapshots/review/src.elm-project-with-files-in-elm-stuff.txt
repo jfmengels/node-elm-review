@@ -1,0 +1,29 @@
+-- ELM-REVIEW ERROR --------------------------------- elm-stuff/src/Util.elm:6:1
+
+(fix) NoUnused.Variables: Top-level variable `unused` is not used
+
+6| unused = 1
+   ^^^^^^
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+elm-stuff/src/Util.elm  ↑
+====o======================================================================o====
+↓  src/Main.elm
+
+
+-- ELM-REVIEW ERROR ------------------------------------------ src/Main.elm:4:23
+
+(fix) NoUnused.Variables: Module alias `List` is not used
+
+3| import Util as List
+4| import UtilNotUsed as List
+                         ^^^^
+
+You should either use this value somewhere, or remove it at the location I
+pointed at.
+
+Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+I found 2 errors in 2 files.

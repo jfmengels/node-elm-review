@@ -135,3 +135,12 @@ test('Running on project with a directory ending in .elm (with arg)', async () =
   );
   expect(output).toMatchFile(testName('src.elm-project-with-arg'));
 });
+
+test('Includes files from a source-directory if that source-directory is in elm-stuff', async () => {
+  const output = await TestCli.runAndExpectError('', {
+    project: 'project-with-files-in-elm-stuff'
+  });
+  expect(output).toMatchFile(
+    testName('src.elm-project-with-files-in-elm-stuff')
+  );
+});
