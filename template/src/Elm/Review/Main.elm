@@ -1167,7 +1167,7 @@ sendFixPrompt model diffs =
                 Just { before, after } ->
                     ( { model | errorAwaitingConfirmation = AwaitingError error }
                     , [ ( "confirmationMessage"
-                        , Reporter.formatFixProposal
+                        , Reporter.formatSingleFixProposal
                             model.detailsMode
                             { path = Reporter.FilePath filePath, source = Reporter.Source before }
                             (fromReviewError model.suppressedErrors model.links error)

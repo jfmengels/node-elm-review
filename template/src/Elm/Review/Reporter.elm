@@ -1,8 +1,8 @@
 module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
-    , formatFixProposal, formatFixProposals
-    , FileWithError, Range, formatConfigurationErrors
+    , formatFixProposals
+    , FileWithError, Range, formatConfigurationErrors, formatSingleFixProposal
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -896,8 +896,8 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatFixProposal : DetailsMode -> File -> Error -> Source -> List TextContent
-formatFixProposal detailsMode file error fixedSource =
+formatSingleFixProposal : DetailsMode -> File -> Error -> Source -> List TextContent
+formatSingleFixProposal detailsMode file error fixedSource =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
