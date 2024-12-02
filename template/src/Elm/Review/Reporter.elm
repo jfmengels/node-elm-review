@@ -896,8 +896,8 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatSingleFixProposal : DetailsMode -> File -> Error -> Source -> List { path : String, before : String, after : String } -> List TextContent
-formatSingleFixProposal detailsMode file error fixedSource diffs =
+formatSingleFixProposal : DetailsMode -> File -> Error -> List { path : String, before : String, after : String } -> List TextContent
+formatSingleFixProposal detailsMode file error diffs =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
