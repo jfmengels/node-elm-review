@@ -914,7 +914,9 @@ formatSingleFixProposal detailsMode file error fixedSource diffs =
             , case diffs of
                 [ { path, before, after } ] ->
                     if FilePath path /= file.path then
-                        formatDiff (Source before) (Source after)
+                        formatFilePathForSingleFix path
+                            :: Text.from "\n\n"
+                            :: formatDiff (Source before) (Source after)
 
                     else
                         formatDiff (Source before) (Source after)
@@ -925,6 +927,14 @@ formatSingleFixProposal detailsMode file error fixedSource diffs =
         , [ Text.from "\n" ]
         ]
         |> List.map Text.toRecord
+
+
+formatFilePathForSingleFix : String -> Text
+formatFilePathForSingleFix path =
+    (" Changes for " ++ path)
+        |> String.padLeft 80 '-'
+        |> Text.from
+        |> Text.inBlue
 
 
 {-| Reports the proposal for the fix-all changes in a nice human-readable way.
