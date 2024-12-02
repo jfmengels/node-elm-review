@@ -922,7 +922,19 @@ formatSingleFixProposal detailsMode file error fixedSource diffs =
                         formatDiff (Source before) (Source after)
 
                 _ ->
-                    formatDiff file.source fixedSource
+                    let
+                        numberOfDiffs : Int
+                        numberOfDiffs =
+                            List.length diffs
+                    in
+                    diffs
+                        |> List.indexedMap
+                            (\index { path, before, after } ->
+                                formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
+                                    :: Text.from "\n\n"
+                                    :: formatDiff (Source before) (Source after)
+                            )
+                        |> Text.join "\n\n"
             ]
         , [ Text.from "\n" ]
         ]
@@ -931,8 +943,20 @@ formatSingleFixProposal detailsMode file error fixedSource diffs =
 
 formatFilePathForSingleFix : String -> Text
 formatFilePathForSingleFix path =
-    (" Changes for " ++ path)
+    path
         |> String.padLeft 80 '-'
+        |> Text.from
+        |> Text.inBlue
+
+
+formatFilePathForSingleFixWith : Int -> Int -> String -> Text
+formatFilePathForSingleFixWith fileNo numberOfFiles path =
+    let
+        page : String
+        page =
+            String.fromInt fileNo ++ " / " ++ String.fromInt numberOfFiles ++ " -"
+    in
+    (page ++ String.padLeft (80 - String.length page) '-' (" " ++ path))
         |> Text.from
         |> Text.inBlue
 
