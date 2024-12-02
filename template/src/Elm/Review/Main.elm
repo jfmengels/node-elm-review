@@ -1165,32 +1165,25 @@ sendFixPrompt model diffs =
         OneError filePath error ->
             case find (\module_ -> module_.path == filePath) (Project.modules model.project) of
                 Just file ->
-                    case find (\diff_ -> diff_.path == filePath) diffs of
-                        Just { after } ->
-                            ( { model | errorAwaitingConfirmation = AwaitingError error }
-                            , [ ( "confirmationMessage"
-                                , Reporter.formatSingleFixProposal
-                                    model.detailsMode
-                                    { path = Reporter.FilePath filePath, source = Reporter.Source file.source }
-                                    (fromReviewError model.suppressedErrors model.links error)
-                                    (Reporter.Source after)
-                                    diffs
-                                    |> encodeReport
-                                )
-                              , ( "changedFiles"
-                                , diffs
-                                    |> List.map (\diff -> { path = Reporter.FilePath diff.path, source = Reporter.Source diff.after })
-                                    |> Encode.list encodeChangedFile
-                                )
-                              , ( "count", Encode.int 1 )
-                              ]
-                                |> Encode.object
-                                |> askConfirmationToFix
-                            )
-
-                        Nothing ->
-                            -- Should not happen
-                            ( model, Cmd.none )
+                    ( { model | errorAwaitingConfirmation = AwaitingError error }
+                    , [ ( "confirmationMessage"
+                        , Reporter.formatSingleFixProposal
+                            model.detailsMode
+                            { path = Reporter.FilePath filePath, source = Reporter.Source file.source }
+                            (fromReviewError model.suppressedErrors model.links error)
+                            diffs
+                            |> encodeReport
+                        )
+                      , ( "changedFiles"
+                        , diffs
+                            |> List.map (\diff -> { path = Reporter.FilePath diff.path, source = Reporter.Source diff.after })
+                            |> Encode.list encodeChangedFile
+                        )
+                      , ( "count", Encode.int 1 )
+                      ]
+                        |> Encode.object
+                        |> askConfirmationToFix
+                    )
 
                 Nothing ->
                     -- TODO Handle global errors and other error targets
