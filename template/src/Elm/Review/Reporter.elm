@@ -912,8 +912,12 @@ formatSingleFixProposal detailsMode file error fixedSource diffs =
                     |> Text.inBlue
               ]
             , case diffs of
-                [ { before, after } ] ->
-                    formatDiff (Source before) (Source after)
+                [ { path, before, after } ] ->
+                    if FilePath path /= file.path then
+                        formatDiff (Source before) (Source after)
+
+                    else
+                        formatDiff (Source before) (Source after)
 
                 _ ->
                     formatDiff file.source fixedSource
