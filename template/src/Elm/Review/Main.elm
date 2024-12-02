@@ -1172,6 +1172,7 @@ sendFixPrompt model diffs =
                             { path = Reporter.FilePath filePath, source = Reporter.Source before }
                             (fromReviewError model.suppressedErrors model.links error)
                             (Reporter.Source after)
+                            diffs
                             |> encodeReport
                         )
                       , ( "changedFiles"
