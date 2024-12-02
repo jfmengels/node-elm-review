@@ -911,7 +911,7 @@ formatFixProposal detailsMode file error fixedSource =
                     |> Text.from
                     |> Text.inBlue
               ]
-            , diff file.source fixedSource
+            , formatDiff file.source fixedSource
             ]
         , [ Text.from "\n" ]
         ]
@@ -985,13 +985,13 @@ formatFileDiff file =
       ]
     , Text.from "Applied from the fixes for the following errors:"
         :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse file.errors)
-    , diff file.source file.fixedSource
+    , formatDiff file.source file.fixedSource
     ]
         |> Text.join "\n\n"
 
 
-diff : Source -> Source -> List Text
-diff (Source before) (Source after) =
+formatDiff : Source -> Source -> List Text
+formatDiff (Source before) (Source after) =
     Diff.diffLines before after
         |> addLineNumbers
         |> List.map extractValueFromChange
