@@ -7,7 +7,7 @@
     "moduleResolution": "Node16",
     "target": "es2020",
     "lib": ["ES2020"],
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": false,
     "noEmit": true,
     "noImplicitThis": true,
