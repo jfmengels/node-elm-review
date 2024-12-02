@@ -912,8 +912,8 @@ formatSingleFixProposal detailsMode file error fixedSource diffs =
                     |> Text.inBlue
               ]
             , case diffs of
-                [ _ ] ->
-                    formatDiff file.source fixedSource
+                [ { before, after } ] ->
+                    formatDiff (Source before) (Source after)
 
                 _ ->
                     formatDiff file.source fixedSource
