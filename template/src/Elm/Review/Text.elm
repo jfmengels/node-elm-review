@@ -1,11 +1,10 @@
 module Elm.Review.Text exposing
     ( Text, TextContent
     , from
-    , inBlue, inRed, inYellow, inGreen
+    , inBlue, inRed, inYellow, inGreen, inOrange
     , withLink
     , join, simplify
     , toRecord
-    , inOrange
     )
 
 {-| Represents text with some styling applied to it.
@@ -31,7 +30,7 @@ module Elm.Review.Text exposing
 
 # Modifiers
 
-@docs inBlue, inRed, inYellow, inGreen
+@docs inBlue, inRed, inYellow, inGreen, inOrange
 @docs withLink
 
 
