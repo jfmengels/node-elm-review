@@ -928,6 +928,15 @@ formatSingleFixProposal detailsMode file error diffs =
                             List.length diffs
                     in
                     diffs
+                        |> List.sortBy
+                            (\diff ->
+                                -- Sort so that the file the error was for is presented first.
+                                if FilePath diff.path == file.path then
+                                    ""
+
+                                else
+                                    diff.path
+                            )
                         |> List.indexedMap
                             (\index { path, before, after } ->
                                 formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
