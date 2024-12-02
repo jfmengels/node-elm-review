@@ -1175,11 +1175,9 @@ sendFixPrompt model diffs =
                             |> encodeReport
                         )
                       , ( "changedFiles"
-                        , Encode.list encodeChangedFile
-                            [ { path = Reporter.FilePath filePath
-                              , source = Reporter.Source after
-                              }
-                            ]
+                        , diffs
+                            |> List.map (\diff -> { path = Reporter.FilePath diff.path, source = Reporter.Source diff.after })
+                            |> Encode.list encodeChangedFile
                         )
                       , ( "count", Encode.int 1 )
                       ]
