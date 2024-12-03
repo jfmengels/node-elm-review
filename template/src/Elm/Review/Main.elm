@@ -1216,6 +1216,37 @@ pathAndSource project path =
 sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
 sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
     let
+        errorsForFile : Dict String (List Rule.ReviewError)
+        errorsForFile =
+            Dict.foldl
+                (\_ errors acc ->
+                    List.foldl
+                        (\error subAcc ->
+                            case Rule.errorFixesV2 error of
+                                Just fixedFiles ->
+                                    Dict.foldl
+                                        (\fixedFile _ subSubAcc ->
+                                            Dict.update fixedFile
+                                                (\previousErrors ->
+                                                    previousErrors
+                                                        |> Maybe.withDefault []
+                                                        |> (::) error
+                                                        |> Just
+                                                )
+                                                subSubAcc
+                                        )
+                                        subAcc
+                                        fixedFiles
+
+                                Nothing ->
+                                    subAcc
+                        )
+                        acc
+                        errors
+                )
+                Dict.empty
+                model.fixAllErrors
+
         changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
         changedFiles =
             List.map
@@ -1229,7 +1260,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     , source = Reporter.Source before
                     , fixedSource = Reporter.Source after
                     , errors =
-                        Dict.get path model.fixAllErrors
+                        Dict.get path errorsForFile
                             |> Maybe.withDefault []
                             |> List.map (fromReviewError model.suppressedErrors model.links)
                     }
