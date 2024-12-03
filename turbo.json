@@ -26,8 +26,7 @@
         "tsc",
         "eslint-check",
         "prettier-check",
-        "jest",
-        "test-run"
+        "test-sync"
       ]
     },
     "testing:offline": {
@@ -38,6 +37,20 @@
         "eslint-check",
         "prettier-check",
         "jest"
+      ]
+    },
+    "test-sync": {
+      "inputs": [
+        "ast-codec/",
+        "bin/",
+        "init-templates/",
+        "lib/",
+        "new-package/",
+        "parseElm/",
+        "review/",
+        "template/",
+        "test/",
+        "vendor/"
       ]
     },
     "eslint-check": {
