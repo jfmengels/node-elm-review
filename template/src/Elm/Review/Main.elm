@@ -1163,34 +1163,54 @@ sendFixPrompt model diffs =
             ( model, Cmd.none )
 
         OneError filePath error ->
-            case find (\module_ -> module_.path == filePath) (Project.modules model.project) of
-                Just file ->
-                    ( { model | errorAwaitingConfirmation = AwaitingError error }
-                    , [ ( "confirmationMessage"
-                        , Reporter.formatSingleFixProposal
-                            model.detailsMode
-                            { path = Reporter.FilePath filePath, source = Reporter.Source file.source }
-                            (fromReviewError model.suppressedErrors model.links error)
-                            diffs
-                            |> encodeReport
-                        )
-                      , ( "changedFiles"
-                        , diffs
-                            |> List.map (\diff -> { path = Reporter.FilePath diff.path, source = Reporter.Source diff.after })
-                            |> Encode.list encodeChangedFile
-                        )
-                      , ( "count", Encode.int 1 )
-                      ]
-                        |> Encode.object
-                        |> askConfirmationToFix
-                    )
-
-                Nothing ->
-                    -- TODO Handle global errors and other error targets
-                    ( model, Cmd.none )
+            ( { model | errorAwaitingConfirmation = AwaitingError error }
+            , [ ( "confirmationMessage"
+                , Reporter.formatSingleFixProposal
+                    model.detailsMode
+                    (pathAndSource model.project filePath)
+                    (fromReviewError model.suppressedErrors model.links error)
+                    diffs
+                    |> encodeReport
+                )
+              , ( "changedFiles"
+                , diffs
+                    |> List.map (\diff -> { path = Reporter.FilePath diff.path, source = Reporter.Source diff.after })
+                    |> Encode.list encodeChangedFile
+                )
+              , ( "count", Encode.int 1 )
+              ]
+                |> Encode.object
+                |> askConfirmationToFix
+            )
 
         MultipleErrors numberOfFixedErrors ->
             ( { model | errorAwaitingConfirmation = AwaitingFixAll }, sendFixPromptForMultipleFixes model diffs numberOfFixedErrors )
+
+
+pathAndSource : Project -> String -> { path : Reporter.FilePath, source : Reporter.Source }
+pathAndSource project path =
+    if path == "GLOBAL ERROR" then
+        { path = Reporter.Global, source = Reporter.Source "" }
+
+    else
+        let
+            fileSource : Maybe String
+            fileSource =
+                if path == "elm.json" then
+                    Project.elmJson project |> Maybe.map .raw
+
+                else if path == "README.md" then
+                    Project.readme project |> Maybe.map .content
+
+                else
+                    case find (\module_ -> module_.path == path) (Project.modules project) of
+                        Just { source } ->
+                            Just source
+
+                        Nothing ->
+                            Dict.get path (Project.extraFiles project)
+        in
+        { path = Reporter.FilePath path, source = Reporter.Source (Maybe.withDefault "" fileSource) }
 
 
 sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
