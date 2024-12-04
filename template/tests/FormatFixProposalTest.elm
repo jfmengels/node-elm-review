@@ -29,10 +29,9 @@ suite =
                         , suppressed = False
                         }
 
-                    file : File
-                    file =
-                        { path = Reporter.FilePath "src/FileA.elm"
-                        , source = Reporter.Source """module FileA exposing (a)
+                    fileBefore : String
+                    fileBefore =
+                        """module FileA exposing (a)
 a = Debug.log "debug" 1
 other=lines
 other2=lines2
@@ -49,11 +48,10 @@ some =
     a
     a
 """
-                        }
 
-                    fixedSource : Reporter.Source
-                    fixedSource =
-                        Reporter.Source """module FileA exposing (a)
+                    fileAfter : String
+                    fileAfter =
+                        """module FileA exposing (a)
 a = 1
 other=lines
 other2=lines2
@@ -70,8 +68,18 @@ some =
     a
     a
 """
+
+                    path : String
+                    path =
+                        "src/FileA.elm"
+
+                    file : File
+                    file =
+                        { path = Reporter.FilePath path
+                        , source = Reporter.Source fileBefore
+                        }
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails file error fixedSource
+                Reporter.formatSingleFixProposal Reporter.WithDetails file error [ { path = path, before = fileBefore, after = fileAfter } ]
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -134,26 +142,34 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
                     file : File
                     file =
-                        { path = Reporter.FilePath "src/Some/File.elm"
-                        , source = Reporter.Source """module Some.File exposing (a)
+                        { path = Reporter.FilePath path
+                        , source = Reporter.Source fileBefore
+                        }
+
+                    path : String
+                    path =
+                        "src/Some/File.elm"
+
+                    fileBefore : String
+                    fileBefore =
+                        """module Some.File exposing (a)
 a =
     1
 
 b =
     a
 """
-                        }
 
-                    fixedSource : Reporter.Source
+                    fixedSource : String
                     fixedSource =
-                        Reporter.Source """module Some.File exposing (a)
+                        """module Some.File exposing (a)
 
 
 b =
     a
 """
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails file error fixedSource
+                Reporter.formatSingleFixProposal Reporter.WithDetails file error [ { path = path, before = fileBefore, after = fixedSource } ]
                     |> expect
                         { withoutColors =
                             """-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:2:1
