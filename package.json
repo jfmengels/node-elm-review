@@ -55,8 +55,8 @@
     "prettier-fix": "prettier . --write --cache",
     "test": "turbo run testing check-engines --continue",
     "test-sync": "npm run jest && npm run test-run",
-    "test-run": "(cd test/ && node ./run.js)",
-    "test-run-record": "(cd test/ && node ./run.js record)",
+    "test-run": "(cd test/ && node ./run.mjs)",
+    "test-run-record": "(cd test/ && node ./run.mjs record)",
     "tsc": "tsc",
     "tsc-watch": "tsc --watch"
   },

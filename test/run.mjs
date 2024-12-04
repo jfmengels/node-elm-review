@@ -1,8 +1,12 @@
 #!/bin/node
 /* eslint n/no-process-exit: "off" -- WIP */
-const {execSync} = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
+import {execSync} from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const CMD = 'elm-review --no-color';
 const TMP = path.join(__dirname, 'temporary');
