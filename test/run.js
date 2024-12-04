@@ -10,56 +10,60 @@ const ELM_HOME = path.join(TMP, 'elm-home');
 const SNAPSHOTS = path.join(CWD, 'run-snapshots');
 const SUBCOMMAND = process.argv[2] || '';
 
+/**
+ * @param {string} data
+ * @returns {string}
+ */
 const replaceScript = (data) => {
   const localPath = path.dirname(path.dirname(CWD));
   return data.replace(new RegExp(localPath, 'g'), '<local-path>');
 };
 
-const AUTH_GITHUB = process.env.AUTH_GITHUB || '';
+const AUTH_GITHUB = process.env.AUTH_GITHUB ?? '';
 const AUTH = AUTH_GITHUB ? ` --github-auth ${AUTH_GITHUB}` : '';
 
 const runCommandAndCompareToSnapshot = (localCommand, title, args, file) => {
-  console.log(`- ${title}: \x1B[34m elm-review --FOR-TESTS ${args}\x1B[0m`);
+  console.log(`- ${title}: \u001B[34m elm-review --FOR-TESTS ${args}\u001B[0m`);
   if (!fs.existsSync(path.join(SNAPSHOTS, file))) {
     console.error(
-      `\n  \x1B[31mThere is no snapshot recording for \x1B[33m${file}\x1B[31m\nRun \x1B[33m\n    npm run test-run-record -s\n\x1B[31mto generate it.\x1B[0m`
+      `\n  \u001B[31mThere is no snapshot recording for \u001B[33m${file}\u001B[31m\nRun \u001B[33m\n    npm run test-run-record -s\n\u001B[31mto generate it.\u001B[0m`
     );
     process.exit(1);
   }
 
   const output = execSync(
     `${localCommand}${AUTH} --FOR-TESTS ${args} || true`,
-    {encoding: 'utf-8'}
+    {encoding: 'utf8'}
   );
   const replacedOutput = replaceScript(output);
   fs.writeFileSync(path.join(TMP, file), replacedOutput);
 
   const diff = execSync(
     `diff ${path.join(TMP, file)} ${path.join(SNAPSHOTS, file)} || true`,
-    {encoding: 'utf-8'}
+    {encoding: 'utf8'}
   );
   if (diff) {
     console.error(
-      `\x1B[31m  ERROR\n  I found a different output than expected:\x1B[0m`
+      `\u001B[31m  ERROR\n  I found a different output than expected:\u001B[0m`
     );
-    console.error(`\n    \x1B[31mExpected:\x1B[0m\n`);
-    console.error(fs.readFileSync(path.join(SNAPSHOTS, file), 'utf-8'));
-    console.error(`\n    \x1B[31mbut got:\x1B[0m\n`);
-    console.error(fs.readFileSync(path.join(TMP, file), 'utf-8'));
-    console.error(`\n    \x1B[31mHere is the difference:\x1B[0m\n`);
+    console.error(`\n    \u001B[31mExpected:\u001B[0m\n`);
+    console.error(fs.readFileSync(path.join(SNAPSHOTS, file), 'utf8'));
+    console.error(`\n    \u001B[31mbut got:\u001B[0m\n`);
+    console.error(fs.readFileSync(path.join(TMP, file), 'utf8'));
+    console.error(`\n    \u001B[31mHere is the difference:\u001B[0m\n`);
     console.error(diff);
   } else {
-    console.log(`  \x1B[92mOK\x1B[0m`);
+    console.log(`  \u001B[92mOK\u001B[0m`);
   }
 };
 
 const runAndRecord = (localCommand, title, args, file) => {
   console.log(
-    `\x1B[33m- ${title}\x1B[0m: \x1B[34m elm-review --FOR-TESTS ${args}\x1B[0m`
+    `\u001B[33m- ${title}\u001B[0m: \u001B[34m elm-review --FOR-TESTS ${args}\u001B[0m`
   );
   const output = execSync(
     `ELM_HOME=${ELM_HOME} ${localCommand}${AUTH} --FOR-TESTS ${args} || true`,
-    {encoding: 'utf-8'}
+    {encoding: 'utf8'}
   );
   const replacedOutput = replaceScript(output);
   fs.writeFileSync(path.join(SNAPSHOTS, file), replacedOutput);
@@ -122,24 +126,24 @@ const checkFolderContents = (folder) => {
         SNAPSHOTS,
         folder
       )} --exclude="elm-stuff" || true`,
-      {encoding: 'utf-8'}
+      {encoding: 'utf8'}
     );
     if (diff) {
       console.error(
-        `\x1B[31m  ERROR\n  The generated files are different:\x1B[0m`
+        `\u001B[31m  ERROR\n  The generated files are different:\u001B[0m`
       );
       console.error(diff);
     } else {
-      console.log(`  \x1B[92mOK\x1B[0m`);
+      console.log(`  \u001B[92mOK\u001B[0m`);
     }
   }
 };
 
 const createAndGoIntoFolder = (folder) => {
   const targetPath =
-    SUBCOMMAND !== 'record'
-      ? path.join(TMP, folder)
-      : path.join(SNAPSHOTS, folder);
+    SUBCOMMAND === 'record'
+      ? path.join(SNAPSHOTS, folder)
+      : path.join(TMP, folder);
   fs.mkdirSync(targetPath, {recursive: true});
   process.chdir(targetPath);
 };
@@ -160,7 +164,7 @@ const cleanUp = () => {
     path.join(CWD, 'project-with-errors/elm-stuff'),
     path.join(CWD, 'project-with-suppressed-errors/elm-stuff')
   ];
-  pathsToRemove.forEach((p) => fs.rmSync(p, {recursive: true, force: true}));
+  for (const p of pathsToRemove) fs.rmSync(p, {recursive: true, force: true});
 };
 
 cleanUp();
@@ -173,16 +177,16 @@ if (SUBCOMMAND === 'record') {
   fs.mkdirSync(SNAPSHOTS, {recursive: true});
 } else {
   createTest = runCommandAndCompareToSnapshot;
-  console.log('\x1B[33m-- Testing runs\x1B[0m');
+  console.log('\u001B[33m-- Testing runs\u001B[0m');
 }
 
 const PACKAGE_PATH = execSync('npm pack -s ../ | tail -n 1', {
-  encoding: 'utf-8'
+  encoding: 'utf8'
 }).trim();
 console.log(`Package path is ${PACKAGE_PATH}`);
 execSync(`npm install -g ${PACKAGE_PATH}`);
 
-// init
+// Init
 
 const INIT_PROJECT_NAME = 'init-project';
 
@@ -193,7 +197,7 @@ createTest(`echo Y | ${CMD}`, 'Init a new configuration', 'init', 'init.txt');
 
 checkFolderContents(INIT_PROJECT_NAME);
 
-// init with template
+// Init with template
 
 const INIT_TEMPLATE_PROJECT_NAME = 'init-template-project';
 
@@ -235,23 +239,23 @@ const fixProject = () => {
       'src/Folder/Used.elm',
       'src/Folder/Unused.elm'
     ];
-    filesToCheck.forEach((file) => {
+    for (const file of filesToCheck) {
       const diff = execSync(
         `diff -q ${path.join(TMP, 'project to fix', file)} ${path.join(
           SNAPSHOTS,
           'project to fix',
           file
         )} || true`,
-        {encoding: 'utf-8'}
+        {encoding: 'utf8'}
       );
       if (diff) {
         console.error(
           `Running with --fix-all-without-prompt (looking at code)`
         );
         console.error(
-          `\x1B[31m  ERROR\n  I found a different FIX output than expected for ${file}:\x1B[0m`
+          `\u001B[31m  ERROR\n  I found a different FIX output than expected for ${file}:\u001B[0m`
         );
-        console.error(`\n    \x1B[31mHere is the difference:\x1B[0m\n`);
+        console.error(`\n    \u001B[31mHere is the difference:\u001B[0m\n`);
         console.error(
           execSync(
             `diff -py ${path.join(TMP, 'project to fix', file)} ${path.join(
@@ -259,17 +263,17 @@ const fixProject = () => {
               'project to fix',
               file
             )}`,
-            {encoding: 'utf-8'}
+            {encoding: 'utf8'}
           )
         );
       }
-    });
+    }
   }
 };
 
 fixProject();
 
-// suppress
+// Suppress
 
 process.chdir(path.join(CWD, 'project-with-suppressed-errors'));
 createTestSuiteForHumanAndJson(
@@ -292,6 +296,7 @@ if (fs.existsSync('./review/suppressed/NoUnused.Dependencies.json')) {
   );
   process.exit(1);
 }
+
 execSync('git checkout HEAD elm.json review/suppressed/ >/dev/null');
 
 fs.rmSync('src/OtherFile.elm');
@@ -302,9 +307,9 @@ createTest(
   'suppressed-errors-after-fixed-errors-for-file.txt'
 );
 
-let diff = execSync(
+const diff = execSync(
   'diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json || true',
-  {encoding: 'utf-8'}
+  {encoding: 'utf8'}
 );
 if (diff) {
   console.error(
@@ -312,6 +317,7 @@ if (diff) {
   );
   process.exit(1);
 }
+
 execSync('git checkout HEAD src/OtherFile.elm review/suppressed/ >/dev/null');
 
 fs.copyFileSync('with-errors-OtherFile.elm', 'src/OtherFile.elm');
@@ -325,7 +331,7 @@ execSync('git checkout HEAD src/OtherFile.elm >/dev/null');
 
 process.chdir(CWD);
 
-// new-package
+// New-package
 
 process.chdir(SUBCOMMAND === 'record' ? SNAPSHOTS : TMP);
 
@@ -341,7 +347,7 @@ createTest(
 
 checkFolderContents(NEW_PACKAGE_NAME);
 
-// new-rule (DEPENDS ON PREVIOUS STEP!)
+// New-rule (DEPENDS ON PREVIOUS STEP!)
 
 fs.cpSync(NEW_PACKAGE_NAME, NEW_PACKAGE_NAME_FOR_NEW_RULE, {recursive: true});
 process.chdir(NEW_PACKAGE_NAME_FOR_NEW_RULE);
