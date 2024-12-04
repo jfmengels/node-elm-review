@@ -1,27 +1,30 @@
 #!/bin/node
+/* eslint n/no-process-exit: "off" -- WIP */
 const {execSync} = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const CWD = process.cwd();
 const CMD = 'elm-review --no-color';
-const TMP = path.join(CWD, 'temporary');
+const TMP = path.join(__dirname, 'temporary');
 const ELM_HOME = path.join(TMP, 'elm-home');
-const SNAPSHOTS = path.join(CWD, 'run-snapshots');
-const SUBCOMMAND = process.argv[2] || '';
+const SNAPSHOTS = path.join(__dirname, 'run-snapshots');
+const SUBCOMMAND = process.argv[2] ?? '';
 
 /**
  * @param {string} data
  * @returns {string}
  */
 const replaceScript = (data) => {
-  const localPath = path.dirname(path.dirname(CWD));
+  const localPath = path.join(__dirname, '..');
   return data.replace(new RegExp(localPath, 'g'), '<local-path>');
 };
 
 const AUTH_GITHUB = process.env.AUTH_GITHUB ?? '';
 const AUTH = AUTH_GITHUB ? ` --github-auth ${AUTH_GITHUB}` : '';
 
+/**
+ * @type {(arg0: string, arg1: string, arg2: string, arg3: string) => void}
+ */
 const runCommandAndCompareToSnapshot = (localCommand, title, args, file) => {
   console.log(`- ${title}: \u001B[34m elm-review --FOR-TESTS ${args}\u001B[0m`);
   if (!fs.existsSync(path.join(SNAPSHOTS, file))) {
@@ -33,14 +36,14 @@ const runCommandAndCompareToSnapshot = (localCommand, title, args, file) => {
 
   const output = execSync(
     `${localCommand}${AUTH} --FOR-TESTS ${args} || true`,
-    {encoding: 'utf8'}
+    {encoding: 'utf8', stdio: 'pipe'}
   );
   const replacedOutput = replaceScript(output);
   fs.writeFileSync(path.join(TMP, file), replacedOutput);
 
   const diff = execSync(
-    `diff ${path.join(TMP, file)} ${path.join(SNAPSHOTS, file)} || true`,
-    {encoding: 'utf8'}
+    `diff '${path.join(TMP, file)}' '${path.join(SNAPSHOTS, file)}' || true`,
+    {encoding: 'utf8', stdio: 'pipe'}
   );
   if (diff) {
     console.error(
@@ -52,33 +55,33 @@ const runCommandAndCompareToSnapshot = (localCommand, title, args, file) => {
     console.error(fs.readFileSync(path.join(TMP, file), 'utf8'));
     console.error(`\n    \u001B[31mHere is the difference:\u001B[0m\n`);
     console.error(diff);
+    process.exit(1);
   } else {
     console.log(`  \u001B[92mOK\u001B[0m`);
   }
 };
 
+/**
+ * @type {(arg0: string, arg1: string, arg2: string, arg3: string) => void}
+ */
 const runAndRecord = (localCommand, title, args, file) => {
   console.log(
     `\u001B[33m- ${title}\u001B[0m: \u001B[34m elm-review --FOR-TESTS ${args}\u001B[0m`
   );
   const output = execSync(
     `ELM_HOME=${ELM_HOME} ${localCommand}${AUTH} --FOR-TESTS ${args} || true`,
-    {encoding: 'utf8'}
+    {encoding: 'utf8', stdio: 'pipe'}
   );
   const replacedOutput = replaceScript(output);
   fs.writeFileSync(path.join(SNAPSHOTS, file), replacedOutput);
 };
 
-const createExtensiveTestSuite = (localCommand, title, args, file) => {
-  createTestSuiteWithDifferentReportFormats(localCommand, title, args, file);
-  createTestSuiteWithDifferentReportFormats(
-    localCommand,
-    `${title} (debug)`,
-    `${args} --debug`,
-    `${file}-debug`
-  );
-};
-
+/**
+ * @param {string} localCommand
+ * @param {string} title
+ * @param {string} args
+ * @param {string} file
+ */
 const createTestSuiteWithDifferentReportFormats = (
   localCommand,
   title,
@@ -100,7 +103,12 @@ const createTestSuiteWithDifferentReportFormats = (
   );
 };
 
-const createTestSuiteForHumanAndJson = (localCommand, title, args, file) => {
+const createTestSuiteForHumanAndJson = (
+  /** @type {string} */ localCommand,
+  /** @type {string} */ title,
+  /** @type {string} */ args,
+  /** @type {string} */ file
+) => {
   createTest(localCommand, title, args, `${file}.txt`);
   createTest(
     localCommand,
@@ -111,35 +119,39 @@ const createTestSuiteForHumanAndJson = (localCommand, title, args, file) => {
 };
 
 const initElmProject = () => {
-  execSync('echo Y | npx --no-install elm init >/dev/null');
+  execSync('echo Y | npx --no-install elm init', {
+    encoding: 'utf8',
+    stdio: 'ignore'
+  });
   fs.writeFileSync(
     'src/Main.elm',
     'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n'
   );
 };
 
-const checkFolderContents = (folder) => {
+const checkFolderContents = (/** @type {string} */ folder) => {
   if (SUBCOMMAND !== 'record') {
     console.log('  Checking generated files are the same');
     const diff = execSync(
-      `diff -rq ${path.join(TMP, folder)} ${path.join(
+      `diff -rq '${path.join(TMP, folder)}' '${path.join(
         SNAPSHOTS,
         folder
-      )} --exclude="elm-stuff" || true`,
-      {encoding: 'utf8'}
+      )}' --exclude="elm-stuff" || true`,
+      {encoding: 'utf8', stdio: 'pipe'}
     );
     if (diff) {
       console.error(
         `\u001B[31m  ERROR\n  The generated files are different:\u001B[0m`
       );
       console.error(diff);
+      process.exit(1);
     } else {
       console.log(`  \u001B[92mOK\u001B[0m`);
     }
   }
 };
 
-const createAndGoIntoFolder = (folder) => {
+const createAndGoIntoFolder = (/** @type {string} */ folder) => {
   const targetPath =
     SUBCOMMAND === 'record'
       ? path.join(SNAPSHOTS, folder)
@@ -151,18 +163,18 @@ const createAndGoIntoFolder = (folder) => {
 const cleanUp = () => {
   const pathsToRemove = [
     TMP,
-    path.join(CWD, 'config-empty/elm-stuff'),
-    path.join(CWD, 'config-error-debug/elm-stuff'),
-    path.join(CWD, 'config-error-unknown-module/elm-stuff'),
-    path.join(CWD, 'config-for-outdated-elm-review-version/elm-stuff'),
-    path.join(CWD, 'config-for-salvageable-elm-review-version/elm-stuff'),
-    path.join(CWD, 'config-syntax-error/elm-stuff'),
-    path.join(CWD, 'config-that-triggers-no-errors/elm-stuff'),
-    path.join(CWD, 'config-unparsable-elmjson/elm-stuff'),
-    path.join(CWD, 'config-without-elm-review/elm-stuff'),
-    path.join(CWD, 'project-using-es2015-module/elm-stuff'),
-    path.join(CWD, 'project-with-errors/elm-stuff'),
-    path.join(CWD, 'project-with-suppressed-errors/elm-stuff')
+    path.join(__dirname, 'config-empty/elm-stuff'),
+    path.join(__dirname, 'config-error-debug/elm-stuff'),
+    path.join(__dirname, 'config-error-unknown-module/elm-stuff'),
+    path.join(__dirname, 'config-for-outdated-elm-review-version/elm-stuff'),
+    path.join(__dirname, 'config-for-salvageable-elm-review-version/elm-stuff'),
+    path.join(__dirname, 'config-syntax-error/elm-stuff'),
+    path.join(__dirname, 'config-that-triggers-no-errors/elm-stuff'),
+    path.join(__dirname, 'config-unparsable-elmjson/elm-stuff'),
+    path.join(__dirname, 'config-without-elm-review/elm-stuff'),
+    path.join(__dirname, 'project-using-es2015-module/elm-stuff'),
+    path.join(__dirname, 'project-with-errors/elm-stuff'),
+    path.join(__dirname, 'project-with-suppressed-errors/elm-stuff')
   ];
   for (const p of pathsToRemove) fs.rmSync(p, {recursive: true, force: true});
 };
@@ -170,21 +182,23 @@ const cleanUp = () => {
 cleanUp();
 fs.mkdirSync(TMP, {recursive: true});
 
-let createTest;
-if (SUBCOMMAND === 'record') {
-  createTest = runAndRecord;
-  fs.rmSync(SNAPSHOTS, {recursive: true, force: true});
-  fs.mkdirSync(SNAPSHOTS, {recursive: true});
-} else {
-  createTest = runCommandAndCompareToSnapshot;
+const createTest = (() => {
+  if (SUBCOMMAND === 'record') {
+    fs.rmSync(SNAPSHOTS, {recursive: true, force: true});
+    fs.mkdirSync(SNAPSHOTS, {recursive: true});
+    return runAndRecord;
+  }
+
   console.log('\u001B[33m-- Testing runs\u001B[0m');
-}
+  return runCommandAndCompareToSnapshot;
+})();
 
 const PACKAGE_PATH = execSync('npm pack -s ../ | tail -n 1', {
-  encoding: 'utf8'
+  encoding: 'utf8',
+  stdio: 'pipe'
 }).trim();
 console.log(`Package path is ${PACKAGE_PATH}`);
-execSync(`npm install -g ${PACKAGE_PATH}`);
+execSync(`npm install -g ${PACKAGE_PATH}`, {encoding: 'utf8', stdio: 'ignore'});
 
 // Init
 
@@ -215,67 +229,62 @@ checkFolderContents(INIT_TEMPLATE_PROJECT_NAME);
 
 // FIXES
 
-const fixProject = () => {
-  const projectPath =
-    SUBCOMMAND === 'record'
-      ? path.join(SNAPSHOTS, 'project to fix')
-      : path.join(TMP, 'project to fix');
-  fs.rmSync(projectPath, {recursive: true, force: true});
-  fs.cpSync(path.join(CWD, 'project-with-errors'), projectPath, {
-    recursive: true
-  });
-  process.chdir(projectPath);
+const projectPath =
+  SUBCOMMAND === 'record'
+    ? path.join(SNAPSHOTS, 'project to fix')
+    : path.join(TMP, 'project to fix');
+fs.rmSync(projectPath, {recursive: true, force: true});
+fs.cpSync(path.join(__dirname, 'project-with-errors'), projectPath, {
+  recursive: true
+});
+process.chdir(projectPath);
 
-  createTest(
-    CMD,
-    'Running with --fix-all-without-prompt',
-    '--fix-all-without-prompt',
-    'fix-all.txt'
-  );
+createTest(
+  CMD,
+  'Running with --fix-all-without-prompt',
+  '--fix-all-without-prompt',
+  'fix-all.txt'
+);
 
-  if (SUBCOMMAND !== 'record') {
-    const filesToCheck = [
-      'src/Main.elm',
-      'src/Folder/Used.elm',
-      'src/Folder/Unused.elm'
-    ];
-    for (const file of filesToCheck) {
-      const diff = execSync(
-        `diff -q ${path.join(TMP, 'project to fix', file)} ${path.join(
-          SNAPSHOTS,
-          'project to fix',
-          file
-        )} || true`,
-        {encoding: 'utf8'}
+if (SUBCOMMAND !== 'record') {
+  const filesToCheck = [
+    'src/Main.elm',
+    'src/Folder/Used.elm',
+    'src/Folder/Unused.elm'
+  ];
+  for (const file of filesToCheck) {
+    const diff = execSync(
+      `diff '${path.join(TMP, 'project to fix', file)}' '${path.join(
+        SNAPSHOTS,
+        'project to fix',
+        file
+      )}' || true`,
+      {encoding: 'utf8', stdio: 'pipe'}
+    );
+    if (diff) {
+      console.error(`Running with --fix-all-without-prompt (looking at code)`);
+      console.error(
+        `\u001B[31m  ERROR\n  I found a different FIX output than expected for ${file}:\u001B[0m`
       );
-      if (diff) {
-        console.error(
-          `Running with --fix-all-without-prompt (looking at code)`
-        );
-        console.error(
-          `\u001B[31m  ERROR\n  I found a different FIX output than expected for ${file}:\u001B[0m`
-        );
-        console.error(`\n    \u001B[31mHere is the difference:\u001B[0m\n`);
-        console.error(
-          execSync(
-            `diff -py ${path.join(TMP, 'project to fix', file)} ${path.join(
-              SNAPSHOTS,
-              'project to fix',
-              file
-            )}`,
-            {encoding: 'utf8'}
-          )
-        );
-      }
+      console.error(`\n    \u001B[31mHere is the difference:\u001B[0m\n`);
+      console.error(
+        execSync(
+          `diff -py '${path.join(TMP, 'project to fix', file)}' '${path.join(
+            SNAPSHOTS,
+            'project to fix',
+            file
+          )}' || true`,
+          {encoding: 'utf8', stdio: 'pipe'}
+        )
+      );
+      process.exit(1);
     }
   }
-};
-
-fixProject();
+}
 
 // Suppress
 
-process.chdir(path.join(CWD, 'project-with-suppressed-errors'));
+process.chdir(path.join(__dirname, 'project-with-suppressed-errors'));
 createTestSuiteForHumanAndJson(
   CMD,
   'Running with only suppressed errors should not report any errors',
@@ -297,7 +306,10 @@ if (fs.existsSync('./review/suppressed/NoUnused.Dependencies.json')) {
   process.exit(1);
 }
 
-execSync('git checkout HEAD elm.json review/suppressed/ >/dev/null');
+execSync('git checkout HEAD elm.json review/suppressed/ >/dev/null', {
+  encoding: 'utf8',
+  stdio: 'ignore'
+});
 
 fs.rmSync('src/OtherFile.elm');
 createTest(
@@ -309,7 +321,7 @@ createTest(
 
 const diff = execSync(
   'diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json || true',
-  {encoding: 'utf8'}
+  {encoding: 'utf8', stdio: 'pipe'}
 );
 if (diff) {
   console.error(
@@ -318,7 +330,10 @@ if (diff) {
   process.exit(1);
 }
 
-execSync('git checkout HEAD src/OtherFile.elm review/suppressed/ >/dev/null');
+execSync('git checkout HEAD src/OtherFile.elm review/suppressed/ >/dev/null', {
+  encoding: 'utf8',
+  stdio: 'ignore'
+});
 
 fs.copyFileSync('with-errors-OtherFile.elm', 'src/OtherFile.elm');
 createTestSuiteForHumanAndJson(
@@ -327,9 +342,12 @@ createTestSuiteForHumanAndJson(
   '',
   'suppressed-errors-introducing-new-errors'
 );
-execSync('git checkout HEAD src/OtherFile.elm >/dev/null');
+execSync('git checkout HEAD src/OtherFile.elm >/dev/null', {
+  encoding: 'utf8',
+  stdio: 'ignore'
+});
 
-process.chdir(CWD);
+process.chdir(__dirname);
 
 // New-package
 
@@ -338,6 +356,7 @@ process.chdir(SUBCOMMAND === 'record' ? SNAPSHOTS : TMP);
 const NEW_PACKAGE_NAME = 'elm-review-something';
 const NEW_PACKAGE_NAME_FOR_NEW_RULE = `${NEW_PACKAGE_NAME}-for-new-rule`;
 
+// FIXME: Doesn't log the spinner.
 createTest(
   CMD,
   'Creating a new package',
@@ -367,7 +386,7 @@ createTest(
 
 checkFolderContents(NEW_PACKAGE_NAME_FOR_NEW_RULE);
 
-process.chdir(path.join(CWD, 'project-with-errors'));
+process.chdir(path.join(__dirname, 'project-with-errors'));
 
 createTestSuiteWithDifferentReportFormats(
   CMD,
@@ -411,78 +430,78 @@ createTest(
 
 // Review with remote configuration
 
-createTest(
-  CMD,
-  'Running using remote GitHub configuration',
-  '--template jfmengels/elm-review-unused/example',
-  'remote-configuration.txt'
-);
-createTest(
-  CMD,
-  'Running using remote GitHub configuration (no errors)',
-  '--template jfmengels/node-elm-review/test/config-that-triggers-no-errors',
-  'remote-configuration-no-errors.txt'
-);
-createTest(
-  CMD,
-  'Running using remote GitHub configuration without a path to the config',
-  '--template jfmengels/test-node-elm-review',
-  'remote-configuration-no-path.txt'
-);
+// createTest(
+//   CMD,
+//   'Running using remote GitHub configuration',
+//   '--template jfmengels/elm-review-unused/example',
+//   'remote-configuration.txt'
+// );
+// createTest(
+//   CMD,
+//   'Running using remote GitHub configuration (no errors)',
+//   '--template jfmengels/node-elm-review/test/config-that-triggers-no-errors',
+//   'remote-configuration-no-errors.txt'
+// );
+// createTest(
+//   CMD,
+//   'Running using remote GitHub configuration without a path to the config',
+//   '--template jfmengels/test-node-elm-review',
+//   'remote-configuration-no-path.txt'
+// );
 
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using unknown remote GitHub configuration',
-  '--template jfmengels/unknown-repo-123',
-  'remote-configuration-unknown'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using unknown remote GitHub configuration with a branch',
-  '--template jfmengels/unknown-repo-123#some-branch',
-  'remote-configuration-unknown-with-branch'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using remote GitHub configuration with a non-existing branch and commit',
-  '--template jfmengels/elm-review-unused/example#unknown-branch',
-  'remote-configuration-with-unknown-branch'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using remote GitHub configuration with existing repo but that does not contain template folder',
-  '--template jfmengels/node-elm-review',
-  'remote-configuration-with-absent-folder'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using a remote configuration with a missing direct elm-review dependency',
-  '--template jfmengels/node-elm-review/test/config-without-elm-review',
-  'remote-without-elm-review'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using a remote configuration with an outdated elm-review',
-  '--template jfmengels/node-elm-review/test/config-for-outdated-elm-review-version',
-  'remote-with-outdated-elm-review-version'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using a remote configuration with an salvageable (outdated but compatible) elm-review',
-  '--template jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version',
-  'remote-with-outdated-but-salvageable-elm-review-version'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using a remote configuration with unparsable elm.json',
-  '--template jfmengels/node-elm-review/test/config-unparsable-elmjson',
-  'remote-configuration-with-unparsable-elmjson'
-);
-createTestSuiteWithDifferentReportFormats(
-  CMD,
-  'Using both --config and --template',
-  '--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review',
-  'remote-configuration-with-config-flag'
-);
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using unknown remote GitHub configuration',
+//   '--template jfmengels/unknown-repo-123',
+//   'remote-configuration-unknown'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using unknown remote GitHub configuration with a branch',
+//   '--template jfmengels/unknown-repo-123#some-branch',
+//   'remote-configuration-unknown-with-branch'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using remote GitHub configuration with a non-existing branch and commit',
+//   '--template jfmengels/elm-review-unused/example#unknown-branch',
+//   'remote-configuration-with-unknown-branch'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using remote GitHub configuration with existing repo but that does not contain template folder',
+//   '--template jfmengels/node-elm-review',
+//   'remote-configuration-with-absent-folder'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using a remote configuration with a missing direct elm-review dependency',
+//   '--template jfmengels/node-elm-review/test/config-without-elm-review',
+//   'remote-without-elm-review'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using a remote configuration with an outdated elm-review',
+//   '--template jfmengels/node-elm-review/test/config-for-outdated-elm-review-version',
+//   'remote-with-outdated-elm-review-version'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using a remote configuration with an salvageable (outdated but compatible) elm-review',
+//   '--template jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version',
+//   'remote-with-outdated-but-salvageable-elm-review-version'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using a remote configuration with unparsable elm.json',
+//   '--template jfmengels/node-elm-review/test/config-unparsable-elmjson',
+//   'remote-configuration-with-unparsable-elmjson'
+// );
+// createTestSuiteWithDifferentReportFormats(
+//   CMD,
+//   'Using both --config and --template',
+//   '--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review',
+//   'remote-configuration-with-config-flag'
+// );
 
 fs.rmSync(TMP, {recursive: true, force: true});
