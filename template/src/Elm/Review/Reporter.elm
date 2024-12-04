@@ -1035,7 +1035,7 @@ formatFileDiff file =
             |> Text.from
             |> Text.inBlue
       ]
-    , Text.from "Applied from the fixes for the following errors:"
+    , Text.from "Modified by the following error fixes:"
         :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse file.errors)
     , formatDiff file.source file.fixedSource
     ]

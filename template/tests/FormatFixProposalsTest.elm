@@ -69,7 +69,7 @@ Here is how the code would change if you applied each fix.
 
 ------------------------------------------------------------------ src/FileA.elm
 
-Applied from the fixes for the following errors:
+Modified by the following error fixes:
   NoDebug: Do not use Debug
 
 1| module FileA exposing (a)
@@ -85,7 +85,7 @@ Applied from the fixes for the following errors:
 
 ------------------------------------------------------------------ src/FileB.elm
 
-Applied from the fixes for the following errors:
+Modified by the following error fixes:
   NoDebug: Do not use Debug
 
 1| module FileB exposing (b)
@@ -103,7 +103,7 @@ Here is how the code would change if you applied each fix.
 
 [------------------------------------------------------------------ src/FileA.elm](#33BBC8)
 
-Applied from the fixes for the following errors:
+Modified by the following error fixes:
   [NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
@@ -119,7 +119,7 @@ Applied from the fixes for the following errors:
 
 [------------------------------------------------------------------ src/FileB.elm](#33BBC8)
 
-Applied from the fixes for the following errors:
+Modified by the following error fixes:
   [NoDebug](#FF0000): Do not use Debug
 
 1| module FileB exposing (b)
