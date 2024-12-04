@@ -17,11 +17,10 @@ replace_script() {
 # with "AUTH_GITHUB=gitHubUserName:token"
 # Follow this guide: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 # to create an API token, and give it access to public repositories.
-if [ -z "${AUTH_GITHUB:-}" ]
-then
-  AUTH=""
+if [ -z "${AUTH_GITHUB:-}" ]; then
+    AUTH=""
 else
-  AUTH=" --github-auth $AUTH_GITHUB"
+    AUTH=" --github-auth $AUTH_GITHUB"
 fi
 
 runCommandAndCompareToSnapshot() {
@@ -31,19 +30,17 @@ runCommandAndCompareToSnapshot() {
     local FILE=$4
 
     echo -ne "- $TITLE: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    if [ ! -f "$SNAPSHOTS/$FILE" ]
-    then
-      echo -e "\n  \x1B[31mThere is no snapshot recording for \x1B[33m$FILE\x1B[31m\nRun \x1B[33m\n    npm run test-run-record -s\n\x1B[31mto generate it.\x1B[0m"
-      exit 1
+    if [ ! -f "$SNAPSHOTS/$FILE" ]; then
+        echo -e "\n  \x1B[31mThere is no snapshot recording for \x1B[33m$FILE\x1B[31m\nRun \x1B[33m\n    npm run test-run-record -s\n\x1B[31mto generate it.\x1B[0m"
+        exit 1
     fi
 
-    (eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 \
-        | replace_script \
-        > "$TMP/$FILE"
+    (eval "$LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 |
+        replace_script \
+            >"$TMP/$FILE"
     local diffed
     diffed="$(diff "$TMP/$FILE" "$SNAPSHOTS/$FILE" || true)"
-    if [ "$diffed" != "" ]
-    then
+    if [ "$diffed" != "" ]; then
         echo -e "\x1B[31m  ERROR\n  I found a different output than expected:\x1B[0m"
         echo -e "\n    \x1B[31mExpected:\x1B[0m\n"
         cat "$SNAPSHOTS/$FILE"
@@ -52,7 +49,7 @@ runCommandAndCompareToSnapshot() {
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
         diff -p "$TMP/$FILE" "$SNAPSHOTS/$FILE"
     else
-      echo -e "  \x1B[92mOK\x1B[0m"
+        echo -e "  \x1B[92mOK\x1B[0m"
     fi
 }
 
@@ -62,9 +59,9 @@ runAndRecord() {
     local ARGS=$3
     local FILE=$4
     echo -e "\x1B[33m- $TITLE\x1B[0m: \x1B[34m elm-review --FOR-TESTS $ARGS\x1B[0m"
-    (eval "ELM_HOME=$ELM_HOME $LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 \
-        | replace_script \
-        > "$SNAPSHOTS/$FILE"
+    (eval "ELM_HOME=$ELM_HOME $LOCAL_COMMAND$AUTH --FOR-TESTS $ARGS" || true) 2>&1 |
+        replace_script \
+            >"$SNAPSHOTS/$FILE"
 }
 
 createExtensiveTestSuite() {
@@ -111,62 +108,58 @@ createTestSuiteForHumanAndJson() {
 }
 
 initElmProject() {
-  echo Y | npx --no-install elm init > /dev/null
-  echo -e 'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n' > src/Main.elm
+    echo Y | npx --no-install elm init >/dev/null
+    echo -e 'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n' >src/Main.elm
 }
 
 checkFolderContents() {
-  if [ "$SUBCOMMAND" != "record" ]
-  then
-    echo -n "  Checking generated files are the same"
+    if [ "$SUBCOMMAND" != "record" ]; then
+        echo -n "  Checking generated files are the same"
 
-    local diffed
-    diffed="$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff" || true)"
-    if [ "$diffed" != "" ]
-    then
-        echo -e "\x1B[31m  ERROR\n  The generated files are different:\x1B[0m"
-        diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff"
-    else
-      echo -e "  \x1B[92mOK\x1B[0m"
+        local diffed
+        diffed="$(diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff" || true)"
+        if [ "$diffed" != "" ]; then
+            echo -e "\x1B[31m  ERROR\n  The generated files are different:\x1B[0m"
+            diff -rq "$TMP/$1/" "$SNAPSHOTS/$1/" --exclude="elm-stuff"
+        else
+            echo -e "  \x1B[92mOK\x1B[0m"
+        fi
     fi
-  fi
 }
 
 createAndGoIntoFolder() {
-  if [ "$SUBCOMMAND" != "record" ]
-  then
-    mkdir -p "$TMP/$1"
-    cd "$TMP/$1"
-  else
-    mkdir -p "$SNAPSHOTS/$1"
-    cd "$SNAPSHOTS/$1"
-  fi
+    if [ "$SUBCOMMAND" != "record" ]; then
+        mkdir -p "$TMP/$1"
+        cd "$TMP/$1"
+    else
+        mkdir -p "$SNAPSHOTS/$1"
+        cd "$SNAPSHOTS/$1"
+    fi
 }
 
 rm -rf "$TMP" \
-      "$CWD/config-empty/elm-stuff" \
-      "$CWD/config-error-debug/elm-stuff" \
-      "$CWD/config-error-unknown-module/elm-stuff" \
-      "$CWD/config-for-outdated-elm-review-version/elm-stuff" \
-      "$CWD/config-for-salvageable-elm-review-version/elm-stuff" \
-      "$CWD/config-syntax-error/elm-stuff" \
-      "$CWD/config-that-triggers-no-errors/elm-stuff" \
-      "$CWD/config-unparsable-elmjson/elm-stuff" \
-      "$CWD/config-without-elm-review/elm-stuff" \
-      "$CWD/project-using-es2015-module/elm-stuff" \
-      "$CWD/project-with-errors/elm-stuff" \
-      "$CWD/project-with-suppressed-errors/elm-stuff"
+    "$CWD/config-empty/elm-stuff" \
+    "$CWD/config-error-debug/elm-stuff" \
+    "$CWD/config-error-unknown-module/elm-stuff" \
+    "$CWD/config-for-outdated-elm-review-version/elm-stuff" \
+    "$CWD/config-for-salvageable-elm-review-version/elm-stuff" \
+    "$CWD/config-syntax-error/elm-stuff" \
+    "$CWD/config-that-triggers-no-errors/elm-stuff" \
+    "$CWD/config-unparsable-elmjson/elm-stuff" \
+    "$CWD/config-without-elm-review/elm-stuff" \
+    "$CWD/project-using-es2015-module/elm-stuff" \
+    "$CWD/project-with-errors/elm-stuff" \
+    "$CWD/project-with-suppressed-errors/elm-stuff"
 
 mkdir -p "$TMP"
 
-if [ "$SUBCOMMAND" == "record" ]
-then
-  createTest=runAndRecord
-  rm -rf "$SNAPSHOTS" &> /dev/null
-  mkdir -p "$SNAPSHOTS"
+if [ "$SUBCOMMAND" == "record" ]; then
+    createTest=runAndRecord
+    rm -rf "$SNAPSHOTS" &>/dev/null
+    mkdir -p "$SNAPSHOTS"
 else
-  createTest=runCommandAndCompareToSnapshot
-  echo -e '\x1B[33m-- Testing runs\x1B[0m'
+    createTest=runCommandAndCompareToSnapshot
+    echo -e '\x1B[33m-- Testing runs\x1B[0m'
 fi
 
 PACKAGE_PATH=$(npm pack -s ../ | tail -n 1)
@@ -203,15 +196,14 @@ checkFolderContents $INIT_TEMPLATE_PROJECT_NAME
 
 # FIXES
 
-if [ "$SUBCOMMAND" == "record" ]
-then
-  rm -rf "$SNAPSHOTS/project to fix"
-  cp -r "$CWD/project-with-errors" "$SNAPSHOTS/project to fix"
-  cd "$SNAPSHOTS/project to fix"
+if [ "$SUBCOMMAND" == "record" ]; then
+    rm -rf "$SNAPSHOTS/project to fix"
+    cp -r "$CWD/project-with-errors" "$SNAPSHOTS/project to fix"
+    cd "$SNAPSHOTS/project to fix"
 else
-  rm -rf "$TMP/project to fix"
-  cp -r "$CWD/project-with-errors" "$TMP/project to fix"
-  cd "$TMP/project to fix"
+    rm -rf "$TMP/project to fix"
+    cp -r "$CWD/project-with-errors" "$TMP/project to fix"
+    cd "$TMP/project to fix"
 fi
 
 $createTest "$CMD" \
@@ -219,12 +211,10 @@ $createTest "$CMD" \
     "--fix-all-without-prompt" \
     "fix-all.txt"
 
-if [ "$SUBCOMMAND" != "record" ]
-then
+if [ "$SUBCOMMAND" != "record" ]; then
     declare diffed
     diffed="$(diff -q "$TMP/project to fix/src/Main.elm" "$SNAPSHOTS/project to fix/src/Main.elm" || true)"
-    if [ "$diffed" != "" ]
-    then
+    if [ "$diffed" != "" ]; then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output  for Main.elmthan expected:\x1B[0m"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
@@ -232,8 +222,7 @@ then
     fi
     declare diffed
     diffed="$(diff -q "$TMP/project to fix/src/Folder/Used.elm" "$SNAPSHOTS/project to fix/src/Folder/Used.elm" || true)"
-    if [ "$diffed" != "" ]
-    then
+    if [ "$diffed" != "" ]; then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Used.elm:\x1B[0m"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
@@ -241,8 +230,7 @@ then
     fi
     declare diffed
     diffed="$(diff -q "$TMP/project to fix/src/Folder/Unused.elm" "$SNAPSHOTS/project to fix/src/Folder/Unused.elm" || true)"
-    if [ "$diffed" != "" ]
-    then
+    if [ "$diffed" != "" ]; then
         echo -e "Running with --fix-all-without-prompt (looking at code)"
         echo -e "\x1B[31m  ERROR\n  I found a different FIX output than expected for Folder/Unused.elm:\x1B[0m"
         echo -e "\n    \x1B[31mHere is the difference:\x1B[0m\n"
@@ -267,8 +255,7 @@ if [ -f "./review/suppressed/NoUnused.Dependencies.json" ]; then
     echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
     exit 1
 fi
-git checkout HEAD elm.json review/suppressed/ > /dev/null
-
+git checkout HEAD elm.json review/suppressed/ >/dev/null
 
 rm src/OtherFile.elm
 $createTest "$CMD" \
@@ -282,24 +269,23 @@ if [ "$diffed" != "" ]; then
     echo "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json to have been updated"
     exit 1
 fi
-git checkout HEAD src/OtherFile.elm review/suppressed/ > /dev/null
+git checkout HEAD src/OtherFile.elm review/suppressed/ >/dev/null
 
 cp with-errors-OtherFile.elm src/OtherFile.elm
 createTestSuiteForHumanAndJson "$CMD" \
     "Introducing new errors should show all related errors" \
     "" \
     "suppressed-errors-introducing-new-errors"
-git checkout HEAD src/OtherFile.elm > /dev/null
+git checkout HEAD src/OtherFile.elm >/dev/null
 
 cd "$CWD"
 
 # new-package
 
-if [ "$SUBCOMMAND" == "record" ]
-then
-  cd "$SNAPSHOTS/"
+if [ "$SUBCOMMAND" == "record" ]; then
+    cd "$SNAPSHOTS/"
 else
-  cd "$TMP/"
+    cd "$TMP/"
 fi
 
 NEW_PACKAGE_NAME="elm-review-something"
@@ -352,14 +338,14 @@ createTestSuiteWithDifferentReportFormats "$CMD" \
     "filter-unknown-rule"
 
 $createTest "$CMD" \
-  "Ignore errors on directories" \
-  "--ignore-dirs src/Folder/" \
-  "ignore-dirs.txt"
+    "Ignore errors on directories" \
+    "--ignore-dirs src/Folder/" \
+    "ignore-dirs.txt"
 
 $createTest "$CMD" \
-  "Ignore errors on files" \
-  "--ignore-files src/Folder/Unused.elm" \
-  "ignore-files.txt"
+    "Ignore errors on files" \
+    "--ignore-files src/Folder/Unused.elm" \
+    "ignore-files.txt"
 
 # Review with remote configuration
 
