@@ -430,78 +430,80 @@ createTest(
 
 // Review with remote configuration
 
-// createTest(
-//   CMD,
-//   'Running using remote GitHub configuration',
-//   '--template jfmengels/elm-review-unused/example',
-//   'remote-configuration.txt'
-// );
-// createTest(
-//   CMD,
-//   'Running using remote GitHub configuration (no errors)',
-//   '--template jfmengels/node-elm-review/test/config-that-triggers-no-errors',
-//   'remote-configuration-no-errors.txt'
-// );
-// createTest(
-//   CMD,
-//   'Running using remote GitHub configuration without a path to the config',
-//   '--template jfmengels/test-node-elm-review',
-//   'remote-configuration-no-path.txt'
-// );
+if (!process.env.CI && SUBCOMMAND !== 'record') process.exit(0);
 
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using unknown remote GitHub configuration',
-//   '--template jfmengels/unknown-repo-123',
-//   'remote-configuration-unknown'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using unknown remote GitHub configuration with a branch',
-//   '--template jfmengels/unknown-repo-123#some-branch',
-//   'remote-configuration-unknown-with-branch'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using remote GitHub configuration with a non-existing branch and commit',
-//   '--template jfmengels/elm-review-unused/example#unknown-branch',
-//   'remote-configuration-with-unknown-branch'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using remote GitHub configuration with existing repo but that does not contain template folder',
-//   '--template jfmengels/node-elm-review',
-//   'remote-configuration-with-absent-folder'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using a remote configuration with a missing direct elm-review dependency',
-//   '--template jfmengels/node-elm-review/test/config-without-elm-review',
-//   'remote-without-elm-review'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using a remote configuration with an outdated elm-review',
-//   '--template jfmengels/node-elm-review/test/config-for-outdated-elm-review-version',
-//   'remote-with-outdated-elm-review-version'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using a remote configuration with an salvageable (outdated but compatible) elm-review',
-//   '--template jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version',
-//   'remote-with-outdated-but-salvageable-elm-review-version'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using a remote configuration with unparsable elm.json',
-//   '--template jfmengels/node-elm-review/test/config-unparsable-elmjson',
-//   'remote-configuration-with-unparsable-elmjson'
-// );
-// createTestSuiteWithDifferentReportFormats(
-//   CMD,
-//   'Using both --config and --template',
-//   '--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review',
-//   'remote-configuration-with-config-flag'
-// );
+createTest(
+  CMD,
+  'Running using remote GitHub configuration',
+  '--template jfmengels/elm-review-unused/example',
+  'remote-configuration.txt'
+);
+createTest(
+  CMD,
+  'Running using remote GitHub configuration (no errors)',
+  '--template jfmengels/node-elm-review/test/config-that-triggers-no-errors',
+  'remote-configuration-no-errors.txt'
+);
+createTest(
+  CMD,
+  'Running using remote GitHub configuration without a path to the config',
+  '--template jfmengels/test-node-elm-review',
+  'remote-configuration-no-path.txt'
+);
+
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using unknown remote GitHub configuration',
+  '--template jfmengels/unknown-repo-123',
+  'remote-configuration-unknown'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using unknown remote GitHub configuration with a branch',
+  '--template jfmengels/unknown-repo-123#some-branch',
+  'remote-configuration-unknown-with-branch'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using remote GitHub configuration with a non-existing branch and commit',
+  '--template jfmengels/elm-review-unused/example#unknown-branch',
+  'remote-configuration-with-unknown-branch'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using remote GitHub configuration with existing repo but that does not contain template folder',
+  '--template jfmengels/node-elm-review',
+  'remote-configuration-with-absent-folder'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using a remote configuration with a missing direct elm-review dependency',
+  '--template jfmengels/node-elm-review/test/config-without-elm-review',
+  'remote-without-elm-review'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using a remote configuration with an outdated elm-review',
+  '--template jfmengels/node-elm-review/test/config-for-outdated-elm-review-version',
+  'remote-with-outdated-elm-review-version'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using a remote configuration with an salvageable (outdated but compatible) elm-review',
+  '--template jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version',
+  'remote-with-outdated-but-salvageable-elm-review-version'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using a remote configuration with unparsable elm.json',
+  '--template jfmengels/node-elm-review/test/config-unparsable-elmjson',
+  'remote-configuration-with-unparsable-elmjson'
+);
+createTestSuiteWithDifferentReportFormats(
+  CMD,
+  'Using both --config and --template',
+  '--config ../config-that-triggers-no-errors --template jfmengels/test-node-elm-review',
+  'remote-configuration-with-config-flag'
+);
 
 fs.rmSync(TMP, {recursive: true, force: true});
