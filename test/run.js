@@ -235,6 +235,9 @@ const projectPath =
     ? path.join(TMP, 'project to fix')
     : path.join(SNAPSHOTS, 'project to fix');
 fs.rmSync(projectPath, {recursive: true, force: true});
+
+// @ts-expect-error(TS2339): CI runs on a newer Node.js.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call -- ^
 fs.cpSync(path.join(__dirname, 'project-with-errors'), projectPath, {
   recursive: true
 });
@@ -357,7 +360,7 @@ process.chdir(SUBCOMMAND === 'record' ? SNAPSHOTS : TMP);
 const NEW_PACKAGE_NAME = 'elm-review-something';
 const NEW_PACKAGE_NAME_FOR_NEW_RULE = `${NEW_PACKAGE_NAME}-for-new-rule`;
 
-// FIXME: Doesn't log the spinner.
+// FIXME(@lishaduck): Doesn't log the spinner.
 createTest(
   CMD,
   'Creating a new package',
@@ -369,6 +372,8 @@ checkFolderContents(NEW_PACKAGE_NAME);
 
 // New-rule (DEPENDS ON PREVIOUS STEP!)
 
+// @ts-expect-error(TS2339): CI runs on a newer Node.js.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call -- ^
 fs.cpSync(NEW_PACKAGE_NAME, NEW_PACKAGE_NAME_FOR_NEW_RULE, {recursive: true});
 process.chdir(NEW_PACKAGE_NAME_FOR_NEW_RULE);
 
