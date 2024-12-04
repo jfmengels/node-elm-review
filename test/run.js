@@ -8,7 +8,8 @@ const CMD = 'elm-review --no-color';
 const TMP = path.join(__dirname, 'temporary');
 const ELM_HOME = path.join(TMP, 'elm-home');
 const SNAPSHOTS = path.join(__dirname, 'run-snapshots');
-const SUBCOMMAND = process.argv[2] ?? '';
+/** @type {string | undefined} */
+const SUBCOMMAND = process.argv[2];
 
 /**
  * @param {string} data
@@ -130,7 +131,7 @@ const initElmProject = () => {
 };
 
 const checkFolderContents = (/** @type {string} */ folder) => {
-  if (SUBCOMMAND !== 'record') {
+  if (SUBCOMMAND === undefined) {
     console.log('  Checking generated files are the same');
     const diff = execSync(
       `diff -rq '${path.join(TMP, folder)}' '${path.join(
@@ -153,9 +154,9 @@ const checkFolderContents = (/** @type {string} */ folder) => {
 
 const createAndGoIntoFolder = (/** @type {string} */ folder) => {
   const targetPath =
-    SUBCOMMAND === 'record'
-      ? path.join(SNAPSHOTS, folder)
-      : path.join(TMP, folder);
+    SUBCOMMAND === undefined
+      ? path.join(TMP, folder)
+      : path.join(SNAPSHOTS, folder);
   fs.mkdirSync(targetPath, {recursive: true});
   process.chdir(targetPath);
 };
@@ -230,9 +231,9 @@ checkFolderContents(INIT_TEMPLATE_PROJECT_NAME);
 // FIXES
 
 const projectPath =
-  SUBCOMMAND === 'record'
-    ? path.join(SNAPSHOTS, 'project to fix')
-    : path.join(TMP, 'project to fix');
+  SUBCOMMAND === undefined
+    ? path.join(TMP, 'project to fix')
+    : path.join(SNAPSHOTS, 'project to fix');
 fs.rmSync(projectPath, {recursive: true, force: true});
 fs.cpSync(path.join(__dirname, 'project-with-errors'), projectPath, {
   recursive: true
@@ -246,7 +247,7 @@ createTest(
   'fix-all.txt'
 );
 
-if (SUBCOMMAND !== 'record') {
+if (SUBCOMMAND === undefined) {
   const filesToCheck = [
     'src/Main.elm',
     'src/Folder/Used.elm',
@@ -430,7 +431,7 @@ createTest(
 
 // Review with remote configuration
 
-if (!process.env.CI && SUBCOMMAND !== 'record') process.exit(0);
+if (!process.env.CI && SUBCOMMAND === undefined) process.exit(0);
 
 createTest(
   CMD,
