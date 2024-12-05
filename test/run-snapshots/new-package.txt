@@ -1,3 +1,25 @@
+- Adding elm.json
+✔ Adding elm.json
+- Adding package.json
+✔ Adding package.json
+- Adding elm-tooling.json
+✔ Adding elm-tooling.json
+- Adding README
+✔ Adding README
+- Adding preview folder
+✔ Adding preview folder
+- Adding rule - No.Doing.Foo
+✔ Adding rule - No.Doing.Foo
+- Adding .gitignore
+✔ Adding .gitignore
+- Adding GitHub Actions
+✔ Adding GitHub Actions
+- Adding LICENSE npx license BSD-3-Clause
+✔ Adding LICENSE npx license BSD-3-Clause
+- Adding elm-review configuration
+✔ Adding elm-review configuration
+- Adding maintenance scripts
+✔ Adding maintenance scripts
 
 All done! ✔
 
