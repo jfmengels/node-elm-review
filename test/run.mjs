@@ -1,4 +1,12 @@
 #!/bin/node
+
+/*
+ * If you get errors like "rate limit exceeded",
+ * you can run these tests with `AUTH_GITHUB=token`.
+ * Follow this guide: <https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token> to create an API token,
+ * and give it access to public repositories.
+ */
+
 /* eslint n/no-process-exit: "off" -- WIP */
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';

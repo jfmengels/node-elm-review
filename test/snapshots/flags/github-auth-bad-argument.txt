@@ -9,5 +9,5 @@ Here is the documentation for this flag:
         Follow https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to create an API token. The API token needs access to public repositories.
 
         Then use the flag like this:
-          --github-auth=my-user-name:abcdef01234567890
+          --github-auth=github_pat_abcdef01234567890
 

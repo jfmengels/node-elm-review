@@ -96,7 +96,7 @@ test('Running new-package --compiler without an argument', async () => {
 });
 
 test('Running --github-auth with a bad value', async () => {
-  const output = await TestCli.runAndExpectError(['--github-auth=bad']);
+  const output = await TestCli.runAndExpectError(['--github-auth=::']);
   expect(output).toMatchFile(testName('github-auth-bad-argument'));
 });
 

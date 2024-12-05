@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["NO_COLOR", "LOCAL_ELM_REVIEW_SRC", "ELM_HOME"],
-  "globalPassThroughEnv": ["AUTH_GITHUB"],
+  "globalEnv": ["NO_COLOR", "LOCAL_ELM_REVIEW_SRC"],
+  "globalPassThroughEnv": ["AUTH_GITHUB", "ELM_HOME"],
   "tasks": {
     "elm-format": {
       "inputs": [

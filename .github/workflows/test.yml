@@ -95,4 +95,4 @@ jobs:
     - name: Run tests
       run: npm test
       env:
-        AUTH_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+        AUTH_GITHUB: ${{ github.token }}
