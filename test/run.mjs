@@ -202,6 +202,7 @@ const createAndGoIntoFolder = async (folder) => {
 
 const cleanUp = async () => {
   const elmStuffs = await glob(path.join(__dirname, '/*/elm-stuff'), {
+    ignore: path.join(__dirname, 'project-with-files-in-elm-stuff/'),
     onlyDirectories: true,
     expandDirectories: false
   });
