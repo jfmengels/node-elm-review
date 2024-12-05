@@ -1,6 +1,6 @@
 -- INVALID FLAG ARGUMENT -------------------------------------------------------
 
-The value bad passed to --github-auth is not a valid one.
+The value :: passed to --github-auth is not a valid one.
 
 Here is the documentation for this flag:
 
