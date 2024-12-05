@@ -30,8 +30,9 @@ const replaceScript = (data) => {
   return data.replace(new RegExp(localPath, 'g'), '<local-path>');
 };
 
-const AUTH_GITHUB = process.env.AUTH_GITHUB ?? '';
-const AUTH = AUTH_GITHUB ? ` --github-auth ${AUTH_GITHUB}` : undefined;
+const {AUTH_GITHUB, CI, REMOTE} = process.env;
+const AUTH =
+  AUTH_GITHUB === undefined ? ` --github-auth ${AUTH_GITHUB}` : undefined;
 
 const TEST_ARGS = [
   '--no-color',
@@ -453,7 +454,9 @@ await createTest(
 
 // Review with remote configuration
 
-if (!process.env.CI && SUBCOMMAND === undefined) process.exit(0);
+if (!REMOTE && !SUBCOMMAND && (!CI || !AUTH_GITHUB)) {
+  process.exit(0);
+}
 
 await createTest(
   'Running using remote GitHub configuration',
