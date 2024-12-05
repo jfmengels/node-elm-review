@@ -63,8 +63,7 @@ export type Options = OptionsBase & {
   fileCachePath: () => Path;
   resultCachePath: (appHash: AppHash) => Path;
 
-  gitHubUser: string | undefined;
-  gitHubPassword: string | undefined;
+  gitHubPat?: string | undefined;
 };
 
 export type ReviewOptions = Options & {
