@@ -32,13 +32,11 @@ const replaceScript = (data) => {
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
 const AUTH =
-  AUTH_GITHUB === undefined ? ` --github-auth ${AUTH_GITHUB}` : undefined;
+  AUTH_GITHUB === undefined ? [] : [`--github-auth="${AUTH_GITHUB}"`];
 
-const TEST_ARGS = [
-  '--no-color',
-  ...(AUTH === undefined ? [] : [AUTH]),
-  '--FOR-TESTS'
-];
+const TEST_ARGS = ['--no-color', ...AUTH, '--FOR-TESTS'];
+
+const TEST_ARGS_REGEX = /--no-color \$'--github-auth="[\w:]+"' /;
 
 /**
  * @param {string} title
@@ -50,10 +48,12 @@ const TEST_ARGS = [
 const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   const snapshotPath = path.join(SNAPSHOTS, file);
   const actualPath = path.join(TMP, file);
+  const fullArgs = [...TEST_ARGS, ...args];
 
-  // TODO(@lishaduck): Make this real: google/zx#961.
-  const fakeCommand = `elm-review --FOR-TESTS ${args.join(' ')}`;
-  process.stdout.write(`- ${title}: \u001B[34m ${fakeCommand}\u001B[0m`);
+  const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
+  const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
+
+  process.stdout.write(`- ${title}: \u001B[34m ${censoredCommand}\u001B[0m`);
   try {
     await fsp.access(snapshotPath);
   } catch {
@@ -63,11 +63,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
     process.exit(1);
   }
 
-  const output = await $({
-    input
-  })`${BIN} ${[...TEST_ARGS, ...args]}`
-    .nothrow()
-    .text();
+  const output = await cmd.run().text();
   const replacedOutput = replaceScript(output);
   await fsp.writeFile(actualPath, replacedOutput);
 
@@ -101,22 +97,21 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
  * @returns {Promise<void>}
  */
 const runAndRecord = async (title, args, file, input) => {
-  // TODO(@lishaduck): Make this real: google/zx#961.
-  const fakeCommand = `elm-review --FOR-TESTS ${args.join(' ')}`;
+  const snapshotPath = path.join(SNAPSHOTS, file);
+  const fullArgs = [...TEST_ARGS, ...args];
+
+  const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
+  const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
 
   process.stdout.write(
-    `\u001B[33m- ${title}\u001B[0m: \u001B[34m ${fakeCommand}\u001B[0m`
+    `\u001B[33m- ${title}\u001B[0m: \u001B[34m ${censoredCommand}\u001B[0m`
   );
 
   $.env.ELM_HOME = ELM_HOME;
 
-  const output = await $({
-    input
-  })`${BIN} ${[...TEST_ARGS, ...args]}`
-    .nothrow()
-    .text();
+  const output = await cmd.run().text();
   const replacedOutput = replaceScript(output);
-  await fsp.writeFile(path.join(SNAPSHOTS, file), replacedOutput);
+  await fsp.writeFile(snapshotPath, replacedOutput);
 };
 
 /**
