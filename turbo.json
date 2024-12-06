@@ -9,7 +9,8 @@
         "init-templates/**/*.elm",
         "parseElm/**/*.elm",
         "review/**/*.elm",
-        "template/**/*.elm"
+        "template/**/*.elm",
+        "!**/elm-stuff/*"
       ],
       "outputs": [
         "ast-codec/**/*.elm",
@@ -131,7 +132,7 @@
       "persistent": true
     },
     "elm-tests": {
-      "inputs": ["template/", "ast-codec/"]
+      "inputs": ["template/**/*.elm", "ast-codec/**/*.elm", "!**/elm-stuff/*"]
     },
     "jest": {
       "inputs": ["lib/", "test/"]
