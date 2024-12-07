@@ -162,7 +162,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['./*.js'],
+      files: ['**/*.js', '**/*.mjs'],
       rules: {
         // Not compatible with JSDoc according https://github.com/typescript-eslint/typescript-eslint/issues/8955#issuecomment-2097518639
         '@typescript-eslint/explicit-function-return-type': 'off',

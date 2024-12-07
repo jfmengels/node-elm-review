@@ -7,7 +7,7 @@ export type OptionsBase = {
   enableExtract: boolean;
   unsuppress: boolean | string[];
   detailsMode: DetailsMode;
-  report: ReportMode;
+  report: ReportMode | null;
   rulesFilter: string[] | null;
   ignoreProblematicDependencies: boolean;
 };

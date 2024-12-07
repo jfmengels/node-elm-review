@@ -169,7 +169,7 @@ In that case, we (should) still report errors as JSON, with the following format
 - `message`: The description of the problem. It is an array like `formatted` for review errors, even though at this moment it only contains a string that has been trimmed and where colors have been removed.
 - `stack` (optional): The original JavaScript runtime stacktrace. Only sent if you run with `--debug`.
 
-You should only have to listen to the CLI's standard output (`stdout`), and should not have to listen to the standard error output (`stderr`).
+You should only have to listen to the CLI's standard output stream (`stdout`), and should not listen to the standard error stream (`stderr`).
 
 ## Things that may help you
 
