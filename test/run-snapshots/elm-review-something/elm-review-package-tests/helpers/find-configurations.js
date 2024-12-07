@@ -1,5 +1,5 @@
 const path = require('node:path');
-const {glob} = require('glob');
+const {globSync} = require('tinyglobby');
 
 const root = path
   .resolve(__dirname, '../../')
@@ -10,12 +10,10 @@ const root = path
  * @returns {string[]}
  */
 function findPreviewConfigurations() {
-  return glob
-    .sync(`${root}/preview*/**/elm.json`, {
-      ignore: ['**/elm-stuff/**'],
-      nodir: true
-    })
-    .map((val) => path.dirname(val));
+  return globSync(`${root}/preview*/**/elm.json`, {
+    ignore: ['**/elm-stuff/**'],
+    onlyFiles: false
+  }).map((val) => path.dirname(val));
 }
 
 module.exports = {

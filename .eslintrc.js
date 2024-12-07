@@ -177,6 +177,7 @@ module.exports = {
       rules: {
         'n/no-process-exit': 'off',
         'n/no-missing-require': 'off', // `require` of `elm.json`.
+        'n/no-extraneous-require': ['error', {allowModules: ['fs-extra']}],
         '@typescript-eslint/ban-ts-comment': 'off' // `require` of `elm.json`.
       }
     },
