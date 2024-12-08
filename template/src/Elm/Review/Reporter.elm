@@ -30,6 +30,7 @@ import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
+import Review.Project as Project
 import Set exposing (Set)
 
 
@@ -896,7 +897,7 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatSingleFixProposal : DetailsMode -> File -> Error -> List { path : String, before : String, after : String } -> List TextContent
+formatSingleFixProposal : DetailsMode -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
 formatSingleFixProposal detailsMode file error diffs =
     List.concat
         [ Text.join "\n\n"
@@ -912,14 +913,19 @@ formatSingleFixProposal detailsMode file error diffs =
                     |> Text.inBlue
               ]
             , case diffs of
-                [ { path, before, after } ] ->
-                    if FilePath path /= file.path then
-                        formatFilePathForSingleFix path
-                            :: Text.from "\n\n"
-                            :: formatDiff (Source before) (Source after)
+                [ { path, diff } ] ->
+                    case diff of
+                        Project.Edited { before, after } ->
+                            if FilePath path /= file.path then
+                                formatFilePathForSingleFix path
+                                    :: Text.from "\n\n"
+                                    :: formatDiff (Source before) (Source after)
 
-                    else
-                        formatDiff (Source before) (Source after)
+                            else
+                                formatDiff (Source before) (Source after)
+
+                        Project.Deleted ->
+                            [ Text.from ("\n\nDelete " ++ path) ]
 
                 _ ->
                     let
@@ -929,19 +935,31 @@ formatSingleFixProposal detailsMode file error diffs =
                     in
                     diffs
                         |> List.sortBy
-                            (\diff ->
-                                -- Sort so that the file the error was for is presented first.
-                                if FilePath diff.path == file.path then
-                                    ""
+                            (\{ path, diff } ->
+                                case diff of
+                                    -- Sort so that the file the error was for is presented first
+                                    -- and deleted files show up at the end.
+                                    Project.Edited _ ->
+                                        if FilePath path == file.path then
+                                            ( 0, "" )
 
-                                else
-                                    diff.path
+                                        else
+                                            ( 0, path )
+
+                                    Project.Deleted ->
+                                        ( 1, path )
                             )
                         |> List.indexedMap
-                            (\index { path, before, after } ->
-                                formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
-                                    :: Text.from "\n\n"
-                                    :: formatDiff (Source before) (Source after)
+                            (\index { path, diff } ->
+                                case diff of
+                                    Project.Edited { before, after } ->
+                                        formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
+                                            :: Text.from "\n\n"
+                                            :: formatDiff (Source before) (Source after)
+
+                                    Project.Deleted ->
+                                        -- TODO MULTIFILE-FIXES Nicely separate file edits and deletions.
+                                        [ Text.from ("Delete " ++ path) ]
                             )
                         |> Text.join "\n\n"
             ]
