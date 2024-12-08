@@ -450,7 +450,7 @@ await createTest(
 
 // Review with remote configuration
 
-if (!REMOTE && !SUBCOMMAND && (!CI || !AUTH_GITHUB)) {
+if (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) {
   process.exit(0);
 }
 
