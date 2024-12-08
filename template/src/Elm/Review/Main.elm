@@ -888,6 +888,8 @@ runReview { fixesAllowed } initialProject model =
                         |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
+                        -- TODO MULTIFILE-FIXES Enable only based on flags
+                        |> ReviewOptions.withFileDeletionFixes True
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
