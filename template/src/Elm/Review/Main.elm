@@ -1142,7 +1142,7 @@ applyFixesAfterReview model allowPrintingSingleFix =
         makeReport model
 
     else
-        case Project.diff { before = model.project, after = model.fixAllResultProject } of
+        case Project.diffV2 { before = model.project, after = model.fixAllResultProject } of
             [] ->
                 makeReport model
 
@@ -1163,6 +1163,36 @@ sendFixPrompt model diffs =
             ( model, Cmd.none )
 
         OneError filePath error ->
+            let
+                changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
+                changedFiles =
+                    List.filterMap
+                        (\{ path, diff } ->
+                            case diff of
+                                Project.Edited { after } ->
+                                    Just
+                                        { path = Reporter.FilePath path
+                                        , source = Reporter.Source after
+                                        }
+
+                                Project.Deleted ->
+                                    Nothing
+                        )
+                        diffs
+
+                deletedFiles : List String
+                deletedFiles =
+                    List.filterMap
+                        (\{ path, diff } ->
+                            case diff of
+                                Project.Edited _ ->
+                                    Nothing
+
+                                Project.Deleted ->
+                                    Just path
+                        )
+                        diffs
+            in
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatSingleFixProposal
@@ -1172,11 +1202,8 @@ sendFixPrompt model diffs =
                     diffs
                     |> encodeReport
                 )
-              , ( "changedFiles"
-                , diffs
-                    |> List.map (\diff -> { path = Reporter.FilePath diff.path, source = Reporter.Source diff.after })
-                    |> Encode.list encodeChangedFile
-                )
+              , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
+              , ( "deletedFiles", Encode.list Encode.string deletedFiles )
               , ( "count", Encode.int 1 )
               ]
                 |> Encode.object
@@ -1249,21 +1276,40 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
 
         changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
         changedFiles =
-            List.map
-                (\{ path, before, after } ->
-                    { path =
-                        if path == "GLOBAL ERROR" then
-                            Reporter.Global
+            List.filterMap
+                (\{ path, diff } ->
+                    case diff of
+                        Project.Edited { before, after } ->
+                            Just
+                                { path =
+                                    if path == "GLOBAL ERROR" then
+                                        Reporter.Global
 
-                        else
-                            Reporter.FilePath path
-                    , source = Reporter.Source before
-                    , fixedSource = Reporter.Source after
-                    , errors =
-                        Dict.get path errorsForFile
-                            |> Maybe.withDefault []
-                            |> List.map (fromReviewError model.suppressedErrors model.links)
-                    }
+                                    else
+                                        Reporter.FilePath path
+                                , source = Reporter.Source before
+                                , fixedSource = Reporter.Source after
+                                , errors =
+                                    Dict.get path errorsForFile
+                                        |> Maybe.withDefault []
+                                        |> List.map (fromReviewError model.suppressedErrors model.links)
+                                }
+
+                        Project.Deleted ->
+                            Nothing
+                )
+                diffs
+
+        deletedFiles : List String
+        deletedFiles =
+            List.filterMap
+                (\{ path, diff } ->
+                    case diff of
+                        Project.Edited _ ->
+                            Nothing
+
+                        Project.Deleted ->
+                            Just path
                 )
                 diffs
 
@@ -1281,6 +1327,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     |> List.map (\file -> { path = file.path, source = file.fixedSource })
                     |> Encode.list encodeChangedFile
               )
+            , ( "deletedFiles", Encode.list Encode.string deletedFiles )
             , ( "count", Encode.int numberOfFixedErrors )
             , ( "clearFixLine", Encode.bool (model.fixMode == Mode_FixAll) )
             ]
@@ -1370,8 +1417,7 @@ addElmFile file project =
 
 type alias FixedFile =
     { path : String
-    , before : String
-    , after : String
+    , diff : Project.Diff
     }
 
 
