@@ -889,7 +889,7 @@ runReview { fixesAllowed } initialProject model =
                         |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
                         -- TODO MULTIFILE-FIXES Enable only based on flags
-                        |> ReviewOptions.withFileDeletionFixes True
+                        |> ReviewOptions.withFileRemovalFixes True
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
@@ -1177,20 +1177,20 @@ sendFixPrompt model diffs =
                                         , source = Reporter.Source after
                                         }
 
-                                Project.Deleted ->
+                                Project.Removed ->
                                     Nothing
                         )
                         diffs
 
-                deletedFiles : List String
-                deletedFiles =
+                removedFiles : List String
+                removedFiles =
                     List.filterMap
                         (\{ path, diff } ->
                             case diff of
                                 Project.Edited _ ->
                                     Nothing
 
-                                Project.Deleted ->
+                                Project.Removed ->
                                     Just path
                         )
                         diffs
@@ -1205,7 +1205,7 @@ sendFixPrompt model diffs =
                     |> encodeReport
                 )
               , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
-              , ( "deletedFiles", Encode.list Encode.string deletedFiles )
+              , ( "removedFiles", Encode.list Encode.string removedFiles )
               , ( "count", Encode.int 1 )
               ]
                 |> Encode.object
@@ -1297,20 +1297,20 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                                         |> List.map (fromReviewError model.suppressedErrors model.links)
                                 }
 
-                        Project.Deleted ->
+                        Project.Removed ->
                             Nothing
                 )
                 diffs
 
-        deletedFiles : List String
-        deletedFiles =
+        removedFiles : List String
+        removedFiles =
             List.filterMap
                 (\{ path, diff } ->
                     case diff of
                         Project.Edited _ ->
                             Nothing
 
-                        Project.Deleted ->
+                        Project.Removed ->
                             Just path
                 )
                 diffs
@@ -1329,7 +1329,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     |> List.map (\file -> { path = file.path, source = file.fixedSource })
                     |> Encode.list encodeChangedFile
               )
-            , ( "deletedFiles", Encode.list Encode.string deletedFiles )
+            , ( "removedFiles", Encode.list Encode.string removedFiles )
             , ( "count", Encode.int numberOfFixedErrors )
             , ( "clearFixLine", Encode.bool (model.fixMode == Mode_FixAll) )
             ]

@@ -924,7 +924,7 @@ formatSingleFixProposal detailsMode file error diffs =
                             else
                                 formatDiff (Source before) (Source after)
 
-                        Project.Deleted ->
+                        Project.Removed ->
                             [ Text.from ("\n\nDelete " ++ path) ]
 
                 _ ->
@@ -946,7 +946,7 @@ formatSingleFixProposal detailsMode file error diffs =
                                         else
                                             ( 0, path )
 
-                                    Project.Deleted ->
+                                    Project.Removed ->
                                         ( 1, path )
                             )
                         |> List.indexedMap
@@ -957,7 +957,7 @@ formatSingleFixProposal detailsMode file error diffs =
                                             :: Text.from "\n\n"
                                             :: formatDiff (Source before) (Source after)
 
-                                    Project.Deleted ->
+                                    Project.Removed ->
                                         -- TODO MULTIFILE-FIXES Nicely separate file edits and deletions.
                                         [ Text.from ("Delete " ++ path) ]
                             )
