@@ -1,5 +1,6 @@
 const path = require('node:path');
-const childProcess = require('node:child_process');
+// @ts-expect-error(TS1479): zx doesn't ship CJS types.
+const {$} = require('zx');
 const TestCli = require('./jest-helpers/cli');
 const snapshotter = require('./snapshotter');
 
@@ -46,14 +47,14 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     './project-with-suppressed-errors/review/suppressed/'
   );
   const filePath = folder + '/NoUnused.Variables.json';
-  childProcess.execSync(`rm -r ${filePath}`);
+  await $`rm -r ${filePath}`;
 
   const output = await TestCli.runAndExpectError(
     'suppress --check-after-tests',
     {project: 'project-with-suppressed-errors'}
   );
   // Remove uncommitted suppression files
-  childProcess.execSync(`git checkout HEAD ${folder}`);
+  await $`git checkout HEAD ${folder}`;
   expect(output).toMatchFile(
     testName('suppressed-errors-check-with-uncommitted-changes')
   );
@@ -69,7 +70,7 @@ test('Running with unsupported version of suppression files should exit with fai
     project,
     'review/suppressed/NoUnused.Variables.json'
   );
-  childProcess.execSync(`chmod -w ${filePath}`);
+  await $`chmod -w ${filePath}`;
 
   const output = await TestCli.runAndExpectError('', {project});
   expect(output).toMatchFile(testName('write-failure'));
