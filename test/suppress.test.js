@@ -1,5 +1,6 @@
 const path = require('node:path');
-const childProcess = require('node:child_process');
+// @ts-expect-error(TS1479): zx doesn't ship CJS types.
+const {$} = require('zx');
 const TestCli = require('./jest-helpers/cli');
 const snapshotter = require('./snapshotter');
 
@@ -13,13 +14,13 @@ function testName(name) {
 }
 
 test('Running on project with only suppressed errors remaining should not exit with failure', async () => {
-  return await TestCli.run('', {
+  return await TestCli.run([], {
     project: 'project-with-suppressed-errors'
   });
 });
 
 test('Running with --unsuppress should report suppressed errors', async () => {
-  const output = await TestCli.runAndExpectError('--unsuppress', {
+  const output = await TestCli.runAndExpectError(['--unsuppress'], {
     project: 'project-with-suppressed-errors'
   });
   expect(output).toMatchFile(testName('suppressed-errors-unsuppress'));
@@ -27,14 +28,14 @@ test('Running with --unsuppress should report suppressed errors', async () => {
 
 test('Running with --unsuppress-rules should report suppressed errors for that rule', async () => {
   const output = await TestCli.runAndExpectError(
-    '--unsuppress-rules NoUnused.Dependencies',
+    ['--unsuppress-rules', 'NoUnused.Dependencies'],
     {project: 'project-with-suppressed-errors'}
   );
   expect(output).toMatchFile(testName('suppressed-errors-unsuppress-rules'));
 });
 
 test('Running with "suppress --check-after-tests" when there are no uncommitted changes should not exit with failure', async () => {
-  const output = await TestCli.run('suppress --check-after-tests', {
+  const output = await TestCli.run(['suppress', '--check-after-tests'], {
     project: 'project-with-suppressed-errors2'
   });
   expect(output).toEqual('');
@@ -46,14 +47,14 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     './project-with-suppressed-errors/review/suppressed/'
   );
   const filePath = folder + '/NoUnused.Variables.json';
-  childProcess.execSync(`rm -r ${filePath}`);
+  await $`rm -r ${filePath}`;
 
   const output = await TestCli.runAndExpectError(
-    'suppress --check-after-tests',
+    ['suppress', '--check-after-tests'],
     {project: 'project-with-suppressed-errors'}
   );
   // Remove uncommitted suppression files
-  childProcess.execSync(`git checkout HEAD ${folder}`);
+  await $`git checkout HEAD ${folder}`;
   expect(output).toMatchFile(
     testName('suppressed-errors-check-with-uncommitted-changes')
   );
@@ -69,8 +70,8 @@ test('Running with unsupported version of suppression files should exit with fai
     project,
     'review/suppressed/NoUnused.Variables.json'
   );
-  childProcess.execSync(`chmod -w ${filePath}`);
+  await $`chmod -w ${filePath}`;
 
-  const output = await TestCli.runAndExpectError('', {project});
+  const output = await TestCli.runAndExpectError([], {project});
   expect(output).toMatchFile(testName('write-failure'));
 });
