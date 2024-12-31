@@ -524,7 +524,7 @@ await createTestSuiteWithDifferentReportFormats(
   [
     '--config',
     '../config-that-triggers-no-errors',
-    '--template jfmengels/test-node-elm-review'
+    '--template=jfmengels/test-node-elm-review'
   ],
   'remote-configuration-with-config-flag'
 );
