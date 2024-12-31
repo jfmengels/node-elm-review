@@ -450,7 +450,7 @@ await createTest(
 
 // Review with remote configuration
 
-if (!REMOTE && !SUBCOMMAND && (!CI || !AUTH_GITHUB)) {
+if (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) {
   process.exit(0);
 }
 
@@ -524,7 +524,7 @@ await createTestSuiteWithDifferentReportFormats(
   [
     '--config',
     '../config-that-triggers-no-errors',
-    '--template jfmengels/test-node-elm-review'
+    '--template=jfmengels/test-node-elm-review'
   ],
   'remote-configuration-with-config-flag'
 );
