@@ -963,7 +963,11 @@ formatSingleFixProposal detailsMode file error diffs =
 
                                     Project.Removed ->
                                         -- TODO MULTIFILE-FIXES Nicely separate file edits and deletions.
-                                        [ Text.from ("Delete " ++ path) ]
+                                        [ Text.from "    "
+                                        , Text.inRed (Text.from "REMOVE FILE")
+                                        , Text.from " "
+                                        , Text.inYellow (Text.from (path ++ " (" ++ String.fromInt (index + 1) ++ " / " ++ String.fromInt numberOfDiffs ++ ")"))
+                                        ]
                             )
                         |> Text.join "\n\n"
             ]
