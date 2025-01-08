@@ -925,7 +925,11 @@ formatSingleFixProposal detailsMode file error diffs =
                                 formatDiff (Source before) (Source after)
 
                         Project.Removed ->
-                            [ Text.from ("\n\nDelete " ++ path) ]
+                            [ Text.from "    "
+                            , Text.inRed (Text.from "REMOVE FILE")
+                            , Text.from " "
+                            , Text.inYellow (Text.from path)
+                            ]
 
                 _ ->
                     let
