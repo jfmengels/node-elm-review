@@ -925,11 +925,14 @@ formatSingleFixProposal detailsMode file error diffs =
                                 formatDiff (Source before) (Source after)
 
                         Project.Removed ->
-                            [ Text.from "    "
-                            , Text.inRed (Text.from "REMOVE FILE")
-                            , Text.from " "
-                            , Text.inYellow (Text.from path)
-                            ]
+                            if FilePath path /= file.path then
+                                [ formatFilePathForSingleFix path
+                                , Text.from "\n\n"
+                                , Text.inRed (Text.from "    REMOVE FILE")
+                                ]
+
+                            else
+                                [ Text.inRed (Text.from ("    REMOVE FILE " ++ path)) ]
 
                 _ ->
                     let
@@ -955,19 +958,15 @@ formatSingleFixProposal detailsMode file error diffs =
                             )
                         |> List.indexedMap
                             (\index { path, diff } ->
-                                case diff of
-                                    Project.Edited { before, after } ->
-                                        formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
-                                            :: Text.from "\n\n"
-                                            :: formatDiff (Source before) (Source after)
+                                formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
+                                    :: Text.from "\n\n"
+                                    :: (case diff of
+                                            Project.Edited { before, after } ->
+                                                formatDiff (Source before) (Source after)
 
-                                    Project.Removed ->
-                                        -- TODO MULTIFILE-FIXES Nicely separate file edits and deletions.
-                                        [ Text.from "    "
-                                        , Text.inRed (Text.from "REMOVE FILE")
-                                        , Text.from " "
-                                        , Text.inYellow (Text.from (path ++ " (" ++ String.fromInt (index + 1) ++ "/" ++ String.fromInt numberOfDiffs ++ ")"))
-                                        ]
+                                            Project.Removed ->
+                                                [ Text.inRed (Text.from "    REMOVE FILE") ]
+                                       )
                             )
                         |> Text.join "\n\n"
             ]

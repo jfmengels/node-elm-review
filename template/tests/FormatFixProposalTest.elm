@@ -2,6 +2,7 @@ module FormatFixProposalTest exposing (suite)
 
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import FormatTester exposing (expect)
+import Review.Project as Project
 import Test exposing (Test, describe, test)
 
 
@@ -79,7 +80,13 @@ some =
                         , source = Reporter.Source fileBefore
                         }
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails file error [ { path = path, before = fileBefore, after = fileAfter } ]
+                Reporter.formatSingleFixProposal Reporter.WithDetails
+                    file
+                    error
+                    [ { path = path
+                      , diff = Project.Edited { before = fileBefore, after = fileAfter }
+                      }
+                    ]
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
@@ -169,7 +176,13 @@ b =
     a
 """
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails file error [ { path = path, before = fileBefore, after = fixedSource } ]
+                Reporter.formatSingleFixProposal Reporter.WithDetails
+                    file
+                    error
+                    [ { path = path
+                      , diff = Project.Edited { before = fileBefore, after = fixedSource }
+                      }
+                    ]
                     |> expect
                         { withoutColors =
                             """-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:2:1
