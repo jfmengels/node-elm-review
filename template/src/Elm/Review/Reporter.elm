@@ -966,7 +966,7 @@ formatSingleFixProposal detailsMode file error diffs =
                                         [ Text.from "    "
                                         , Text.inRed (Text.from "REMOVE FILE")
                                         , Text.from " "
-                                        , Text.inYellow (Text.from (path ++ " (" ++ String.fromInt (index + 1) ++ " / " ++ String.fromInt numberOfDiffs ++ ")"))
+                                        , Text.inYellow (Text.from (path ++ " (" ++ String.fromInt (index + 1) ++ "/" ++ String.fromInt numberOfDiffs ++ ")"))
                                         ]
                             )
                         |> Text.join "\n\n"
