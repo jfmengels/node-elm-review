@@ -989,7 +989,7 @@ formatFilePathForSingleFixWith fileNo numberOfFiles path =
     let
         page : String
         page =
-            String.fromInt fileNo ++ " / " ++ String.fromInt numberOfFiles ++ " -"
+            String.fromInt fileNo ++ "/" ++ String.fromInt numberOfFiles ++ " -"
     in
     (page ++ String.padLeft (80 - String.length page) '-' (" " ++ path))
         |> Text.from
