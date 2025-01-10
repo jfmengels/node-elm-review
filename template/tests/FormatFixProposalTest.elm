@@ -226,7 +226,7 @@ Some details
 5| b =
 """
                         }
-        , test "propose fix with a deleted file" <|
+        , test "propose fix with a removed file" <|
             \() ->
                 let
                     error : Error
@@ -301,6 +301,98 @@ Some details
 [I think I can fix this. Here is my proposal:](#33BBC8)
 
 [    REMOVE FILE src/Some/File.elm](#FF0000)
+"""
+                        }
+        , test "propose fix with multiple removed files" <|
+            \() ->
+                let
+                    error : Error
+                    error =
+                        { ruleName = "Some.Rule.Name"
+                        , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/Some-Rule-Name"
+                        , message = "Some message"
+                        , details = [ "Some details" ]
+                        , range =
+                            { start = { row = 1, column = 7 }
+                            , end = { row = 1, column = 16 }
+                            }
+                        , providesFix = True
+                        , fixFailure = Nothing
+                        , suppressed = False
+                        }
+
+                    path : String
+                    path =
+                        "src/Some/File.elm"
+
+                    fileBefore : String
+                    fileBefore =
+                        """module Some.File exposing (a)
+a =
+    1
+
+b =
+    a
+"""
+
+                    file : File
+                    file =
+                        { path = Reporter.FilePath path
+                        , source = Reporter.Source fileBefore
+                        }
+                in
+                Reporter.formatSingleFixProposal Reporter.WithDetails
+                    file
+                    error
+                    [ { path = path
+                      , diff = Project.Removed
+                      }
+                    , { path = "src/Some/Other/File.elm"
+                      , diff = Project.Removed
+                      }
+                    ]
+                    |> expect
+                        { withoutColors =
+                            """-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:1:7
+
+Some.Rule.Name: Some message
+
+1| module Some.File exposing (a)
+         ^^^^^^^^^
+2| a =
+
+Some details
+
+I think I can fix this. Here is my proposal:
+
+1/2 ---------------------------------------------------------- src/Some/File.elm
+
+    REMOVE FILE
+
+2/2 ---------------------------------------------------- src/Some/Other/File.elm
+
+    REMOVE FILE
+"""
+                        , withColors =
+                            """[-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:1:7](#33BBC8)
+
+[Some.Rule.Name](#FF0000): Some message
+
+1| module Some.File exposing (a)
+         [^^^^^^^^^](#FF0000)
+2| a =
+
+Some details
+
+[I think I can fix this. Here is my proposal:](#33BBC8)
+
+[1/2 ---------------------------------------------------------- src/Some/File.elm](#33BBC8)
+
+[    REMOVE FILE](#FF0000)
+
+[2/2 ---------------------------------------------------- src/Some/Other/File.elm](#33BBC8)
+
+[    REMOVE FILE](#FF0000)
 """
                         }
         ]
