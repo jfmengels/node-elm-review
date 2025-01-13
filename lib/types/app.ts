@@ -70,6 +70,7 @@ export type AutofixRequest = {
   clearFixLine: boolean;
   changedFiles: FilesProposedByCurrentFix;
   count: number;
+  removedFiles: Path[];
 };
 
 export type FixConfirmation =
