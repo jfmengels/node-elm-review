@@ -57,7 +57,10 @@ someOther=lines
                           }
                         ]
                 in
-                Reporter.formatFixProposals changedFiles
+                Reporter.formatFixProposals
+                    { changedFiles = changedFiles
+                    , removedFiles = []
+                    }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------
 

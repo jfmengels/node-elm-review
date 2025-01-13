@@ -997,8 +997,12 @@ formatFilePathForSingleFixWith fileNo numberOfFiles path =
 
 {-| Reports the proposal for the fix-all changes in a nice human-readable way.
 -}
-formatFixProposals : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error } -> List TextContent
-formatFixProposals changedFiles =
+formatFixProposals :
+    { changedFiles : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error }
+    , removedFiles : List { path : FilePath, errors : List Error }
+    }
+    -> List TextContent
+formatFixProposals { changedFiles, removedFiles } =
     let
         headerText : String
         headerText =
