@@ -25,6 +25,7 @@ module Elm.Review.Reporter exposing
 -}
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -998,11 +999,10 @@ formatFilePathForSingleFixWith fileNo numberOfFiles path =
 {-| Reports the proposal for the fix-all changes in a nice human-readable way.
 -}
 formatFixProposals :
-    { changedFiles : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error }
-    , removedFiles : List { path : FilePath, errors : List Error }
-    }
+    Dict String (List Error)
+    -> List { path : String, diff : Project.Diff }
     -> List TextContent
-formatFixProposals { changedFiles, removedFiles } =
+formatFixProposals errorsForFile diffs =
     let
         fixAllHeader : Text
         fixAllHeader =
@@ -1010,6 +1010,31 @@ formatFixProposals { changedFiles, removedFiles } =
                 |> String.padRight 80 '-'
                 |> Text.from
                 |> Text.inBlue
+
+        changedFiles : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error }
+        changedFiles =
+            List.filterMap
+                (\{ path, diff } ->
+                    case diff of
+                        Project.Edited { before, after } ->
+                            Just
+                                { path =
+                                    if path == "GLOBAL ERROR" then
+                                        Global
+
+                                    else
+                                        FilePath path
+                                , source = Source before
+                                , fixedSource = Source after
+                                , errors =
+                                    Dict.get path errorsForFile
+                                        |> Maybe.withDefault []
+                                }
+
+                        Project.Removed ->
+                            Nothing
+                )
+                diffs
 
         filesListing : List Text
         filesListing =

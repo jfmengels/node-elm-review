@@ -1320,7 +1320,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
 
         confirmationMessage : Encode.Value
         confirmationMessage =
-            Reporter.formatFixProposals { changedFiles = changedFiles, removedFiles = [] }
+            Reporter.formatFixProposals errorsForFile diffs
                 |> encodeReport
     in
     askConfirmationToFix
