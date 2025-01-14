@@ -337,6 +337,7 @@ getConfigurationError rule =
                 , range = Range.emptyRange
                 , providesFix = False
                 , fixFailure = Nothing
+                , missingFileRemovalFlag = False
                 , suppressed = False
                 }
 
@@ -978,7 +979,7 @@ makeReport model =
                             (\file ->
                                 { path = file.path
                                 , source = file.source
-                                , errors = List.map (fromReviewError newModel.suppressedErrors newModel.links) file.errors
+                                , errors = List.map (fromReviewError newModel.fileRemovalFixesEnabled newModel.suppressedErrors newModel.links) file.errors
                                 }
                             )
                             errorsByFile
@@ -1005,6 +1006,7 @@ makeReport model =
                         { suppressedErrors = newModel.suppressedErrors
                         , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                         }
+                        newModel.fileRemovalFixesEnabled
                         newModel.links
                         newModel.detailsMode
                     )
@@ -1035,14 +1037,15 @@ encodeErrorByFile :
     { suppressedErrors : SuppressedErrors
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     }
+    -> Bool
     -> Dict String String
     -> Reporter.DetailsMode
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> Encode.Value
-encodeErrorByFile suppressedErrorsData links detailsMode file =
+encodeErrorByFile suppressedErrorsData fileRemovalFixesEnabled links detailsMode file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
-        , ( "errors", Encode.list (encodeError suppressedErrorsData links detailsMode file.source) file.errors )
+        , ( "errors", Encode.list (encodeError suppressedErrorsData fileRemovalFixesEnabled links detailsMode file.source) file.errors )
         ]
 
 
@@ -1071,12 +1074,13 @@ encodeError :
     { suppressedErrors : SuppressedErrors
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     }
+    -> Bool
     -> Dict String String
     -> Reporter.DetailsMode
     -> Reporter.Source
     -> Rule.ReviewError
     -> Encode.Value
-encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode source error =
+encodeError { suppressedErrors, reviewErrorsAfterSuppression } fileRemovalFixesEnabled links detailsMode source error =
     let
         originallySuppressed : Bool
         originallySuppressed =
@@ -1092,7 +1096,7 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
         |> Maybe.map (encodeEdits >> Tuple.pair "fix")
     , Rule.errorFixesV2 error
         |> Maybe.map (encodeFixesV2 >> Tuple.pair "fixV2")
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError suppressedErrors links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError fileRemovalFixesEnabled suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
     ]
@@ -1235,7 +1239,7 @@ sendFixPrompt model diffs =
                 , Reporter.formatSingleFixProposal
                     model.detailsMode
                     (pathAndSource model.project filePath)
-                    (fromReviewError model.suppressedErrors model.links error)
+                    (fromReviewError model.fileRemovalFixesEnabled model.suppressedErrors model.links error)
                     diffs
                     |> encodeReport
                 )
@@ -1292,7 +1296,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                                         (\fixedFile _ subSubAcc ->
                                             Dict.update fixedFile
                                                 (\previousErrors ->
-                                                    fromReviewError model.suppressedErrors model.links error
+                                                    fromReviewError model.fileRemovalFixesEnabled model.suppressedErrors model.links error
                                                         :: Maybe.withDefault [] previousErrors
                                                         |> Just
                                                 )
@@ -1489,17 +1493,43 @@ groupErrorsByFile project errors =
         |> List.filter (\file -> not (List.isEmpty file.errors))
 
 
-fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
-fromReviewError suppressedErrors links error =
+fromReviewError : Bool -> SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
+fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
+    let
+        providesFix : Bool
+        providesFix =
+            Rule.errorFixesV2 error /= Nothing
+    in
     { ruleName = Rule.errorRuleName error
     , ruleLink = linkToRule links error
     , message = Rule.errorMessage error
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
-    , providesFix = Rule.errorFixes error /= Nothing
+    , providesFix = providesFix
     , fixFailure = Rule.errorFixFailure error
+    , missingFileRemovalFlag = providesFix && (not fileRemovalFixesEnabled || hasFileRemovalFixes (Rule.errorFixesV2 error))
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
+
+
+hasFileRemovalFixes : Maybe (Dict String Fixes.FixKind) -> Bool
+hasFileRemovalFixes maybeFixes =
+    case maybeFixes of
+        Just fixes ->
+            Dict.foldl (\_ fix acc -> acc || isFileRemoval fix) False fixes
+
+        Nothing ->
+            False
+
+
+isFileRemoval : Fixes.FixKind -> Bool
+isFileRemoval fix =
+    case fix of
+        Fixes.Remove ->
+            True
+
+        Fixes.Edit _ ->
+            False
 
 
 

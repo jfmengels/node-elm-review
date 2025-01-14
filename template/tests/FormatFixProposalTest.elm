@@ -27,6 +27,7 @@ suite =
                             }
                         , providesFix = True
                         , fixFailure = Nothing
+                        , missingFileRemovalFlag = False
                         , suppressed = False
                         }
 
@@ -144,6 +145,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                             }
                         , providesFix = True
                         , fixFailure = Nothing
+                        , missingFileRemovalFlag = False
                         , suppressed = False
                         }
 
@@ -242,6 +244,7 @@ Some details
                             }
                         , providesFix = True
                         , fixFailure = Nothing
+                        , missingFileRemovalFlag = False
                         , suppressed = False
                         }
 
@@ -327,6 +330,7 @@ Some details
                             }
                         , providesFix = True
                         , fixFailure = Nothing
+                        , missingFileRemovalFlag = False
                         , suppressed = False
                         }
 
@@ -404,6 +408,7 @@ Some details
                             }
                         , providesFix = True
                         , fixFailure = Nothing
+                        , missingFileRemovalFlag = False
                         , suppressed = False
                         }
 
@@ -496,6 +501,7 @@ Some details
                             }
                         , providesFix = True
                         , fixFailure = Nothing
+                        , missingFileRemovalFlag = False
                         , suppressed = False
                         }
 
