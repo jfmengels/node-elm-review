@@ -5,6 +5,7 @@ export type OptionsBase = {
   debug: boolean;
   showBenchmark: boolean;
   enableExtract: boolean;
+  fileRemovalFixesEnabled: boolean;
   unsuppress: boolean | string[];
   detailsMode: DetailsMode;
   report: ReportMode | null;
@@ -20,6 +21,7 @@ export type Options = OptionsBase & {
   fixLimit: number | undefined;
   fixAll: boolean;
   fixAllWithoutPrompt: boolean;
+  fileRemovalFixesEnabled: boolean;
   suppressCheckAfterTests: boolean;
   watch: boolean;
   watchConfig: boolean;
