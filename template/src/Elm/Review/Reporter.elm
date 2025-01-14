@@ -1004,13 +1004,9 @@ formatFixProposals :
     -> List TextContent
 formatFixProposals { changedFiles, removedFiles } =
     let
-        headerText : String
-        headerText =
-            "-- ELM-REVIEW FIX-ALL PROPOSAL "
-
         fixAllHeader : Text
         fixAllHeader =
-            headerText
+            "-- ELM-REVIEW FIX-ALL PROPOSAL "
                 |> String.padRight 80 '-'
                 |> Text.from
                 |> Text.inBlue
