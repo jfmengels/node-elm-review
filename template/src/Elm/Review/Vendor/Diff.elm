@@ -143,11 +143,11 @@ testDiff a b =
 
         -- Elm's Array doesn't allow null element,
         -- so we'll use shifted index to access source.
-        getA =
-            \x -> Array.get (x - 1) arrA
+        getA x =
+            Array.get (x - 1) arrA
 
-        getB =
-            \y -> Array.get (y - 1) arrB
+        getB y =
+            Array.get (y - 1) arrB
 
         path =
             -- Is there any case ond is needed?
