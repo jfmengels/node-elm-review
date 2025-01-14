@@ -1295,7 +1295,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                 )
                 diffs
 
-        removedFiles : List { path : String, errors : List Reporter.Error }
+        removedFiles : List String
         removedFiles =
             List.filterMap
                 (\{ path, diff } ->
@@ -1304,12 +1304,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                             Nothing
 
                         Project.Removed ->
-                            Just
-                                { path = path
-                                , errors =
-                                    Dict.get path errorsForFile
-                                        |> Maybe.withDefault []
-                                }
+                            Just path
                 )
                 diffs
 
@@ -1326,7 +1321,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     |> List.map (\file -> { path = file.path, source = file.fixedSource })
                     |> Encode.list encodeChangedFile
               )
-            , ( "removedFiles", Encode.list (\{ path } -> Encode.string path) removedFiles )
+            , ( "removedFiles", Encode.list Encode.string removedFiles )
             , ( "count", Encode.int numberOfFixedErrors )
             , ( "clearFixLine", Encode.bool (model.fixMode == Mode_FixAll) )
             ]
