@@ -1169,10 +1169,10 @@ addLineNumbers changes =
                                 line : String
                                 line =
                                     if String.isEmpty str then
-                                        lineNumberPrefixUnpadded maxLineNumberLength lineNumber
+                                        String.repeat (maxLineNumberLength - 1) " " ++ "+|"
 
                                     else
-                                        lineNumberPrefix maxLineNumberLength lineNumber ++ str
+                                        String.repeat (maxLineNumberLength - 1) " " ++ "+| " ++ str
                             in
                             ( lineNumber
                             , []

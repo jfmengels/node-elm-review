@@ -64,7 +64,7 @@ Modified by the following error fixes:
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-3| a = 1
++| a = 1
 3| other=lines
 """
                         , withColors = """[-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------](#33BBC8)
@@ -81,7 +81,7 @@ Modified by the following error fixes:
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
-[3| a = 1](#008000)
+[+| a = 1](#008000)
 3| other=lines
 """
                         }
@@ -157,7 +157,7 @@ Modified by the following error fixes:
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-3| a = 1
++| a = 1
 3| other=lines
 
 
@@ -173,7 +173,7 @@ Modified by the following error fixes:
 
 1| module FileB exposing (b)
 2| b = Debug.log "debug" someOther
-3| b = someOther
++| b = someOther
 3| someOther=lines
 """
                         , withColors = """[-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------](#33BBC8)
@@ -191,7 +191,7 @@ Modified by the following error fixes:
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
-[3| a = 1](#008000)
+[+| a = 1](#008000)
 3| other=lines
 
 
@@ -207,7 +207,7 @@ Modified by the following error fixes:
 
 1| module FileB exposing (b)
 [2| b = Debug.log "debug" someOther](#FF0000)
-[3| b = someOther](#008000)
+[+| b = someOther](#008000)
 3| someOther=lines
 """
                         }
@@ -385,7 +385,7 @@ Modified by the following error fixes:
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-3| a = 1
++| a = 1
 3| other=lines
 
 
@@ -401,7 +401,7 @@ Modified by the following error fixes:
 
 1| module FileC exposing (b)
 2| b = Debug.log "debug" someOther
-3| b = someOther
++| b = someOther
 3| someOther=lines
 
 
@@ -447,7 +447,7 @@ Modified by the following error fixes:
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
-[3| a = 1](#008000)
+[+| a = 1](#008000)
 3| other=lines
 
 
@@ -463,7 +463,7 @@ Modified by the following error fixes:
 
 1| module FileC exposing (b)
 [2| b = Debug.log "debug" someOther](#FF0000)
-[3| b = someOther](#008000)
+[+| b = someOther](#008000)
 3| someOther=lines
 
 
