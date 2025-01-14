@@ -16,6 +16,7 @@ import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Review.Error.Fixes as Fixes
 import Review.Fix as Fix exposing (Fix)
 import Review.Options as ReviewOptions
 import Review.Project as Project exposing (Project)
@@ -1085,6 +1086,8 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeEdits >> Tuple.pair "fix")
+    , Rule.errorFixesV2 error
+        |> Maybe.map (encodeFixesV2 >> Tuple.pair "fixV2")
     , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
@@ -1112,6 +1115,34 @@ linkToRule links error =
 encodeEdits : List Fix -> Encode.Value
 encodeEdits fixes =
     Encode.list (Fix.toRecord >> encodeFix) fixes
+
+
+encodeFixesV2 : Dict String Fixes.FixKind -> Encode.Value
+encodeFixesV2 fixes =
+    fixes
+        |> Dict.toList
+        |> Encode.list
+            (\( path, fix ) ->
+                Encode.object
+                    [ ( "path", Encode.string path )
+                    , ( "fix", encodeFixKind fix )
+                    ]
+            )
+
+
+encodeFixKind : Fixes.FixKind -> Encode.Value
+encodeFixKind fixKind =
+    case fixKind of
+        Fixes.Edit edits ->
+            Encode.object
+                [ ( "kind", Encode.string "edit" )
+                , ( "edits", encodeEdits edits )
+                ]
+
+        Fixes.Remove ->
+            Encode.object
+                [ ( "kind", Encode.string "remove" )
+                ]
 
 
 encodeFix : { range : Range, replacement : String } -> Encode.Value

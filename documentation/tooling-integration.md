@@ -84,6 +84,29 @@ If the process ran without any hitches, you should get something like the follow
               "string": ""
             }
           ],
+          "fixV2": [
+            {
+              "path": "src/Some/File.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 49,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 51,
+                        "column": 1
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
+            }
+          ],
           "formatted": [
             {
               "string": "(fix) ",
@@ -119,12 +142,67 @@ If the process ran without any hitches, you should get something like the follow
     - `message`: A short description of the error. If you show a summary of the errors, this is what you will want to show, along with `rule`.
     - `details`: A longer description, providing more details about the error and often a description of how to resolve it. Every string in this array of strings corresponds to a paragraph.
     - `region`: The region in which this error occurred. The `line` and `column` values start from `1`, not `0`.
-    - `fix` (optional): A list of fixes/edits to automatically solve the errors. Each "edit" describes a range (1-based) in the source code to replace, and what to replace it by. If `string` is empty, it means we are removing code, if the `start` and `end` are the same, we are inserting code, otherwise we are modifying code.
-      In the CLI, these are applied one-by-one, starting from the ones that are near the end of the file. When applying them, the CLI makes sure that there are no overlapping ranges and that the fix results in an Elm file without syntax errors. These are all steps that you need to do yourself at the moment.
-      (Proposal to be discussed: maybe the CLI can be spawned with this fix data and apply its own algorithm, to avoid you having to do all this work?)
+    - `fixV2` **(since v2.13.0)** (optional): A list of file fixes, see [Fixes](#fixes) below.
+    - `fix` **(DEPRECATED since v2.13.0 in favor of `fixV2`)** (optional): A list of edits for the file the error was reported for, see [Fixes](#fixes) below.
     - `formatted`: An array of "chunks" that represent the full human-readable error that would be shown to the user. Chunks are described [below](#chunk).
 - `extracts`: **(since v2.8.0)** An object where each property name is the name of a rule and the property value is arbitrary JSON according to each rule.
   This object will be empty if the tool is run without `--extract` or if no rules provide any extract.
+
+#### Fixes
+
+As of v2.13.0, the `fix` field is deprecated, and `fixV2` should be preferred as it allows for more fixes.
+In a future breaking version, it is possible that `fixV2` gets renamed to `fix`, replacing the deprecated field.
+
+A fix for an error is a list of file paths and how to modify them. A single fix can potentially modify multiple files.
+
+```ts
+type FixesV2 = Array<{
+  path: string;
+  fix: FixKind;
+}>;
+```
+
+A file can either be removed entirely (recommendation: if the file is not tracked in a Version Control System, ask the user for confirmation), or edited through a list
+of edits.
+
+Other fix kinds may appear in the future. If anything unknown or unsupported appears, it is best to entirely skip the fix.
+
+```ts
+type FixKind =
+  | {
+      kind: "remove";
+    }
+  | {
+      kind: "edit";
+      edits: Array<Edit>
+    };
+```
+
+Each edit describes a range (1-based) in the source code to replace, and what to replace it by.
+If `string` is empty, it means we are removing code, if the `start` and `end` are the same, we are inserting code, otherwise we are modifying code.
+In the CLI, these are applied one-by-one, starting from the ones that are near the end of the file.
+When applying them, the CLI makes sure that there are no overlapping ranges and that the fix results in an Elm file without syntax errors.
+These are all steps and checks that you need to do yourself.
+
+The deprecated `fix` field (the one next to `fixV2`) is simply an array of edits for the file the error was reported for.
+
+```ts
+type Edit =
+  { range: Range;
+  , string: string;
+  };
+
+type Range =
+  { start: Location;
+  , end: Location;
+  };
+
+type Location =
+  { line: number; // Starts at 1
+  , column: number; // Starts at 1
+  };
+```
+
 
 ### Newline delimited JSON
 
