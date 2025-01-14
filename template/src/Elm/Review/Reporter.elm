@@ -1002,8 +1002,23 @@ formatFixProposals :
     Dict String (List Error)
     -> List { path : String, diff : Project.Diff }
     -> List TextContent
-formatFixProposals errorsForFile diffs =
+formatFixProposals errorsForFile unsortedDiffs =
     let
+        diffs : List { path : String, diff : Project.Diff }
+        diffs =
+            List.sortBy
+                (\{ path, diff } ->
+                    case diff of
+                        -- Sort so that the file the error was for is presented first
+                        -- and deleted files show up at the end.
+                        Project.Edited _ ->
+                            ( 0, path )
+
+                        Project.Removed ->
+                            ( 1, path )
+                )
+                unsortedDiffs
+
         fixAllHeader : Text
         fixAllHeader =
             "-- ELM-REVIEW FIX-ALL PROPOSAL "
