@@ -105,7 +105,7 @@ I think I can fix this. Here is my proposal:
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
-3| a = 1
++| a = 1
 3| other=lines
 """
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
@@ -125,7 +125,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
-[3| a = 1](#008000)
+[+| a = 1](#008000)
 3| other=lines
 """
                         }
@@ -202,7 +202,7 @@ I think I can fix this. Here is my proposal:
 2| a =
 3|     1
 4|
-5|
++|
 5| b =
 """
                         , withColors =
@@ -223,7 +223,7 @@ Some details
 [2| a =](#FF0000)
 [3|     1](#FF0000)
 4|
-[5|](#008000)
+[+|](#008000)
 5| b =
 """
                         }
@@ -292,7 +292,7 @@ Some details
 I think I can fix this. Here is my proposal:
 
 1| module Some.File exposing (..)
-2| module Some.File exposing (a)
++| module Some.File exposing (a)
 2|
 """
                         , withColors =
@@ -308,7 +308,7 @@ Some details
 [I think I can fix this. Here is my proposal:](#33BBC8)
 
 [1| module Some.File exposing (..)](#FF0000)
-[2| module Some.File exposing (a)](#008000)
+[+| module Some.File exposing (a)](#008000)
 2|
 """
                         }
@@ -561,7 +561,7 @@ I think I can fix this. Here is my proposal:
 2| a =
 3|     1
 4|
-5|
++|
 5| b =
 
 2/3 ---------------------------------------------------------- src/Some/File.elm
@@ -591,7 +591,7 @@ Some details
 [2| a =](#FF0000)
 [3|     1](#FF0000)
 4|
-[5|](#008000)
+[+|](#008000)
 5| b =
 
 [2/3 ---------------------------------------------------------- src/Some/File.elm](#33BBC8)
