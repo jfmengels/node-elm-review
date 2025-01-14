@@ -1257,9 +1257,8 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                                         (\fixedFile _ subSubAcc ->
                                             Dict.update fixedFile
                                                 (\previousErrors ->
-                                                    previousErrors
-                                                        |> Maybe.withDefault []
-                                                        |> (::) (fromReviewError model.suppressedErrors model.links error)
+                                                    fromReviewError model.suppressedErrors model.links error
+                                                        :: Maybe.withDefault [] previousErrors
                                                         |> Just
                                                 )
                                                 subSubAcc
