@@ -920,10 +920,10 @@ formatSingleFixProposal detailsMode file error diffs =
                             if FilePath path /= file.path then
                                 formatFilePathForSingleFix path
                                     :: Text.from "\n\n"
-                                    :: formatDiff (Source before) (Source after)
+                                    :: formatDiff before after
 
                             else
-                                formatDiff (Source before) (Source after)
+                                formatDiff before after
 
                         Project.Removed ->
                             if FilePath path /= file.path then
@@ -963,7 +963,7 @@ formatSingleFixProposal detailsMode file error diffs =
                                     :: Text.from "\n\n"
                                     :: (case diff of
                                             Project.Edited { before, after } ->
-                                                formatDiff (Source before) (Source after)
+                                                formatDiff before after
 
                                             Project.Removed ->
                                                 [ Text.inRed (Text.from "    REMOVE FILE") ]
@@ -1011,43 +1011,23 @@ formatFixProposals errorsForFile diffs =
                 |> Text.from
                 |> Text.inBlue
 
-        changedFiles : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error }
-        changedFiles =
-            List.filterMap
-                (\{ path, diff } ->
-                    case diff of
-                        Project.Edited { before, after } ->
-                            Just
-                                { path = FilePath path
-                                , source = Source before
-                                , fixedSource = Source after
-                                , errors =
-                                    Dict.get path errorsForFile
-                                        |> Maybe.withDefault []
-                                }
-
-                        Project.Removed ->
-                            Nothing
-                )
-                diffs
-
         filesListing : List Text
         filesListing =
             Text.from "I found fixable errors for the following files:"
                 :: List.concatMap
-                    (\file ->
+                    (\{ path } ->
                         [ Text.from "\n  "
-                        , "- " ++ filePath file.path |> Text.from |> Text.inYellow
+                        , "- " ++ path |> Text.from |> Text.inYellow
                         ]
                     )
-                    changedFiles
+                    diffs
 
         body : List Text
         body =
             [ [ fixAllHeader ]
             , filesListing
             , [ Text.from "Here is how the code would change if you applied each fix." ]
-            , formatFileDiffs changedFiles
+            , formatFileDiffs errorsForFile diffs
             ]
                 |> Text.join "\n\n"
     in
@@ -1055,40 +1035,48 @@ formatFixProposals errorsForFile diffs =
         |> List.map Text.toRecord
 
 
-formatFileDiffs : List { path : FilePath, source : Source, fixedSource : Source, errors : List Error } -> List Text
-formatFileDiffs changedFiles =
-    case changedFiles of
+formatFileDiffs : Dict String (List Error) -> List { path : String, diff : Project.Diff } -> List Text
+formatFileDiffs errorsForFile diffs =
+    case diffs of
         [] ->
             []
 
-        [ file ] ->
-            formatFileDiff file
+        [ diff ] ->
+            formatFileDiff errorsForFile diff
 
-        firstFile :: secondFile :: restOfFiles ->
+        firstDiff :: secondDiff :: restOfDiffs ->
             List.concat
-                [ formatFileDiff firstFile
+                [ formatFileDiff errorsForFile firstDiff
                 , [ Text.from "\n" ]
-                , fileSeparator firstFile.path secondFile.path
-                , formatFileDiffs (secondFile :: restOfFiles)
+                , fileSeparator (FilePath firstDiff.path) (FilePath secondDiff.path)
+                , formatFileDiffs errorsForFile (secondDiff :: restOfDiffs)
                 ]
 
 
-formatFileDiff : { path : FilePath, source : Source, fixedSource : Source, errors : List Error } -> List Text
-formatFileDiff file =
-    [ [ (" " ++ filePath file.path)
+formatFileDiff :
+    Dict String (List Error)
+    -> { path : String, diff : Project.Diff }
+    -> List Text
+formatFileDiff errorsForFile { path, diff } =
+    [ [ (" " ++ path)
             |> String.padLeft 80 '-'
             |> Text.from
             |> Text.inBlue
       ]
     , Text.from "Modified by the following error fixes:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse file.errors)
-    , formatDiff file.source file.fixedSource
+        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
+    , case diff of
+        Project.Edited { before, after } ->
+            formatDiff before after
+
+        Project.Removed ->
+            [ Text.inRed (Text.from "    REMOVE FILE") ]
     ]
         |> Text.join "\n\n"
 
 
-formatDiff : Source -> Source -> List Text
-formatDiff (Source before) (Source after) =
+formatDiff : String -> String -> List Text
+formatDiff before after =
     Diff.diffLines before after
         |> addLineNumbers
         |> List.map extractValueFromChange
