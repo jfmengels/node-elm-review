@@ -227,6 +227,91 @@ Some details
 5| b =
 """ |> String.replace "$" " "
                         }
+        , test "propose fix where the diff is for the first line, followed by a blank line" <|
+            \() ->
+                let
+                    error : Error
+                    error =
+                        { ruleName = "Some.Rule.Name"
+                        , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/Some-Rule-Name"
+                        , message = "Some message"
+                        , details = [ "Some details" ]
+                        , range =
+                            { start = { row = 1, column = 1 }
+                            , end = { row = 1, column = 2 }
+                            }
+                        , providesFix = True
+                        , fixFailure = Nothing
+                        , suppressed = False
+                        }
+
+                    file : File
+                    file =
+                        { path = Reporter.FilePath path
+                        , source = Reporter.Source fileBefore
+                        }
+
+                    path : String
+                    path =
+                        "src/Some/File.elm"
+
+                    fileBefore : String
+                    fileBefore =
+                        """module Some.File exposing (..)
+
+a =
+    1
+"""
+
+                    fixedSource : String
+                    fixedSource =
+                        """module Some.File exposing (a)
+
+a =
+    1
+"""
+                in
+                Reporter.formatSingleFixProposal Reporter.WithDetails
+                    file
+                    error
+                    [ { path = path
+                      , diff = Project.Edited { before = fileBefore, after = fixedSource }
+                      }
+                    ]
+                    |> expect
+                        { withoutColors =
+                            """-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:1:1
+
+Some.Rule.Name: Some message
+
+1| module Some.File exposing (..)
+   ^
+
+Some details
+
+I think I can fix this. Here is my proposal:
+
+1| module Some.File exposing (..)
+2| module Some.File exposing (a)
+2|$
+""" |> String.replace "$" " "
+                        , withColors =
+                            """[-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:1:1](#33BBC8)
+
+[Some.Rule.Name](#FF0000): Some message
+
+1| module Some.File exposing (..)
+   [^](#FF0000)
+
+Some details
+
+[I think I can fix this. Here is my proposal:](#33BBC8)
+
+[1| module Some.File exposing (..)](#FF0000)
+[2| module Some.File exposing (a)](#008000)
+2|$
+""" |> String.replace "$" " "
+                        }
         , test "propose fix with a removed file" <|
             \() ->
                 let
