@@ -1275,19 +1275,15 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                 Dict.empty
                 model.fixAllErrors
 
-        changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Reporter.Error }
+        changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
         changedFiles =
             List.filterMap
                 (\{ path, diff } ->
                     case diff of
-                        Project.Edited { before, after } ->
+                        Project.Edited { after } ->
                             Just
                                 { path = Reporter.FilePath path
-                                , source = Reporter.Source before
-                                , fixedSource = Reporter.Source after
-                                , errors =
-                                    Dict.get path errorsForFile
-                                        |> Maybe.withDefault []
+                                , source = Reporter.Source after
                                 }
 
                         Project.Removed ->
@@ -1316,11 +1312,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
     askConfirmationToFix
         (Encode.object
             [ ( "confirmationMessage", confirmationMessage )
-            , ( "changedFiles"
-              , changedFiles
-                    |> List.map (\file -> { path = file.path, source = file.fixedSource })
-                    |> Encode.list encodeChangedFile
-              )
+            , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
             , ( "removedFiles", Encode.list Encode.string removedFiles )
             , ( "count", Encode.int numberOfFixedErrors )
             , ( "clearFixLine", Encode.bool (model.fixMode == Mode_FixAll) )
