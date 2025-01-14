@@ -1,7 +1,9 @@
 module FormatFixProposalsTest exposing (suite)
 
+import Dict
 import Elm.Review.Reporter as Reporter exposing (Error)
 import FormatTester exposing (expect)
+import Review.Project as Project
 import Test exposing (Test, describe, test)
 
 
@@ -28,28 +30,25 @@ suite =
                         , fixFailure = Nothing
                         , suppressed = False
                         }
-
-                    changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Error }
-                    changedFiles =
-                        [ { path = Reporter.FilePath "src/FileA.elm"
-                          , source = Reporter.Source """module FileA exposing (a)
+                in
+                Reporter.formatFixProposals
+                    (Dict.fromList [ ( "src/FileA.elm", [ error ] ) ])
+                    [ { path = "src/FileA.elm"
+                      , diff =
+                            Project.Edited
+                                { before = """module FileA exposing (a)
 a = Debug.log "debug" 1
 other=lines
 other2=lines2
 """
-                          , fixedSource = Reporter.Source """module FileA exposing (a)
+                                , after = """module FileA exposing (a)
 a = 1
 other=lines
 other2=lines2
 """
-                          , errors = [ error ]
-                          }
-                        ]
-                in
-                Reporter.formatFixProposals
-                    { changedFiles = changedFiles
-                    , removedFiles = []
-                    }
+                                }
+                      }
+                    ]
                     |> expect
                         { withoutColors = """-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------
 
@@ -106,39 +105,42 @@ Modified by the following error fixes:
                         , fixFailure = Nothing
                         , suppressed = False
                         }
-
-                    changedFiles : List { path : Reporter.FilePath, source : Reporter.Source, fixedSource : Reporter.Source, errors : List Error }
-                    changedFiles =
-                        [ { path = Reporter.FilePath "src/FileA.elm"
-                          , source = Reporter.Source """module FileA exposing (a)
+                in
+                Reporter.formatFixProposals
+                    (Dict.fromList
+                        [ ( "src/FileA.elm", [ error ] )
+                        , ( "src/FileB.elm", [ error ] )
+                        ]
+                    )
+                    [ { path = "src/FileA.elm"
+                      , diff =
+                            Project.Edited
+                                { before = """module FileA exposing (a)
 a = Debug.log "debug" 1
 other=lines
 other2=lines2
 """
-                          , fixedSource = Reporter.Source """module FileA exposing (a)
+                                , after = """module FileA exposing (a)
 a = 1
 other=lines
 other2=lines2
 """
-                          , errors = [ error ]
-                          }
-                        , { path = Reporter.FilePath "src/FileB.elm"
-                          , source = Reporter.Source """module FileB exposing (b)
+                                }
+                      }
+                    , { path = "src/FileB.elm"
+                      , diff =
+                            Project.Edited
+                                { before = """module FileB exposing (b)
 b = Debug.log "debug" someOther
 someOther=lines
 """
-                          , fixedSource = Reporter.Source """module FileB exposing (b)
+                                , after = """module FileB exposing (b)
 b = someOther
 someOther=lines
 """
-                          , errors = [ error ]
-                          }
-                        ]
-                in
-                Reporter.formatFixProposals
-                    { changedFiles = changedFiles
-                    , removedFiles = []
-                    }
+                                }
+                      }
+                    ]
                     |> expect
                         { withoutColors = """-- ELM-REVIEW FIX-ALL PROPOSAL -------------------------------------------------
 
