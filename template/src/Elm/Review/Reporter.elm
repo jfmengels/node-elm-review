@@ -1018,12 +1018,7 @@ formatFixProposals errorsForFile diffs =
                     case diff of
                         Project.Edited { before, after } ->
                             Just
-                                { path =
-                                    if path == "GLOBAL ERROR" then
-                                        Global
-
-                                    else
-                                        FilePath path
+                                { path = FilePath path
                                 , source = Source before
                                 , fixedSource = Source after
                                 , errors =
