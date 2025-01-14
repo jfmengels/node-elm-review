@@ -1084,7 +1084,7 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
     , Just ( "details", Encode.list Encode.string <| Rule.errorDetails error )
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
-        |> Maybe.map (encodeFixes >> Tuple.pair "fix")
+        |> Maybe.map (encodeEdits >> Tuple.pair "fix")
     , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
@@ -1109,8 +1109,8 @@ linkToRule links error =
     Dict.get (Rule.errorRuleName error) links
 
 
-encodeFixes : List Fix -> Encode.Value
-encodeFixes fixes =
+encodeEdits : List Fix -> Encode.Value
+encodeEdits fixes =
     Encode.list (Fix.toRecord >> encodeFix) fixes
 
 
