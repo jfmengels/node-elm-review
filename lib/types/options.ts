@@ -20,6 +20,7 @@ export type Options = OptionsBase & {
   fixLimit: number | undefined;
   fixAll: boolean;
   fixAllWithoutPrompt: boolean;
+  fileRemovalFixesEnabled: boolean;
   suppressCheckAfterTests: boolean;
   watch: boolean;
   watchConfig: boolean;

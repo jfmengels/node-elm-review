@@ -128,6 +128,7 @@ type alias Model =
     , links : Dict String String
     , fixMode : FixMode
     , fixLimit : Maybe Int
+    , fileRemovalFixesEnabled : Bool
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
@@ -207,6 +208,7 @@ init rawFlags =
                 Err error ->
                     ( { fixMode = Mode_DontFix
                       , fixLimit = Nothing
+                      , fileRemovalFixesEnabled = False
                       , enableExtract = False
                       , unsuppressMode = UnsuppressMode.UnsuppressNone
                       , reportMode = HumanReadable
@@ -256,6 +258,7 @@ init rawFlags =
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
       , fixLimit = flags.fixLimit
+      , fileRemovalFixesEnabled = flags.fileRemovalFixesEnabled
       , enableExtract = flags.enableExtract
       , unsuppressMode = flags.unsuppressMode
       , detailsMode = flags.detailsMode
@@ -368,6 +371,7 @@ closestNames names name =
 type alias DecodedFlags =
     { fixMode : FixMode
     , fixLimit : Maybe Int
+    , fileRemovalFixesEnabled : Bool
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
@@ -386,6 +390,7 @@ decodeFlags =
     Decode.succeed DecodedFlags
         |> field "fixMode" decodeFix
         |> field "fixLimit" decodeFixLimit
+        |> field "fileRemovalFixesEnabled" Decode.bool
         |> field "enableExtract" Decode.bool
         |> field "unsuppress" UnsuppressMode.decoder
         |> field "detailsMode" decodeDetailsMode
@@ -889,8 +894,7 @@ runReview { fixesAllowed } initialProject model =
                         |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
-                        -- TODO MULTIFILE-FIXES Enable only based on flags
-                        |> ReviewOptions.withFileRemovalFixes True
+                        |> ReviewOptions.withFileRemovalFixes model.fileRemovalFixesEnabled
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions model.suppressedErrors
                     )
