@@ -1282,12 +1282,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                     case diff of
                         Project.Edited { before, after } ->
                             Just
-                                { path =
-                                    if path == "GLOBAL ERROR" then
-                                        Reporter.Global
-
-                                    else
-                                        Reporter.FilePath path
+                                { path = Reporter.FilePath path
                                 , source = Reporter.Source before
                                 , fixedSource = Reporter.Source after
                                 , errors =
