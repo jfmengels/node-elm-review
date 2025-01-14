@@ -47,6 +47,7 @@ type alias Error =
     , range : Range
     , providesFix : Bool
     , fixFailure : Maybe Review.Fix.Problem
+    , missingFileRemovalFlag : Bool
     , suppressed : Bool
     }
 
@@ -156,7 +157,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
                     |> List.filter (.errors >> List.isEmpty >> not)
                     |> List.sortBy (.path >> filePath)
 
-            { rulesWithInvalidFixes, hasIgnoredFixableErrors } =
+            { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)
         in
         [ formatReports detailsMode mode filesWithErrors
@@ -173,6 +174,15 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
         , if hasIgnoredFixableErrors then
             Just
                 [ "Errors marked with (fix) can be fixed automatically using `elm-review --fix`."
+                    |> Text.from
+                    |> Text.inBlue
+                ]
+
+          else
+            Nothing
+        , if hasFileRemovalFixes then
+            Just
+                [ "Errors marked with (remove file) can be fixed automatically by\nalso using `--allow-remove-files`."
                     |> Text.from
                     |> Text.inBlue
                 ]
@@ -258,14 +268,17 @@ formatTally filesWithErrors numberOfFileErrors numberOfGlobalErrors =
         ]
 
 
-classifyFixes : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
+classifyFixes : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
 classifyFixes errors =
     classifyFixesHelp
         errors
-        { rulesWithInvalidFixes = Set.empty, hasIgnoredFixableErrors = False }
+        { rulesWithInvalidFixes = Set.empty, hasIgnoredFixableErrors = False, hasFileRemovalFixes = False }
 
 
-classifyFixesHelp : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool } -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool }
+classifyFixesHelp :
+    List Error
+    -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
+    -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
 classifyFixesHelp errors acc =
     case errors of
         [] ->
@@ -276,12 +289,18 @@ classifyFixesHelp errors acc =
                 Just _ ->
                     classifyFixesHelp
                         rest
-                        { rulesWithInvalidFixes = Set.insert error.ruleName acc.rulesWithInvalidFixes, hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors }
+                        { rulesWithInvalidFixes = Set.insert error.ruleName acc.rulesWithInvalidFixes
+                        , hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors
+                        , hasFileRemovalFixes = acc.hasFileRemovalFixes
+                        }
 
                 Nothing ->
                     classifyFixesHelp
                         rest
-                        { rulesWithInvalidFixes = acc.rulesWithInvalidFixes, hasIgnoredFixableErrors = True }
+                        { rulesWithInvalidFixes = acc.rulesWithInvalidFixes
+                        , hasIgnoredFixableErrors = not error.missingFileRemovalFlag || acc.hasIgnoredFixableErrors
+                        , hasFileRemovalFixes = error.missingFileRemovalFlag || acc.hasFileRemovalFixes
+                        }
 
 
 pluralize : Int -> String -> String
@@ -515,7 +534,15 @@ addFixPrefix mode error previous =
                         :: previous
 
                 Nothing ->
-                    previous
+                    if error.missingFileRemovalFlag then
+                        ("(remove file) "
+                            |> Text.from
+                            |> Text.inBlue
+                        )
+                            :: previous
+
+                    else
+                        previous
 
         Reviewing ->
             if error.providesFix then
