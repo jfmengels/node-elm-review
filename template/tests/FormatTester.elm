@@ -33,8 +33,8 @@ For convenience, "$" will be replaced by white-space, in case the editor wants t
 expect : { withoutColors : String, withColors : String } -> List TextContent -> Expectation
 expect { withoutColors, withColors } =
     Expect.all
-        [ \textList -> Expect.equal (String.replace "$" " " withoutColors) (formatWithoutColors textList)
-        , \textList -> Expect.equal (String.replace "$" " " withColors) (formatWithColors textList)
+        [ \textList -> Expect.equal withoutColors (formatWithoutColors textList)
+        , \textList -> Expect.equal withColors (formatWithColors textList)
         ]
 
 

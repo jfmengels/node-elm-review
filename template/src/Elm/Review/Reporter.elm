@@ -632,7 +632,16 @@ codeExtract (Source source) =
 
             getRowWithLineNumber : Int -> String
             getRowWithLineNumber rowIndex =
-                lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
+                let
+                    line : String
+                    line =
+                        getRowAtLine rowIndex
+                in
+                if String.isEmpty line then
+                    lineNumberPrefixUnpadded maxLineNumberLength rowIndex
+
+                else
+                    lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
 
             getRowWithLineNumberUnlessEmpty : Int -> List Text
             getRowWithLineNumberUnlessEmpty rowIndex =
@@ -1125,27 +1134,51 @@ addLineNumbers changes =
                 (\change ( lineNumber, previousUnchangedLines, accDiffLines ) ->
                     case change of
                         Diff.NoChange str ->
-                            ( lineNumber + 1, Diff.NoChange (Text.from <| lineNumberPrefix maxLineNumberLength lineNumber ++ str) :: previousUnchangedLines, accDiffLines )
+                            let
+                                line : String
+                                line =
+                                    if String.isEmpty str then
+                                        lineNumberPrefixUnpadded maxLineNumberLength lineNumber
+
+                                    else
+                                        lineNumberPrefix maxLineNumberLength lineNumber ++ str
+                            in
+                            ( lineNumber + 1
+                            , Diff.NoChange (Text.from line) :: previousUnchangedLines
+                            , accDiffLines
+                            )
 
                         Diff.Removed str ->
                             let
-                                line : Text
+                                line : String
                                 line =
-                                    (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
-                                        |> Text.from
-                                        |> Text.inRed
+                                    if String.isEmpty str then
+                                        lineNumberPrefixUnpadded maxLineNumberLength lineNumber
+
+                                    else
+                                        lineNumberPrefix maxLineNumberLength lineNumber ++ str
                             in
-                            ( lineNumber + 1, [], Diff.Removed line :: (removeUnchangedLines maxLineNumberLength previousUnchangedLines ++ accDiffLines) )
+                            ( lineNumber + 1
+                            , []
+                            , Diff.Removed (Text.inRed <| Text.from <| line)
+                                :: (removeUnchangedLines maxLineNumberLength previousUnchangedLines ++ accDiffLines)
+                            )
 
                         Diff.Added str ->
                             let
-                                line : Text
+                                line : String
                                 line =
-                                    (lineNumberPrefix maxLineNumberLength lineNumber ++ str)
-                                        |> Text.from
-                                        |> Text.inGreen
+                                    if String.isEmpty str then
+                                        lineNumberPrefixUnpadded maxLineNumberLength lineNumber
+
+                                    else
+                                        lineNumberPrefix maxLineNumberLength lineNumber ++ str
                             in
-                            ( lineNumber, [], Diff.Added line :: (removeUnchangedLines maxLineNumberLength previousUnchangedLines ++ accDiffLines) )
+                            ( lineNumber
+                            , []
+                            , Diff.Added (Text.inGreen <| Text.from <| line)
+                                :: (removeUnchangedLines maxLineNumberLength previousUnchangedLines ++ accDiffLines)
+                            )
                 )
                 ( 0, [], [] )
                 changes
