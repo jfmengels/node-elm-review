@@ -1088,7 +1088,7 @@ formatFileDiff errorsForFile { path, diff } =
             |> Text.inBlue
       ]
     , Text.from "Modified by the following error fixes:"
-        :: List.concatMap (\error -> Text.from "\n  " :: formatErrorTitle Fixing error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
+        :: List.concatMap (\error -> Text.from "\n" :: formatErrorTitle Fixing error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
     , case diff of
         Project.Edited { before, after } ->
             formatDiff before after

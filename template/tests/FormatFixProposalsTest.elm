@@ -60,7 +60,7 @@ Here is how the code would change if you applied each fix.
 ------------------------------------------------------------------ src/FileA.elm
 
 Modified by the following error fixes:
-  NoDebug: Do not use Debug
+NoDebug: Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -77,7 +77,7 @@ Here is how the code would change if you applied each fix.
 [------------------------------------------------------------------ src/FileA.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
@@ -153,7 +153,7 @@ Here is how the code would change if you applied each fix.
 ------------------------------------------------------------------ src/FileA.elm
 
 Modified by the following error fixes:
-  NoDebug: Do not use Debug
+NoDebug: Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -169,7 +169,7 @@ Modified by the following error fixes:
 ------------------------------------------------------------------ src/FileB.elm
 
 Modified by the following error fixes:
-  NoDebug: Do not use Debug
+NoDebug: Do not use Debug
 
 1| module FileB exposing (b)
 2| b = Debug.log "debug" someOther
@@ -187,7 +187,7 @@ Here is how the code would change if you applied each fix.
 [------------------------------------------------------------------ src/FileA.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
@@ -203,7 +203,7 @@ Modified by the following error fixes:
 [------------------------------------------------------------------ src/FileB.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Do not use Debug
+[NoDebug](#FF0000): Do not use Debug
 
 1| module FileB exposing (b)
 [2| b = Debug.log "debug" someOther](#FF0000)
@@ -257,7 +257,7 @@ Here is how the code would change if you applied each fix.
 ------------------------------------------------------------------ src/FileA.elm
 
 Modified by the following error fixes:
-  NoDebug: Unused module
+NoDebug: Unused module
 
     REMOVE FILE
 
@@ -270,7 +270,7 @@ Modified by the following error fixes:
 ------------------------------------------------------------------ src/FileB.elm
 
 Modified by the following error fixes:
-  NoDebug: Unused module
+NoDebug: Unused module
 
     REMOVE FILE
 """
@@ -285,7 +285,7 @@ Here is how the code would change if you applied each fix.
 [------------------------------------------------------------------ src/FileA.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Unused module
+[NoDebug](#FF0000): Unused module
 
 [    REMOVE FILE](#FF0000)
 
@@ -298,7 +298,7 @@ Modified by the following error fixes:
 [------------------------------------------------------------------ src/FileB.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Unused module
+[NoDebug](#FF0000): Unused module
 
 [    REMOVE FILE](#FF0000)
 """
@@ -381,7 +381,7 @@ Here is how the code would change if you applied each fix.
 ------------------------------------------------------------------ src/FileA.elm
 
 Modified by the following error fixes:
-  NoDebug: Unused module
+NoDebug: Unused module
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -397,7 +397,7 @@ Modified by the following error fixes:
 ------------------------------------------------------------------ src/FileC.elm
 
 Modified by the following error fixes:
-  NoDebug: Unused module
+NoDebug: Unused module
 
 1| module FileC exposing (b)
 2| b = Debug.log "debug" someOther
@@ -413,7 +413,7 @@ Modified by the following error fixes:
 ------------------------------------------------------------------ src/FileB.elm
 
 Modified by the following error fixes:
-  NoDebug: Unused module
+NoDebug: Unused module
 
     REMOVE FILE
 
@@ -426,7 +426,7 @@ Modified by the following error fixes:
 ------------------------------------------------------------------ src/FileD.elm
 
 Modified by the following error fixes:
-  NoDebug: Unused module
+NoDebug: Unused module
 
     REMOVE FILE
 """
@@ -443,7 +443,7 @@ Here is how the code would change if you applied each fix.
 [------------------------------------------------------------------ src/FileA.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Unused module
+[NoDebug](#FF0000): Unused module
 
 1| module FileA exposing (a)
 [2| a = Debug.log "debug" 1](#FF0000)
@@ -459,7 +459,7 @@ Modified by the following error fixes:
 [------------------------------------------------------------------ src/FileC.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Unused module
+[NoDebug](#FF0000): Unused module
 
 1| module FileC exposing (b)
 [2| b = Debug.log "debug" someOther](#FF0000)
@@ -475,7 +475,7 @@ Modified by the following error fixes:
 [------------------------------------------------------------------ src/FileB.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Unused module
+[NoDebug](#FF0000): Unused module
 
 [    REMOVE FILE](#FF0000)
 
@@ -488,7 +488,7 @@ Modified by the following error fixes:
 [------------------------------------------------------------------ src/FileD.elm](#33BBC8)
 
 Modified by the following error fixes:
-  [NoDebug](#FF0000): Unused module
+[NoDebug](#FF0000): Unused module
 
 [    REMOVE FILE](#FF0000)
 """
