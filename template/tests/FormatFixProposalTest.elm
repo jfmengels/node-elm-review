@@ -201,10 +201,10 @@ I think I can fix this. Here is my proposal:
 1| module Some.File exposing (a)
 2| a =
 3|     1
-4|$
-5|$
+4|
+5|
 5| b =
-""" |> String.replace "$" " "
+"""
                         , withColors =
                             """[-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:2:1](#33BBC8)
 
@@ -222,10 +222,10 @@ Some details
 1| module Some.File exposing (a)
 [2| a =](#FF0000)
 [3|     1](#FF0000)
-4|$
-[5| ](#008000)
+4|
+[5|](#008000)
 5| b =
-""" |> String.replace "$" " "
+"""
                         }
         , test "propose fix where the diff is for the first line, followed by a blank line" <|
             \() ->
@@ -293,8 +293,8 @@ I think I can fix this. Here is my proposal:
 
 1| module Some.File exposing (..)
 2| module Some.File exposing (a)
-2|$
-""" |> String.replace "$" " "
+2|
+"""
                         , withColors =
                             """[-- ELM-REVIEW ERROR -------------------------------------- src/Some/File.elm:1:1](#33BBC8)
 
@@ -309,8 +309,8 @@ Some details
 
 [1| module Some.File exposing (..)](#FF0000)
 [2| module Some.File exposing (a)](#008000)
-2|$
-""" |> String.replace "$" " "
+2|
+"""
                         }
         , test "propose fix with a removed file" <|
             \() ->
@@ -560,8 +560,8 @@ I think I can fix this. Here is my proposal:
 1| module Some.File exposing (a)
 2| a =
 3|     1
-4| 
-5| 
+4|
+5|
 5| b =
 
 2/3 ---------------------------------------------------------- src/Some/File.elm
@@ -590,8 +590,8 @@ Some details
 1| module Some.File exposing (a)
 [2| a =](#FF0000)
 [3|     1](#FF0000)
-4| 
-[5| ](#008000)
+4|
+[5|](#008000)
 5| b =
 
 [2/3 ---------------------------------------------------------- src/Some/File.elm](#33BBC8)
