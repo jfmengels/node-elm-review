@@ -736,11 +736,16 @@ getIndexOfFirstNonSpace string =
 
 lineNumberPrefix : Int -> Int -> String
 lineNumberPrefix maxLineNumberLength rowIndex =
+    lineNumberPrefixUnpadded maxLineNumberLength rowIndex ++ " "
+
+
+lineNumberPrefixUnpadded : Int -> Int -> String
+lineNumberPrefixUnpadded maxLineNumberLength rowIndex =
     ((rowIndex + 1)
         |> String.fromInt
         |> String.padLeft maxLineNumberLength ' '
     )
-        ++ "| "
+        ++ "|"
 
 
 lengthOfLineNumber : Int -> Int
