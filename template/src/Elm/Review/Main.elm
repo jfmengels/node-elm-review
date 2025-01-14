@@ -1245,7 +1245,7 @@ pathAndSource project path =
 sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
 sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
     let
-        errorsForFile : Dict String (List Rule.ReviewError)
+        errorsForFile : Dict String (List Reporter.Error)
         errorsForFile =
             Dict.foldl
                 (\_ errors acc ->
@@ -1259,7 +1259,7 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                                                 (\previousErrors ->
                                                     previousErrors
                                                         |> Maybe.withDefault []
-                                                        |> (::) error
+                                                        |> (::) (fromReviewError model.suppressedErrors model.links error)
                                                         |> Just
                                                 )
                                                 subSubAcc
@@ -1294,7 +1294,6 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                                 , errors =
                                     Dict.get path errorsForFile
                                         |> Maybe.withDefault []
-                                        |> List.map (fromReviewError model.suppressedErrors model.links)
                                 }
 
                         Project.Removed ->
@@ -1316,7 +1315,6 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                                 , errors =
                                     Dict.get path errorsForFile
                                         |> Maybe.withDefault []
-                                        |> List.map (fromReviewError model.suppressedErrors model.links)
                                 }
                 )
                 diffs
