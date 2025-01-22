@@ -1496,9 +1496,13 @@ groupErrorsByFile project errors =
 fromReviewError : Bool -> SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
 fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
     let
+        fixes : Maybe (Dict String Fixes.FixKind)
+        fixes =
+            Rule.errorFixesV2 error
+
         providesFix : Bool
         providesFix =
-            Rule.errorFixesV2 error /= Nothing
+            fixes /= Nothing
     in
     { ruleName = Rule.errorRuleName error
     , ruleLink = linkToRule links error
@@ -1507,7 +1511,7 @@ fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
     , range = Rule.errorRange error
     , providesFix = providesFix
     , fixFailure = Rule.errorFixFailure error
-    , missingFileRemovalFlag = providesFix && (not fileRemovalFixesEnabled || hasFileRemovalFixes (Rule.errorFixesV2 error))
+    , missingFileRemovalFlag = providesFix && (not fileRemovalFixesEnabled || hasFileRemovalFixes fixes)
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
 
