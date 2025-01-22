@@ -1125,7 +1125,7 @@ encodeEdits fixes =
     Encode.list (Fix.toRecord >> encodeFix) fixes
 
 
-encodeFixesV2 : Dict String Fixes.FixKind -> Encode.Value
+encodeFixesV2 : Dict String (Maybe (List Fix)) -> Encode.Value
 encodeFixesV2 fixes =
     fixes
         |> Dict.toList
@@ -1138,16 +1138,16 @@ encodeFixesV2 fixes =
             )
 
 
-encodeFixKind : Fixes.FixKind -> Encode.Value
+encodeFixKind : Maybe (List Fix) -> Encode.Value
 encodeFixKind fixKind =
     case fixKind of
-        Fixes.Edit edits ->
+        Just edits ->
             Encode.object
                 [ ( "kind", Encode.string "edit" )
                 , ( "edits", encodeEdits edits )
                 ]
 
-        Fixes.Remove ->
+        Nothing ->
             Encode.object
                 [ ( "kind", Encode.string "remove" )
                 ]
@@ -1496,7 +1496,7 @@ groupErrorsByFile project errors =
 fromReviewError : Bool -> SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
 fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
     let
-        fixes : Maybe (Dict String Fixes.FixKind)
+        fixes : Maybe (Dict String (Maybe (List Fix)))
         fixes =
             Rule.errorFixesV2 error
 
@@ -1516,23 +1516,13 @@ fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
     }
 
 
-hasFileRemovalFixes : Maybe (Dict String Fixes.FixKind) -> Bool
+hasFileRemovalFixes : Maybe (Dict String (Maybe (List Fix))) -> Bool
 hasFileRemovalFixes maybeFixes =
     case maybeFixes of
         Just fixes ->
-            Dict.foldl (\_ fix acc -> acc || isFileRemoval fix) False fixes
+            Dict.foldl (\_ fix acc -> acc || fix == Nothing) False fixes
 
         Nothing ->
-            False
-
-
-isFileRemoval : Fixes.FixKind -> Bool
-isFileRemoval fix =
-    case fix of
-        Fixes.Remove ->
-            True
-
-        Fixes.Edit _ ->
             False
 
 
