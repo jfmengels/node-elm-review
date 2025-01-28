@@ -4,7 +4,7 @@ import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.UnsuppressMode as UnsuppressMode
 import FormatTester exposing (expect)
-import Review.Fix
+import Review.Fix.FixProblem as FixProblem
 import Set
 import Test exposing (Test, describe, test)
 
@@ -671,7 +671,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , providesFix = True
-                          , fixFailure = Just Review.Fix.HasCollisionsInFixRanges
+                          , fixFailure = Just FixProblem.HasCollisionsInFixRanges
                           , missingFileRemovalFlag = False
                           , suppressed = False
                           }
@@ -742,7 +742,7 @@ a = Debug.log "debug" 1"""
                                 , end = { row = 2, column = 10 }
                                 }
                           , providesFix = True
-                          , fixFailure = Just Review.Fix.HasCollisionsInFixRanges
+                          , fixFailure = Just FixProblem.HasCollisionsInFixRanges
                           , missingFileRemovalFlag = False
                           , suppressed = False
                           }
