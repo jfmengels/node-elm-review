@@ -1511,7 +1511,7 @@ fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
     , range = Rule.errorRange error
     , providesFix = providesFix
     , fixFailure = Rule.errorFixFailure error
-    , missingFileRemovalFlag = providesFix && (not fileRemovalFixesEnabled || hasFileRemovalFixes fixes)
+    , missingFileRemovalFlag = providesFix && not fileRemovalFixesEnabled && hasFileRemovalFixes fixes
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
 
