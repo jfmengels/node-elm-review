@@ -31,6 +31,7 @@ import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
 import Review.Fix
+import Review.Fix.FixProblem as FixProblem exposing (FixProblem)
 import Review.Project as Project
 import Set exposing (Set)
 
@@ -46,7 +47,7 @@ type alias Error =
     , details : List String
     , range : Range
     , providesFix : Bool
-    , fixFailure : Maybe Review.Fix.Problem
+    , fixFailure : Maybe FixProblem
     , missingFileRemovalFlag : Bool
     , suppressed : Bool
     }
@@ -561,17 +562,20 @@ addFixPrefix mode error previous =
                 previous
 
 
-reasonFromProblem : Review.Fix.Problem -> String
+reasonFromProblem : FixProblem -> String
 reasonFromProblem problem =
     case problem of
-        Review.Fix.Unchanged ->
+        FixProblem.Unchanged ->
             "it resulted in the same source code."
 
-        Review.Fix.SourceCodeIsNotValid _ ->
+        FixProblem.SourceCodeIsNotValid _ ->
             "it resulted in invalid Elm code."
 
-        Review.Fix.HasCollisionsInFixRanges ->
+        FixProblem.HasCollisionsInFixRanges ->
             "it was invalid."
+
+        FixProblem.CreatesImportCycle _ ->
+            "it resulted in an import cycle."
 
 
 compareErrorPositions : Error -> Error -> Order
