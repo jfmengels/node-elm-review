@@ -552,11 +552,19 @@ addFixPrefix mode error previous =
                         previous
 
                     Nothing ->
-                        ("(fix) "
-                            |> Text.from
-                            |> Text.inBlue
-                        )
-                            :: previous
+                        if error.missingFileRemovalFlag then
+                            ("(fix removes files) "
+                                |> Text.from
+                                |> Text.inBlue
+                            )
+                                :: previous
+
+                        else
+                            ("(fix) "
+                                |> Text.from
+                                |> Text.inBlue
+                            )
+                                :: previous
 
             else
                 previous
