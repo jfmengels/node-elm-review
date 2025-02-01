@@ -497,11 +497,8 @@ formatErrorWithExtract detailsMode mode source error =
                 Fixing _ ->
                     case error.fixFailure of
                         Just problem ->
-                            [ Text.from "\n\n"
-                            , ("I failed to apply the automatic fix because " ++ reasonFromProblem problem)
-                                |> Text.from
-                                |> Text.inYellow
-                            ]
+                            Text.from "\n\n"
+                                :: reasonFromProblem problem
 
                         Nothing ->
                             []
@@ -589,20 +586,33 @@ addFixPrefix mode error previous =
                 previous
 
 
-reasonFromProblem : FixProblem -> String
+reasonFromProblem : FixProblem -> List Text
 reasonFromProblem problem =
     case problem of
         FixProblem.Unchanged ->
-            "it resulted in the same source code."
+            [ "I failed to apply the automatic fix because it resulted in the same source code."
+                |> Text.from
+                |> Text.inYellow
+            ]
 
         FixProblem.SourceCodeIsNotValid _ ->
-            "it resulted in invalid Elm code."
+            [ "I failed to apply the automatic fix because it resulted in invalid Elm code."
+                |> Text.from
+                |> Text.inYellow
+            ]
 
         FixProblem.HasCollisionsInFixRanges ->
-            "it was invalid."
+            -- TODO MULTILINE-FIXES Indicate the problematic ranges
+            [ "I failed to apply the automatic fix because it was invalid."
+                |> Text.from
+                |> Text.inYellow
+            ]
 
         FixProblem.CreatesImportCycle _ ->
-            "it resulted in an import cycle."
+            [ "I failed to apply the automatic fix because it resulted in an import cycle."
+                |> Text.from
+                |> Text.inYellow
+            ]
 
 
 compareErrorPositions : Error -> Error -> Order
