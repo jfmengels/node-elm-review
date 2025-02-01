@@ -33,6 +33,7 @@ suite =
                         }
                 in
                 Reporter.formatFixProposals
+                    True
                     (Dict.fromList [ ( "src/FileA.elm", [ error ] ) ])
                     [ { path = "src/FileA.elm"
                       , diff =
@@ -109,6 +110,7 @@ Modified by the following error fixes:
                         }
                 in
                 Reporter.formatFixProposals
+                    True
                     (Dict.fromList
                         [ ( "src/FileA.elm", [ error ] )
                         , ( "src/FileB.elm", [ error ] )
@@ -236,6 +238,7 @@ Modified by the following error fixes:
                         }
                 in
                 Reporter.formatFixProposals
+                    True
                     (Dict.fromList
                         [ ( "src/FileA.elm", [ error ] )
                         , ( "src/FileB.elm", [ error ] )
@@ -329,6 +332,7 @@ Modified by the following error fixes:
                         }
                 in
                 Reporter.formatFixProposals
+                    True
                     (Dict.fromList
                         [ ( "src/FileA.elm", [ error ] )
                         , ( "src/FileB.elm", [ error ] )
