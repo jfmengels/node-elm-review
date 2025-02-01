@@ -138,11 +138,12 @@ formatReport :
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
     , errorsHaveBeenFixedPreviously : Bool
+    , fileRemovalFixesEnabled : Bool
     , mode : Mode
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, mode, errorsHaveBeenFixedPreviously } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fileRemovalFixesEnabled, mode } files =
     let
         { numberOfFileErrors, numberOfGlobalErrors } =
             countErrors files
