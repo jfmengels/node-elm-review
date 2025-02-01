@@ -1131,8 +1131,15 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
     , Just ( "region", encodeRange <| Rule.errorRange error )
     , Rule.errorFixes error
         |> Maybe.map (encodeEdits >> Tuple.pair "fix")
-    , Rule.errorFixesV2 error
-        |> Maybe.map (encodeFixesV2 >> Tuple.pair "fixV2")
+    , case Rule.errorFixesV2 error of
+        Ok (Just fixes) ->
+            Just ( "fixV2", encodeFixesV2 fixes )
+
+        Ok Nothing ->
+            Nothing
+
+        Err _ ->
+            Nothing
     , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
@@ -1331,7 +1338,7 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
                     List.foldl
                         (\error subAcc ->
                             case Rule.errorFixesV2 error of
-                                Just fixedFiles ->
+                                Ok (Just fixedFiles) ->
                                     Dict.foldl
                                         (\fixedFile _ subSubAcc ->
                                             Dict.update fixedFile
@@ -1345,7 +1352,10 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
                                         subAcc
                                         fixedFiles
 
-                                Nothing ->
+                                Ok Nothing ->
+                                    subAcc
+
+                                Err _ ->
                                     subAcc
                         )
                         acc
@@ -1551,6 +1561,8 @@ fromReviewError suppressedErrors links error =
         fixes : Maybe (Dict String (Maybe (List Fix)))
         fixes =
             Rule.errorFixesV2 error
+                |> Result.toMaybe
+                |> Maybe.andThen identity
 
         providesFix : Bool
         providesFix =
