@@ -26,7 +26,7 @@ suite =
                             , end = { row = 2, column = 10 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -146,7 +146,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                             , end = { row = 2, column = 2 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -247,7 +247,7 @@ Some details
                             , end = { row = 1, column = 2 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -335,7 +335,7 @@ Some details
                             , end = { row = 1, column = 16 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -415,7 +415,7 @@ Some details
                             , end = { row = 1, column = 16 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -510,7 +510,7 @@ Some details
                             , end = { row = 1, column = 16 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
