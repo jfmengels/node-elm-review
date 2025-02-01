@@ -388,7 +388,7 @@ type alias DecodedFlags =
 
 decodeFlags : Decode.Decoder DecodedFlags
 decodeFlags =
-    Decode.succeed DecodedFlags
+    Decode.succeed toDecodedFlags
         |> field "fixMode" decodeFix
         |> field "fixLimit" decodeFixLimit
         |> field "fileRemovalFixesEnabled" Decode.bool
@@ -402,6 +402,38 @@ decodeFlags =
         |> field "ignoredFiles" (Decode.list Decode.string)
         |> field "writeSuppressionFiles" Decode.bool
         |> field "logger" CliCommunication.decoder
+
+
+toDecodedFlags :
+    FixMode
+    -> Maybe Int
+    -> Bool
+    -> Bool
+    -> UnsuppressMode
+    -> Reporter.DetailsMode
+    -> ReportMode
+    -> Bool
+    -> Maybe (Set String)
+    -> List String
+    -> List String
+    -> Bool
+    -> CliCommunication.Key
+    -> DecodedFlags
+toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger =
+    { fixMode = fixMode
+    , fixLimit = fixLimit
+    , fileRemovalFixesEnabled = fileRemovalFixesEnabled
+    , enableExtract = enableExtract
+    , unsuppressMode = unsuppressMode
+    , detailsMode = detailsMode
+    , reportMode = reportMode
+    , ignoreProblematicDependencies = ignoreProblematicDependencies
+    , rulesFilter = rulesFilter
+    , ignoredDirs = ignoredDirs
+    , ignoredFiles = ignoredFiles
+    , writeSuppressionFiles = writeSuppressionFiles
+    , logger = logger
+    }
 
 
 field : String -> Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
