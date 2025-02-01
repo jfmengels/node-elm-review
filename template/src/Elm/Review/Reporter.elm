@@ -48,7 +48,7 @@ type alias Error =
     , range : Range
     , providesFix : Bool
     , fixFailure : Maybe FixProblem
-    , missingFileRemovalFlag : Bool
+    , providesFileRemovalFix : Bool
     , suppressed : Bool
     }
 
@@ -299,8 +299,8 @@ classifyFixesHelp errors acc =
                     classifyFixesHelp
                         rest
                         { rulesWithInvalidFixes = acc.rulesWithInvalidFixes
-                        , hasIgnoredFixableErrors = not error.missingFileRemovalFlag || acc.hasIgnoredFixableErrors
-                        , hasFileRemovalFixes = error.missingFileRemovalFlag || acc.hasFileRemovalFixes
+                        , hasIgnoredFixableErrors = not error.providesFileRemovalFix || acc.hasIgnoredFixableErrors
+                        , hasFileRemovalFixes = error.providesFileRemovalFix || acc.hasFileRemovalFixes
                         }
 
 
@@ -535,7 +535,7 @@ addFixPrefix mode error previous =
                         :: previous
 
                 Nothing ->
-                    if error.missingFileRemovalFlag then
+                    if error.providesFileRemovalFix then
                         ("(fix removes files) "
                             |> Text.from
                             |> Text.inBlue
@@ -552,7 +552,7 @@ addFixPrefix mode error previous =
                         previous
 
                     Nothing ->
-                        if error.missingFileRemovalFlag then
+                        if error.providesFileRemovalFix then
                             ("(fix removes files) "
                                 |> Text.from
                                 |> Text.inBlue

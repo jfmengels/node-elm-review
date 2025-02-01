@@ -337,7 +337,7 @@ getConfigurationError rule =
                 , range = Range.emptyRange
                 , providesFix = False
                 , fixFailure = Nothing
-                , missingFileRemovalFlag = False
+                , providesFileRemovalFix = False
                 , suppressed = False
                 }
 
@@ -1511,7 +1511,7 @@ fromReviewError fileRemovalFixesEnabled suppressedErrors links error =
     , range = Rule.errorRange error
     , providesFix = providesFix
     , fixFailure = Rule.errorFixFailureV2 error
-    , missingFileRemovalFlag = providesFix && not fileRemovalFixesEnabled && hasFileRemovalFixes fixes
+    , providesFileRemovalFix = providesFix && not fileRemovalFixesEnabled && hasFileRemovalFixes fixes
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
 

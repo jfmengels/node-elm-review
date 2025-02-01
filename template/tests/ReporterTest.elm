@@ -104,7 +104,7 @@ a = Debug.log "debug" 1"""
                             }
                       , providesFix = False
                       , fixFailure = Nothing
-                      , missingFileRemovalFlag = False
+                      , providesFileRemovalFix = False
                       , suppressed = False
                       }
                     ]
@@ -174,7 +174,7 @@ a = Debug.log "debug" 1"""
                             }
                       , providesFix = False
                       , fixFailure = Nothing
-                      , missingFileRemovalFlag = False
+                      , providesFileRemovalFix = False
                       , suppressed = False
                       }
                     ]
@@ -244,7 +244,7 @@ a =
                             }
                       , providesFix = False
                       , fixFailure = Nothing
-                      , missingFileRemovalFlag = False
+                      , providesFileRemovalFix = False
                       , suppressed = False
                       }
                     ]
@@ -323,7 +323,7 @@ b = foo <| Debug.log "other debug" 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         , { ruleName = "NoDebug"
@@ -336,7 +336,7 @@ b = foo <| Debug.log "other debug" 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -428,7 +428,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -450,7 +450,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -472,7 +472,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -607,7 +607,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -672,7 +672,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Just FixProblem.HasCollisionsInFixRanges
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -743,7 +743,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Just FixProblem.HasCollisionsInFixRanges
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -808,7 +808,7 @@ globalErrorTest =
                             }
                       , providesFix = False
                       , fixFailure = Nothing
-                      , missingFileRemovalFlag = False
+                      , providesFileRemovalFix = False
                       , suppressed = False
                       }
                     ]
@@ -856,7 +856,7 @@ multipleErrorsIncludingGlobalErrorTest =
                             }
                       , providesFix = False
                       , fixFailure = Nothing
-                      , missingFileRemovalFlag = False
+                      , providesFileRemovalFix = False
                       , suppressed = False
                       }
                     ]
@@ -878,7 +878,7 @@ a = Debug.log "debug" 1"""
                             }
                       , providesFix = True
                       , fixFailure = Nothing
-                      , missingFileRemovalFlag = False
+                      , providesFileRemovalFix = False
                       , suppressed = True
                       }
                     ]
@@ -1012,7 +1012,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = True
                           }
                         ]
@@ -1083,7 +1083,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = True
                           }
                         ]
@@ -1105,7 +1105,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -1206,7 +1206,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = True
                           }
                         ]
@@ -1228,7 +1228,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -1329,7 +1329,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = True
                           }
                         ]
@@ -1351,7 +1351,7 @@ a = Debug.log "debug" 1"""
                                 }
                           , providesFix = True
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -1459,7 +1459,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -1513,7 +1513,7 @@ a = "🔧" ++ 1"""
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
@@ -1569,7 +1569,7 @@ a = "🔧" ++ "🔧
                                 }
                           , providesFix = False
                           , fixFailure = Nothing
-                          , missingFileRemovalFlag = False
+                          , providesFileRemovalFix = False
                           , suppressed = False
                           }
                         ]
