@@ -183,7 +183,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             Nothing
         , if hasFileRemovalFixes then
             Just
-                [ "Errors marked with (remove file) can be fixed automatically by\nalso using `--allow-remove-files`."
+                [ "Errors marked with (fix removes files) can be fixed automatically by\nalso using `--allow-remove-files`."
                     |> Text.from
                     |> Text.inBlue
                 ]
@@ -536,7 +536,7 @@ addFixPrefix mode error previous =
 
                 Nothing ->
                     if error.missingFileRemovalFlag then
-                        ("(remove file) "
+                        ("(fix removes files) "
                             |> Text.from
                             |> Text.inBlue
                         )
