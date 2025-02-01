@@ -47,6 +47,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = Reporter.WithDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = "I found no errors!"
@@ -76,6 +77,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = Reporter.WithDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = True
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = "I found no more errors!"
@@ -122,6 +124,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = Reporter.WithDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -192,6 +195,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = Reporter.WithoutDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -257,6 +261,7 @@ a =
                     , detailsMode = Reporter.WithoutDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:5:5
@@ -354,6 +359,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -485,6 +491,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -620,6 +627,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -685,6 +693,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Fixing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -756,6 +765,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -821,6 +831,7 @@ globalErrorTest =
                     , detailsMode = Reporter.WithoutDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------------- GLOBAL ERROR
@@ -891,6 +902,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = Reporter.WithoutDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                 |> expect
                     { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------------- GLOBAL ERROR
@@ -958,6 +970,7 @@ suppressedTests =
                     , detailsMode = Reporter.WithDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                     []
                     |> expect
@@ -983,6 +996,7 @@ There is still [1 suppressed error](#FFA500) to address."""
                     , detailsMode = Reporter.WithDetails
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
+                    , fileRemovalFixesEnabled = False
                     }
                     []
                     |> expect
@@ -1027,6 +1041,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -1120,6 +1135,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -1243,6 +1259,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -1366,6 +1383,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -1472,6 +1490,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
@@ -1526,6 +1545,7 @@ a = "🔧" ++ 1"""
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
@@ -1582,6 +1602,7 @@ a = "🔧" ++ "🔧
                         , detailsMode = Reporter.WithDetails
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
+                        , fileRemovalFixesEnabled = False
                         }
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ----------------------------------------- src/FileA.elm:2:12
