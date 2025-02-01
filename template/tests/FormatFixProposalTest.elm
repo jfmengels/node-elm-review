@@ -81,7 +81,9 @@ some =
                         , source = Reporter.Source fileBefore
                         }
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails
+                Reporter.formatSingleFixProposal
+                    Reporter.WithDetails
+                    True
                     file
                     error
                     [ { path = path
@@ -178,7 +180,9 @@ b =
     a
 """
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails
+                Reporter.formatSingleFixProposal
+                    Reporter.WithDetails
+                    True
                     file
                     error
                     [ { path = path
@@ -274,7 +278,9 @@ a =
     1
 """
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails
+                Reporter.formatSingleFixProposal
+                    Reporter.WithDetails
+                    True
                     file
                     error
                     [ { path = path
@@ -354,7 +360,9 @@ b =
                         , source = Reporter.Source fileBefore
                         }
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails
+                Reporter.formatSingleFixProposal
+                    Reporter.WithDetails
+                    True
                     file
                     error
                     [ { path = path
@@ -432,7 +440,9 @@ b =
                         , source = Reporter.Source fileBefore
                         }
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails
+                Reporter.formatSingleFixProposal
+                    Reporter.WithDetails
+                    True
                     file
                     error
                     [ { path = path
@@ -534,7 +544,9 @@ b =
                         , source = Reporter.Source fileBefore
                         }
                 in
-                Reporter.formatSingleFixProposal Reporter.WithDetails
+                Reporter.formatSingleFixProposal
+                    Reporter.WithDetails
+                    True
                     file
                     error
                     [ { path = path

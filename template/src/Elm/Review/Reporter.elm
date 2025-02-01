@@ -122,7 +122,7 @@ type alias Range =
 -}
 type Mode
     = Reviewing
-    | Fixing
+    | Fixing Bool
 
 
 type DetailsMode
@@ -138,12 +138,11 @@ formatReport :
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
     , errorsHaveBeenFixedPreviously : Bool
-    , fileRemovalFixesEnabled : Bool
     , mode : Mode
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, fileRemovalFixesEnabled, mode } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, mode } files =
     let
         { numberOfFileErrors, numberOfGlobalErrors } =
             countErrors files
@@ -182,26 +181,36 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
           else
             Nothing
-        , if hasFileRemovalFixes then
-            Just
-                [ "Errors marked with (fix removes files) can be fixed automatically by\nalso using `--allow-remove-files`."
-                    |> Text.from
-                    |> Text.inBlue
-                ]
+        , case mode of
+            Fixing True ->
+                Nothing
 
-          else
-            Nothing
-        , if mode == Fixing && not (Set.isEmpty rulesWithInvalidFixes) then
-            Just
-                [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n- "
-                    ++ String.join "\n- " (Set.toList rulesWithInvalidFixes)
-                  )
-                    |> Text.from
-                    |> Text.inYellow
-                ]
+            _ ->
+                if hasFileRemovalFixes then
+                    Just
+                        [ "Errors marked with (fix removes files) can be fixed automatically by\nalso using `--allow-remove-files`."
+                            |> Text.from
+                            |> Text.inBlue
+                        ]
 
-          else
-            Nothing
+                else
+                    Nothing
+        , case mode of
+            Reviewing ->
+                Nothing
+
+            Fixing _ ->
+                if not (Set.isEmpty rulesWithInvalidFixes) then
+                    Just
+                        [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n- "
+                            ++ String.join "\n- " (Set.toList rulesWithInvalidFixes)
+                          )
+                            |> Text.from
+                            |> Text.inYellow
+                        ]
+
+                else
+                    Nothing
         , Just (formatTally filesWithErrors numberOfFileErrors numberOfGlobalErrors)
         ]
             |> List.filterMap identity
@@ -476,7 +485,7 @@ formatErrorWithExtract detailsMode mode source error =
         fixFailMessage : List Text
         fixFailMessage =
             case mode of
-                Fixing ->
+                Fixing _ ->
                     case error.fixFailure of
                         Just problem ->
                             [ Text.from "\n\n"
@@ -526,7 +535,7 @@ addSuppressedPrefix error previous =
 addFixPrefix : Mode -> Error -> List Text -> List Text
 addFixPrefix mode error previous =
     case mode of
-        Fixing ->
+        Fixing fileRemovalFixesEnabled ->
             case error.fixFailure of
                 Just _ ->
                     ("(FIX FAILED) "
@@ -536,7 +545,7 @@ addFixPrefix mode error previous =
                         :: previous
 
                 Nothing ->
-                    if error.providesFileRemovalFix then
+                    if not fileRemovalFixesEnabled && error.providesFileRemovalFix then
                         ("(fix removes files) "
                             |> Text.from
                             |> Text.inBlue
@@ -947,13 +956,13 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatSingleFixProposal : DetailsMode -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
-formatSingleFixProposal detailsMode file error diffs =
+formatSingleFixProposal : DetailsMode -> Bool -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
+formatSingleFixProposal detailsMode fileRemovalFixesEnabled file error diffs =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
                 detailsMode
-                Fixing
+                (Fixing fileRemovalFixesEnabled)
                 { path = file.path
                 , source = file.source
                 , errors = [ error ]
@@ -1048,10 +1057,11 @@ formatFilePathForSingleFixWith fileNo numberOfFiles path =
 {-| Reports the proposal for the fix-all changes in a nice human-readable way.
 -}
 formatFixProposals :
-    Dict String (List Error)
+    Bool
+    -> Dict String (List Error)
     -> List { path : String, diff : Project.Diff }
     -> List TextContent
-formatFixProposals errorsForFile unsortedDiffs =
+formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs =
     let
         diffs : List { path : String, diff : Project.Diff }
         diffs =
@@ -1091,7 +1101,7 @@ formatFixProposals errorsForFile unsortedDiffs =
             [ [ fixAllHeader ]
             , filesListing
             , [ Text.from "Here is how the code would change if you applied each fix." ]
-            , formatFileDiffs errorsForFile diffs
+            , formatFileDiffs fileRemovalFixesEnabled errorsForFile diffs
             ]
                 |> Text.join "\n\n"
     in
@@ -1099,36 +1109,37 @@ formatFixProposals errorsForFile unsortedDiffs =
         |> List.map Text.toRecord
 
 
-formatFileDiffs : Dict String (List Error) -> List { path : String, diff : Project.Diff } -> List Text
-formatFileDiffs errorsForFile diffs =
+formatFileDiffs : Bool -> Dict String (List Error) -> List { path : String, diff : Project.Diff } -> List Text
+formatFileDiffs fileRemovalFixesEnabled errorsForFile diffs =
     case diffs of
         [] ->
             []
 
         [ diff ] ->
-            formatFileDiff errorsForFile diff
+            formatFileDiff fileRemovalFixesEnabled errorsForFile diff
 
         firstDiff :: secondDiff :: restOfDiffs ->
             List.concat
-                [ formatFileDiff errorsForFile firstDiff
+                [ formatFileDiff fileRemovalFixesEnabled errorsForFile firstDiff
                 , [ Text.from "\n" ]
                 , fileSeparator (FilePath firstDiff.path) (FilePath secondDiff.path)
-                , formatFileDiffs errorsForFile (secondDiff :: restOfDiffs)
+                , formatFileDiffs fileRemovalFixesEnabled errorsForFile (secondDiff :: restOfDiffs)
                 ]
 
 
 formatFileDiff :
-    Dict String (List Error)
+    Bool
+    -> Dict String (List Error)
     -> { path : String, diff : Project.Diff }
     -> List Text
-formatFileDiff errorsForFile { path, diff } =
+formatFileDiff fileRemovalFixesEnabled errorsForFile { path, diff } =
     [ [ (" " ++ path)
             |> String.padLeft 80 '-'
             |> Text.from
             |> Text.inBlue
       ]
     , Text.from "Modified by the following error fixes:"
-        :: List.concatMap (\error -> Text.from "\n" :: formatErrorTitle Fixing error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
+        :: List.concatMap (\error -> Text.from "\n" :: formatErrorTitle (Fixing fileRemovalFixesEnabled) error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
     , case diff of
         Project.Edited { before, after } ->
             formatDiff before after
