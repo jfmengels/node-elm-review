@@ -1562,7 +1562,7 @@ fromReviewError suppressedErrors links error =
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , providesFix = providesFix
-    , fixFailure = Rule.errorFixFailureV2 error
+    , fixFailure = Rule.errorFixProblem error
     , providesFileRemovalFix = providesFix && hasFileRemovalFixes fixes
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
