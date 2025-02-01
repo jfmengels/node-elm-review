@@ -28,7 +28,7 @@ suite =
                             }
                         , providesFix = True
                         , fixFailure = Nothing
-                        , missingFileRemovalFlag = False
+                        , providesFileRemovalFix = False
                         , suppressed = False
                         }
                 in
@@ -104,7 +104,7 @@ Modified by the following error fixes:
                             }
                         , providesFix = True
                         , fixFailure = Nothing
-                        , missingFileRemovalFlag = False
+                        , providesFileRemovalFix = False
                         , suppressed = False
                         }
                 in
@@ -231,7 +231,7 @@ Modified by the following error fixes:
                             }
                         , providesFix = True
                         , fixFailure = Nothing
-                        , missingFileRemovalFlag = False
+                        , providesFileRemovalFix = False
                         , suppressed = False
                         }
                 in
@@ -324,7 +324,7 @@ Modified by the following error fixes:
                             }
                         , providesFix = True
                         , fixFailure = Nothing
-                        , missingFileRemovalFlag = False
+                        , providesFileRemovalFix = False
                         , suppressed = False
                         }
                 in
