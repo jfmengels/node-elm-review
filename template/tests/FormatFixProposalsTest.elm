@@ -27,7 +27,7 @@ suite =
                             , end = { row = 2, column = 10 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -104,7 +104,7 @@ Modified by the following error fixes:
                             , end = { row = 2, column = 10 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -232,7 +232,7 @@ Modified by the following error fixes:
                             , end = { row = 2, column = 10 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }
@@ -326,7 +326,7 @@ Modified by the following error fixes:
                             , end = { row = 2, column = 10 }
                             }
                         , providesFix = True
-                        , fixFailure = Nothing
+                        , fixProblem = Nothing
                         , providesFileRemovalFix = False
                         , suppressed = False
                         }

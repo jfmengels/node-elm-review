@@ -346,7 +346,7 @@ getConfigurationError rule =
                 , details = configurationError.details
                 , range = Range.emptyRange
                 , providesFix = False
-                , fixFailure = Nothing
+                , fixProblem = Nothing
                 , providesFileRemovalFix = False
                 , suppressed = False
                 }
@@ -1562,7 +1562,7 @@ fromReviewError suppressedErrors links error =
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , providesFix = providesFix
-    , fixFailure = Rule.errorFixProblem error
+    , fixProblem = Rule.errorFixProblem error
     , providesFileRemovalFix = providesFix && hasFileRemovalFixes fixes
     , suppressed = SuppressedErrors.member error suppressedErrors
     }

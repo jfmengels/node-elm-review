@@ -47,7 +47,7 @@ type alias Error =
     , details : List String
     , range : Range
     , providesFix : Bool
-    , fixFailure : Maybe FixProblem
+    , fixProblem : Maybe FixProblem
     , providesFileRemovalFix : Bool
     , suppressed : Bool
     }
@@ -305,7 +305,7 @@ classifyFixesHelp errors acc =
             acc
 
         error :: rest ->
-            case error.fixFailure of
+            case error.fixProblem of
                 Just _ ->
                     classifyFixesHelp
                         rest
@@ -495,7 +495,7 @@ formatErrorWithExtract detailsMode mode source error =
         fixFailMessage =
             case mode of
                 Fixing _ ->
-                    case error.fixFailure of
+                    case error.fixProblem of
                         Just problem ->
                             Text.from "\n\n"
                                 :: reasonFromProblem problem
@@ -542,7 +542,7 @@ addFixPrefix : Mode -> Error -> List Text -> List Text
 addFixPrefix mode error previous =
     case mode of
         Fixing fileRemovalFixesEnabled ->
-            case error.fixFailure of
+            case error.fixProblem of
                 Just _ ->
                     ("(FIX FAILED) "
                         |> Text.from
@@ -563,7 +563,7 @@ addFixPrefix mode error previous =
 
         Reviewing ->
             if error.providesFix then
-                case error.fixFailure of
+                case error.fixProblem of
                     Just _ ->
                         previous
 
