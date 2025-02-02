@@ -1169,17 +1169,16 @@ encodeEdits fixes =
     Encode.list (Fix.toRecord >> encodeFix) fixes
 
 
-encodeFixesV2 : Dict String (Maybe (List Fix)) -> Encode.Value
+encodeFixesV2 : List ( String, Maybe (List Fix) ) -> Encode.Value
 encodeFixesV2 fixes =
-    fixes
-        |> Dict.toList
-        |> Encode.list
-            (\( path, fix ) ->
-                Encode.object
-                    [ ( "path", Encode.string path )
-                    , ( "fix", encodeFixKind fix )
-                    ]
-            )
+    Encode.list
+        (\( path, fix ) ->
+            Encode.object
+                [ ( "path", Encode.string path )
+                , ( "fix", encodeFixKind fix )
+                ]
+        )
+        fixes
 
 
 encodeFixKind : Maybe (List Fix) -> Encode.Value
@@ -1339,8 +1338,8 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
                         (\error subAcc ->
                             case Rule.errorFixesV2 error of
                                 Ok (Just fixedFiles) ->
-                                    Dict.foldl
-                                        (\fixedFile _ subSubAcc ->
+                                    List.foldl
+                                        (\( fixedFile, _ ) subSubAcc ->
                                             Dict.update fixedFile
                                                 (\previousErrors ->
                                                     fromReviewError model.suppressedErrors model.links error
@@ -1558,7 +1557,7 @@ groupErrorsByFile project errors =
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
 fromReviewError suppressedErrors links error =
     let
-        fixes : Maybe (Dict String (Maybe (List Fix)))
+        fixes : Maybe (List ( String, Maybe (List Fix) ))
         fixes =
             Rule.errorFixesV2 error
                 |> Result.toMaybe
@@ -1580,11 +1579,11 @@ fromReviewError suppressedErrors links error =
     }
 
 
-hasFileRemovalFixes : Maybe (Dict String (Maybe (List Fix))) -> Bool
+hasFileRemovalFixes : Maybe (List ( String, Maybe (List Fix) )) -> Bool
 hasFileRemovalFixes maybeFixes =
     case maybeFixes of
         Just fixes ->
-            Dict.foldl (\_ fix acc -> acc || fix == Nothing) False fixes
+            List.any (\( _, fix ) -> fix == Nothing) fixes
 
         Nothing ->
             False
