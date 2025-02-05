@@ -30,6 +30,7 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
+import Elm.Syntax.Range exposing (Location)
 import Review.Fix
 import Review.Fix.FixProblem as FixProblem exposing (FixProblem)
 import Review.Project as Project
@@ -601,9 +602,15 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.HasCollisionsInFixRanges ->
-            -- TODO MULTILINE-FIXES Indicate the problematic ranges
-            [ "I failed to apply the automatic fix because it was invalid."
+        FixProblem.HasCollisionsInEditRanges edit1 edit2 ->
+            [ """I failed to apply the automatic fix because some edits collide:
+
+  1. """
+                ++ editToFix edit1
+                ++ """
+
+  2. """
+                ++ editToFix edit2
                 |> Text.from
                 |> Text.inYellow
             ]
@@ -613,6 +620,37 @@ reasonFromProblem problem =
                 |> Text.from
                 |> Text.inYellow
             ]
+
+
+editToFix : { range : Range, replacement : String } -> String
+editToFix { range, replacement } =
+    if replacement == "" then
+        "Review.Fix.removeRange\n         " ++ rangeAsString range
+
+    else if range.start == range.end then
+        "Review.Fix.insertAt\n         " ++ locationAsString range.start ++ "\n         " ++ wrapInDoubleOrTripleQuotes replacement
+
+    else
+        "Review.Fix.replaceRangeBy\n         " ++ rangeAsString range ++ "\n         " ++ wrapInDoubleOrTripleQuotes replacement
+
+
+rangeAsString : Range -> String
+rangeAsString { start, end } =
+    "{ start = " ++ locationAsString start ++ ", end = " ++ locationAsString end ++ " }"
+
+
+locationAsString : Location -> String
+locationAsString location =
+    "{ row = " ++ String.fromInt location.row ++ ", column = " ++ String.fromInt location.column ++ " }"
+
+
+wrapInDoubleOrTripleQuotes : String -> String
+wrapInDoubleOrTripleQuotes string =
+    if String.contains "\"" string then
+        "\"\"\"" ++ string ++ "\"\"\""
+
+    else
+        "\"" ++ string ++ "\""
 
 
 compareErrorPositions : Error -> Error -> Order
