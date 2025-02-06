@@ -602,15 +602,11 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.HasCollisionsInEditRanges edit1 edit2 ->
-            [ """I failed to apply the automatic fix because some edits collide:
+        FixProblem.HasCollisionsInEditRanges filePath_ edit1 edit2 ->
+            [ ("I failed to apply the automatic fix because some edits for " ++ filePath_ ++ """ collide:
 
-  1. """
-                ++ editToFix edit1
-                ++ """
-
-  2. """
-                ++ editToFix edit2
+  1. """ ++ editToFix edit1 ++ """
+  2. """ ++ editToFix edit2)
                 |> Text.from
                 |> Text.inYellow
             ]
