@@ -596,8 +596,12 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.SourceCodeIsNotValid _ ->
-            [ "I failed to apply the automatic fix because it resulted in invalid Elm code."
+        FixProblem.SourceCodeIsNotValid source ->
+            [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
+                |> Text.from
+                |> Text.inYellow
+            , Text.from "\n\n"
+            , indent ("    " ++ source)
                 |> Text.from
                 |> Text.inYellow
             ]
@@ -616,6 +620,13 @@ reasonFromProblem problem =
                 |> Text.from
                 |> Text.inYellow
             ]
+
+
+indent : String -> String
+indent string =
+    string
+        |> String.lines
+        |> String.join "\n    "
 
 
 editToFix : { range : Range, replacement : String } -> String
