@@ -601,26 +601,31 @@ reasonFromProblem problem =
 
         FixProblem.SourceCodeIsNotValid source ->
             case Elm.Parser.parseToFile source of
-                Ok _ ->
-                    [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
-                        |> Text.from
-                        |> Text.inYellow
-                    , Text.from "\n\n"
-                    , indent ("    " ++ source)
-                        |> Text.from
-                        |> Text.inYellow
-                    ]
+                Err (deadEnd :: deadEnds) ->
+                    List.concat
+                        [ [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
+                                |> Text.from
+                                |> Text.inYellow
+                          , Text.from "\n\n"
+                          ]
+                        , codeExtract (Source source)
+                            { start = { row = deadEnd.row, column = deadEnd.col }
+                            , end = { row = deadEnd.row, column = deadEnd.col + 1 }
+                            }
+                            |> List.map Text.inYellow
+                        , [ Text.from "\n\n"
+                          , deadEndsToString deadEnds
+                                |> Text.from
+                                |> Text.inYellow
+                          ]
+                        ]
 
-                Err deadEnds ->
+                _ ->
                     [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
                         |> Text.from
                         |> Text.inYellow
                     , Text.from "\n\n"
                     , indent ("    " ++ source)
-                        |> Text.from
-                        |> Text.inYellow
-                    , Text.from "\n\n"
-                    , deadEndsToString deadEnds
                         |> Text.from
                         |> Text.inYellow
                     ]
