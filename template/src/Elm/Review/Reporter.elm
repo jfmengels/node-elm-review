@@ -645,6 +645,13 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
+        FixProblem.RemovesUnknownFile filePath_ ->
+            [ ("I failed to apply the automatic fix because it attempted to remove " ++ filePath_ ++ """ which is unknown to me.
+This should not be possible in theory, so please open an issue so this can be fixed.""")
+                |> Text.from
+                |> Text.inYellow
+            ]
+
 
 indent : String -> String
 indent string =
