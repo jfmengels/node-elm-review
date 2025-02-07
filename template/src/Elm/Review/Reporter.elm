@@ -26,11 +26,14 @@ module Elm.Review.Reporter exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Elm.Parser
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
+import Elm.Syntax.File
 import Elm.Syntax.Range exposing (Location)
+import Parser
 import Review.Fix
 import Review.Fix.FixProblem as FixProblem exposing (FixProblem)
 import Review.Project as Project
@@ -597,6 +600,11 @@ reasonFromProblem problem =
             ]
 
         FixProblem.SourceCodeIsNotValid source ->
+            let
+                parsed : Result (List Parser.DeadEnd) Elm.Syntax.File.File
+                parsed =
+                    Elm.Parser.parseToFile source
+            in
             [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
                 |> Text.from
                 |> Text.inYellow
@@ -604,6 +612,20 @@ reasonFromProblem problem =
             , indent ("    " ++ source)
                 |> Text.from
                 |> Text.inYellow
+            , case parsed of
+                Ok _ ->
+                    Text.from ""
+
+                Err _ ->
+                    Text.from "\n\n"
+            , case parsed of
+                Ok _ ->
+                    Text.from ""
+
+                Err deadEnds ->
+                    deadEndsToString deadEnds
+                        |> Text.from
+                        |> Text.inYellow
             ]
 
         FixProblem.HasCollisionsInEditRanges filePath_ edit1 edit2 ->
@@ -1371,3 +1393,59 @@ isNoChange change =
 
         Diff.Added _ ->
             False
+
+
+deadEndsToString : List Parser.DeadEnd -> String
+deadEndsToString deadEnds =
+    String.concat (List.intersperse "; " (List.map deadEndToString deadEnds))
+
+
+deadEndToString : Parser.DeadEnd -> String
+deadEndToString deadend =
+    problemToString deadend.problem ++ " at row " ++ String.fromInt deadend.row ++ ", col " ++ String.fromInt deadend.col
+
+
+problemToString : Parser.Problem -> String
+problemToString p =
+    case p of
+        Parser.Expecting s ->
+            "Expecting '" ++ s ++ "'"
+
+        Parser.ExpectingInt ->
+            "Expecting int"
+
+        Parser.ExpectingHex ->
+            "Expecting hex"
+
+        Parser.ExpectingOctal ->
+            "Expecting octal"
+
+        Parser.ExpectingBinary ->
+            "Expecting binary"
+
+        Parser.ExpectingFloat ->
+            "Expecting float"
+
+        Parser.ExpectingNumber ->
+            "Expecting number"
+
+        Parser.ExpectingVariable ->
+            "Expecting variable"
+
+        Parser.ExpectingSymbol s ->
+            "Expecting symbol '" ++ s ++ "'"
+
+        Parser.ExpectingKeyword s ->
+            "Expecting keyword '" ++ s ++ "'"
+
+        Parser.ExpectingEnd ->
+            "Expecting end"
+
+        Parser.UnexpectedChar ->
+            "Unexpected char"
+
+        Parser.Problem s ->
+            "Problem " ++ s
+
+        Parser.BadRepeat ->
+            "Bad repeat"
