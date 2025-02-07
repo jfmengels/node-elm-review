@@ -600,33 +600,30 @@ reasonFromProblem problem =
             ]
 
         FixProblem.SourceCodeIsNotValid source ->
-            let
-                parsed : Result (List Parser.DeadEnd) Elm.Syntax.File.File
-                parsed =
-                    Elm.Parser.parseToFile source
-            in
-            [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
-                |> Text.from
-                |> Text.inYellow
-            , Text.from "\n\n"
-            , indent ("    " ++ source)
-                |> Text.from
-                |> Text.inYellow
-            , case parsed of
+            case Elm.Parser.parseToFile source of
                 Ok _ ->
-                    Text.from ""
-
-                Err _ ->
-                    Text.from "\n\n"
-            , case parsed of
-                Ok _ ->
-                    Text.from ""
-
-                Err deadEnds ->
-                    deadEndsToString deadEnds
+                    [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
                         |> Text.from
                         |> Text.inYellow
-            ]
+                    , Text.from "\n\n"
+                    , indent ("    " ++ source)
+                        |> Text.from
+                        |> Text.inYellow
+                    ]
+
+                Err deadEnds ->
+                    [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
+                        |> Text.from
+                        |> Text.inYellow
+                    , Text.from "\n\n"
+                    , indent ("    " ++ source)
+                        |> Text.from
+                        |> Text.inYellow
+                    , Text.from "\n\n"
+                    , deadEndsToString deadEnds
+                        |> Text.from
+                        |> Text.inYellow
+                    ]
 
         FixProblem.HasCollisionsInEditRanges filePath_ edit1 edit2 ->
             [ ("I failed to apply the automatic fix because some edits for " ++ filePath_ ++ """ collide:
