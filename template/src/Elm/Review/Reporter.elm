@@ -732,7 +732,7 @@ compareRange a b =
 
 
 codeExtract : Source -> Range -> List Text
-codeExtract (Source source) =
+codeExtract (Source source) { start, end } =
     let
         lines : Array String
         lines =
@@ -748,133 +748,131 @@ codeExtract (Source source) =
 
                 Nothing ->
                     ""
-    in
-    \{ start, end } ->
-        let
-            maxLineNumber : Int
-            maxLineNumber =
-                if String.isEmpty (getRowAtLine (end.row + 1)) then
-                    end.row
 
-                else
-                    end.row + 1
+        maxLineNumber : Int
+        maxLineNumber =
+            if String.isEmpty (getRowAtLine (end.row + 1)) then
+                end.row
 
-            maxLineNumberLength : Int
-            maxLineNumberLength =
-                lengthOfLineNumber maxLineNumber
+            else
+                end.row + 1
 
-            gutterLength : Int
-            gutterLength =
-                lineNumberPrefix maxLineNumberLength maxLineNumber |> String.length
+        maxLineNumberLength : Int
+        maxLineNumberLength =
+            lengthOfLineNumber maxLineNumber
 
-            getRowWithLineNumber : Int -> String
-            getRowWithLineNumber rowIndex =
-                let
-                    line : String
-                    line =
-                        getRowAtLine rowIndex
-                in
-                if String.isEmpty line then
-                    lineNumberPrefixUnpadded maxLineNumberLength rowIndex
+        gutterLength : Int
+        gutterLength =
+            lineNumberPrefix maxLineNumberLength maxLineNumber |> String.length
 
-                else
-                    lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
+        getRowWithLineNumber : Int -> String
+        getRowWithLineNumber rowIndex =
+            let
+                line : String
+                line =
+                    getRowAtLine rowIndex
+            in
+            if String.isEmpty line then
+                lineNumberPrefixUnpadded maxLineNumberLength rowIndex
 
-            getRowWithLineNumberUnlessEmpty : Int -> List Text
-            getRowWithLineNumberUnlessEmpty rowIndex =
-                let
-                    line : String
-                    line =
-                        getRowAtLine rowIndex
-                in
-                if String.isEmpty line then
-                    []
+            else
+                lineNumberPrefix maxLineNumberLength rowIndex ++ getRowAtLine rowIndex
 
-                else
-                    [ Text.from (lineNumberPrefix maxLineNumberLength rowIndex ++ line) ]
-        in
-        if start.row == end.row then
-            if start.column == end.column then
+        getRowWithLineNumberUnlessEmpty : Int -> List Text
+        getRowWithLineNumberUnlessEmpty rowIndex =
+            let
+                line : String
+                line =
+                    getRowAtLine rowIndex
+            in
+            if String.isEmpty line then
                 []
 
             else
-                let
-                    lineContent : String
-                    lineContent =
-                        getRowWithLineNumber (start.row - 1)
-                in
-                [ getRowWithLineNumberUnlessEmpty (start.row - 2)
-                , [ Text.from lineContent ]
-                , underline gutterLength { start = start.column, end = end.column, lineContent = lineContent }
-                , getRowWithLineNumberUnlessEmpty end.row
-                ]
-                    |> List.filter (not << List.isEmpty)
-                    |> Text.join "\n"
+                [ Text.from (lineNumberPrefix maxLineNumberLength rowIndex ++ line) ]
+    in
+    if start.row == end.row then
+        if start.column == end.column then
+            []
 
         else
             let
-                startLineNumber : Int
-                startLineNumber =
-                    start.row - 1
-
-                startLineContent : String
-                startLineContent =
-                    getRowAtLine startLineNumber
-
-                startLineContentWithLineNumber : String
-                startLineContentWithLineNumber =
-                    lineNumberPrefix maxLineNumberLength startLineNumber ++ startLineContent
-
-                linesBetweenStartAndEnd : List Int
-                linesBetweenStartAndEnd =
-                    List.range start.row (end.row - 2)
-
-                endLine : Int
-                endLine =
-                    end.row - 1
-
-                endLineContent : String
-                endLineContent =
-                    getRowAtLine endLine
-
-                endLineContentWithLineNumber : String
-                endLineContentWithLineNumber =
-                    lineNumberPrefix maxLineNumberLength endLine ++ endLineContent
+                lineContent : String
+                lineContent =
+                    getRowWithLineNumber (start.row - 1)
             in
-            [ getRowWithLineNumberUnlessEmpty (startLineNumber - 1)
-            , [ Text.from startLineContentWithLineNumber ]
-            , underline gutterLength
-                { start = start.column
-                , end = List.length (String.toList startLineContent) + 1
-                , lineContent = startLineContentWithLineNumber
-                }
-            , linesBetweenStartAndEnd
-                |> List.map
-                    (\middleLine ->
-                        let
-                            line : String
-                            line =
-                                getRowAtLine middleLine
-                        in
-                        if String.isEmpty line then
-                            [ Text.from (getRowWithLineNumber middleLine) ]
-
-                        else
-                            Text.from (getRowWithLineNumber middleLine)
-                                :: Text.from "\n"
-                                :: underlineWholeLine gutterLength line
-                    )
-                |> Text.join "\n"
-            , [ Text.from endLineContentWithLineNumber ]
-            , underline gutterLength
-                { start = getIndexOfFirstNonSpace endLineContent + 1
-                , end = end.column
-                , lineContent = endLineContentWithLineNumber
-                }
-            , getRowWithLineNumberUnlessEmpty (endLine + 1)
+            [ getRowWithLineNumberUnlessEmpty (start.row - 2)
+            , [ Text.from lineContent ]
+            , underline gutterLength { start = start.column, end = end.column, lineContent = lineContent }
+            , getRowWithLineNumberUnlessEmpty end.row
             ]
                 |> List.filter (not << List.isEmpty)
                 |> Text.join "\n"
+
+    else
+        let
+            startLineNumber : Int
+            startLineNumber =
+                start.row - 1
+
+            startLineContent : String
+            startLineContent =
+                getRowAtLine startLineNumber
+
+            startLineContentWithLineNumber : String
+            startLineContentWithLineNumber =
+                lineNumberPrefix maxLineNumberLength startLineNumber ++ startLineContent
+
+            linesBetweenStartAndEnd : List Int
+            linesBetweenStartAndEnd =
+                List.range start.row (end.row - 2)
+
+            endLine : Int
+            endLine =
+                end.row - 1
+
+            endLineContent : String
+            endLineContent =
+                getRowAtLine endLine
+
+            endLineContentWithLineNumber : String
+            endLineContentWithLineNumber =
+                lineNumberPrefix maxLineNumberLength endLine ++ endLineContent
+        in
+        [ getRowWithLineNumberUnlessEmpty (startLineNumber - 1)
+        , [ Text.from startLineContentWithLineNumber ]
+        , underline gutterLength
+            { start = start.column
+            , end = List.length (String.toList startLineContent) + 1
+            , lineContent = startLineContentWithLineNumber
+            }
+        , linesBetweenStartAndEnd
+            |> List.map
+                (\middleLine ->
+                    let
+                        line : String
+                        line =
+                            getRowAtLine middleLine
+                    in
+                    if String.isEmpty line then
+                        [ Text.from (getRowWithLineNumber middleLine) ]
+
+                    else
+                        Text.from (getRowWithLineNumber middleLine)
+                            :: Text.from "\n"
+                            :: underlineWholeLine gutterLength line
+                )
+            |> Text.join "\n"
+        , [ Text.from endLineContentWithLineNumber ]
+        , underline gutterLength
+            { start = getIndexOfFirstNonSpace endLineContent + 1
+            , end = end.column
+            , lineContent = endLineContentWithLineNumber
+            }
+        , getRowWithLineNumberUnlessEmpty (endLine + 1)
+        ]
+            |> List.filter (not << List.isEmpty)
+            |> Text.join "\n"
 
 
 getIndexOfFirstNonSpace : String -> Int
