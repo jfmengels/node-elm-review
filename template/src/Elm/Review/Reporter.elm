@@ -476,7 +476,7 @@ formatErrorWithExtract detailsMode mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
-            case codeExtract source error.range of
+            case codeExtract source error.range Nothing of
                 [] ->
                     []
 
@@ -612,7 +612,7 @@ reasonFromProblem problem =
                             { start = { row = deadEnd.row, column = deadEnd.col }
                             , end = { row = deadEnd.row, column = deadEnd.col + 1 }
                             }
-                            |> List.map Text.inYellow
+                            (Just (problemToString deadEnd.problem))
                         , [ Text.from "\n\n"
                           , deadEndsToString deadEnds
                                 |> Text.from
@@ -731,8 +731,8 @@ compareRange a b =
         EQ
 
 
-codeExtract : Source -> Range -> List Text
-codeExtract (Source source) { start, end } =
+codeExtract : Source -> Range -> Maybe String -> List Text
+codeExtract (Source source) { start, end } messageAfterCarets =
     let
         lines : Array String
         lines =
@@ -803,7 +803,7 @@ codeExtract (Source source) { start, end } =
             in
             [ getRowWithLineNumberUnlessEmpty (start.row - 2)
             , [ Text.from lineContent ]
-            , underline gutterLength { start = start.column, end = end.column, lineContent = lineContent }
+            , underline gutterLength { start = start.column, end = end.column, lineContent = lineContent } messageAfterCarets
             , getRowWithLineNumberUnlessEmpty end.row
             ]
                 |> List.filter (not << List.isEmpty)
@@ -846,6 +846,7 @@ codeExtract (Source source) { start, end } =
             , end = List.length (String.toList startLineContent) + 1
             , lineContent = startLineContentWithLineNumber
             }
+            messageAfterCarets
         , linesBetweenStartAndEnd
             |> List.map
                 (\middleLine ->
@@ -869,6 +870,7 @@ codeExtract (Source source) { start, end } =
             , end = end.column
             , lineContent = endLineContentWithLineNumber
             }
+            messageAfterCarets
         , getRowWithLineNumberUnlessEmpty (endLine + 1)
         ]
             |> List.filter (not << List.isEmpty)
@@ -919,8 +921,8 @@ underlineWholeLine gutterLength line =
     ]
 
 
-underline : Int -> { start : Int, end : Int, lineContent : String } -> List Text
-underline gutterLength { start, end, lineContent } =
+underline : Int -> { start : Int, end : Int, lineContent : String } -> Maybe String -> List Text
+underline gutterLength { start, end, lineContent } messageAfterCarets =
     let
         lineChars : List Char
         lineChars =
@@ -949,9 +951,22 @@ underline gutterLength { start, end, lineContent } =
             -- We want to show enough ^ characters to cover the whole underlined zone,
             -- and for unicode characters that sometimes means 2 ^
             String.length (String.fromList inText) - List.length inText
+
+        baseCarets : String
+        baseCarets =
+            String.repeat (unicodeInOffset + end - start) "^"
+
+        caretLine : String
+        caretLine =
+            case messageAfterCarets of
+                Just message ->
+                    baseCarets ++ " " ++ message
+
+                Nothing ->
+                    baseCarets
     in
     [ Text.from <| String.repeat (gutterLength + unicodePreOffset + start - 1) " "
-    , String.repeat (unicodeInOffset + end - start) "^"
+    , caretLine
         |> Text.from
         |> Text.inRed
     ]
@@ -1445,7 +1460,7 @@ problemToString p =
             "Unexpected char"
 
         Parser.Problem s ->
-            "Problem " ++ s
+            s
 
         Parser.BadRepeat ->
             "Bad repeat"
