@@ -82,8 +82,8 @@ type FilePath
     | ConfigurationError
 
 
-filePath : FilePath -> String
-filePath path_ =
+filePathToString : FilePath -> String
+filePathToString path_ =
     case path_ of
         FilePath str ->
             str
@@ -160,7 +160,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             filesWithErrors =
                 files
                     |> List.filter (.errors >> List.isEmpty >> not)
-                    |> List.sortBy (.path >> filePath)
+                    |> List.sortBy (.path >> filePathToString)
 
             { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)
@@ -440,11 +440,11 @@ firstErrorPrefix =
 
 
 header : Bool -> FilePath -> Range -> Text
-header isFirstError filePath_ range =
+header isFirstError filePath range =
     let
         position : String
         position =
-            case filePath_ of
+            case filePath of
                 FilePath str ->
                     " " ++ str ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
 
@@ -645,11 +645,8 @@ reasonFromProblem problem =
                         |> Text.inYellow
                     ]
 
-        FixProblem.HasCollisionsInEditRanges filePath_ edit1 edit2 ->
-            [ ("I failed to apply the automatic fix because some edits for " ++ filePath_ ++ """ collide:
-
-  1. """ ++ editToFix (Review.Fix.toRecord edit1) ++ """
-  2. """ ++ editToFix (Review.Fix.toRecord edit2))
+        FixProblem.HasCollisionsInEditRanges { filePath, edits } ->
+            [ ("I failed to apply the automatic fix because some edits for " ++ filePath ++ " collide:\n\n" ++ String.join "\n\n" (List.map (Review.Fix.toRecord >> editToFix) edits))
                 |> Text.from
                 |> Text.inYellow
             ]
@@ -660,8 +657,8 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.RemovesUnknownFile filePath_ ->
-            [ ("I failed to apply the automatic fix because it attempted to remove " ++ filePath_ ++ """ which is unknown to me.
+        FixProblem.RemovesUnknownFile filePath ->
+            [ ("I failed to apply the automatic fix because it attempted to remove " ++ filePath ++ """ which is unknown to me.
 This should not be possible in theory, so please open an issue so this can be fixed.""")
                 |> Text.from
                 |> Text.inYellow
@@ -1067,11 +1064,11 @@ reverseThenConcat reverseLists =
 
 fileSeparator : FilePath -> FilePath -> List Text
 fileSeparator pathAbove pathBelow =
-    [ Text.from <| "\n\n" ++ String.repeat (73 - String.length (filePath pathAbove)) " "
-    , (filePath pathAbove ++ "  ↑")
+    [ Text.from <| "\n\n" ++ String.repeat (73 - String.length (filePathToString pathAbove)) " "
+    , (filePathToString pathAbove ++ "  ↑")
         ++ "\n====o======================================================================o===="
         ++ "\n    ↓  "
-        ++ filePath pathBelow
+        ++ filePathToString pathBelow
         |> Text.from
         |> Text.inRed
     , Text.from "\n\n\n"
