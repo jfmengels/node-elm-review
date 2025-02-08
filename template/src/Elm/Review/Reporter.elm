@@ -599,22 +599,37 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.SourceCodeIsNotValid source ->
-            case Elm.Parser.parseToFile source of
+        FixProblem.SourceCodeIsNotValid invalid ->
+            case Elm.Parser.parseToFile invalid.source of
                 Err (deadEnd :: deadEnds) ->
                     List.concat
-                        [ [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
+                        [ [ "I failed to apply the automatic fix because it resulted in "
+                                |> Text.from
+                                |> Text.inYellow
+                          , invalid.filePath
+                                |> Text.from
+                                |> Text.inRed
+                          , " being invalid Elm code:"
                                 |> Text.from
                                 |> Text.inYellow
                           , Text.from "\n\n"
                           ]
-                        , codeExtract (Source source)
+                        , codeExtract (Source invalid.source)
                             { start = { row = deadEnd.row, column = deadEnd.col }
                             , end = { row = deadEnd.row, column = deadEnd.col + 1 }
                             }
                             (Just (problemToString deadEnd.problem))
                         , [ Text.from "\n\n"
                           , deadEndsToString deadEnds
+                                |> Text.from
+                                |> Text.inYellow
+                          , "Here are the individual edits for the file:"
+                                |> Text.from
+                                |> Text.inYellow
+                          , Text.from "\n\n    "
+                          , List.map (Review.Fix.toRecord >> editToFix) invalid.edits
+                                |> String.join "\n    , "
+                                |> wrapIn "[ " "\n    ]"
                                 |> Text.from
                                 |> Text.inYellow
                           ]
@@ -625,7 +640,7 @@ reasonFromProblem problem =
                         |> Text.from
                         |> Text.inYellow
                     , Text.from "\n\n"
-                    , indent ("    " ++ source)
+                    , indent ("    " ++ invalid.source)
                         |> Text.from
                         |> Text.inYellow
                     ]
@@ -680,6 +695,11 @@ rangeAsString { start, end } =
 locationAsString : Location -> String
 locationAsString location =
     "{ row = " ++ String.fromInt location.row ++ ", column = " ++ String.fromInt location.column ++ " }"
+
+
+wrapIn : String -> String -> String -> String
+wrapIn start end string =
+    start ++ string ++ end ++ ""
 
 
 wrapInDoubleOrTripleQuotes : String -> String
