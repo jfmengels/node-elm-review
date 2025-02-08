@@ -623,7 +623,7 @@ reasonFromProblem problem =
                           , deadEndsToString deadEnds
                                 |> Text.from
                                 |> Text.inYellow
-                          , "Here are the individual edits for the file:"
+                          , "\n\nHere are the individual edits for the file:"
                                 |> Text.from
                                 |> Text.inYellow
                           , Text.from "\n\n    "
@@ -1439,12 +1439,12 @@ isNoChange change =
 
 deadEndsToString : List Parser.DeadEnd -> String
 deadEndsToString deadEnds =
-    String.concat (List.intersperse "; " (List.map deadEndToString deadEnds))
+    String.concat (List.intersperse "\n" (List.map deadEndToString deadEnds))
 
 
 deadEndToString : Parser.DeadEnd -> String
 deadEndToString deadend =
-    problemToString deadend.problem ++ " at row " ++ String.fromInt deadend.row ++ ", col " ++ String.fromInt deadend.col
+    problemToString deadend.problem ++ " at row " ++ String.fromInt deadend.row ++ ", column " ++ String.fromInt deadend.col
 
 
 problemToString : Parser.Problem -> String
