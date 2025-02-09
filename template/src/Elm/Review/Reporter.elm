@@ -592,8 +592,19 @@ addFixPrefix mode error previous =
 reasonFromProblem : FixProblem -> List Text
 reasonFromProblem problem =
     case problem of
-        FixProblem.Unchanged ->
-            [ "I failed to apply the automatic fix because it resulted in the same source code."
+        FixProblem.Unchanged { filePath, edits } ->
+            [ ("""I failed to apply the automatic fix because it resulted in the same source code.
+
+After applying the fixes, """ ++ filePath)
+                |> Text.from
+                |> Text.inYellow
+            , "\n\nHere are the individual edits for the file:"
+                |> Text.from
+                |> Text.inYellow
+            , Text.from "\n\n    "
+            , List.map (Review.Fix.toRecord >> editToFix) edits
+                |> String.join "\n    , "
+                |> wrapIn "[ " "\n    ]"
                 |> Text.from
                 |> Text.inYellow
             ]
