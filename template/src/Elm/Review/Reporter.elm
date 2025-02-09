@@ -26,12 +26,10 @@ module Elm.Review.Reporter exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Elm.Parser
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
-import Elm.Syntax.File
 import Elm.Syntax.Range exposing (Location)
 import Json.Decode
 import Parser
@@ -601,50 +599,43 @@ reasonFromProblem problem =
             ]
 
         FixProblem.InvalidElmFile invalid ->
-            case Elm.Parser.parseToFile invalid.source of
-                Err (deadEnd :: deadEnds) ->
-                    List.concat
-                        [ [ "I failed to apply the automatic fix because it resulted in "
-                                |> Text.from
-                                |> Text.inYellow
-                          , invalid.filePath
-                                |> Text.from
-                                |> Text.inRed
-                          , " being invalid Elm code:"
-                                |> Text.from
-                                |> Text.inYellow
-                          , Text.from "\n\n"
-                          ]
-                        , codeExtract (Source invalid.source)
-                            { start = { row = deadEnd.row, column = deadEnd.col }
-                            , end = { row = deadEnd.row, column = deadEnd.col + 1 }
-                            }
-                            (Just (problemToString deadEnd.problem))
-                        , [ Text.from "\n\n"
-                          , deadEndsToString deadEnds
-                                |> Text.from
-                                |> Text.inYellow
-                          , "\n\nHere are the individual edits for the file:"
-                                |> Text.from
-                                |> Text.inYellow
-                          , Text.from "\n\n    "
-                          , List.map (Review.Fix.toRecord >> editToFix) invalid.edits
-                                |> String.join "\n    , "
-                                |> wrapIn "[ " "\n    ]"
-                                |> Text.from
-                                |> Text.inYellow
-                          ]
-                        ]
-
-                _ ->
-                    [ "I failed to apply the automatic fix because it resulted in the following invalid Elm code:"
+            let
+                firstParsingError : Parser.DeadEnd
+                firstParsingError =
+                    List.head invalid.parsingErrors
+                        |> Maybe.withDefault { row = 1, col = 1, problem = Parser.Problem "Parsing error" }
+            in
+            List.concat
+                [ [ "I failed to apply the automatic fix because it resulted in "
                         |> Text.from
                         |> Text.inYellow
-                    , Text.from "\n\n"
-                    , indent ("    " ++ invalid.source)
+                  , invalid.filePath
+                        |> Text.from
+                        |> Text.inRed
+                  , " being invalid Elm code:"
                         |> Text.from
                         |> Text.inYellow
-                    ]
+                  , Text.from "\n\n"
+                  , deadEndsToString invalid.parsingErrors
+                        |> Text.from
+                        |> Text.inYellow
+                  ]
+                , codeExtract (Source invalid.source)
+                    { start = { row = firstParsingError.row, column = firstParsingError.col }
+                    , end = { row = firstParsingError.row, column = firstParsingError.col + 1 }
+                    }
+                    (Just (problemToString firstParsingError.problem))
+                , [ "\n\nHere are the individual edits for the file:"
+                        |> Text.from
+                        |> Text.inYellow
+                  , Text.from "\n\n    "
+                  , List.map (Review.Fix.toRecord >> editToFix) invalid.edits
+                        |> String.join "\n    , "
+                        |> wrapIn "[ " "\n    ]"
+                        |> Text.from
+                        |> Text.inYellow
+                  ]
+                ]
 
         FixProblem.InvalidJson { filePath, source, edits, decodingError } ->
             [ "I failed to apply the automatic fix because it resulted in "
