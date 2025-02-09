@@ -6,6 +6,7 @@ export type OptionsBase = {
   showBenchmark: boolean;
   enableExtract: boolean;
   fileRemovalFixesEnabled: boolean;
+  explainFixFailure: boolean;
   unsuppress: boolean | string[];
   detailsMode: DetailsMode;
   report: ReportMode | null;

@@ -7,6 +7,7 @@ import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.File
+import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
@@ -128,6 +129,7 @@ type alias Model =
     , links : Dict String String
     , fixMode : FixMode
     , fixLimit : Maybe Int
+    , fixExplanation : FixExplanation
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
@@ -221,6 +223,7 @@ init rawFlags =
                     ( { fixMode = Mode_DontFix
                       , fixLimit = Nothing
                       , enableExtract = False
+                      , fixExplanation = FixExplanation.Succinct
                       , unsuppressMode = UnsuppressMode.UnsuppressNone
                       , reportMode = HumanReadable
                       , detailsMode = Reporter.WithoutDetails
@@ -269,6 +272,7 @@ init rawFlags =
       , fixAllResultProject = Project.new
       , fixMode = flags.fixMode
       , fixLimit = flags.fixLimit
+      , fixExplanation = flags.fixExplanation
       , enableExtract = flags.enableExtract
       , unsuppressMode = flags.unsuppressMode
       , detailsMode = flags.detailsMode
@@ -382,6 +386,7 @@ closestNames names name =
 type alias DecodedFlags =
     { fixMode : FixMode
     , fixLimit : Maybe Int
+    , fixExplanation : FixExplanation
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
@@ -401,6 +406,7 @@ decodeFlags =
         |> field "fixMode" decodeFix
         |> field "fixLimit" decodeFixLimit
         |> field "fileRemovalFixesEnabled" Decode.bool
+        |> field "explainFixFailure" Decode.bool
         |> field "enableExtract" Decode.bool
         |> field "unsuppress" UnsuppressMode.decoder
         |> field "detailsMode" decodeDetailsMode
@@ -418,6 +424,7 @@ toDecodedFlags :
     -> Maybe Int
     -> Bool
     -> Bool
+    -> Bool
     -> UnsuppressMode
     -> Reporter.DetailsMode
     -> ReportMode
@@ -428,9 +435,15 @@ toDecodedFlags :
     -> Bool
     -> CliCommunication.Key
     -> DecodedFlags
-toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger =
+toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger =
     { fixMode = fixMode fileRemovalFixesEnabled
     , fixLimit = fixLimit
+    , fixExplanation =
+        if explainFixFailure then
+            FixExplanation.Detailed
+
+        else
+            FixExplanation.Succinct
     , enableExtract = enableExtract
     , unsuppressMode = unsuppressMode
     , detailsMode = detailsMode
@@ -1029,6 +1042,7 @@ makeReport model =
                     , unsuppressMode = newModel.unsuppressMode
                     , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
                     , detailsMode = newModel.detailsMode
+                    , fixExplanation = newModel.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
                     , mode = fixModeToReportFixMode model.fixMode
                     }
@@ -1048,6 +1062,7 @@ makeReport model =
                         }
                         newModel.links
                         newModel.detailsMode
+                        newModel.fixExplanation
                     )
                     errorsByFile
         )
@@ -1078,12 +1093,13 @@ encodeErrorByFile :
     }
     -> Dict String String
     -> Reporter.DetailsMode
+    -> FixExplanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> Encode.Value
-encodeErrorByFile suppressedErrorsData links detailsMode file =
+encodeErrorByFile suppressedErrorsData links detailsMode explainFixFailure file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
-        , ( "errors", Encode.list (encodeError suppressedErrorsData links detailsMode file.source) file.errors )
+        , ( "errors", Encode.list (encodeError suppressedErrorsData links detailsMode explainFixFailure file.source) file.errors )
         ]
 
 
@@ -1114,10 +1130,11 @@ encodeError :
     }
     -> Dict String String
     -> Reporter.DetailsMode
+    -> FixExplanation
     -> Reporter.Source
     -> Rule.ReviewError
     -> Encode.Value
-encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode source error =
+encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode explainFixFailure source error =
     let
         originallySuppressed : Bool
         originallySuppressed =
@@ -1140,7 +1157,7 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
 
         Err _ ->
             Nothing
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode source (fromReviewError suppressedErrors links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode explainFixFailure source (fromReviewError suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
     ]
@@ -1155,7 +1172,7 @@ encodeConfigurationError detailsMode error =
         , ( "message", Encode.string error.message )
         , ( "details", Encode.list Encode.string error.details )
         , ( "region", encodeRange Range.emptyRange )
-        , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode (Reporter.Source "") error) )
+        , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source "") error) )
         ]
 
 
@@ -1281,6 +1298,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
             , [ ( "confirmationMessage"
                 , Reporter.formatSingleFixProposal
                     model.detailsMode
+                    model.fixExplanation
                     fileRemovalFixesEnabled
                     (pathAndSource model.project filePath)
                     (fromReviewError model.suppressedErrors model.links error)

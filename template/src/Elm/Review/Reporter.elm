@@ -26,6 +26,7 @@ module Elm.Review.Reporter exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -140,12 +141,13 @@ formatReport :
     , unsuppressMode : UnsuppressMode
     , originalNumberOfSuppressedErrors : Int
     , detailsMode : DetailsMode
+    , fixExplanation : FixExplanation
     , errorsHaveBeenFixedPreviously : Bool
     , mode : Mode
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, errorsHaveBeenFixedPreviously, mode } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, fixExplanation, errorsHaveBeenFixedPreviously, mode } files =
     let
         { numberOfFileErrors, numberOfGlobalErrors } =
             countErrors files
@@ -164,7 +166,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)
         in
-        [ formatReports detailsMode mode filesWithErrors
+        [ formatReports detailsMode fixExplanation mode filesWithErrors
             |> Just
         , if showUnsuppressedWarning unsuppressMode files then
             Just
@@ -244,7 +246,7 @@ formatConfigurationErrors { detailsMode, mode, configurationErrors } =
               }
             ]
     in
-    [ formatReports detailsMode mode filesWithErrors
+    [ formatReports detailsMode FixExplanation.Succinct mode filesWithErrors
     , [ Text.from "I found "
       , pluralize (List.length configurationErrors) "configuration error" |> Text.from |> Text.inRed
       , Text.from "."
@@ -419,15 +421,15 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
         |> List.map Text.toRecord
 
 
-formatReportForFileWithExtract : DetailsMode -> Mode -> FileWithError -> List Text
-formatReportForFileWithExtract detailsMode mode file =
+formatReportForFileWithExtract : DetailsMode -> FixExplanation -> Mode -> FileWithError -> List Text
+formatReportForFileWithExtract detailsMode fixExplanation mode file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) file.path error.range ]
-                    , formatErrorWithExtract detailsMode mode file.source error
+                    , formatErrorWithExtract detailsMode fixExplanation mode file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -463,15 +465,15 @@ header isFirstError filePath range =
             |> Text.from
 
 
-formatIndividualError : DetailsMode -> Source -> Error -> List TextContent
-formatIndividualError detailsMode source error =
-    formatErrorWithExtract detailsMode Reviewing source error
+formatIndividualError : DetailsMode -> FixExplanation -> Source -> Error -> List TextContent
+formatIndividualError detailsMode fixExplanation source error =
+    formatErrorWithExtract detailsMode fixExplanation Reviewing source error
         |> Text.simplify
         |> List.map Text.toRecord
 
 
-formatErrorWithExtract : DetailsMode -> Mode -> Source -> Error -> List Text
-formatErrorWithExtract detailsMode mode source error =
+formatErrorWithExtract : DetailsMode -> FixExplanation -> Mode -> Source -> Error -> List Text
+formatErrorWithExtract detailsMode fixExplanation mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -501,7 +503,7 @@ formatErrorWithExtract detailsMode mode source error =
                     case error.fixProblem of
                         Just problem ->
                             Text.from "\n\n"
-                                :: reasonFromProblem problem
+                                :: reasonFromProblem fixExplanation problem
 
                         Nothing ->
                             []
@@ -589,8 +591,89 @@ addFixPrefix mode error previous =
                 previous
 
 
-reasonFromProblem : FixProblem -> List Text
-reasonFromProblem problem =
+reasonFromProblem : FixExplanation -> FixProblem -> List Text
+reasonFromProblem fixExplanation problem =
+    case fixExplanation of
+        FixExplanation.Succinct ->
+            succinctReasonFromProblem problem
+
+        FixExplanation.Detailed ->
+            detailedReasonFromProblem problem
+
+
+succinctReasonFromProblem : FixProblem -> List Text
+succinctReasonFromProblem problem =
+    case problem of
+        FixProblem.Unchanged { filePath } ->
+            [ "I failed to apply the automatic fix because it resulted in the same source code for "
+                |> Text.from
+                |> Text.inYellow
+            , filePath
+                |> Text.from
+                |> Text.inRed
+            , "."
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.InvalidElm { filePath } ->
+            [ "I failed to apply the automatic fix because it resulted in invalid Elm code for "
+                |> Text.from
+                |> Text.inYellow
+            , filePath
+                |> Text.from
+                |> Text.inRed
+            , "."
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.InvalidJson { filePath } ->
+            [ "I failed to apply the automatic fix because it resulted in invalid JSON for "
+                |> Text.from
+                |> Text.inYellow
+            , filePath
+                |> Text.from
+                |> Text.inRed
+            , "."
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.HasCollisionsInEditRanges _ ->
+            [ "I failed to apply the automatic fix because it contained edits with collisions."
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.EditWithNegativeRange _ ->
+            [ "I failed to apply the automatic fix because it contained edits with negative ranges."
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.CreatesImportCycle _ ->
+            [ "I failed to apply the automatic fix because it resulted in an import cycle."
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.RemovesUnknownFile filePath ->
+            [ ("I failed to apply the automatic fix because it attempted to remove " ++ filePath ++ """ which is unknown to me.
+This should not be possible in theory, so please open an issue so this can be fixed.""")
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+        FixProblem.Other problemDescription ->
+            [ ("I failed to apply the automatic fix.\n\n" ++ problemDescription)
+                |> Text.from
+                |> Text.inYellow
+            ]
+
+
+detailedReasonFromProblem : FixProblem -> List Text
+detailedReasonFromProblem problem =
     case problem of
         FixProblem.Unchanged { filePath, edits } ->
             [ ("""I failed to apply the automatic fix because it resulted in the same source code.
@@ -1065,29 +1148,30 @@ fixableErrors files =
     List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
-formatReports : DetailsMode -> Mode -> List FileWithError -> List Text
-formatReports detailsMode mode files =
-    formatReportsEndingWith [] detailsMode mode files
+formatReports : DetailsMode -> FixExplanation -> Mode -> List FileWithError -> List Text
+formatReports detailsMode fixExplanation mode files =
+    formatReportsEndingWith [] detailsMode fixExplanation mode files
 
 
-formatReportsEndingWith : List (List Text) -> DetailsMode -> Mode -> List FileWithError -> List Text
-formatReportsEndingWith soFarReverse detailsMode mode files =
+formatReportsEndingWith : List (List Text) -> DetailsMode -> FixExplanation -> Mode -> List FileWithError -> List Text
+formatReportsEndingWith soFarReverse detailsMode fixExplanation mode files =
     case files of
         [] ->
             soFarReverse |> reverseThenConcat
 
         [ firstFile ] ->
-            formatReportForFileWithExtract detailsMode mode firstFile
+            formatReportForFileWithExtract detailsMode fixExplanation mode firstFile
                 :: soFarReverse
                 |> reverseThenConcat
 
         firstFile :: secondFile :: restOfFiles ->
             formatReportsEndingWith
                 (fileSeparator firstFile.path secondFile.path
-                    :: formatReportForFileWithExtract detailsMode mode firstFile
+                    :: formatReportForFileWithExtract detailsMode fixExplanation mode firstFile
                     :: soFarReverse
                 )
                 detailsMode
+                fixExplanation
                 mode
                 (secondFile :: restOfFiles)
 
@@ -1116,12 +1200,13 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatSingleFixProposal : DetailsMode -> Bool -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
-formatSingleFixProposal detailsMode fileRemovalFixesEnabled file error diffs =
+formatSingleFixProposal : DetailsMode -> FixExplanation -> Bool -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
+formatSingleFixProposal detailsMode fixExplanation fileRemovalFixesEnabled file error diffs =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
                 detailsMode
+                fixExplanation
                 (Fixing fileRemovalFixesEnabled)
                 { path = file.path
                 , source = file.source

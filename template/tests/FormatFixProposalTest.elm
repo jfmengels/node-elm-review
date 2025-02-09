@@ -1,5 +1,6 @@
 module FormatFixProposalTest exposing (suite)
 
+import Elm.Review.FixExplanation as FixExplanation
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import FormatTester exposing (expect)
 import Review.Project as Project
@@ -83,6 +84,7 @@ some =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
+                    FixExplanation.Succinct
                     True
                     file
                     error
@@ -182,6 +184,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
+                    FixExplanation.Succinct
                     True
                     file
                     error
@@ -280,6 +283,7 @@ a =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
+                    FixExplanation.Succinct
                     True
                     file
                     error
@@ -362,6 +366,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
+                    FixExplanation.Succinct
                     True
                     file
                     error
@@ -442,6 +447,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
+                    FixExplanation.Succinct
                     True
                     file
                     error
@@ -546,6 +552,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
+                    FixExplanation.Succinct
                     True
                     file
                     error

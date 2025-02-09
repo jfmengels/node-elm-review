@@ -128,6 +128,12 @@ If you wish to use automatic fixing, you can use the following flags:
     --fix-limit=N
         Limit the number of fixes applied in a single batch to N.
 
+    --allow-remove-files
+        Allow files to be removed by automatic fixes.
+
+    --explain-fix-failure
+        Get more information about fixes that failed to apply.
+
     --elm-format-path <path-to-elm-format>
         Specify the path to elm-format.
 
