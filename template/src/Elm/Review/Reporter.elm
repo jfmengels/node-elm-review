@@ -599,7 +599,7 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.SourceCodeIsNotValid invalid ->
+        FixProblem.InvalidElmFile invalid ->
             case Elm.Parser.parseToFile invalid.source of
                 Err (deadEnd :: deadEnds) ->
                     List.concat
