@@ -707,13 +707,6 @@ This should not be possible in theory, so please open an issue so this can be fi
             ]
 
 
-indent : String -> String
-indent string =
-    string
-        |> String.lines
-        |> String.join "\n    "
-
-
 editToFix : { range : Range, replacement : String } -> String
 editToFix { range, replacement } =
     if replacement == "" then
