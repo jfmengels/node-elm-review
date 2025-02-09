@@ -214,10 +214,26 @@ using `elm-review --fix --allow-remove-files`."""
                 Nothing
 
             Fixing _ ->
-                if not (Set.isEmpty rulesWithInvalidFixes) then
+                if not (Dict.isEmpty rulesWithInvalidFixes) then
                     Just
-                        [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n- "
-                            ++ String.join "\n- " (Set.toList rulesWithInvalidFixes)
+                        [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n"
+                            ++ String.join "\n"
+                                (Dict.toList rulesWithInvalidFixes
+                                    |> List.map
+                                        (\( ruleName, ruleIssueLink ) ->
+                                            let
+                                                link : String
+                                                link =
+                                                    case ruleIssueLink of
+                                                        Just issueLink_ ->
+                                                            " (" ++ issueLink_ ++ ")"
+
+                                                        Nothing ->
+                                                            ""
+                                            in
+                                            "- " ++ ruleName ++ link
+                                        )
+                                )
                           )
                             |> Text.from
                             |> Text.inYellow
@@ -293,17 +309,17 @@ formatTally filesWithErrors numberOfFileErrors numberOfGlobalErrors =
         ]
 
 
-classifyFixes : List Error -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
+classifyFixes : List Error -> { rulesWithInvalidFixes : Dict String (Maybe String), hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
 classifyFixes errors =
     classifyFixesHelp
         errors
-        { rulesWithInvalidFixes = Set.empty, hasIgnoredFixableErrors = False, hasFileRemovalFixes = False }
+        { rulesWithInvalidFixes = Dict.empty, hasIgnoredFixableErrors = False, hasFileRemovalFixes = False }
 
 
 classifyFixesHelp :
     List Error
-    -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
-    -> { rulesWithInvalidFixes : Set String, hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
+    -> { rulesWithInvalidFixes : Dict String (Maybe String), hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
+    -> { rulesWithInvalidFixes : Dict String (Maybe String), hasIgnoredFixableErrors : Bool, hasFileRemovalFixes : Bool }
 classifyFixesHelp errors acc =
     case errors of
         [] ->
@@ -314,7 +330,7 @@ classifyFixesHelp errors acc =
                 Just _ ->
                     classifyFixesHelp
                         rest
-                        { rulesWithInvalidFixes = Set.insert error.ruleName acc.rulesWithInvalidFixes
+                        { rulesWithInvalidFixes = Dict.insert error.ruleName (issueLink error) acc.rulesWithInvalidFixes
                         , hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors
                         , hasFileRemovalFixes = acc.hasFileRemovalFixes
                         }
@@ -326,6 +342,24 @@ classifyFixesHelp errors acc =
                         , hasIgnoredFixableErrors = not error.providesFileRemovalFix || acc.hasIgnoredFixableErrors
                         , hasFileRemovalFixes = error.providesFileRemovalFix || acc.hasFileRemovalFixes
                         }
+
+
+issueLink : Error -> Maybe String
+issueLink error =
+    error.ruleLink
+        |> Maybe.andThen
+            (\link ->
+                case
+                    link
+                        |> String.replace "https://package.elm-lang.org/packages/" ""
+                        |> String.split "/"
+                of
+                    author :: pkg :: _ ->
+                        Just ("https://github.com/" ++ author ++ "/" ++ pkg ++ "/issues")
+
+                    _ ->
+                        Nothing
+            )
 
 
 pluralize : Int -> String -> String

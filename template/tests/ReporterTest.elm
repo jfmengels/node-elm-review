@@ -721,7 +721,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 I failed to apply the automatic fix because it contained edits with collisions.
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug
+- NoDebug (https://github.com/author/package/issues)
 
 I found 1 error in 1 file."""
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
@@ -739,7 +739,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 [I failed to apply the automatic fix because it contained edits with collisions.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug](#E8C338)
+- NoDebug (https://github.com/author/package/issues)](#E8C338)
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
@@ -807,7 +807,7 @@ I failed to apply the automatic fix because some edits for src/FileA.elm collide
          { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug
+- NoDebug (https://github.com/author/package/issues)
 
 I found 1 error in 1 file."""
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
@@ -831,7 +831,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
          { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug](#E8C338)
+- NoDebug (https://github.com/author/package/issues)](#E8C338)
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
