@@ -676,7 +676,7 @@ After applying the fixes, """ ++ filePath)
             ]
 
         FixProblem.HasCollisionsInEditRanges { filePath, edits } ->
-            [ ("I failed to apply the automatic fix because some edits for " ++ filePath ++ " collide:\n\n" ++ String.join "\n\n" (List.map (Review.Fix.toRecord >> editToFix) edits))
+            [ ("I failed to apply the automatic fix because some edits for " ++ filePath ++ " collide:\n\n    " ++ String.join "\n\n    " (List.map (Review.Fix.toRecord >> editToFix) edits))
                 |> Text.from
                 |> Text.inYellow
             ]
