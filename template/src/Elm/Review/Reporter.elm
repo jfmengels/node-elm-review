@@ -33,6 +33,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
 import Elm.Syntax.File
 import Elm.Syntax.Range exposing (Location)
+import Json.Decode
 import Parser
 import Review.Fix
 import Review.Fix.FixProblem as FixProblem exposing (FixProblem)
@@ -644,6 +645,33 @@ reasonFromProblem problem =
                         |> Text.from
                         |> Text.inYellow
                     ]
+
+        FixProblem.InvalidJson { filePath, source, edits, decodingError } ->
+            [ "I failed to apply the automatic fix because it resulted in "
+                |> Text.from
+                |> Text.inYellow
+            , filePath
+                |> Text.from
+                |> Text.inRed
+            , " being invalid Elm code:"
+                |> Text.from
+                |> Text.inYellow
+            , Text.from "\n\n"
+            , ("    " ++ Json.Decode.errorToString decodingError)
+                |> Text.from
+                |> Text.inYellow
+            , source
+                |> Text.from
+            , "\n\nHere are the individual edits for the file:"
+                |> Text.from
+                |> Text.inYellow
+            , Text.from "\n\n    "
+            , List.map (Review.Fix.toRecord >> editToFix) edits
+                |> String.join "\n    , "
+                |> wrapIn "[ " "\n    ]"
+                |> Text.from
+                |> Text.inYellow
+            ]
 
         FixProblem.HasCollisionsInEditRanges { filePath, edits } ->
             [ ("I failed to apply the automatic fix because some edits for " ++ filePath ++ " collide:\n\n" ++ String.join "\n\n" (List.map (Review.Fix.toRecord >> editToFix) edits))
