@@ -614,12 +614,16 @@ addFixPrefix mode error previous =
                         previous
 
         Reviewing ->
-            if error.providesFix then
-                case error.fixProblem of
-                    Just _ ->
-                        previous
+            case error.fixProblem of
+                Just _ ->
+                    ("(failing fix) "
+                        |> Text.from
+                        |> Text.inYellow
+                    )
+                        :: previous
 
-                    Nothing ->
+                Nothing ->
+                    if error.providesFix then
                         if error.providesFileRemovalFix then
                             ("(fix removes files) "
                                 |> Text.from
@@ -634,8 +638,8 @@ addFixPrefix mode error previous =
                             )
                                 :: previous
 
-            else
-                previous
+                    else
+                        previous
 
 
 reasonFromProblem : FixExplanation -> FixProblem -> List Text

@@ -843,7 +843,7 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
-        , test "should not mention an error is fixable when the fix fails in review mode" <|
+        , test "should mention an error's fix fails when it's known in review mode" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
                   , source = Reporter.Source """module FileA exposing (a)
@@ -889,7 +889,7 @@ a = Debug.log "debug" 1"""
                     |> expect
                         { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
 
-NoDebug: Do not use Debug
+(failing fix) NoDebug: Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
@@ -902,7 +902,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 I found 1 error in 1 file."""
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
-[NoDebug](#FF0000): Do not use Debug
+[(failing fix) ](#E8C338)[NoDebug](#FF0000): Do not use Debug
 
 1| module FileA exposing (a)
 2| a = Debug.log "debug" 1
