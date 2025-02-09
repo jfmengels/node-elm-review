@@ -237,6 +237,19 @@ using `elm-review --fix --allow-remove-files`."""
                           )
                             |> Text.from
                             |> Text.inYellow
+                        , "\n\n"
+                            |> Text.from
+                            |> Text.inYellow
+                        , case fixExplanation of
+                            FixExplanation.Succinct ->
+                                "Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."
+                                    |> Text.from
+                                    |> Text.inYellow
+
+                            FixExplanation.Detailed ->
+                                "Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."
+                                    |> Text.from
+                                    |> Text.inYellow
                         ]
 
                 else
