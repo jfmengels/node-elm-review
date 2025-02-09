@@ -651,6 +651,12 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
+        FixProblem.EditWithNegativeRange { filePath, edit } ->
+            [ ("I failed to apply the automatic fix because I have found an edit for " ++ filePath ++ " where the start is positioned after the end:\n\n  " ++ editToFix (Review.Fix.toRecord edit))
+                |> Text.from
+                |> Text.inYellow
+            ]
+
         FixProblem.CreatesImportCycle _ ->
             [ "I failed to apply the automatic fix because it resulted in an import cycle."
                 |> Text.from
