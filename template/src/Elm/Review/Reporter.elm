@@ -598,7 +598,7 @@ reasonFromProblem problem =
                 |> Text.inYellow
             ]
 
-        FixProblem.InvalidElmFile invalid ->
+        FixProblem.InvalidElm invalid ->
             let
                 firstParsingError : Parser.DeadEnd
                 firstParsingError =
