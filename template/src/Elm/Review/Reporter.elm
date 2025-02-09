@@ -700,6 +700,12 @@ This should not be possible in theory, so please open an issue so this can be fi
                 |> Text.inYellow
             ]
 
+        FixProblem.Other problemDescription ->
+            [ ("I failed to apply the automatic fix.\n\n" ++ problemDescription)
+                |> Text.from
+                |> Text.inYellow
+            ]
+
 
 indent : String -> String
 indent string =
