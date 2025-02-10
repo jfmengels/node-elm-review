@@ -821,11 +821,13 @@ After applying the fixes, """ ++ filePath)
                 |> Text.inYellow
             ]
 
-        FixProblem.CreatesImportCycle _ ->
-            [ "I failed to apply the automatic fix because it resulted in an import cycle."
+        FixProblem.CreatesImportCycle cycle ->
+            ("I failed to apply the automatic fix because it resulted in an import cycle."
                 |> Text.from
                 |> Text.inYellow
-            ]
+            )
+                :: Text.from "\n\n"
+                :: printCycle cycle
 
         FixProblem.RemovesUnknownFile filePath ->
             [ ("I failed to apply the automatic fix because it attempted to remove " ++ filePath ++ """ which is unknown to me.
@@ -839,6 +841,26 @@ This should not be possible in theory, so please open an issue so this can be fi
                 |> Text.from
                 |> Text.inYellow
             ]
+
+
+printCycle : List String -> List Text
+printCycle moduleNames =
+    [ [ "    ┌─────┐\n    │    "
+            |> Text.from
+      ]
+    , moduleNames
+        |> List.map (\moduleName -> moduleName |> Text.from |> Text.inYellow)
+        |> List.intersperse (Text.from "\n    │     ↓\n    │    ")
+    , [ "\n    └─────┘"
+            |> Text.from
+      ]
+    ]
+        |> Text.join ""
+
+
+wrapInCycle : String -> String
+wrapInCycle string =
+    "    ┌─────┐\n    │    " ++ string ++ "\n    └─────┘"
 
 
 editToFix : { range : Range, replacement : String } -> String

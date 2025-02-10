@@ -1024,11 +1024,27 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
                     (FixProblem.CreatesImportCycle [ "Module1", "Module2", "Module3" ])
                     { withoutColors = """I failed to apply the automatic fix because it resulted in an import cycle.
 
+    ┌─────┐
+    │    Module1
+    │     ↓
+    │    Module2
+    │     ↓
+    │    Module3
+    └─────┘
+
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
 Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it resulted in an import cycle.](#E8C338)
+
+    ┌─────┐
+    │    [Module1](#E8C338)
+    │     ↓
+    │    [Module2](#E8C338)
+    │     ↓
+    │    [Module3](#E8C338)
+    └─────┘
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
