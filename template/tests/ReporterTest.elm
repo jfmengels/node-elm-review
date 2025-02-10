@@ -1,12 +1,13 @@
 module ReporterTest exposing (multipleErrorsIncludingGlobalErrorTest, suite)
 
-import Elm.Review.FixExplanation as FixExplanation
+import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.UnsuppressMode as UnsuppressMode
+import Expect exposing (Expectation)
 import FormatTester exposing (expect)
 import Review.Fix as Edit
-import Review.Fix.FixProblem as FixProblem
+import Review.Fix.FixProblem as FixProblem exposing (FixProblem)
 import Set
 import Test exposing (Test, describe, test)
 
@@ -886,7 +887,130 @@ Details
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
+        , test "should show a failing fix that has collisions in edit ranges (succinct)" <|
+            \() ->
+                expectFixFailure
+                    FixExplanation.Succinct
+                    (FixProblem.HasCollisionsInEditRanges
+                        { filePath = "src/FileA.elm"
+                        , edits =
+                            [ Edit.removeRange { start = { row = 2, column = 4 }, end = { row = 2, column = 10 } }
+                            , Edit.removeRange { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }
+                            ]
+                        }
+                    )
+                    { withoutColors = """I failed to apply the automatic fix because it contained edits with collisions.
+
+I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."""
+                    , withColors = """[I failed to apply the automatic fix because it contained edits with collisions.](#E8C338)
+
+[I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.](#E8C338)"""
+                    }
+        , test "should show a failing fix that has collisions in edit ranges (detailed)" <|
+            \() ->
+                expectFixFailure
+                    FixExplanation.Detailed
+                    (FixProblem.HasCollisionsInEditRanges
+                        { filePath = "src/FileA.elm"
+                        , edits =
+                            [ Edit.removeRange { start = { row = 2, column = 4 }, end = { row = 2, column = 10 } }
+                            , Edit.removeRange { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }
+                            ]
+                        }
+                    )
+                    { withoutColors = """I failed to apply the automatic fix because some edits for src/FileA.elm collide:
+
+    Review.Fix.removeRange
+         { start = { row = 2, column = 4 }, end = { row = 2, column = 10 } }
+
+    Review.Fix.removeRange
+         { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }
+
+I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."""
+                    , withColors = """[I failed to apply the automatic fix because some edits for src/FileA.elm collide:
+
+    Review.Fix.removeRange
+         { start = { row = 2, column = 4 }, end = { row = 2, column = 10 } }
+
+    Review.Fix.removeRange
+         { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }](#E8C338)
+
+[I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
+                    }
         ]
+
+
+expectFixFailure : FixExplanation -> FixProblem -> { withoutColors : String, withColors : String } -> Expectation
+expectFixFailure fixExplanation fixProblem { withoutColors, withColors } =
+    [ { path = Reporter.FilePath "src/FileA.elm"
+      , source = Reporter.Source """module FileA exposing (a)
+a = Debug.log "debug" 1"""
+      , errors =
+            [ { ruleName = "NoDebug"
+              , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
+              , message = "Do not use Debug"
+              , details = [ "Details" ]
+              , range =
+                    { start = { row = 2, column = 5 }
+                    , end = { row = 2, column = 10 }
+                    }
+              , providesFix = True
+              , fixProblem = Just fixProblem
+              , providesFileRemovalFix = False
+              , suppressed = False
+              }
+            ]
+      }
+    ]
+        |> Reporter.formatReport
+            { suppressedErrors = SuppressedErrors.empty
+            , unsuppressMode = UnsuppressMode.UnsuppressNone
+            , originalNumberOfSuppressedErrors = 0
+            , detailsMode = Reporter.WithDetails
+            , fixExplanation = fixExplanation
+            , mode = Reporter.Fixing True
+            , errorsHaveBeenFixedPreviously = False
+            }
+        |> expect
+            { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+(FIX FAILED) NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+Details
+
+""" ++ withoutColors ++ """
+
+I found 1 error in 1 file."""
+            , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[(FIX FAILED) ](#E8C338)[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](#FF0000)
+
+Details
+
+""" ++ withColors ++ """
+
+I found [1 error](#FF0000) in [1 file](#E8C338)."""
+            }
 
 
 globalErrorTest : Test
