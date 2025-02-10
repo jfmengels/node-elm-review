@@ -954,6 +954,43 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
 
 expectFixFailure : FixExplanation -> FixProblem -> { withoutColors : String, withColors : String } -> Expectation
 expectFixFailure fixExplanation fixProblem { withoutColors, withColors } =
+    let
+        expectedWithoutColorsPrefix : String
+        expectedWithoutColorsPrefix =
+            """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
+
+(FIX FAILED) NoDebug: Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       ^^^^^
+
+Details
+
+"""
+
+        expectedWithColorsPrefix : String
+        expectedWithColorsPrefix =
+            """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
+
+[(FIX FAILED) ](#E8C338)[NoDebug](#FF0000): Do not use Debug
+
+1| module FileA exposing (a)
+2| a = Debug.log "debug" 1
+       [^^^^^](#FF0000)
+
+Details
+
+"""
+
+        expectedWithoutColorsSuffix : String
+        expectedWithoutColorsSuffix =
+            "\n\nI found 1 error in 1 file."
+
+        expectedWithColorsSuffix : String
+        expectedWithColorsSuffix =
+            "\n\nI found [1 error](#FF0000) in [1 file](#E8C338)."
+    in
     [ { path = Reporter.FilePath "src/FileA.elm"
       , source = Reporter.Source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
@@ -983,34 +1020,18 @@ a = Debug.log "debug" 1"""
             , mode = Reporter.Fixing True
             , errorsHaveBeenFixedPreviously = False
             }
-        |> expect
-            { withoutColors = """-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5
-
-(FIX FAILED) NoDebug: Do not use Debug
-
-1| module FileA exposing (a)
-2| a = Debug.log "debug" 1
-       ^^^^^
-
-Details
-
-""" ++ withoutColors ++ """
-
-I found 1 error in 1 file."""
-            , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
-
-[(FIX FAILED) ](#E8C338)[NoDebug](#FF0000): Do not use Debug
-
-1| module FileA exposing (a)
-2| a = Debug.log "debug" 1
-       [^^^^^](#FF0000)
-
-Details
-
-""" ++ withColors ++ """
-
-I found [1 error](#FF0000) in [1 file](#E8C338)."""
-            }
+        |> Expect.all
+            [ \textList ->
+                FormatTester.formatWithoutColors textList
+                    |> String.replace expectedWithoutColorsPrefix ""
+                    |> String.replace expectedWithoutColorsSuffix ""
+                    |> Expect.equal withoutColors
+            , \textList ->
+                FormatTester.formatWithColors textList
+                    |> String.replace expectedWithColorsPrefix ""
+                    |> String.replace expectedWithColorsSuffix ""
+                    |> Expect.equal withColors
+            ]
 
 
 globalErrorTest : Test

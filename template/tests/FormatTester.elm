@@ -1,4 +1,7 @@
-module FormatTester exposing (expect)
+module FormatTester exposing
+    ( expect
+    , formatWithColors, formatWithoutColors
+    )
 
 {-| Write expectations for the result of formatting functions.
 
