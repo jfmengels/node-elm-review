@@ -45,6 +45,8 @@ If the process ran without any hitches, you should get something like the follow
 
 ```json
 {
+  "version": "1",
+  "cliVersion": "2.13.0",
   "type": "review-errors",
   "errors": [
     {
@@ -130,6 +132,8 @@ If the process ran without any hitches, you should get something like the follow
 }
 ```
 
+- `version`: **(Since 2.13.0)** Version of this report format. If absent, consider it's `"1"`.
+- `cliVersion`: **(Since 2.13.0)** Version of the CLI being run.
 - `type`: Equal to `"review-errors"` when the run went well (finding errors or not)
 - `errors`: The array of errors that `elm-review` found. If it is empty, then no errors were found (in a normal run, `elm-review` would then exit with status code 0). The following describe each item in the array.
   - `path`: The relative path to the file for which the (sibling) errors are reported.
@@ -170,11 +174,11 @@ Other fix kinds may appear in the future. If anything unknown or unsupported app
 ```ts
 type FixKind =
   | {
-      kind: "remove";
+      kind: 'remove';
     }
   | {
-      kind: "edit";
-      edits: Array<Edit>
+      kind: 'edit';
+      edits: Array<Edit>;
     };
 ```
 
@@ -202,7 +206,6 @@ type Location =
   , column: number; // Starts at 1
   };
 ```
-
 
 ### Newline delimited JSON
 
