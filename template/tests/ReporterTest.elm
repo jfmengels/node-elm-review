@@ -949,6 +949,56 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
 
 Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
                     }
+        , test "should show a failing fix that has negative ranges (succinct)" <|
+            \() ->
+                expectFixFailure
+                    FixExplanation.Succinct
+                    (FixProblem.EditWithNegativeRange
+                        { filePath = "src/FileA.elm"
+                        , edit = Edit.removeRange { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }
+                        }
+                    )
+                    { withoutColors = """I failed to apply the automatic fix because it contained edits with negative ranges.
+
+I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."""
+                    , withColors = """[I failed to apply the automatic fix because it contained edits with negative ranges.](#E8C338)
+
+[I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.](#E8C338)"""
+                    }
+        , test "should show a failing fix that has negative ranges (detailed)" <|
+            \() ->
+                expectFixFailure
+                    FixExplanation.Detailed
+                    (FixProblem.EditWithNegativeRange
+                        { filePath = "src/FileA.elm"
+                        , edit = Edit.removeRange { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }
+                        }
+                    )
+                    { withoutColors = """I failed to apply the automatic fix because I have found an edit for src/FileA.elm where the start is positioned after the end:
+
+  Review.Fix.removeRange
+         { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }
+
+I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."""
+                    , withColors = """[I failed to apply the automatic fix because I have found an edit for src/FileA.elm where the start is positioned after the end:
+
+  Review.Fix.removeRange
+         { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }](#E8C338)
+
+[I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
+- NoDebug (https://github.com/author/package/issues)
+
+Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
+                    }
         ]
 
 
