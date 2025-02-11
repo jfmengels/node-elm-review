@@ -19,6 +19,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Error.Fixes as Fixes
 import Review.Fix as Fix exposing (Fix)
+import Review.Fix.FixProblem exposing (FixProblem)
 import Review.Options as ReviewOptions
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency exposing (Dependency)
@@ -1575,15 +1576,21 @@ groupErrorsByFile project errors =
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
 fromReviewError suppressedErrors links error =
     let
-        fixes : Maybe (List ( String, Maybe (List Fix) ))
+        fixes : Result FixProblem (Maybe (List ( String, Maybe (List Fix) )))
         fixes =
             Rule.errorFixesV2 error
-                |> Result.toMaybe
-                |> Maybe.andThen identity
 
         providesFix : Bool
         providesFix =
-            fixes /= Nothing
+            case fixes of
+                Ok Nothing ->
+                    False
+
+                Ok (Just _) ->
+                    True
+
+                Err _ ->
+                    True
     in
     { ruleName = Rule.errorRuleName error
     , ruleLink = linkToRule links error
@@ -1591,20 +1598,33 @@ fromReviewError suppressedErrors links error =
     , details = Rule.errorDetails error
     , range = Rule.errorRange error
     , providesFix = providesFix
-    , fixProblem = Rule.errorFixProblem error
-    , providesFileRemovalFix = providesFix && hasFileRemovalFixes fixes
+    , fixProblem =
+        case fixes of
+            Ok Nothing ->
+                Nothing
+
+            Ok (Just _) ->
+                Nothing
+
+            Err fixProblem ->
+                Just fixProblem
+    , providesFileRemovalFix =
+        case fixes of
+            Ok (Just fixes_) ->
+                hasFileRemovalFixes fixes_
+
+            Ok Nothing ->
+                False
+
+            Err _ ->
+                False
     , suppressed = SuppressedErrors.member error suppressedErrors
     }
 
 
-hasFileRemovalFixes : Maybe (List ( String, Maybe (List Fix) )) -> Bool
-hasFileRemovalFixes maybeFixes =
-    case maybeFixes of
-        Just fixes ->
-            List.any (\( _, fix ) -> fix == Nothing) fixes
-
-        Nothing ->
-            False
+hasFileRemovalFixes : List ( String, Maybe (List Fix) ) -> Bool
+hasFileRemovalFixes fixes =
+    List.any (\( _, fix ) -> fix == Nothing) fixes
 
 
 
