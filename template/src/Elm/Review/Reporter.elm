@@ -215,32 +215,12 @@ using `elm-review --fix --allow-remove-files`."""
 
             Fixing _ ->
                 if not (Dict.isEmpty rulesWithInvalidFixes) then
-                    Just
-                        [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:\n"
-                            ++ String.join "\n"
-                                (Dict.toList rulesWithInvalidFixes
-                                    |> List.map
-                                        (\( ruleName, ruleIssueLink ) ->
-                                            let
-                                                link : String
-                                                link =
-                                                    case ruleIssueLink of
-                                                        Just issueLink_ ->
-                                                            " (" ++ issueLink_ ++ ")"
-
-                                                        Nothing ->
-                                                            ""
-                                            in
-                                            "- " ++ ruleName ++ link
-                                        )
-                                )
-                          )
-                            |> Text.from
-                            |> Text.inYellow
-                        , "\n\n"
-                            |> Text.from
-                            |> Text.inYellow
-                        , case fixExplanation of
+                    [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:"
+                        |> Text.from
+                        |> Text.inYellow
+                      )
+                        :: (Dict.toList rulesWithInvalidFixes |> List.concatMap listFailingRules)
+                    , [ case fixExplanation of
                             FixExplanation.Succinct ->
                                 "Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."
                                     |> Text.from
@@ -250,7 +230,10 @@ using `elm-review --fix --allow-remove-files`."""
                                 "Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."
                                     |> Text.from
                                     |> Text.inYellow
-                        ]
+                      ]
+                    ]
+                        |> Text.join "\n\n"
+                        |> Just
 
                 else
                     Nothing
@@ -260,6 +243,29 @@ using `elm-review --fix --allow-remove-files`."""
             |> Text.join "\n\n"
             |> Text.simplify
             |> List.map Text.toRecord
+
+
+listFailingRules : ( String, Maybe String ) -> List Text
+listFailingRules ( ruleName, rulePackage ) =
+    let
+        base : Text
+        base =
+            ("\n- " ++ ruleName)
+                |> Text.from
+                |> Text.inYellow
+    in
+    case rulePackage of
+        Just rulePackageName ->
+            [ base
+            , Text.from " ("
+            , rulePackageName
+                |> Text.from
+                |> Text.withLink (Just ("https://github.com/" ++ rulePackageName ++ "/issues"))
+            , Text.from ")"
+            ]
+
+        Nothing ->
+            [ base ]
 
 
 {-| Reports configuration errors reported by `elm-review` in a nice human-readable way.
@@ -343,7 +349,7 @@ classifyFixesHelp errors acc =
                 Just _ ->
                     classifyFixesHelp
                         rest
-                        { rulesWithInvalidFixes = Dict.insert error.ruleName (issueLink error) acc.rulesWithInvalidFixes
+                        { rulesWithInvalidFixes = Dict.insert error.ruleName (packageName error) acc.rulesWithInvalidFixes
                         , hasIgnoredFixableErrors = acc.hasIgnoredFixableErrors
                         , hasFileRemovalFixes = acc.hasFileRemovalFixes
                         }
@@ -357,8 +363,8 @@ classifyFixesHelp errors acc =
                         }
 
 
-issueLink : Error -> Maybe String
-issueLink error =
+packageName : Error -> Maybe String
+packageName error =
     error.ruleLink
         |> Maybe.andThen
             (\link ->
@@ -368,7 +374,7 @@ issueLink error =
                         |> String.split "/"
                 of
                     author :: pkg :: _ ->
-                        Just ("https://github.com/" ++ author ++ "/" ++ pkg ++ "/issues")
+                        Just (author ++ "/" ++ pkg)
 
                     _ ->
                         Nothing

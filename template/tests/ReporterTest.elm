@@ -710,7 +710,7 @@ Details
 I failed to apply the automatic fix because it contained edits with collisions.
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.
 
@@ -728,9 +728,9 @@ Details
 [I failed to apply the automatic fix because it contained edits with collisions.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)
+[Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
@@ -793,7 +793,7 @@ I failed to apply the automatic fix because some edits for src/FileA.elm collide
          { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.
 
@@ -817,9 +817,9 @@ Details
          { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)
+[Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
@@ -902,15 +902,15 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
                     { withoutColors = """I failed to apply the automatic fix because it contained edits with collisions.
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it contained edits with collisions.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
+[Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has collisions in edit ranges (detailed)" <|
             \() ->
@@ -933,7 +933,7 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
          { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because some edits for src/FileA.elm collide:
@@ -945,9 +945,9 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
          { start = { row = 2, column = 6 }, end = { row = 2, column = 12 } }](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
+[Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has negative ranges (succinct)" <|
             \() ->
@@ -961,15 +961,15 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
                     { withoutColors = """I failed to apply the automatic fix because it contained edits with negative ranges.
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it contained edits with negative ranges.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
+[Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has negative ranges (detailed)" <|
             \() ->
@@ -986,7 +986,7 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
          { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because I have found an edit for src/FileA.elm where the start is positioned after the end:
@@ -995,9 +995,9 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
          { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
+[Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has import cycles (succinct)" <|
             \() ->
@@ -1007,15 +1007,15 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
                     { withoutColors = """I failed to apply the automatic fix because it resulted in an import cycle.
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it resulted in an import cycle.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
+[Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has import cycles (detailed)" <|
             \() ->
@@ -1033,7 +1033,7 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
     └─────┘
 
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug (author/package)
 
 Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it resulted in an import cycle.](#E8C338)
@@ -1047,9 +1047,9 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
     └─────┘
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
-- NoDebug (https://github.com/author/package/issues)
+- NoDebug](#E8C338) (author/package)
 
-Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
+[Please try to provide a SSCCE (https://sscce.org/) and as much information as possible to help solve the issue.](#E8C338)"""
                     }
         ]
 
