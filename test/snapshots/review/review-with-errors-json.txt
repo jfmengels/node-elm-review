@@ -1,4 +1,6 @@
 {
+  "version": "1",
+  "cliVersion": "2.12.0",
   "type": "review-errors",
   "errors": [
     {
@@ -74,6 +76,29 @@
               "string": ""
             }
           ],
+          "fixV2": [
+            {
+              "path": "src/Main.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 9,
+                        "column": 14
+                      },
+                      "end": {
+                        "line": 11,
+                        "column": 15
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
+            }
+          ],
           "formatted": [
             {
               "string": "(fix) ",
@@ -115,19 +140,6 @@
             {
               "range": {
                 "start": {
-                  "line": 28,
-                  "column": 16
-                },
-                "end": {
-                  "line": 29,
-                  "column": 23
-                }
-              },
-              "string": ""
-            },
-            {
-              "range": {
-                "start": {
                   "line": 39,
                   "column": 48
                 },
@@ -137,6 +149,55 @@
                 }
               },
               "string": ""
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 28,
+                  "column": 16
+                },
+                "end": {
+                  "line": 29,
+                  "column": 23
+                }
+              },
+              "string": ""
+            }
+          ],
+          "fixV2": [
+            {
+              "path": "src/Main.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 39,
+                        "column": 48
+                      },
+                      "end": {
+                        "line": 42,
+                        "column": 18
+                      }
+                    },
+                    "string": ""
+                  },
+                  {
+                    "range": {
+                      "start": {
+                        "line": 28,
+                        "column": 16
+                      },
+                      "end": {
+                        "line": 29,
+                        "column": 23
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
             }
           ],
           "formatted": [
