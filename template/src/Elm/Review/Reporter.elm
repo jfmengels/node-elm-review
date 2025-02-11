@@ -771,7 +771,8 @@ After applying the fixes, """ ++ filePath)
                     , end = { row = firstParsingError.row, column = firstParsingError.col + 1 }
                     }
                     (Just (problemToString firstParsingError.problem))
-                , [ "\n\nHere are the individual edits for the file:"
+                , [ Text.from "\n\n"
+                  , "Here are the individual edits for the file:"
                         |> Text.from
                         |> Text.inYellow
                   , Text.from "\n\n    "
