@@ -1,4 +1,6 @@
 {
+  "version": "1",
+  "cliVersion": "2.12.0",
   "type": "review-errors",
   "errors": [
     {
@@ -34,6 +36,29 @@
                 }
               },
               "string": ""
+            }
+          ],
+          "fixV2": [
+            {
+              "path": "src/Main.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 9,
+                        "column": 14
+                      },
+                      "end": {
+                        "line": 11,
+                        "column": 15
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
             }
           ],
           "formatted": [

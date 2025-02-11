@@ -1,4 +1,6 @@
 {
+  "version": "1",
+  "cliVersion": "2.12.0",
   "type": "review-errors",
   "errors": [
     {
@@ -34,6 +36,29 @@
                 }
               },
               "string": ""
+            }
+          ],
+          "fixV2": [
+            {
+              "path": "src/Main.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 9,
+                        "column": 14
+                      },
+                      "end": {
+                        "line": 11,
+                        "column": 13
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
             }
           ],
           "formatted": [
@@ -90,6 +115,29 @@
                 }
               },
               "string": ""
+            }
+          ],
+          "fixV2": [
+            {
+              "path": "src/Main.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 11,
+                        "column": 13
+                      },
+                      "end": {
+                        "line": 13,
+                        "column": 15
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
             }
           ],
           "formatted": [
@@ -153,6 +201,29 @@
               "string": ""
             }
           ],
+          "fixV2": [
+            {
+              "path": "src/OtherFile.elm",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 8,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 10,
+                        "column": 1
+                      }
+                    },
+                    "string": ""
+                  }
+                ]
+              }
+            }
+          ],
           "formatted": [
             {
               "string": "(unsuppressed) ",
@@ -213,6 +284,29 @@
                 }
               },
               "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.3\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
+            }
+          ],
+          "fixV2": [
+            {
+              "path": "elm.json",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 1,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 100000000,
+                        "column": 1
+                      }
+                    },
+                    "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.3\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
+                  }
+                ]
+              }
             }
           ],
           "formatted": [
