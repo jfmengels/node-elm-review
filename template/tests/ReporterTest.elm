@@ -712,7 +712,7 @@ I failed to apply the automatic fix because it contained edits with collisions.
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.
 
 I found 1 error in 1 file."""
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
@@ -730,7 +730,7 @@ Details
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.](#E8C338)
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)
 
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
@@ -904,13 +904,13 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."""
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it contained edits with collisions.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.](#E8C338)"""
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has collisions in edit ranges (detailed)" <|
             \() ->
@@ -963,13 +963,13 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."""
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it contained edits with negative ranges.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.](#E8C338)"""
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has negative ranges (detailed)" <|
             \() ->
@@ -1009,13 +1009,13 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
 I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."""
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."""
                     , withColors = """[I failed to apply the automatic fix because it resulted in an import cycle.](#E8C338)
 
 [I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:
 - NoDebug (https://github.com/author/package/issues)
 
-Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue.](#E8C338)"""
+Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue.](#E8C338)"""
                     }
         , test "should show a failing fix that has import cycles (detailed)" <|
             \() ->

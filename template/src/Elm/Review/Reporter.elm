@@ -242,7 +242,7 @@ using `elm-review --fix --allow-remove-files`."""
                             |> Text.inYellow
                         , case fixExplanation of
                             FixExplanation.Succinct ->
-                                "Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which would provide more information which could help solve the issue."
+                                "Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."
                                     |> Text.from
                                     |> Text.inYellow
 
