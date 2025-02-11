@@ -17,7 +17,6 @@ import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Review.Error.Fixes as Fixes
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
 import Review.Options as ReviewOptions
