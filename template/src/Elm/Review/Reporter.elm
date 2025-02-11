@@ -764,6 +764,7 @@ After applying the fixes, """ ++ filePath)
                   , deadEndsToString invalid.parsingErrors
                         |> Text.from
                         |> Text.inYellow
+                  , Text.from "\n\n"
                   ]
                 , codeExtract (Source invalid.source)
                     { start = { row = firstParsingError.row, column = firstParsingError.col }
@@ -796,6 +797,7 @@ After applying the fixes, """ ++ filePath)
             , ("    " ++ Json.Decode.errorToString decodingError)
                 |> Text.from
                 |> Text.inYellow
+            , Text.from "\n\n"
             , source
                 |> Text.from
             , "\n\nHere are the individual edits for the file:"
