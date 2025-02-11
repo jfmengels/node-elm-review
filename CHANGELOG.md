@@ -4,11 +4,10 @@
 
 ## [2.13.0] - 2025-02-11
 
-Now requires `jfmengels/elm-review` v2.15.0.
+Now requires `jfmengels/elm-review` v2.15.0, as well as Node.js 14 and newer.
 
-- Added support for multi-file fixes and file removals introduced in the Elm package (see its [CHANGELOG](TODO)).
+- Added support for multi-file fixes and file removals introduced in the Elm package (see its [CHANGELOG](https://github.com/jfmengels/elm-review/blob/main/CHANGELOG.md#2150---2025-02-11)).
 - Added `--allow-remove-files` to enable file removal in fixes
-
 - Improved the output of the error report.
 - Added `--explain-fix-failure` to get more information about why an automatic fix failed.
 - Publicly documented the `--fix-all-without-prompt` CLI flag. Please use it well!
