@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed an issue causing fix diff proposals not to be properly indented.
+
 ## [2.13.0] - 2025-02-11
 
 Now requires `jfmengels/elm-review` v2.15.0, as well as Node.js 14 and newer.
