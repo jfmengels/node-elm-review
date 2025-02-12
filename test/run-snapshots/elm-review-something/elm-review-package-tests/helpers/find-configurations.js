@@ -11,8 +11,7 @@ const root = path
  */
 function findPreviewConfigurations() {
   return globSync(`${root}/preview*/**/elm.json`, {
-    ignore: ['**/elm-stuff/**'],
-    onlyFiles: false
+    ignore: ['**/elm-stuff/**']
   }).map((val) => path.dirname(val));
 }
 
