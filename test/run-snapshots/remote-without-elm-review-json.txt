@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "cliVersion": "2.12.0",
+  "cliVersion": "2.13.0",
   "type": "review-errors",
   "errors": [
     {
@@ -9,7 +9,7 @@
         {
           "rule": "NoUnused.Variables",
           "message": "Imported variable `span` is not used",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.3/NoUnused-Variables",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.4/NoUnused-Variables",
           "details": [
             "You should either use this value somewhere, or remove it at the location I pointed at."
           ],
@@ -69,7 +69,7 @@
             {
               "string": "NoUnused.Variables",
               "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.3/NoUnused-Variables"
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.4/NoUnused-Variables"
             },
             ": Imported variable `span` is not used\n\n10|           -- span is unused\n11|         , span\n              ",
             {

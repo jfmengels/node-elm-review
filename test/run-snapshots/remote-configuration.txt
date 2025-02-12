@@ -2,7 +2,7 @@
 ✔ Build finished! Now reviewing your project...
 -- ELM-REVIEW ERROR ---------------------------------- src/Folder/Unused.elm:1:8
 
-NoUnused.Exports: Module `Folder.Unused` is never used.
+(fix removes files) NoUnused.Exports: Module `Folder.Unused` is never used.
 
 1| module Folder.Unused exposing (..)
           ^^^^^^^^^^^^^
@@ -36,9 +36,12 @@ not used.
 29|     | UnusedCustomType
           ^^^^^^^^^^^^^^^^
 
-This type constructor is never used. It might be handled everywhere it might
-appear, but there is no location where this value actually gets created.
+This type constructor is never used. It might be handled everywhere it appears,
+but there is no location where this value actually gets created.
 
 Errors marked with (fix) can be fixed automatically using `elm-review --fix`.
+
+Errors marked with (fix removes files) can be fixed automatically by
+also using `--allow-remove-files`.
 
 I found 3 errors in 2 files.
