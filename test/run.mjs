@@ -111,7 +111,7 @@ const runAndRecord = async (title, args, file, input) => {
   const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
   const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
 
-  process.stdout.write(
+  console.log(
     `\u001B[33m- ${title}\u001B[0m: \u001B[34m ${censoredCommand}\u001B[0m`
   );
 
