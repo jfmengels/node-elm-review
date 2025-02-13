@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 - Fixed an issue causing fix diff proposals not to be properly indented.
+- Improve the error message when getting rate limit errors from GitHub after using `--template` too often.
+- Only require the personal access token (and not the username + personal access token) when using `--github-auth` (to prevent GitHub rate limits).
+- Improved performance around listing files to load.
+- Removed dependency `glob`.
 
 ## [2.13.0] - 2025-02-11
 
