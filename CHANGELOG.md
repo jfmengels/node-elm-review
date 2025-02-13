@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.13.1] - 2025-02-13
+
 - Fixed an issue causing fix diff proposals not to be properly indented.
 - Improve the error message when getting rate limit errors from GitHub after using `--template` too often.
 - Only require the personal access token (and not the username + personal access token) when using `--github-auth` (to prevent GitHub rate limits).
@@ -159,7 +161,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.0...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.1...HEAD
+[2.13.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.1
 [2.13.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.0
 [2.12.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.12.0
 [2.11.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.11.2
