@@ -1,0 +1,15 @@
+-- ELM-REVIEW ERROR ----------------------------------------- src/Main.elm:23:33
+
+NoUnknownCssClasses: Unknown CSS class unknown-css
+
+22|         , Html.Attributes.class "from-css-3"
+23|         , Html.Attributes.class "unknown-css"
+                                    ^^^^^^^^^^^^^
+24|         ]
+
+This CSS class does not appear in the project's `.css` files.
+
+Could it be that you misspelled the name of the class, or that the class
+recently got removed?
+
+I found 1 error in 1 file.

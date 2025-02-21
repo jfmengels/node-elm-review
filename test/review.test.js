@@ -147,3 +147,10 @@ test('Includes files from a source-directory if that source-directory is in elm-
     testName('src.elm-project-with-files-in-elm-stuff')
   );
 });
+
+test('Includes files requested as extra files', async () => {
+  const output = await TestCli.runAndExpectError([], {
+    project: 'project-with-extra-files'
+  });
+  expect(output).toMatchFile(testName('src.elm-project-with-extra-files'));
+});
