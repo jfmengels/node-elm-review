@@ -89,6 +89,6 @@ jobs:
       run: npx --no-install elm-tooling install
 
     - name: Run tests
-      run: npm test
+      run: ${{ matrix.os == 'ubuntu-latest' && 'npm test' || 'turbo test-sync' }}
       env:
         AUTH_GITHUB: ${{ github.token }}
