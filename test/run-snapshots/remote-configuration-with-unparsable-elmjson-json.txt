@@ -1,8 +1,8 @@
 {
   "type": "error",
-  "title": "GITHUB RATE LIMIT EXCEEDED",
+  "title": "TEMPLATE ELM.JSON PARSING ERROR",
   "path": "<local-path>/test/project-with-errors/review/elm.json",
   "message": [
-    "It looks like you exceeded the GitHub rate limit by using \"--template\" too many\ntimes, this will likely last until 2/13/2025, 10:26:40 AM.\n\n\nTo avoid this problem and to make the review process faster, consider setting up\nelm-review in your project:\n\n    elm-review init\n    elm-review init --template <some-configuration>"
+    "I found the elm.json associated with jfmengels/node-elm-review repository on GitHub,\nbut I encountered a problem when parsing it:\n\nUnexpected token / in JSON at position 135"
   ]
 }
