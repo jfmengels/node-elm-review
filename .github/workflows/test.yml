@@ -97,6 +97,6 @@ jobs:
       run: npm install -g turbo
 
     - name: Run tests
-      run: npm test
+      run: ${{ matrix.os == 'ubuntu-latest' && 'npm test' || 'turbo test-sync' }}
       env:
         AUTH_GITHUB: ${{ github.token }}

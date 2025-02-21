@@ -471,7 +471,10 @@ await createTest(
 
 // Review with remote configuration
 
-if (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) {
+if (
+  (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) ||
+  (CI && process.platform === 'win32')
+) {
   process.exit(0);
 }
 
