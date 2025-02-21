@@ -48,7 +48,9 @@ if (nodeVersion !== expectedVersion) {
  */
 const replaceScript = (data) => {
   const localPath = path.join(__dirname, '..');
-  return data.replace(new RegExp(localPath, 'g'), '<local-path>');
+  return data
+    .replace(new RegExp(localPath, 'g'), '<local-path>')
+    .replace(/\r\n/g, '\n');
 };
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
