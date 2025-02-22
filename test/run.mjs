@@ -29,6 +29,19 @@ const SNAPSHOTS = path.join(__dirname, 'run-snapshots');
 /** @type {string | undefined} */
 const SUBCOMMAND = process.argv[2];
 
+const nodeVersionOutput = await $`node --version`;
+const nodeVersion = nodeVersionOutput.stdout.toString().slice(1).trim();
+const nvmrc = await fsp.readFile('../.nvmrc');
+const expectedVersion = nvmrc.toString().trim();
+
+if (nodeVersion !== expectedVersion) {
+  console.error(`INCORRECT NODE VERSION\n`);
+  console.error(
+    `You are using Node.js version ${nodeVersion} but you should be using ${expectedVersion}`
+  );
+  process.exit(1);
+}
+
 /**
  * @param {string} data
  * @returns {string}
