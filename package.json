@@ -55,9 +55,9 @@
     "prettier-fix": "prettier . --write --cache",
     "test": "turbo run testing check-engines --continue",
     "test-sync": "npm run jest && npm run test-run",
-    "test-run": "(cd test/ && node ./run.mjs)",
+    "test-run": "(cd test/ && node ./check-rate-limit-snapshots.mjs && node ./run.mjs)",
+    "test-run-record": "(cd test/ && node ./run.mjs record && node ./check-rate-limit-snapshots.mjs)",
     "test-check-rate-limit-snapshots": "(cd test/ && node ./check-rate-limit-snapshots.mjs)",
-    "test-run-record": "(cd test/ && node ./run.mjs record)",
     "tsc": "tsc",
     "tsc-watch": "tsc --watch"
   },
