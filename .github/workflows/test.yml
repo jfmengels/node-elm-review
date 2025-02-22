@@ -35,6 +35,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
 
@@ -89,6 +90,6 @@ jobs:
       run: npx --no-install elm-tooling install
 
     - name: Run tests
-      run: ${{ matrix.os == 'ubuntu-latest' && 'npm test' || 'turbo test-sync' }}
+      run: turbo ${{ matrix.os == 'ubuntu-latest' && 'testing' || 'test-sync' }}
       env:
         AUTH_GITHUB: ${{ github.token }}
