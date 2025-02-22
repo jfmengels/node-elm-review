@@ -422,10 +422,10 @@ await checkFolderContents(NEW_PACKAGE_NAME_FOR_NEW_RULE);
 
 cd(path.join(__dirname, 'project-with-errors'));
 
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Filter rules',
   ['--rules', 'NoUnused.Variables'],
-  'filter-rules'
+  'filter-rules.txt'
 );
 
 await createTest(
@@ -450,6 +450,7 @@ await createTest(
   ['--ignore-dirs', 'src/Folder/'],
   'ignore-dirs.txt'
 );
+
 await createTest(
   'Ignore errors on files',
   ['--ignore-files', 'src/Folder/Unused.elm'],
@@ -481,60 +482,60 @@ await createTest(
   'remote-configuration-no-path.txt'
 );
 
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using unknown remote GitHub configuration',
   ['--template', 'jfmengels/unknown-repo-123'],
-  'remote-configuration-unknown'
+  'remote-configuration-unknown.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using unknown remote GitHub configuration with a branch',
   ['--template', 'jfmengels/unknown-repo-123#some-branch'],
-  'remote-configuration-unknown-with-branch'
+  'remote-configuration-unknown-with-branch.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using remote GitHub configuration with a non-existing branch and commit',
   ['--template', 'jfmengels/elm-review-unused/example#unknown-branch'],
-  'remote-configuration-with-unknown-branch'
+  'remote-configuration-with-unknown-branch.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using remote GitHub configuration with existing repo but that does not contain template folder',
   ['--template', 'jfmengels/node-elm-review'],
-  'remote-configuration-with-absent-folder'
+  'remote-configuration-with-absent-folder.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using a remote configuration with a missing direct elm-review dependency',
   ['--template', 'jfmengels/node-elm-review/test/config-without-elm-review'],
-  'remote-without-elm-review'
+  'remote-without-elm-review.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using a remote configuration with an outdated elm-review',
   [
     '--template',
     'jfmengels/node-elm-review/test/config-for-outdated-elm-review-version'
   ],
-  'remote-with-outdated-elm-review-version'
+  'remote-with-outdated-elm-review-version.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using a remote configuration with an salvageable (outdated but compatible) elm-review',
   [
     '--template',
     'jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version'
   ],
-  'remote-with-outdated-but-salvageable-elm-review-version'
+  'remote-with-outdated-but-salvageable-elm-review-version.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using a remote configuration with unparsable elm.json',
   ['--template', 'jfmengels/node-elm-review/test/config-unparsable-elmjson'],
-  'remote-configuration-with-unparsable-elmjson'
+  'remote-configuration-with-unparsable-elmjson.txt'
 );
-await createTestSuiteWithDifferentReportFormats(
+await createTest(
   'Using both --config and --template',
   [
     '--config',
     '../config-that-triggers-no-errors',
     '--template=jfmengels/test-node-elm-review'
   ],
-  'remote-configuration-with-config-flag'
+  'remote-configuration-with-config-flag.txt'
 );
 
 await fsp.rm(TMP, {recursive: true, force: true});
