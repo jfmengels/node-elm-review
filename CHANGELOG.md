@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed `--github-auth` not working (which is used along with `--template` to bypass GitHub's rate limiting).
+
 ## [2.13.1] - 2025-02-13
 
 - Fixed an issue causing fix diff proposals not to be properly indented.
