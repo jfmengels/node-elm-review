@@ -3,6 +3,7 @@ const path = require('node:path');
 const {$} = require('zx');
 const TestCli = require('./jest-helpers/cli');
 const snapshotter = require('./snapshotter');
+const {makePathOsAgnostic} = require('../lib/os-helpers');
 
 /**
  * @template {string} N
@@ -46,7 +47,9 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     __dirname,
     './project-with-suppressed-errors/review/suppressed/'
   );
-  const filePath = folder + '/NoUnused.Variables.json';
+  const filePath = makePathOsAgnostic(
+    path.join(folder, '/NoUnused.Variables.json')
+  );
   await $`rm -r ${filePath}`;
 
   const output = await TestCli.runAndExpectError(
@@ -65,10 +68,12 @@ test('Running with unsupported version of suppression files should exit with fai
   // an unused variables issue has been fixed. It should however fail because
   // write permission has been removed from `review/suppressed/NoUnused.Variables.json`
   const project = 'project-with-suppressed-errors-no-write';
-  const filePath = path.resolve(
-    __dirname,
-    project,
-    'review/suppressed/NoUnused.Variables.json'
+  const filePath = makePathOsAgnostic(
+    path.resolve(
+      __dirname,
+      project,
+      'review/suppressed/NoUnused.Variables.json'
+    )
   );
   await $`chmod -w ${filePath}`;
 
