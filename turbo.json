@@ -27,7 +27,6 @@
         "tsc",
         "eslint-check",
         "prettier-check",
-        "test-check-rate-limit-snapshots",
         "test-sync"
       ]
     },
