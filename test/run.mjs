@@ -52,8 +52,7 @@ const replaceScript = (data) => {
 };
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
-const AUTH =
-  AUTH_GITHUB === undefined ? [] : [`--github-auth="${AUTH_GITHUB}"`];
+const AUTH = AUTH_GITHUB === undefined ? [] : [`--github-auth=${AUTH_GITHUB}`];
 
 const TEST_ARGS = ['--no-color', ...AUTH, '--FOR-TESTS'];
 
