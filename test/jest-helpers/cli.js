@@ -117,8 +117,8 @@ function colors(options) {
  */
 function normalize(output) {
   return output.replace(
-    "Error: EPERM: operation not permitted, open '<local-path>\\testproject-with-suppressed-errors-no-write\\reviewsuppressedNoUnused.Variables.json'",
-    "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json"
+    "Error: EPERM: operation not permitted, open '<local-path>\\test\\project-with-suppressed-errors-no-write\\review\\suppressed\\NoUnused.Variables.json'",
+    "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'"
   );
 }
 
