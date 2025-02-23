@@ -1,0 +1,6 @@
+-- EMPTY SOURCE-DIRECTORIES ----------------------------------------------------
+
+The `source-directories` in your `elm.json` is empty. I need it to contain
+at least 1 directory in order to find files to analyze. The Elm compiler will
+need that as well anyway.
+
