@@ -53,7 +53,7 @@
     "prepare": "elm-tooling install",
     "prettier-check": "prettier . --check --cache",
     "prettier-fix": "prettier . --write --cache",
-    "test": "turbo run testing check-engines --continue",
+    "test": "turbo run testing check-engines",
     "test-sync": "npm run jest && npm run test-run",
     "test-run": "(cd test/ && node ./check-rate-limit-snapshots.mjs && node ./run.mjs)",
     "test-run-record": "(cd test/ && node ./run.mjs record && node ./check-rate-limit-snapshots.mjs)",
