@@ -123,6 +123,14 @@ test('Running on project with unknown file', async () => {
   expect(output).toMatchFile(testName('run-with-unknown-target'));
 });
 
+test('Running on project with no files', async () => {
+  const output = await TestCli.runAndExpectError(
+    ['--config=../project-with-errors/review'],
+    {project: 'project-empty'}
+  );
+  expect(output).toMatchFile(testName('run-with-empty-project'));
+});
+
 test('Running on project with a directory ending in .elm (without arg)', async () => {
   const output = await TestCli.run(
     ['--config', '../config-that-triggers-no-errors'],

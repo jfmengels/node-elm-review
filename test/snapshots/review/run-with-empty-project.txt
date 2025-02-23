@@ -1,0 +1,6 @@
+-- NO FILES FOUND --------------------------------------------------------------
+
+I could not find any files in this project. I looked in these folders:
+- <local-path>/test/project-empty/src
+- <local-path>/test/project-empty/tests
+
