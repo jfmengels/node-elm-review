@@ -9,7 +9,7 @@
 
 /* eslint n/no-process-exit: "off" -- WIP */
 import * as fsp from 'node:fs/promises';
-import * as path from 'node:path';
+import * as path from 'pathe';
 import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
