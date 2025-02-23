@@ -48,13 +48,11 @@ if (nodeVersion !== expectedVersion) {
  */
 const replaceScript = (data) => {
   const localPath = path.join(__dirname, '..');
-  return data
-    .replace(
-      // eslint-disable-next-line security/detect-non-literal-regexp -- Test code.
-      new RegExp(localPath, 'g'),
-      '<local-path>'
-    )
-    .replace(/\r\n/g, '\n');
+  return data.replace(
+    // eslint-disable-next-line security/detect-non-literal-regexp -- Test code.
+    new RegExp(localPath, 'g'),
+    '<local-path>'
+  );
 };
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
