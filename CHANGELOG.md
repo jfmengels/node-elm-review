@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.13.2] - 2025-02-23
+
+- Report an error when no files are found, instead of hanging indefinitely.
+- Fixed Windows support: The CLI would hang because files would not be found. Thanks [@bdukes](https://github.com/bdukes)!
 - Fixed `--github-auth` not working (which is used along with `--template` to bypass GitHub's rate limiting).
 
 ## [2.13.1] - 2025-02-13
@@ -163,7 +167,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.1...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.2...HEAD
+[2.13.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.2
 [2.13.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.1
 [2.13.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.0
 [2.12.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.12.0
