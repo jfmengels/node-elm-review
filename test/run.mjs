@@ -46,6 +46,7 @@ if (nodeVersion !== expectedVersion) {
  * @param {string} data
  * @returns {string}
  */
+// TODO(@lishaduck): Either this or `anonymize.js` is redundant. Determine which.
 const replaceScript = (data) => {
   const localPath = path.join(__dirname, '..');
   return data.replace(
