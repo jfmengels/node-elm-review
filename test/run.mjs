@@ -49,7 +49,11 @@ if (nodeVersion !== expectedVersion) {
 const replaceScript = (data) => {
   const localPath = path.join(__dirname, '..');
   return data
-    .replace(new RegExp(localPath, 'g'), '<local-path>')
+    .replace(
+      // eslint-disable-next-line security/detect-non-literal-regexp -- Test code.
+      new RegExp(localPath, 'g'),
+      '<local-path>'
+    )
     .replace(/\r\n/g, '\n');
 };
 
