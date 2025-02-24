@@ -9,7 +9,7 @@
 
 /* eslint n/no-process-exit: "off" -- WIP */
 import * as fsp from 'node:fs/promises';
-import * as path from 'node:path';
+import * as path from 'pathe';
 import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
@@ -46,9 +46,14 @@ if (nodeVersion !== expectedVersion) {
  * @param {string} data
  * @returns {string}
  */
+// TODO(@lishaduck): Either this or `anonymize.js` is redundant. Determine which.
 const replaceScript = (data) => {
   const localPath = path.join(__dirname, '..');
-  return data.replace(new RegExp(localPath, 'g'), '<local-path>');
+  return data.replace(
+    // eslint-disable-next-line security/detect-non-literal-regexp -- Test code.
+    new RegExp(localPath, 'g'),
+    '<local-path>'
+  );
 };
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
@@ -471,7 +476,10 @@ await createTest(
 
 // Review with remote configuration
 
-if (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) {
+if (
+  (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) ||
+  (CI && process.platform === 'win32')
+) {
   process.exit(0);
 }
 
