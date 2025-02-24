@@ -37,7 +37,7 @@ import Parser
 import Review.Fix
 import Review.Fix.FixProblem as FixProblem exposing (FixProblem)
 import Review.Project as Project
-import Set exposing (Set)
+import Set
 
 
 {-| Contents of an error. Convert the errors from
@@ -867,11 +867,6 @@ printCycle moduleNames =
         |> Text.join ""
 
 
-wrapInCycle : String -> String
-wrapInCycle string =
-    "    ┌─────┐\n    │    " ++ string ++ "\n    └─────┘"
-
-
 editToFix : { range : Range, replacement : String } -> String
 editToFix { range, replacement } =
     if replacement == "" then
@@ -1638,7 +1633,7 @@ isNoChange change =
 
 deadEndsToString : List Parser.DeadEnd -> String
 deadEndsToString deadEnds =
-    String.concat (List.intersperse "\n" (List.map deadEndToString deadEnds))
+    String.join "\n" (List.map deadEndToString deadEnds)
 
 
 deadEndToString : Parser.DeadEnd -> String

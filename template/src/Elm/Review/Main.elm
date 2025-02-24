@@ -2,7 +2,6 @@ port module Elm.Review.Main exposing (main)
 
 import Dict exposing (Dict)
 import Elm.Docs
-import Elm.Package
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
@@ -1512,11 +1511,6 @@ updateElmJsonFile dependencies file project =
         Err _ ->
             -- TODO Error
             project
-
-
-addElmFile : { a | path : String, source : String } -> Project -> Project
-addElmFile file project =
-    Project.addModule { path = file.path, source = file.source } project
 
 
 type alias FixedFile =
