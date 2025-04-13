@@ -109,6 +109,7 @@
     "jest": "^29.7.0",
     "jest-file-snapshot": "^0.7.0",
     "ls-engines": "^0.9.3",
+    "pathe": "^2.0.3",
     "prettier": "^2.8.8",
     "turbo": "^2.2.3",
     "typescript": "~5.7.3",
