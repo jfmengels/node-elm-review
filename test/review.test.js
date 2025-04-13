@@ -1,4 +1,4 @@
-const path = require('pathe');
+const path = require('node:path');
 const TestCli = require('./jest-helpers/cli');
 const snapshotter = require('./snapshotter');
 
