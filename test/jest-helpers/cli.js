@@ -127,6 +127,7 @@ function normalize(output) {
       )
       // Windows uses DOS paths. I hear it's for historical reasons or something. ¯\_(ツ)_/¯
       .replace('C:\\\\', '/')
+      .replace('\\\\', '/') // JSON
       .replace('\\', '/')
       // Prompts uses different characters on Windows.
       .replace('√', '✔')
