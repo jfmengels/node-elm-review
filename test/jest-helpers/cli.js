@@ -112,6 +112,8 @@ function colors(options) {
 }
 
 /**
+ * Convert Windows output to UNIX output.
+ *
  * @param {string} output
  * @returns {string}
  */
