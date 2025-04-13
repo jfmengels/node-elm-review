@@ -1,4 +1,4 @@
-const path = require('node:path');
+const path = require('pathe');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
 const TestCli = require('./jest-helpers/cli');
