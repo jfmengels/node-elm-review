@@ -29,8 +29,7 @@ const SNAPSHOTS = path.join(__dirname, 'run-snapshots');
 /** @type {string | undefined} */
 const SUBCOMMAND = process.argv[2];
 
-const nodeVersionOutput = await $`node --version`;
-const nodeVersion = nodeVersionOutput.stdout.toString().slice(1).trim();
+const nodeVersion = process.versions.node;
 const nvmrc = await fsp.readFile('../.nvmrc');
 const expectedVersion = nvmrc.toString().trim();
 
