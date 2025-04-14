@@ -129,6 +129,7 @@ function normalize(output) {
       .replace('C:\\', '')
       .replace('\\\\', '/') // JSON
       .replace('\\', '/')
+      .replace('/n', '\\n') // JSON
       // Prompts uses different characters on Windows.
       .replace('√', '✔')
   );
