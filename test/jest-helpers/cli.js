@@ -126,7 +126,7 @@ function normalize(output) {
         "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'"
       )
       // Windows uses DOS paths. I hear it's for historical reasons or something. ¯\_(ツ)_/¯
-      .replace(/C:\\/g, '') // 'C:\' → ''
+      .replace(/.:\\/g, '') // 'C:\' → ''
       .replace(/\\\\/g, '/') // '\\' → '/' (JSON)
       .replace(/\\/g, '/') // '\' → '/'
       .replace(/\/n/g, '\\n') // /n → \n (JSON)
