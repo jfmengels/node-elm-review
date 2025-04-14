@@ -3,6 +3,8 @@
  * @import {Options} from './types/cli';
  */
 
+const Anonymize = require('../../lib/anonymize');
+
 const path = require('pathe');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
@@ -119,17 +121,14 @@ function colors(options) {
  */
 function normalize(output) {
   return (
-    output
-      // Windows has different error codes.
-      .replace(
+    Anonymize.pathsAndVersions(
+      output.replace(
+        // Windows has different error codes.
         "Error: EPERM: operation not permitted, open '<local-path>\\test\\project-with-suppressed-errors-no-write\\review\\suppressed\\NoUnused.Variables.json'",
         "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'"
-      )
-      // Windows uses DOS paths. I hear it's for historical reasons or something. ¯\_(ツ)_/¯
-      .replace(/.:\\/g, '') // 'C:\' → ''
-      .replace(/\\\\/g, '/') // '\\' → '/' (JSON)
-      .replace(/\\/g, '/') // '\' → '/'
-      .replace(/\/n/g, '\\n') // /n → \n (JSON)
+      ),
+      true
+    )
       // Prompts uses different characters on Windows.
       .replace(/√/g, '✔')
   );

@@ -14,6 +14,7 @@ import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
 import {$, cd} from 'zx';
+import Anonymize from '../lib/anonymize.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,20 +41,6 @@ if (nodeVersion !== expectedVersion) {
   );
   process.exit(1);
 }
-
-/**
- * @param {string} data
- * @returns {string}
- */
-// TODO(@lishaduck): Either this or `anonymize.js` is redundant. Determine which.
-const replaceScript = (data) => {
-  const localPath = path.join(__dirname, '..');
-  return data.replace(
-    // eslint-disable-next-line security/detect-non-literal-regexp -- Test code.
-    new RegExp(localPath, 'g'),
-    '<local-path>'
-  );
-};
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
 const AUTH = AUTH_GITHUB === undefined ? [] : [`--github-auth=${AUTH_GITHUB}`];
@@ -88,7 +75,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   }
 
   const output = await cmd.run().text();
-  const replacedOutput = replaceScript(output);
+  const replacedOutput = Anonymize.pathsAndVersions(output, true);
   await fsp.writeFile(actualPath, replacedOutput);
 
   const diff = await $`diff ${actualPath} ${snapshotPath}`.nothrow();
@@ -134,7 +121,7 @@ const runAndRecord = async (title, args, file, input) => {
   $.env.ELM_HOME = ELM_HOME;
 
   const output = await cmd.run().text();
-  const replacedOutput = replaceScript(output);
+  const replacedOutput = Anonymize.pathsAndVersions(output, true);
   await fsp.writeFile(snapshotPath, replacedOutput);
 };
 
