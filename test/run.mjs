@@ -75,7 +75,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   }
 
   const output = await cmd.run().text();
-  const replacedOutput = Anonymize.pathsAndVersions(output, true);
+  const replacedOutput = Anonymize.paths(output, true);
   await fsp.writeFile(actualPath, replacedOutput);
 
   const diff = await $`diff ${actualPath} ${snapshotPath}`.nothrow();
@@ -121,7 +121,7 @@ const runAndRecord = async (title, args, file, input) => {
   $.env.ELM_HOME = ELM_HOME;
 
   const output = await cmd.run().text();
-  const replacedOutput = Anonymize.pathsAndVersions(output, true);
+  const replacedOutput = Anonymize.paths(output, true);
   await fsp.writeFile(snapshotPath, replacedOutput);
 };
 
