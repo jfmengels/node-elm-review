@@ -121,7 +121,7 @@ function colors(options) {
  */
 function normalize(output) {
   return (
-    Anonymize.pathsAndVersions(
+    Anonymize.paths(
       output.replace(
         // Windows has different error codes.
         "Error: EPERM: operation not permitted, open '<local-path>\\test\\project-with-suppressed-errors-no-write\\review\\suppressed\\NoUnused.Variables.json'",
