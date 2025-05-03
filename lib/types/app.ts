@@ -8,7 +8,7 @@ import type {
   Readme,
   Source
 } from './content.ts';
-import type {ElmNamespace, ElmApp} from './elm-js.ts';
+import type {ElmApp, ElmInstance} from './elm-js.ts';
 import type {ErrorMessageInfo} from './error-message.ts';
 import type {Flags} from './flags.ts';
 import type {Path} from './path.ts';
@@ -18,13 +18,9 @@ import type {FilesProposedByCurrentFix} from './state.ts';
 import type {StyledMessage} from './styled-message.ts';
 import type {SuppressedErrorsFile} from './suppressed.ts';
 
-export type ReviewElm = ElmNamespace<
-  ['Elm', 'Review', 'Main'],
-  Flags,
-  ReviewApp
->;
-
+export type ReviewElm = ElmInstance<Ports, Flags, ['Elm', 'Review', 'Main']>;
 export type ReviewApp = ElmApp<Ports>;
+export type ReviewModule = {Elm: ReviewElm};
 
 export type Ports = {
   requestReadingFiles: SubscribePort<string[]>;

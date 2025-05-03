@@ -1,25 +1,33 @@
-export type ElmNamespace<
-  Entrypoints extends string[],
-  Flags,
-  App extends ElmApp<Record<string, unknown>>
-> = {
-  Elm: NestedEntrypoints<
-    Entrypoints,
-    {
-      init: Flags extends undefined
-        ? () => App
-        : (flags: {flags: Flags}) => App;
-    }
-  >;
-};
+export type ElmInstance<
+  P,
+  F,
+  Entrypoints extends string[] = ['Main']
+> = NestedEntrypoints<Entrypoints, P, F>;
 
-type NestedEntrypoints<Entrypoints extends string[], T> = Entrypoints extends [
+type NestedEntrypoints<
+  Entrypoints extends string[],
+  P,
+  F
+> = Entrypoints extends [
   infer First extends string,
   ...infer Rest extends string[]
 ]
-  ? {[K in First]: NestedEntrypoints<Rest, T>}
-  : T;
+  ? {[K in First]: NestedEntrypoints<Rest, P, F>}
+  : ElmMain<P, F>;
 
-export type ElmApp<Ports extends Record<string, unknown>> = {
-  ports: Ports;
+type ElmMain<P, F> = {
+  init(options?: {node?: undefined; flags: F} | undefined): ElmApp<P>;
+};
+
+export type ElmApp<P> = {
+  ports: P;
+};
+
+export type PortToElm<V> = {
+  send(value: V): void;
+};
+
+export type PortFromElm<V> = {
+  subscribe(handler: (value: V) => void): void;
+  unsubscribe(handler: (value: V) => void): void;
 };

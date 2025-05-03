@@ -1,4 +1,4 @@
-import type {ElmApp, ElmNamespace} from './elm-js.ts';
+import type {ElmApp, ElmInstance} from './elm-js.ts';
 import type {Ast, ElmFile, Source} from './content.ts';
 import type {Path} from './path.ts';
 import type {SendPort, SubscribePort} from './promisify-port.ts';
@@ -14,8 +14,8 @@ export type ParseJob = {
   };
 };
 
-export type ParseElm = ElmNamespace<['ParseMain'], undefined, ParserApp>;
-
+export type ParseElm = ElmInstance<ParserPorts, undefined, ['ParseMain']>;
+export type ParseModule = {Elm: ParseElm};
 export type ParserApp = ElmApp<ParserPorts>;
 
 type ParserPorts = {
