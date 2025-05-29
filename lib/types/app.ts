@@ -8,7 +8,6 @@ import type {
   Readme,
   Source
 } from './content.ts';
-import type {ElmApp, ElmInstance} from './elm-js.ts';
 import type {ErrorMessageInfo} from './error-message.ts';
 import type {Flags} from './flags.ts';
 import type {Path} from './path.ts';
