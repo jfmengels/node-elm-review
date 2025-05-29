@@ -1,4 +1,3 @@
-import type {ElmApp, ElmInstance} from './elm-js.ts';
 import type {Ast, ElmFile, Source} from './content.ts';
 import type {Path} from './path.ts';
 import type {SendPort, SubscribePort} from './promisify-port.ts';
