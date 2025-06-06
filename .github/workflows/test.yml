@@ -90,6 +90,6 @@ jobs:
       run: npx --no-install elm-tooling install
 
     - name: Run tests
-      run: turbo ${{ matrix.os == 'ubuntu-latest' && 'testing check-engines' || 'test-sync' }} --continue
+      run: npx turbo ${{ matrix.os == 'ubuntu-latest' && 'testing check-engines' || 'test-sync' }} --continue
       env:
         AUTH_GITHUB: ${{ github.token }}
