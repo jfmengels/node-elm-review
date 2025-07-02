@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.13.3] - 2025-07-02
+
+This fixes an issue where using an upcoming version of Lamdera using `--compiler` would yield incorrect results.
+
 ## [2.13.2] - 2025-02-23
 
 - Report an error when no files are found, instead of hanging indefinitely.
@@ -167,7 +171,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.2...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.3...HEAD
+[2.13.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.3
 [2.13.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.2
 [2.13.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.1
 [2.13.0]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.0
