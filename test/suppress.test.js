@@ -1,4 +1,4 @@
-const path = require('node:path');
+const path = require('pathe');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
 const TestCli = require('./jest-helpers/cli');
@@ -46,7 +46,7 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     __dirname,
     './project-with-suppressed-errors/review/suppressed/'
   );
-  const filePath = folder + '/NoUnused.Variables.json';
+  const filePath = path.join(folder, '/NoUnused.Variables.json');
   await $`rm -r ${filePath}`;
 
   const output = await TestCli.runAndExpectError(
