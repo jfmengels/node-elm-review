@@ -10,7 +10,8 @@ const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
 
-const cli = path.resolve(__dirname, '../../bin/elm-review');
+const cli =
+  '/mnt/c' + path.resolve(__dirname, '../../bin/elm-review').replace('C:', '');
 expect.extend({toMatchFile});
 
 /**
