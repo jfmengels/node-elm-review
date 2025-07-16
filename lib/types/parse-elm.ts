@@ -1,4 +1,5 @@
 import type {Ast, ElmFile, Source} from './content.ts';
+import type {ElmModule, ElmApp} from './elm-js.js';
 import type {Path} from './path.ts';
 import type {SendPort, SubscribePort} from './promisify-port.ts';
 import type {Worker} from 'node:worker_threads';
@@ -13,8 +14,7 @@ export type ParseJob = {
   };
 };
 
-export type ParseElm = ElmInstance<ParserPorts, undefined, ['ParseMain']>;
-export type ParseModule = {Elm: ParseElm};
+export type ParserModule = ElmModule<ParserPorts, undefined, ['ParseMain']>;
 export type ParserApp = ElmApp<ParserPorts>;
 
 type ParserPorts = {
