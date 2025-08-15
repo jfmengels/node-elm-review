@@ -1,4 +1,17 @@
 #!/usr/bin/env node
 
+const nodeModule = require('node:module');
+
+if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
+  try {
+    const { directory } = nodeModule.enableCompileCache()
+    if (directory) {
+      // allow child process to share the same cache directory
+      process.env.NODE_COMPILE_CACHE ||= directory;
+    }
+  }
+  catch {}
+}
+
 // TODO(@lishaduck): With ESM, this should use TLA.
 require('../lib/main')();
