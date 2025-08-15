@@ -1,6 +1,6 @@
 {
   "name": "elm-review",
-  "version": "2.13.3",
+  "version": "2.13.4",
   "description": "Run elm-review from Node.js",
   "keywords": [
     "elm",
