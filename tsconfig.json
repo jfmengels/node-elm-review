@@ -8,7 +8,6 @@
     "target": "es2020",
     "lib": ["ES2020"],
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": false,
     "noEmit": true,
     "noImplicitThis": true,
     "resolveJsonModule": true,
