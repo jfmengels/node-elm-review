@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.13.4] - 2025-08-15
+
+- Fixed an issue where the order of elements in suppression files was dependent on the user's LOCALE, and therefore inconsistent between computers.
+- Improved error message when `elm-format` is not installed. Thanks [@realistschuckle](https://github.com/realistschuckle) and [@lydell](https://github.com/lydell)!
+
 ## [2.13.3] - 2025-07-02
 
 This fixes an issue where using an upcoming version of Lamdera using `--compiler` would yield incorrect results.
@@ -171,7 +176,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.3...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.4...HEAD
+[2.13.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.4
 [2.13.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.3
 [2.13.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.2
 [2.13.1]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.1
