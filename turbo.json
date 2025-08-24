@@ -53,7 +53,8 @@
         "template/",
         "test/",
         "vendor/"
-      ]
+      ],
+      "cache": false
     },
     "eslint-check": {
       "inputs": ["lib/", "vendor/", ".eslintrc.js", "tsconfig.json"]
@@ -135,7 +136,8 @@
       "inputs": ["template/**/*.elm", "ast-codec/**/*.elm", "!**/elm-stuff/*"]
     },
     "jest": {
-      "inputs": ["lib/", "test/"]
+      "inputs": ["lib/", "test/"],
+      "cache": false
     },
     "test-run": {
       "env": ["CI", "REMOTE"],
@@ -150,7 +152,8 @@
         "template/",
         "test/",
         "vendor/"
-      ]
+      ],
+      "cache": false
     },
     "test-run-record": {
       "env": ["CI", "REMOTE"],
@@ -166,7 +169,8 @@
         "test/",
         "vendor/"
       ],
-      "outputs": ["test/run-snapshots/*.txt"]
+      "outputs": ["test/run-snapshots/*.txt"],
+      "cache": false
     },
     "prepare": {},
     "check-engines": {
