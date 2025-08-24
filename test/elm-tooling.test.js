@@ -1,4 +1,4 @@
-const path = require('node:path');
+const path = require('pathe');
 const FS = require('../lib/fs-wrapper');
 const NewPackage = require('../lib/new-package');
 

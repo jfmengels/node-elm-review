@@ -3,12 +3,15 @@
  * @import {Options} from './types/cli';
  */
 
-const path = require('node:path');
+const Anonymize = require('../../lib/anonymize');
+
+const path = require('pathe');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
 
-const cli = path.resolve(__dirname, '../../bin/elm-review');
+const cli =
+  '/mnt/c' + path.resolve(__dirname, '../../bin/elm-review').replace('C:', '');
 expect.extend({toMatchFile});
 
 /**
@@ -21,18 +24,18 @@ async function run(args, options) {
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
-  return output.stdout;
+  return normalize(output.stdout);
 }
 
 /**
  * @param {string[]} args
  * @param {Options | undefined} [options]
- * @returns {Promise<unknown>}
+ * @returns {Promise<string>}
  */
 async function runAndExpectError(args, options) {
   const output = await internalExec(['--FOR-TESTS', ...args], options);
   if (output.exitCode !== 0) {
-    return output.stdout; // Should this be stderr?
+    return normalize(output.stdout); // Should this be stderr?
   }
 
   throw new Error(
@@ -52,7 +55,7 @@ async function runWithoutTestMode(args, options) {
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
-  return output.stdout;
+  return normalize(output.stdout);
 }
 
 /**
@@ -71,6 +74,7 @@ async function internalExec(args, options = {}) {
     },
     quiet: true
   })`${cli} ${reportMode(options)} ${colors(options)} ${args}`.nothrow();
+
   return result;
 }
 
@@ -108,6 +112,27 @@ function colors(options) {
   }
 
   return ['--no-color'];
+}
+
+/**
+ * Convert Windows output to UNIX output.
+ *
+ * @param {string} output
+ * @returns {string}
+ */
+function normalize(output) {
+  return (
+    Anonymize.paths(
+      output.replace(
+        // Windows has different error codes.
+        "Error: EPERM: operation not permitted, open '<local-path>\\test\\project-with-suppressed-errors-no-write\\review\\suppressed\\NoUnused.Variables.json'",
+        "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'"
+      ),
+      true
+    )
+      // Prompts uses different characters on Windows.
+      .replace(/√/g, '✔')
+  );
 }
 
 module.exports = {
