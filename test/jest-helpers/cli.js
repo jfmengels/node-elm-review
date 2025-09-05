@@ -4,9 +4,13 @@
  */
 
 const path = require('node:path');
+const {TextDecoder} = require('node:util');
+const {jest} = require('@jest/globals');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
+const {app} = require('../../lib/main');
+const Options_ = require('../../lib/options');
 
 const cli = path.resolve(__dirname, '../../bin/elm-review');
 expect.extend({toMatchFile});
@@ -75,6 +79,49 @@ async function internalExec(args, options = {}) {
 }
 
 /**
+ * Capture all writes to process.stdout during the execution of fn.
+ *
+ * @template T
+ * @param {() => T} fn - Function to run while capturing stdout
+ * @returns {{ result: T, stdout: string }}
+ */
+function withCapturedStdout(fn) {
+  const decoder = new TextDecoder();
+
+  let stdout = '';
+  const spy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation((chunk) => {
+      stdout += typeof chunk === 'string' ? chunk : decoder.decode(chunk);
+
+      return true;
+    });
+
+  try {
+    const result = fn();
+    return {result, stdout};
+  } finally {
+    spy.mockRestore();
+  }
+}
+
+/**
+ *
+ * @param {string[]} argv
+ */
+async function internalRun(argv) {
+  const options = Options_.compute(argv);
+
+  const {result, stdout} = withCapturedStdout(async () => {
+    await app(options, /** @type {*} */ (() => {}));
+  });
+
+  await result;
+
+  return stdout;
+}
+
+/**
  * @param {Options} options
  * @returns {string | undefined}
  */
@@ -113,5 +160,6 @@ function colors(options) {
 module.exports = {
   run,
   runAndExpectError,
-  runWithoutTestMode
+  runWithoutTestMode,
+  internalRun
 };
