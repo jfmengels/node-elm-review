@@ -108,17 +108,31 @@ function withCapturedStdout(fn) {
 /**
  *
  * @param {string[]} argv
+ * @returns {Promise<{stdout: string, pass: boolean}>}
  */
 async function internalRun(argv) {
   const options = Options_.compute(argv);
 
+  let pass = true;
+
   const {result, stdout} = withCapturedStdout(async () => {
-    await app(options, /** @type {*} */ (() => {}));
+    await app(
+      options,
+      /** @type {*} */ (
+        () => {
+          pass = false;
+        }
+      )
+    );
   });
 
-  await result;
+  try {
+    await result;
+  } catch {
+    pass = false;
+  }
 
-  return stdout;
+  return {stdout, pass};
 }
 
 /**
