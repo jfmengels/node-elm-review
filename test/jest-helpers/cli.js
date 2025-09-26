@@ -5,7 +5,6 @@
 
 const path = require('node:path');
 const {TextDecoder} = require('node:util');
-const {jest} = require('@jest/globals');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
