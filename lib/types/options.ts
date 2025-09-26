@@ -43,6 +43,7 @@ export type Options = OptionsBase & {
   newRuleName: string | null;
   ruleType: RuleType | undefined;
 
+  cwd: Path;
   userSrc: () => Path;
   usedConfig: boolean;
   template: Template | null;
