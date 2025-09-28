@@ -80,58 +80,59 @@ async function internalExec(args, options = {}) {
 /**
  * Capture all writes to process.stdout during the execution of fn.
  *
- * @template T
- * @param {() => T} fn - Function to run while capturing stdout
- * @returns {{ result: T, stdout: string }}
+ * @param {() => Promise<void>} fn - Function to run while capturing stdout
+ * @returns {Promise<{ error?: unknown, stdout: string }>}
  */
-function withCapturedStdout(fn) {
+async function withCapturedStdout(fn) {
   const decoder = new TextDecoder();
 
   let stdout = '';
-  const spy = jest
+  const stdoutWriteSpy = jest
     .spyOn(process.stdout, 'write')
     .mockImplementation((chunk) => {
       stdout += typeof chunk === 'string' ? chunk : decoder.decode(chunk);
 
       return true;
     });
+  const processExitSpy = jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code) => {
+      throw new Error(`process.exit was called with exit code ${code}`);
+    });
 
   try {
-    const result = fn();
-    return {result, stdout};
+    process.stderr.write('Running function with captured stdout\n');
+    await fn();
+    return {stdout};
+  } catch (err) {
+    process.stderr.write('Function threw an error\n');
+    return {stdout, error: err};
   } finally {
-    spy.mockRestore();
+    process.stderr.write('Restoring mocks\n');
+    processExitSpy.mockRestore();
+    stdoutWriteSpy.mockRestore();
   }
 }
 
 /**
  *
- * @param {string[]} argv
- * @returns {Promise<{stdout: string, pass: boolean}>}
+ * @param {string[]} args
+ * @param {string} project
+ * @returns {Promise<{stdout: string, error: unknown}>}
  */
-async function internalRun(argv) {
-  const options = Options_.compute(argv);
+async function internalRun(args, project) {
+  const options = Options_.compute(
+    args,
+    path.resolve(__dirname, '..', project)
+  );
 
-  let pass = true;
-
-  const {result, stdout} = withCapturedStdout(async () => {
-    await app(
-      options,
-      /** @type {*} */ (
-        () => {
-          pass = false;
-        }
-      )
-    );
+  const {stdout, error} = await withCapturedStdout(async () => {
+    await app(options, (err) => {
+      throw err;
+    });
   });
 
-  try {
-    await result;
-  } catch {
-    pass = false;
-  }
-
-  return {stdout, pass};
+  return {stdout, error};
 }
 
 /**
