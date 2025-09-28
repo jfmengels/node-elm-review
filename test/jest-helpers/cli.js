@@ -4,9 +4,12 @@
  */
 
 const path = require('node:path');
+const {TextDecoder} = require('node:util');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
+const {app} = require('../../lib/main');
+const Options_ = require('../../lib/options');
 
 const cli = path.resolve(__dirname, '../../bin/elm-review');
 expect.extend({toMatchFile});
@@ -75,6 +78,64 @@ async function internalExec(args, options = {}) {
 }
 
 /**
+ * Capture all writes to process.stdout during the execution of fn.
+ *
+ * @param {() => Promise<void>} fn - Function to run while capturing stdout
+ * @returns {Promise<{ error?: unknown, stdout: string }>}
+ */
+async function withCapturedStdout(fn) {
+  const decoder = new TextDecoder();
+
+  let stdout = '';
+  const stdoutWriteSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation((chunk) => {
+      stdout += typeof chunk === 'string' ? chunk : decoder.decode(chunk);
+
+      return true;
+    });
+  const processExitSpy = jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code) => {
+      throw new Error(`process.exit was called with exit code ${code}`);
+    });
+
+  try {
+    process.stderr.write('Running function with captured stdout\n');
+    await fn();
+    return {stdout};
+  } catch (err) {
+    process.stderr.write('Function threw an error\n');
+    return {stdout, error: err};
+  } finally {
+    process.stderr.write('Restoring mocks\n');
+    processExitSpy.mockRestore();
+    stdoutWriteSpy.mockRestore();
+  }
+}
+
+/**
+ *
+ * @param {string[]} args
+ * @param {string} project
+ * @returns {Promise<{stdout: string, error: unknown}>}
+ */
+async function internalRun(args, project) {
+  const options = Options_.compute(
+    args,
+    path.resolve(__dirname, '..', project)
+  );
+
+  const {stdout, error} = await withCapturedStdout(async () => {
+    await app(options, (err) => {
+      throw err;
+    });
+  });
+
+  return {stdout, error};
+}
+
+/**
  * @param {Options} options
  * @returns {string | undefined}
  */
@@ -113,5 +174,6 @@ function colors(options) {
 module.exports = {
   run,
   runAndExpectError,
-  runWithoutTestMode
+  runWithoutTestMode,
+  internalRun
 };

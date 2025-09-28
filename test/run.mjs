@@ -1,10 +1,12 @@
 #!/bin/node
 
 /*
- * If you get errors like "rate limit exceeded",
- * you can run these tests with `AUTH_GITHUB=token`.
+ * This SHALL exceed GitHub anonymous rate limit.
+ * You OUGHT TO run these tests with `AUTH_GITHUB=token`.
  * Follow this guide: <https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token> to create an API token,
  * and give it access to public repositories.
+ *
+ * The key words in this document are to be interpreted as described in RFCs 2119 & 6919.
  */
 
 /* eslint n/no-process-exit: "off" -- WIP */
