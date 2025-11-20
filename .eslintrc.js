@@ -191,6 +191,7 @@ module.exports = {
   ],
   globals: {
     test: 'readonly',
-    expect: 'readonly'
+    expect: 'readonly',
+    describe: 'readonly'
   }
 };
