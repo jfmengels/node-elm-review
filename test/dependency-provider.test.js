@@ -1,11 +1,11 @@
-const { prioritizePinnedIndirectVersion } = require('../lib/dependency-provider');
+const {prioritizePinnedIndirectVersion} = require('../lib/dependency-provider');
 
 describe('prioritizePinnedIndirectVersion', () => {
   const versions = ['1.0.5', '1.0.4', '1.0.3', '1.0.2', '1.0.1', '1.0.0'];
 
   const testPinning = (
-      /** @type {string | void} */ pinnedVersion,
-      /** @type {string[]} */ expectedResult
+    /** @type {string | void} */ pinnedVersion,
+    /** @type {string[]} */ expectedResult
   ) => {
     expect(prioritizePinnedIndirectVersion(versions, pinnedVersion)).toEqual(
       expectedResult
