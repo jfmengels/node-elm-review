@@ -9,6 +9,14 @@ command to work again in offline mode.
 
 You can customize the new-rule command with the following flags:
 
+    --elmjson <path-to-elm.json>
+        Specify the path to the elm.json file of the project. By default,
+        the one in the current directory or its parent directories will be used.
+
+    --config <path-to-review-directory>
+        Use the review configuration in the specified directory instead of the
+        one found in the current directory or one of its parents.
+
     --compiler <path-to-elm>
         Specify the path to the elm compiler.
 
