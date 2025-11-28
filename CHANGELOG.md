@@ -6,6 +6,7 @@
 - When building the review application, `elm-review` will now respect the specific versions of indirect dependencies listed in the review configuration's `elm.json` file. Thanks [@omnibs](https://github.com/omnibs)!
 - Fixed an issue where relative ELM_HOME would not be respected when building the review application (and would instead be located somewhere under `elm-stuff/`).
 - Made it so `prepare-offline` also downloads dependency data to avoid different results when running with or without `--offline`.
+- Fixed `new-package` subcommand crashing on Nix. Thanks [@pete-murphy](https://github.com/pete-murphy).
 
 ## [2.13.4] - 2025-08-15
 
