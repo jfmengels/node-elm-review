@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- When building the review application, `elm-review` will now respect the specific versions of indirect dependencies listed in the review configuration's `elm.json` file. Thanks [@omnibs](https://github.com/omnibs)!
+
 ## [2.13.4] - 2025-08-15
 
 - Fixed an issue where the order of elements in suppression files was dependent on the user's LOCALE, and therefore inconsistent between computers.
