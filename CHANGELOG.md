@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - When building the review application, `elm-review` will now respect the specific versions of indirect dependencies listed in the review configuration's `elm.json` file. Thanks [@omnibs](https://github.com/omnibs)!
+- Fixed an issue where relative ELM_HOME would not be respected when building the review application (and would instead be located somewhere under `elm-stuff/`).
 
 ## [2.13.4] - 2025-08-15
 
