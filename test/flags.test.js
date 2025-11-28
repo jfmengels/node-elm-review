@@ -1,5 +1,6 @@
 const TestCli = require('./jest-helpers/cli');
 const snapshotter = require('./snapshotter');
+const Flags = require('../lib/flags');
 
 /**
  * @template {string} N
@@ -148,4 +149,16 @@ test('Using both --template and --offline (init)', async () => {
 test('Using both new-package and --offline', async () => {
   const output = await TestCli.runAndExpectError(['new-package', '--offline']);
   expect(output).toMatchFile(testName('offline-new-package'));
+});
+
+test('Flags are all unique', () => {
+  /** @type Record<string, boolean> **/
+  const seenFlags = {};
+  for (const {name} of Flags.flags) {
+    if (seenFlags[name]) {
+      throw new Error(`Flag ${name} is present multiple times`);
+    }
+
+    seenFlags[name] = true;
+  }
 });
