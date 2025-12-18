@@ -46,7 +46,7 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     __dirname,
     './project-with-suppressed-errors/review/suppressed/'
   );
-  const filePath = path.join(folder, '/NoUnused.Variables.json');
+  const filePath = path.join(folder, 'NoUnused.Variables.json');
   await $`rm -r ${filePath}`;
 
   const output = await TestCli.runAndExpectError(
