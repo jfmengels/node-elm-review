@@ -121,17 +121,13 @@ function colors(options) {
  * @returns {string}
  */
 function normalize(output) {
-  return (
-    Anonymize.paths(
-      output.replace(
-        // Windows has different error codes.
-        "Error: EPERM: operation not permitted, open '<local-path>\\test\\project-with-suppressed-errors-no-write\\review\\suppressed\\NoUnused.Variables.json'",
-        "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'"
-      ),
-      true
-    )
-      // Prompts uses different characters on Windows.
-      .replace(/√/g, '✔')
+  return Anonymize.paths(
+    output.replace(
+      // Windows has different error codes.
+      "Error: EPERM: operation not permitted, open '<local-path>\\test\\project-with-suppressed-errors-no-write\\review\\suppressed\\NoUnused.Variables.json'",
+      "Error: EACCES: permission denied, open '<local-path>/test/project-with-suppressed-errors-no-write/review/suppressed/NoUnused.Variables.json'"
+    ),
+    true
   );
 }
 

@@ -1,0 +1,12 @@
+diff --git a/node_modules/prompts/lib/util/figures.js b/node_modules/prompts/lib/util/figures.js
+index cd31b88..d5c7403 100644
+--- a/node_modules/prompts/lib/util/figures.js
++++ b/node_modules/prompts/lib/util/figures.js
+@@ -28,6 +28,6 @@ const win = {
+   line: '─',	
+   pointer: '>'	
+ };	
+-const figures = process.platform === 'win32' ? win : main;	
++const figures = main;	
+ 
+  module.exports = figures;
