@@ -64,7 +64,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
   const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
 
-  process.stdout.write(`- ${title}: \u001B[34m ${censoredCommand}\u001B[0m`);
+  process.stdout.write(`- ${title}: \u001B[34m${censoredCommand}\u001B[0m`);
   try {
     await fsp.access(snapshotPath);
   } catch {
@@ -80,7 +80,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
 
   const diff = await $`diff ${actualPath} ${snapshotPath}`.nothrow();
   if (diff.exitCode === 0) {
-    console.log(`  \u001B[92mOK\u001B[0m`);
+    console.log(` \u001B[92mOK\u001B[0m`);
   } else {
     const [snapshot, actual] = await Promise.all([
       fsp.readFile(snapshotPath, 'utf8'),
@@ -182,7 +182,7 @@ const checkFolderContents = async (folder) => {
     const diff =
       await $`diff -rq ${actualFolder} ${snapshotFolder} --exclude="elm-stuff"`.nothrow();
     if (diff.exitCode === 0) {
-      console.log(`  \u001B[92mOK\u001B[0m`);
+      console.log(` \u001B[92mOK\u001B[0m`);
     } else {
       console.error(
         `\u001B[31m  ERROR\n  The generated files are different:\u001B[0m`
