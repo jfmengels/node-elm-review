@@ -56,7 +56,7 @@ const AUTH = AUTH_GITHUB === undefined ? [] : [`--github-auth=${AUTH_GITHUB}`];
 
 const TEST_ARGS = ['--no-color', ...AUTH, '--FOR-TESTS'];
 
-const TEST_ARGS_REGEX = /--no-color \$'--github-auth="[\w:]+"' /;
+const TEST_ARGS_REGEX = /--no-color --github-auth=[\w:]+ /;
 
 /**
  * @param {string} title
