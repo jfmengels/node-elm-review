@@ -121,6 +121,7 @@ module.exports = {
     'unicorn/no-null': 'off',
     'unicorn/prefer-ternary': 'off',
     'unicorn/prevent-abbreviations': 'off',
+    'unicorn/better-regex': ['warn', {sortCharacterClasses: false}],
     'unicorn/catch-error-name': ['error', {ignore: [/^err/i]}], // We use "error" for the result of `intoError` as well.
     'no-fallthrough': 'off', // TSESLint doesn't provide an alternative, and TS checks for this anyway.
     'no-void': ['error', {allowAsStatement: true}],
