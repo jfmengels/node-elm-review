@@ -8,7 +8,12 @@ const Anonymize = require('../../lib/anonymize');
 const path = require('pathe');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
-const {$} = require('zx');
+const {$, quote} = require('zx');
+
+if (process.platform === 'win32') {
+  $.shell = 'C:\\Program Files\\Git\\bin\\bash.exe';
+  $.quote = quote;
+}
 
 const cli = path.resolve(__dirname, '../../bin/elm-review');
 expect.extend({toMatchFile});

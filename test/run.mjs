@@ -13,11 +13,16 @@ import * as path from 'pathe';
 import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
-import {$, cd} from 'zx';
+import {$, cd, quote} from 'zx';
 import Anonymize from '../lib/anonymize.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+if (process.platform === 'win32') {
+  $.shell = 'C:\\Program Files\\Git\\bin\\bash.exe';
+  $.quote = quote;
+}
 
 $.quiet = true;
 $.stdio = 'pipe';
