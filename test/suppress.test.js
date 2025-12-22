@@ -54,7 +54,7 @@ test('Running with "suppress --check-after-tests" when there are uncommitted cha
     {project: 'project-with-suppressed-errors'}
   );
   // Remove uncommitted suppression files
-  await $`git checkout HEAD ${folder}`;
+  await $({quiet: true})`git checkout HEAD ${folder}`;
   expect(output).toMatchFile(
     testName('suppressed-errors-check-with-uncommitted-changes')
   );
