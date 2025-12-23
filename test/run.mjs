@@ -14,7 +14,7 @@ import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
 import {$, cd, quote} from 'zx';
-import Anonymize from '../lib/anonymize.js';
+import {normalize} from './normalize.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,10 +80,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   }
 
   const output = await cmd.run().text();
-  const replacedOutput = Anonymize.paths(
-    Anonymize.pathsAndVersions(output, true),
-    true
-  );
+  const replacedOutput = normalize(output);
   await fsp.writeFile(actualPath, replacedOutput);
 
   const diff = await $`diff ${actualPath} ${snapshotPath}`.nothrow();
@@ -129,10 +126,7 @@ const runAndRecord = async (title, args, file, input) => {
   $.env.ELM_HOME = ELM_HOME;
 
   const output = await cmd.run().text();
-  const replacedOutput = Anonymize.paths(
-    Anonymize.pathsAndVersions(output, true),
-    true
-  );
+  const replacedOutput = normalize(output);
   await fsp.writeFile(snapshotPath, replacedOutput);
 };
 

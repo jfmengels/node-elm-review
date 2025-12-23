@@ -33,3 +33,29 @@ desc('format', () => {
     expect(output).toEqual('some\\*path');
   });
 });
+
+describe('toUnixPath', () => {
+  test('should convert Windows backslashes to forward slashes', () => {
+    const input = 'src\\components\\Button.elm';
+    const output = PathHelpers.toUnixPath(input);
+    expect(output).toEqual('src/components/Button.elm');
+  });
+
+  test('should leave Unix paths unchanged', () => {
+    const input = 'src/components/Button.elm';
+    const output = PathHelpers.toUnixPath(input);
+    expect(output).toEqual('src/components/Button.elm');
+  });
+
+  test('should handle mixed slashes', () => {
+    const input = 'src\\components/Button.elm';
+    const output = PathHelpers.toUnixPath(input);
+    expect(output).toEqual('src/components/Button.elm');
+  });
+
+  test('should handle empty strings', () => {
+    const input = '';
+    const output = PathHelpers.toUnixPath(input);
+    expect(output).toEqual('');
+  });
+});
