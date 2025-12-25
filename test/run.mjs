@@ -336,6 +336,9 @@ await createTestSuiteForHumanAndJson(
 );
 
 await fsp.copyFile('fixed-elm.json', 'elm.json');
+const fixedContent = await fsp.readFile('elm.json', 'utf8');
+const status = await $`git update-index --really-refresh && git status`.text();
+console.log('Replaced elm.json with fixed-elm.json', fixedContent, status);
 await createTest(
   'Fixing all errors for an entire rule should remove the suppression file',
   [],
