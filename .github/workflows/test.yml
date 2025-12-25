@@ -32,7 +32,12 @@ permissions:
 jobs:
   test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -85,6 +90,6 @@ jobs:
       run: npx --no-install elm-tooling install
 
     - name: Run tests
-      run: npm test
+      run: npx turbo ${{ matrix.os == 'ubuntu-latest' && 'testing check-engines' || 'test-sync' }} --continue
       env:
         AUTH_GITHUB: ${{ github.token }}
