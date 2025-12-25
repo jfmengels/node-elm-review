@@ -23,8 +23,12 @@ function normalize(output, anonymizeVersion = true) {
     )
       // Prompts uses different characters on Windows.
       .replace(/√/g, '✔')
-      // eslint-disable-next-line unicorn/better-regex -- Matching a literal pattern.
-      .replace(/\.\.\./g, '…')
+      .replace(
+        // eslint-disable-next-line no-control-regex -- Uh huh. And? (Matches literal escape characters.)
+        /\u001B\[22m \u001B\[90m...\u001B\[39m yes/g,
+        '\u001B[22m \u001B[90m…\u001B[39m yes'
+      )
+      .replace(/»/g, '›')
   );
 }
 
