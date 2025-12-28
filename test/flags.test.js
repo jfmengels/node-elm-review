@@ -36,6 +36,13 @@ test('Running --config without an argument', async () => {
   expect(output).toMatchFile(testName('missing-argument-config'));
 });
 
+test('Running --config with a path that could not be found', async () => {
+  const output = await TestCli.runAndExpectError([
+    '--config=could-not-be-found/'
+  ]);
+  expect(output).toMatchFile(testName('config-not-found'));
+});
+
 test('Running --template without an argument', async () => {
   const output = await TestCli.runAndExpectError(['--template']);
   expect(output).toMatchFile(testName('missing-argument-template'));
