@@ -4,6 +4,91 @@
   "type": "review-errors",
   "errors": [
     {
+      "path": "elm.json",
+      "errors": [
+        {
+          "rule": "NoUnused.Dependencies",
+          "message": "Unused dependency `elm/time`",
+          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.3/NoUnused-Dependencies",
+          "details": [
+            "To remove it, I recommend running the following command:",
+            "    elm-json uninstall elm/time"
+          ],
+          "region": {
+            "start": {
+              "line": 12,
+              "column": 14
+            },
+            "end": {
+              "line": 12,
+              "column": 22
+            }
+          },
+          "fix": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "column": 1
+                },
+                "end": {
+                  "line": 100000000,
+                  "column": 1
+                }
+              },
+              "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.3\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
+            }
+          ],
+          "fixV2": [
+            {
+              "path": "elm.json",
+              "fix": {
+                "kind": "edit",
+                "edits": [
+                  {
+                    "range": {
+                      "start": {
+                        "line": 1,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 100000000,
+                        "column": 1
+                      }
+                    },
+                    "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.3\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
+                  }
+                ]
+              }
+            }
+          ],
+          "formatted": [
+            {
+              "string": "(unsuppressed) ",
+              "color": "#FFA500"
+            },
+            {
+              "string": "(fix) ",
+              "color": "#33BBC8"
+            },
+            {
+              "string": "NoUnused.Dependencies",
+              "color": "#FF0000",
+              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.3/NoUnused-Dependencies"
+            },
+            ": Unused dependency `elm/time`\n\n11|             \"elm/html\": \"1.0.0\",\n12|             \"elm/time\": \"1.0.0\"\n                 ",
+            {
+              "string": "^^^^^^^^",
+              "color": "#FF0000"
+            },
+            "\n13|         },\n\nTo remove it, I recommend running the following command:\n\n    elm-json uninstall elm/time"
+          ],
+          "suppressed": true,
+          "originallySuppressed": true
+        }
+      ]
+    },
+    {
       "path": "src/Main.elm",
       "errors": [
         {
@@ -325,91 +410,6 @@
             "\n13|     3\n\nYou should either use this value somewhere, or remove it at the location I pointed at."
           ],
           "suppressed": false,
-          "originallySuppressed": true
-        }
-      ]
-    },
-    {
-      "path": "elm.json",
-      "errors": [
-        {
-          "rule": "NoUnused.Dependencies",
-          "message": "Unused dependency `elm/time`",
-          "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.3/NoUnused-Dependencies",
-          "details": [
-            "To remove it, I recommend running the following command:",
-            "    elm-json uninstall elm/time"
-          ],
-          "region": {
-            "start": {
-              "line": 12,
-              "column": 14
-            },
-            "end": {
-              "line": 12,
-              "column": 22
-            }
-          },
-          "fix": [
-            {
-              "range": {
-                "start": {
-                  "line": 1,
-                  "column": 1
-                },
-                "end": {
-                  "line": 100000000,
-                  "column": 1
-                }
-              },
-              "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.3\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
-            }
-          ],
-          "fixV2": [
-            {
-              "path": "elm.json",
-              "fix": {
-                "kind": "edit",
-                "edits": [
-                  {
-                    "range": {
-                      "start": {
-                        "line": 1,
-                        "column": 1
-                      },
-                      "end": {
-                        "line": 100000000,
-                        "column": 1
-                      }
-                    },
-                    "string": "{\n    \"type\": \"application\",\n    \"source-directories\": [\n        \"src\"\n    ],\n    \"elm-version\": \"0.19.1\",\n    \"dependencies\": {\n        \"direct\": {\n            \"elm/browser\": \"1.0.2\",\n            \"elm/core\": \"1.0.5\",\n            \"elm/html\": \"1.0.0\"\n        },\n        \"indirect\": {\n            \"elm/json\": \"1.1.3\",\n            \"elm/time\": \"1.0.0\",\n            \"elm/url\": \"1.0.0\",\n            \"elm/virtual-dom\": \"1.0.3\"\n        }\n    },\n    \"test-dependencies\": {\n        \"direct\": {},\n        \"indirect\": {}\n    }\n}\n"
-                  }
-                ]
-              }
-            }
-          ],
-          "formatted": [
-            {
-              "string": "(unsuppressed) ",
-              "color": "#FFA500"
-            },
-            {
-              "string": "(fix) ",
-              "color": "#33BBC8"
-            },
-            {
-              "string": "NoUnused.Dependencies",
-              "color": "#FF0000",
-              "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.2.3/NoUnused-Dependencies"
-            },
-            ": Unused dependency `elm/time`\n\n11|             \"elm/html\": \"1.0.0\",\n12|             \"elm/time\": \"1.0.0\"\n                 ",
-            {
-              "string": "^^^^^^^^",
-              "color": "#FF0000"
-            },
-            "\n13|         },\n\nTo remove it, I recommend running the following command:\n\n    elm-json uninstall elm/time"
-          ],
-          "suppressed": true,
           "originallySuppressed": true
         }
       ]
