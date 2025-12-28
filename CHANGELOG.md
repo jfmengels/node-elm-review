@@ -8,6 +8,7 @@
 - Made it so `prepare-offline` also downloads dependency data to avoid different results when running with or without `--offline`.
 - Fixed `new-package` subcommand crashing on Nix. Thanks [@pete-murphy](https://github.com/pete-murphy).
 - Fixed errors being displayed twice when target files are both part of the project and of extra files. Thanks [@miniBill](https://github.com/miniBill).
+- Improved error message when using `--config` with a path to a file (instead of a directory).
 
 ## [2.13.4] - 2025-08-15
 
