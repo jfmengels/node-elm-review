@@ -1511,16 +1511,16 @@ type alias FixedFile =
 groupErrorsByFile : (Rule.ReviewError -> reportError) -> Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List reportError }
 groupErrorsByFile mapper project errors =
     let
-        files : List { path : String, source : String }
+        files : Dict String String
         files =
             collectFiles project
     in
-    List.foldr
-        (\file acc ->
+    Dict.foldr
+        (\path source acc ->
             case
                 List.foldr
                     (\error subAcc ->
-                        if file.path == Rule.errorFilePath error then
+                        if path == Rule.errorFilePath error then
                             mapper error :: subAcc
 
                         else
@@ -1534,15 +1534,15 @@ groupErrorsByFile mapper project errors =
 
                 fileErrors ->
                     { path =
-                        if file.path == "GLOBAL ERROR" then
+                        if path == "GLOBAL ERROR" then
                             Reporter.Global
 
-                        else if file.path == "CONFIGURATION ERROR" then
+                        else if path == "CONFIGURATION ERROR" then
                             Reporter.ConfigurationError
 
                         else
-                            Reporter.FilePath file.path
-                    , source = Reporter.Source file.source
+                            Reporter.FilePath path
+                    , source = Reporter.Source source
                     , errors = fileErrors
                     }
                         :: acc
@@ -1551,41 +1551,41 @@ groupErrorsByFile mapper project errors =
         files
 
 
-collectFiles : Project -> List { path : String, source : String }
+collectFiles : Project -> Dict String String
 collectFiles project =
-    []
+    Dict.empty
         |> addMultiple (Project.modules project)
-        |> addMaybe (\{ path, raw } -> { path = path, source = raw }) (Project.elmJson project)
-        |> addMaybe (\{ path, content } -> { path = path, source = content }) (Project.readme project)
-        |> addSingle { path = "GLOBAL ERROR", source = "" }
-        |> addSingle { path = "CONFIGURATION ERROR", source = "" }
+        |> addMaybe (\{ path, raw } acc -> Dict.insert path raw acc) (Project.elmJson project)
+        |> addMaybe (\{ path, content } acc -> Dict.insert path content acc) (Project.readme project)
+        |> addSingle "GLOBAL ERROR"
+        |> addSingle "CONFIGURATION ERROR"
         |> addMultiple (Project.modulesThatFailedToParse project)
         |> addFromDict (Project.extraFiles project)
 
 
-addMaybe : (a -> b) -> Maybe a -> List b -> List b
+addMaybe : (a -> b -> b) -> Maybe a -> b -> b
 addMaybe mapper maybe acc =
     case maybe of
         Just a ->
-            mapper a :: acc
+            mapper a acc
 
         Nothing ->
             acc
 
 
-addSingle : { path : String, source : String } -> List { path : String, source : String } -> List { path : String, source : String }
-addSingle entry acc =
-    entry :: acc
+addSingle : String -> Dict String String -> Dict String String
+addSingle path acc =
+    Dict.insert path "" acc
 
 
-addMultiple : List { a | path : String, source : String } -> List { a | path : String, source : String } -> List { a | path : String, source : String }
-addMultiple newEntries acc =
-    newEntries ++ acc
+addMultiple : List { a | path : String, source : String } -> Dict String String -> Dict String String
+addMultiple list initial =
+    List.foldl (\{ path, source } acc -> Dict.insert path source acc) initial list
 
 
-addFromDict : Dict String String -> List { path : String, source : String } -> List { path : String, source : String }
+addFromDict : Dict String String -> Dict String String -> Dict String String
 addFromDict dict initial =
-    Dict.foldr (\path source acc -> { path = path, source = source } :: acc) initial dict
+    Dict.foldr Dict.insert initial dict
 
 
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
