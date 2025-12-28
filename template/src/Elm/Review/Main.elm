@@ -1538,7 +1538,18 @@ groupErrorsByFile mapper project errors =
     in
     List.foldr
         (\file acc ->
-            case List.filter (\error -> file.path == Rule.errorFilePath error) errors of
+            case
+                List.foldr
+                    (\error subAcc ->
+                        if file.path == Rule.errorFilePath error then
+                            mapper error :: subAcc
+
+                        else
+                            subAcc
+                    )
+                    []
+                    errors
+            of
                 [] ->
                     acc
 
@@ -1553,7 +1564,7 @@ groupErrorsByFile mapper project errors =
                         else
                             Reporter.FilePath file.path
                     , source = Reporter.Source file.source
-                    , errors = List.map mapper fileErrors
+                    , errors = fileErrors
                     }
                         :: acc
         )
