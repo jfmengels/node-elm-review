@@ -1513,28 +1513,7 @@ groupErrorsByFile mapper project errors =
     let
         files : List { path : String, source : String }
         files =
-            List.concat
-                [ project
-                    |> Project.modules
-                    |> List.map (\file -> { path = file.path, source = file.source })
-                , [ { path = "GLOBAL ERROR", source = "" }
-                  , { path = "CONFIGURATION ERROR", source = "" }
-                  ]
-                , case Project.elmJson project of
-                    Just { path, raw } ->
-                        [ { path = path, source = raw } ]
-
-                    Nothing ->
-                        []
-                , case Project.readme project of
-                    Just { path, content } ->
-                        [ { path = path, source = content } ]
-
-                    Nothing ->
-                        []
-                , Dict.foldr (\path source acc -> { path = path, source = source } :: acc) [] (Project.extraFiles project)
-                , Project.modulesThatFailedToParse project
-                ]
+            collectFiles project
     in
     List.foldr
         (\file acc ->
@@ -1570,6 +1549,32 @@ groupErrorsByFile mapper project errors =
         )
         []
         files
+
+
+collectFiles : Project -> List { path : String, source : String }
+collectFiles project =
+    List.concat
+        [ project
+            |> Project.modules
+            |> List.map (\file -> { path = file.path, source = file.source })
+        , [ { path = "GLOBAL ERROR", source = "" }
+          , { path = "CONFIGURATION ERROR", source = "" }
+          ]
+        , case Project.elmJson project of
+            Just { path, raw } ->
+                [ { path = path, source = raw } ]
+
+            Nothing ->
+                []
+        , case Project.readme project of
+            Just { path, content } ->
+                [ { path = path, source = content } ]
+
+            Nothing ->
+                []
+        , Dict.foldr (\path source acc -> { path = path, source = source } :: acc) [] (Project.extraFiles project)
+        , Project.modulesThatFailedToParse project
+        ]
 
 
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
