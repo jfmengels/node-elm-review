@@ -508,7 +508,7 @@ header isFirstError filePath range =
                     " CONFIGURATION ERROR"
     in
     if isFirstError then
-        (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' position)
+        (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' position ++ "")
             |> Text.from
             |> Text.inBlue
 
