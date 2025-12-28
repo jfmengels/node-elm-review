@@ -242,7 +242,6 @@ using `elm-review --fix --allow-remove-files`."""
             |> List.filterMap identity
             |> Text.join "\n\n"
             |> Text.simplify
-            |> List.map Text.toRecord
 
 
 listFailingRules : String -> Maybe String -> List Text -> List Text
@@ -290,7 +289,6 @@ formatConfigurationErrors { detailsMode, mode, configurationErrors } =
     ]
         |> Text.join "\n\n"
         |> Text.simplify
-        |> List.map Text.toRecord
 
 
 formatTally : List a -> Int -> Int -> List Text
@@ -523,7 +521,6 @@ formatIndividualError : DetailsMode -> FixExplanation -> Source -> Error -> List
 formatIndividualError detailsMode fixExplanation source error =
     formatErrorWithExtract detailsMode fixExplanation Reviewing source error
         |> Text.simplify
-        |> List.map Text.toRecord
 
 
 formatErrorWithExtract : DetailsMode -> FixExplanation -> Mode -> Source -> Error -> List Text

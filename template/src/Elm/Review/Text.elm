@@ -120,7 +120,7 @@ join sep chunks =
         |> List.concat
 
 
-simplify : List Text -> List Text
+simplify : List Text -> List TextContent
 simplify chunks =
     case chunks of
         [] ->
@@ -128,7 +128,7 @@ simplify chunks =
 
         (Text chunk) :: restOfChunks ->
             simplifyHelp [] chunk restOfChunks
-                |> List.reverse
+                |> List.foldl (\x acc -> toRecord x :: acc) []
 
 
 simplifyHelp : List Text -> TextContent -> List Text -> List Text
