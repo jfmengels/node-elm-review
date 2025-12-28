@@ -7,6 +7,7 @@
 - Fixed an issue where relative ELM_HOME would not be respected when building the review application (and would instead be located somewhere under `elm-stuff/`).
 - Made it so `prepare-offline` also downloads dependency data to avoid different results when running with or without `--offline`.
 - Fixed `new-package` subcommand crashing on Nix. Thanks [@pete-murphy](https://github.com/pete-murphy).
+- Fixed errors being displayed twice when target files are both part of the project and of extra files. Thanks [@miniBill](https://github.com/miniBill).
 
 ## [2.13.4] - 2025-08-15
 
