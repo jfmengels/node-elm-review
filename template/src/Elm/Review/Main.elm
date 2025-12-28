@@ -1553,28 +1553,39 @@ groupErrorsByFile mapper project errors =
 
 collectFiles : Project -> List { path : String, source : String }
 collectFiles project =
-    List.concat
-        [ project
-            |> Project.modules
-            |> List.map (\file -> { path = file.path, source = file.source })
-        , [ { path = "GLOBAL ERROR", source = "" }
-          , { path = "CONFIGURATION ERROR", source = "" }
-          ]
-        , case Project.elmJson project of
-            Just { path, raw } ->
-                [ { path = path, source = raw } ]
+    []
+        |> addMultiple (Project.modules project)
+        |> addMaybe (\{ path, raw } -> { path = path, source = raw }) (Project.elmJson project)
+        |> addMaybe (\{ path, content } -> { path = path, source = content }) (Project.readme project)
+        |> addSingle { path = "GLOBAL ERROR", source = "" }
+        |> addSingle { path = "CONFIGURATION ERROR", source = "" }
+        |> addMultiple (Project.modulesThatFailedToParse project)
+        |> addFromDict (Project.extraFiles project)
 
-            Nothing ->
-                []
-        , case Project.readme project of
-            Just { path, content } ->
-                [ { path = path, source = content } ]
 
-            Nothing ->
-                []
-        , Dict.foldr (\path source acc -> { path = path, source = source } :: acc) [] (Project.extraFiles project)
-        , Project.modulesThatFailedToParse project
-        ]
+addMaybe : (a -> b) -> Maybe a -> List b -> List b
+addMaybe mapper maybe acc =
+    case maybe of
+        Just a ->
+            mapper a :: acc
+
+        Nothing ->
+            acc
+
+
+addSingle : { path : String, source : String } -> List { path : String, source : String } -> List { path : String, source : String }
+addSingle entry acc =
+    entry :: acc
+
+
+addMultiple : List { a | path : String, source : String } -> List { a | path : String, source : String } -> List { a | path : String, source : String }
+addMultiple newEntries acc =
+    newEntries ++ acc
+
+
+addFromDict : Dict String String -> List { path : String, source : String } -> List { path : String, source : String }
+addFromDict dict initial =
+    Dict.foldr (\path source acc -> { path = path, source = source } :: acc) initial dict
 
 
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
