@@ -1547,23 +1547,29 @@ groupErrorsByFile project errors =
                 , Project.modulesThatFailedToParse project
                 ]
     in
-    files
-        |> List.map
-            (\file ->
-                { path =
-                    if file.path == "GLOBAL ERROR" then
-                        Reporter.Global
+    List.foldr
+        (\file acc ->
+            case List.filter (\error -> file.path == Rule.errorFilePath error) errors of
+                [] ->
+                    acc
 
-                    else if file.path == "CONFIGURATION ERROR" then
-                        Reporter.ConfigurationError
+                fileErrors ->
+                    { path =
+                        if file.path == "GLOBAL ERROR" then
+                            Reporter.Global
 
-                    else
-                        Reporter.FilePath file.path
-                , source = Reporter.Source file.source
-                , errors = List.filter (\error -> file.path == Rule.errorFilePath error) errors
-                }
-            )
-        |> List.filter (\file -> not (List.isEmpty file.errors))
+                        else if file.path == "CONFIGURATION ERROR" then
+                            Reporter.ConfigurationError
+
+                        else
+                            Reporter.FilePath file.path
+                    , source = Reporter.Source file.source
+                    , errors = fileErrors
+                    }
+                        :: acc
+        )
+        []
+        files
 
 
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
