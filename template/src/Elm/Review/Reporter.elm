@@ -219,7 +219,7 @@ using `elm-review --fix --allow-remove-files`."""
                         |> Text.from
                         |> Text.inYellow
                       )
-                        :: (Dict.toList rulesWithInvalidFixes |> List.concatMap listFailingRules)
+                        :: Dict.foldr listFailingRules [] rulesWithInvalidFixes
                     , [ case fixExplanation of
                             FixExplanation.Succinct ->
                                 "Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."
@@ -245,8 +245,8 @@ using `elm-review --fix --allow-remove-files`."""
             |> List.map Text.toRecord
 
 
-listFailingRules : ( String, Maybe String ) -> List Text
-listFailingRules ( ruleName, rulePackage ) =
+listFailingRules : String -> Maybe String -> List Text -> List Text
+listFailingRules ruleName rulePackage initial =
     let
         base : Text
         base =
@@ -256,16 +256,17 @@ listFailingRules ( ruleName, rulePackage ) =
     in
     case rulePackage of
         Just rulePackageName ->
-            [ base
-            , Text.from " ("
-            , rulePackageName
-                |> Text.from
-                |> Text.withLink (Just ("https://github.com/" ++ rulePackageName ++ "/issues"))
-            , Text.from ")"
-            ]
+            base
+                :: Text.from " ("
+                :: (rulePackageName
+                        |> Text.from
+                        |> Text.withLink (Just ("https://github.com/" ++ rulePackageName ++ "/issues"))
+                   )
+                :: Text.from ")"
+                :: initial
 
         Nothing ->
-            [ base ]
+            base :: initial
 
 
 {-| Reports configuration errors reported by `elm-review` in a nice human-readable way.
