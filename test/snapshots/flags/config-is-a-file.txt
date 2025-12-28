@@ -1,0 +1,7 @@
+-- INCORRECT CONFIGURATION -----------------------------------------------------
+
+I was expecting the configuration to be a path to a directory containing an elm.json file and a ReviewConfig.elm file, but it seems you pointed at a file.
+
+Instead of --config some/path/to/review/elm.json (or similar),
+please use --config some/path/to/review
+
