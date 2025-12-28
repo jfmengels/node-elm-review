@@ -1,0 +1,6 @@
+-- INCORRECT CONFIGURATION -----------------------------------------------------
+
+I could not find a review configuration. I was expecting to find an elm.json file and a ReviewConfig.elm file in <local-path>/could-not-be-found/.
+
+I can help set you up with an initial configuration if you run elm-review init.
+
