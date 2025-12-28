@@ -1517,18 +1517,7 @@ groupErrorsByFile mapper project errors =
     in
     Dict.foldr
         (\path source acc ->
-            case
-                List.foldr
-                    (\error subAcc ->
-                        if path == Rule.errorFilePath error then
-                            mapper error :: subAcc
-
-                        else
-                            subAcc
-                    )
-                    []
-                    errors
-            of
+            case collectErrorsForFile mapper path errors of
                 [] ->
                     acc
 
@@ -1549,6 +1538,20 @@ groupErrorsByFile mapper project errors =
         )
         []
         files
+
+
+collectErrorsForFile : (Rule.ReviewError -> a) -> String -> List Rule.ReviewError -> List a
+collectErrorsForFile mapper path errors =
+    List.foldr
+        (\error subAcc ->
+            if path == Rule.errorFilePath error then
+                mapper error :: subAcc
+
+            else
+                subAcc
+        )
+        []
+        errors
 
 
 collectFiles : Project -> Dict String String
