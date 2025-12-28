@@ -1021,20 +1021,9 @@ makeReport model =
         , case newModel.reportMode of
             HumanReadable ->
                 let
-                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                    errorsByFile =
-                        groupErrorsByFile model.project model.reviewErrorsAfterSuppression
-
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
-                        List.map
-                            (\file ->
-                                { path = file.path
-                                , source = file.source
-                                , errors = List.map (fromReviewError newModel.suppressedErrors newModel.links) file.errors
-                                }
-                            )
-                            errorsByFile
+                        groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
                     { suppressedErrors = newModel.suppressedErrors
@@ -1052,7 +1041,7 @@ makeReport model =
                 let
                     errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
                     errorsByFile =
-                        groupErrorsByFile model.project model.reviewErrors
+                        groupErrorsByFile identity model.project model.reviewErrors
                 in
                 Encode.list
                     (encodeErrorByFile
@@ -1519,8 +1508,8 @@ type alias FixedFile =
     }
 
 
-groupErrorsByFile : Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-groupErrorsByFile project errors =
+groupErrorsByFile : (Rule.ReviewError -> reportError) -> Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List reportError }
+groupErrorsByFile mapper project errors =
     let
         files : List { path : String, source : String }
         files =
@@ -1564,7 +1553,7 @@ groupErrorsByFile project errors =
                         else
                             Reporter.FilePath file.path
                     , source = Reporter.Source file.source
-                    , errors = fileErrors
+                    , errors = List.map mapper fileErrors
                     }
                         :: acc
         )
