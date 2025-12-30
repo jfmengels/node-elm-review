@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.13.5] - 2025-12-30
+
 - Added `--elmjson` and `--config` to the help text for `prepare-offline`.
 - When building the review application, `elm-review` will now respect the specific versions of indirect dependencies listed in the review configuration's `elm.json` file. Thanks [@omnibs](https://github.com/omnibs)!
 - Fixed an issue where relative ELM_HOME would not be respected when building the review application (and would instead be located somewhere under `elm-stuff/`).
@@ -184,7 +186,8 @@ Updated the packages created by `elm-review new-package` to
 
 Help would be appreciated to fill the blanks!
 
-[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.4...HEAD
+[Unreleased]: https://github.com/jfmengels/node-elm-review/compare/v2.13.5...HEAD
+[2.13.5]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.5
 [2.13.4]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.4
 [2.13.3]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.3
 [2.13.2]: https://github.com/jfmengels/node-elm-review/releases/tag/2.13.2
