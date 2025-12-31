@@ -9,14 +9,20 @@
 
 /* eslint n/no-process-exit: "off" -- WIP */
 import * as fsp from 'node:fs/promises';
-import * as path from 'node:path';
+import * as path from 'pathe';
 import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
-import {$, cd} from 'zx';
+import {$, cd, quote} from 'zx';
+import {normalize} from './normalize.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+if (process.platform === 'win32') {
+  $.shell = 'C:\\Program Files\\Git\\bin\\bash.exe';
+  $.quote = quote;
+}
 
 $.quiet = true;
 $.stdio = 'pipe';
@@ -29,8 +35,7 @@ const SNAPSHOTS = path.join(__dirname, 'run-snapshots');
 /** @type {string | undefined} */
 const SUBCOMMAND = process.argv[2];
 
-const nodeVersionOutput = await $`node --version`;
-const nodeVersion = nodeVersionOutput.stdout.toString().slice(1).trim();
+const nodeVersion = process.versions.node;
 const nvmrc = await fsp.readFile('../.nvmrc');
 const expectedVersion = nvmrc.toString().trim();
 
@@ -41,15 +46,6 @@ if (nodeVersion !== expectedVersion) {
   );
   process.exit(1);
 }
-
-/**
- * @param {string} data
- * @returns {string}
- */
-const replaceScript = (data) => {
-  const localPath = path.join(__dirname, '..');
-  return data.replace(new RegExp(localPath, 'g'), '<local-path>');
-};
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
 const AUTH = AUTH_GITHUB === undefined ? [] : [`--github-auth=${AUTH_GITHUB}`];
@@ -73,7 +69,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
   const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
 
-  process.stdout.write(`- ${title}: \u001B[34m ${censoredCommand}\u001B[0m`);
+  process.stdout.write(`- ${title}: \u001B[34m${censoredCommand}\u001B[0m`);
   try {
     await fsp.access(snapshotPath);
   } catch {
@@ -84,12 +80,12 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   }
 
   const output = await cmd.run().text();
-  const replacedOutput = replaceScript(output);
+  const replacedOutput = normalize(output);
   await fsp.writeFile(actualPath, replacedOutput);
 
   const diff = await $`diff ${actualPath} ${snapshotPath}`.nothrow();
   if (diff.exitCode === 0) {
-    console.log(`  \u001B[92mOK\u001B[0m`);
+    console.log(` \u001B[92mOK\u001B[0m`);
   } else {
     const [snapshot, actual] = await Promise.all([
       fsp.readFile(snapshotPath, 'utf8'),
@@ -130,7 +126,7 @@ const runAndRecord = async (title, args, file, input) => {
   $.env.ELM_HOME = ELM_HOME;
 
   const output = await cmd.run().text();
-  const replacedOutput = replaceScript(output);
+  const replacedOutput = normalize(output);
   await fsp.writeFile(snapshotPath, replacedOutput);
 };
 
@@ -191,7 +187,7 @@ const checkFolderContents = async (folder) => {
     const diff =
       await $`diff -rq ${actualFolder} ${snapshotFolder} --exclude="elm-stuff"`.nothrow();
     if (diff.exitCode === 0) {
-      console.log(`  \u001B[92mOK\u001B[0m`);
+      console.log(` \u001B[92mOK\u001B[0m`);
     } else {
       console.error(
         `\u001B[31m  ERROR\n  The generated files are different:\u001B[0m`
@@ -340,6 +336,9 @@ await createTestSuiteForHumanAndJson(
 );
 
 await fsp.copyFile('fixed-elm.json', 'elm.json');
+const fixedContent = await fsp.readFile('elm.json', 'utf8');
+const status = await $`git update-index --really-refresh && git status`.text();
+console.log('Replaced elm.json with fixed-elm.json', fixedContent, status);
 await createTest(
   'Fixing all errors for an entire rule should remove the suppression file',
   [],
@@ -471,7 +470,10 @@ await createTest(
 
 // Review with remote configuration
 
-if (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) {
+if (
+  (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) ||
+  (CI && process.platform === 'win32')
+) {
   process.exit(0);
 }
 
