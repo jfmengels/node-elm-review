@@ -3,10 +3,17 @@
  * @import {Options} from './types/cli';
  */
 
-const path = require('node:path');
+const {normalize} = require('../normalize');
+
+const path = require('pathe');
 const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
-const {$} = require('zx');
+const {$, quote} = require('zx');
+
+if (process.platform === 'win32') {
+  $.shell = 'C:\\Program Files\\Git\\bin\\bash.exe';
+  $.quote = quote;
+}
 
 const cli = path.resolve(__dirname, '../../bin/elm-review');
 expect.extend({toMatchFile});
@@ -21,18 +28,18 @@ async function run(args, options) {
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
-  return output.stdout;
+  return normalize(output.stdout);
 }
 
 /**
  * @param {string[]} args
  * @param {Options | undefined} [options]
- * @returns {Promise<unknown>}
+ * @returns {Promise<string>}
  */
 async function runAndExpectError(args, options) {
   const output = await internalExec(['--FOR-TESTS', ...args], options);
   if (output.exitCode !== 0) {
-    return output.stdout; // Should this be stderr?
+    return normalize(output.stdout); // Should this be stderr?
   }
 
   throw new Error(
@@ -52,7 +59,7 @@ async function runWithoutTestMode(args, options) {
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
-  return output.stdout;
+  return normalize(output.stdout, false);
 }
 
 /**
@@ -71,6 +78,7 @@ async function internalExec(args, options = {}) {
     },
     quiet: true
   })`${cli} ${reportMode(options)} ${colors(options)} ${args}`.nothrow();
+
   return result;
 }
 
