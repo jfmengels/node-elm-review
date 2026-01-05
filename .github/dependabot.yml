@@ -100,8 +100,8 @@ updates:
           - version-update:semver-major
   - package-ecosystem: 'github-actions' # See documentation for possible values
     directories: # Location of package manifests
-      - '/' # Strangely, this is how to specify "./.github/workflows/*.ya?ml"
-      - '/new-package'
+      - '/' # Strangely, this is how to specify "/.github/workflows/*.ya?ml"
+      - '/new-package/github/workflows'
     schedule:
       interval: 'weekly'
     groups:
@@ -117,6 +117,8 @@ updates:
       - '/template'
       - '/test/config-*/'
       - '/test/project-*/'
+    exclude-paths:
+      - '/test/config-unparsable-elmjson'
     schedule:
       interval: 'weekly'
     groups:
