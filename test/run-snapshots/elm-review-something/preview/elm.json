@@ -8,7 +8,7 @@
     "dependencies": {
         "direct": {
             "elm/core": "1.0.5",
-            "jfmengels/elm-review": "2.16.2",
+            "jfmengels/elm-review": "2.16.3",
             "stil4m/elm-syntax": "7.3.9"
         },
         "indirect": {
@@ -21,7 +21,7 @@
             "elm/regex": "1.0.0",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.5",
-            "elm-explorations/test": "2.2.0",
+            "elm-explorations/test": "2.2.1",
             "rtfeldman/elm-hex": "1.0.0",
             "stil4m/structured-writer": "1.0.3"
         }
