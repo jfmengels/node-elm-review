@@ -856,7 +856,17 @@ printCycle moduleNames =
             |> Text.from
       ]
     , moduleNames
-        |> List.map (\moduleName -> moduleName |> Text.from |> Text.inYellow)
+        |> List.map
+            (\moduleName ->
+                (if String.length moduleName == 1 then
+                    " " ++ moduleName
+
+                 else
+                    moduleName
+                )
+                    |> Text.from
+                    |> Text.inYellow
+            )
         |> List.intersperse (Text.from "\n    │     ↓\n    │    ")
     , [ "\n    └─────┘"
             |> Text.from
