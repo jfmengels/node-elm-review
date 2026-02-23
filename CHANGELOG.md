@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Breaking change for local dev testing: Replaced `LOCAL_ELM_REVIEW_SRC=/path/to/elm-review/src` by `LOCAL_ELM_REVIEW=/path/to/elm-review`.
+
 ## [2.13.5] - 2025-12-30
 
 - Added `--elmjson` and `--config` to the help text for `prepare-offline`.

@@ -32,7 +32,7 @@ export type Options = OptionsBase & {
   compiler: string | undefined;
   elmFormatPath: string | undefined;
   packageJsonVersion: string;
-  localElmReviewSrc: string | undefined;
+  localElmReview: string | undefined;
   forceBuild: boolean;
   offline: boolean;
   reportOnOneLine: boolean;
