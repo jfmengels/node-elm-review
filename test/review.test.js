@@ -1,3 +1,4 @@
+const os = require('node:os');
 const path = require('node:path');
 const TestCli = require('./jest-helpers/cli');
 const snapshotter = require('./snapshotter');
@@ -51,6 +52,23 @@ test('Regular run using --elmjson and --config', async () => {
     {cwd: path.resolve(__dirname, '.')}
   );
   expect(output).toMatchFile(testName('run-with-elmjson-flag'));
+});
+
+test('Regular run using --config=~/...', async () => {
+  const pathFromHome = path.relative(
+    os.homedir(),
+    path.resolve(path.resolve(__dirname, '.'))
+  );
+
+  const output = await TestCli.runAndExpectError(
+    [
+      '--elmjson=project-with-errors/elm.json',
+      `--config=~/${pathFromHome}/project-with-errors/review`,
+      `--rules=NoUnused.Exports`
+    ],
+    {cwd: path.resolve(__dirname, '.')}
+  );
+  expect(output).toMatchFile(testName('run-with-config-flag-home'));
 });
 
 test('Running in a project using ES2015 modules', async () => {

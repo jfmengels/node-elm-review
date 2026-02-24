@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Fixed `~` not being resolved to the home folder when used in CLI flags, such as `--config=~/some/path` (`--config ~/some/path` worked correctly).
+  This was an issue for `--config`, `--ignore-dirs`, `--ignore-files`, `--elmjson`, `--compiler` and `--elm-format-path`.
+
 ## [2.13.5] - 2025-12-30
 
 - Added `--elmjson` and `--config` to the help text for `prepare-offline`.
