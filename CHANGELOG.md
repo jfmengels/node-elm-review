@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed `~` not being resolved to the home folder when used in CLI flags, such as `--config=~/some/path` (`--config ~/some/path` worked correctly).
+  This was an issue for `--config`, `--ignore-dirs`, `--ignore-files`, `--elmjson`, `--compiler` and `--elm-format-path`.
 - Breaking change for local dev testing: Replaced `LOCAL_ELM_REVIEW_SRC=/path/to/elm-review/src` by `LOCAL_ELM_REVIEW=/path/to/elm-review`.
 
 ## [2.13.5] - 2025-12-30
