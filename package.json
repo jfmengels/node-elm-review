@@ -68,7 +68,7 @@
     "elm-solve-deps-wasm": "^1.0.2 || ^2.0.0",
     "fastest-levenshtein": "^1.0.16",
     "find-up": "^4.1.0 || ^5.0.0",
-    "folder-hash": "^3.3.0",
+    "folder-hash": "^4.1.2",
     "got": "^11.8.5",
     "graceful-fs": "^4.2.11",
     "minimist": "^1.2.6",
