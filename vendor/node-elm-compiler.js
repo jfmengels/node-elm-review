@@ -193,7 +193,7 @@ function compilerArgsFromOptions(options) {
           case 'docs':
             return ['--docs', value];
           case 'optimize':
-            return ['--optimize'];
+            return [];
           case 'runtimeOptions':
             return ['+RTS', ...value, '-RTS'];
           default:
