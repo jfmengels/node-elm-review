@@ -6,7 +6,6 @@
  */
 
 var spawn = require('cross-spawn');
-var elmBinaryName = 'elm';
 
 /** @satisfies {Partial<CompileOptions>} */
 var defaultOptions = {
@@ -137,17 +136,16 @@ function compilerErrorToString(err, pathToElm) {
  */
 function compile(sources, options) {
   var optionsWithDefaults = prepareOptions(options, options.spawn || spawn);
-  var pathToElm = options.pathToElm || elmBinaryName;
 
   try {
-    return runCompiler(sources, optionsWithDefaults, pathToElm).on(
+    return runCompiler(sources, optionsWithDefaults, options.pathToElm).on(
       'error',
       function (err) {
         throw err;
       }
     );
   } catch (err) {
-    throw compilerErrorToString(err, pathToElm);
+    throw compilerErrorToString(err, options.pathToElm);
   }
 }
 
