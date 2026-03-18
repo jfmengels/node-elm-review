@@ -81,7 +81,7 @@ function runCompiler(sources, options, pathToElm) {
   }
 
   var processArgs = prepareProcessArgs(sources, options);
-  console.log(processArgs)
+  console.log(processArgs);
   var processOpts = prepareProcessOpts(options);
 
   if (options.verbose) {
