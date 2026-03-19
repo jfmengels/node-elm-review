@@ -48,9 +48,7 @@ function prepareProcessArgs(sources, options) {
   var preparedSources = prepareSources(sources);
   var compilerArgs = compilerArgsFromOptions(options);
 
-  return ['make'].concat(
-    preparedSources ? preparedSources.concat(compilerArgs) : compilerArgs
-  );
+  return ['make'].concat(compilerArgs.concat(preparedSources || []));
 }
 
 /**
@@ -181,7 +179,7 @@ function compilerArgsFromOptions(options) {
           case 'help':
             return ['--help'];
           case 'output':
-            return ['--output', value];
+            return ['--output=' + value];
           case 'report':
             return ['--report', value];
           case 'debug':
