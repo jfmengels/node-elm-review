@@ -1,6 +1,5 @@
 port module ParseMain exposing (main)
 
-import Dependencies
 import Elm.Parser as Parser
 import Elm.Processing
 import Elm.Review.AstCodec as AstCodec
@@ -53,15 +52,7 @@ parseSource : String -> Result () File
 parseSource source =
     case Parser.parse source of
         Ok ast ->
-            Ok (Elm.Processing.process elmProcessContext ast)
+            Ok (Elm.Processing.process Elm.Processing.init ast)
 
         Err _ ->
             Err ()
-
-
-elmProcessContext : Elm.Processing.ProcessContext
-elmProcessContext =
-    Elm.Processing.init
-        |> Elm.Processing.addDependency Dependencies.elmCore
-        |> Elm.Processing.addDependency Dependencies.elmUrl
-        |> Elm.Processing.addDependency Dependencies.elmParser
