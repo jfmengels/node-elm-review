@@ -180,7 +180,7 @@ function compilerArgsFromOptions(options) {
           case 'output':
             return ['--output=' + value];
           case 'report':
-            return ['--report', value];
+            return [];
           case 'debug':
             return ['--debug'];
           case 'verbose':
