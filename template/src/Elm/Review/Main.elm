@@ -16,7 +16,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
-import Fs exposing (FsError(..))
+import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
@@ -240,6 +240,7 @@ type ModelWrapper
 
 type alias Model2 =
     { env : Env
+    , fs : FileSystem
     , project : Project
     }
 
@@ -255,7 +256,7 @@ init env =
             ( Done, Cli.println env.stderr env.programName )
 
         Ok fs ->
-            ( Running { env = env, project = Project.new }
+            ( Running { env = env, fs = fs, project = Project.new }
             , Task.attempt FileRead (Fs.readTextFile fs "cli/ReadFile.elm")
             )
 
