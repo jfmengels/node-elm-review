@@ -97,7 +97,17 @@ port fixConfirmationStatus : Bool -> Cmd msg
 port abort : String -> Cmd msg
 
 
-port abortWithDetails : { title : String, message : String } -> Cmd msg
+abortWithDetails : Env -> { title : String, message : String } -> Cmd msg
+abortWithDetails env { title, message } =
+    let
+        titleText : String
+        titleText =
+            "-- " ++ title ++ String.repeat (80 - String.length title - 4) "-"
+    in
+    Cmd.batch
+        [ Cli.println env.stderr ("\u{001B}[32m" ++ titleText ++ "\u{001B}[39m\n\n" ++ String.trim message)
+        , Cli.exit 1
+        ]
 
 
 port abortForConfigurationErrors : Encode.Value -> Cmd msg
@@ -125,7 +135,11 @@ main =
 
 
 type alias Model =
-    { rules : List Rule
+    { env : Env
+    , fs : FileSystem
+
+    --
+    , rules : List Rule
     , fixAllRules : List Rule
     , project : Project
     , isInitialRun : Bool
@@ -215,14 +229,7 @@ type ReportMode
 
 type ModelWrapper
     = Done
-    | Running Model2
-
-
-type alias Model2 =
-    { env : Env
-    , fs : FileSystem
-    , project : Project
-    }
+    | Running Model
 
 
 type Msg2
@@ -237,136 +244,140 @@ init env =
             ( Done, Cli.println env.stderr (env.programName ++ ": " ++ msg) )
 
         Ok fs ->
-            ( Running { env = env, fs = fs, project = Project.new }
-            , Fs.walkTree fs "src" (Just "*.elm") Fs.Any
-                |> Task.attempt (FoundSourceFiles "src")
-            )
+            let
+                flags : DecodedFlags
+                flags =
+                    -- TODO Decode flags from parent process
+                    -- case Decode.decodeValue decodeFlags rawFlags of
+                    case Err () of
+                        Ok decodedFlags ->
+                            (decodedFlags
+                             -- , Cmd.none
+                            )
 
+                        Err error ->
+                            ({ fixMode = Mode_DontFix
+                             , fixLimit = Nothing
+                             , enableExtract = False
+                             , fixExplanation = FixExplanation.Succinct
+                             , unsuppressMode = UnsuppressMode.UnsuppressNone
+                             , reportMode = HumanReadable
+                             , detailsMode = Reporter.WithDetails
+                             , ignoreProblematicDependencies = False
+                             , rulesFilter = Nothing
+                             , ignoredDirs = []
+                             , ignoredFiles = []
+                             , writeSuppressionFiles = False
+                             , logger = CliCommunication.dummy
+                             }
+                             -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
+                            )
 
-initOld : Flags -> ( Model, Cmd msg )
-initOld rawFlags =
-    let
-        ( flags, cmd ) =
-            case Decode.decodeValue decodeFlags rawFlags of
-                Ok decodedFlags ->
-                    ( decodedFlags, Cmd.none )
+                rulesWithIds : List Rule
+                rulesWithIds =
+                    List.indexedMap Rule.withRuleId config
 
-                Err error ->
-                    ( { fixMode = Mode_DontFix
-                      , fixLimit = Nothing
-                      , enableExtract = False
-                      , fixExplanation = FixExplanation.Succinct
-                      , unsuppressMode = UnsuppressMode.UnsuppressNone
-                      , reportMode = HumanReadable
-                      , detailsMode = Reporter.WithDetails
-                      , ignoreProblematicDependencies = False
-                      , rulesFilter = Nothing
-                      , ignoredDirs = []
-                      , ignoredFiles = []
-                      , writeSuppressionFiles = False
-                      , logger = CliCommunication.dummy
-                      }
-                    , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
-                    )
+                ( rulesFromConfig, filterNames ) =
+                    case flags.rulesFilter of
+                        Just rulesToEnable ->
+                            let
+                                ruleNames : Set String
+                                ruleNames =
+                                    List.map Rule.ruleName rulesWithIds
+                                        |> Set.fromList
+                            in
+                            ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
+                            , Set.diff rulesToEnable ruleNames
+                                |> Set.toList
+                            )
 
-        rulesWithIds : List Rule
-        rulesWithIds =
-            List.indexedMap Rule.withRuleId config
+                        Nothing ->
+                            ( rulesWithIds, [] )
 
-        ( rulesFromConfig, filterNames ) =
-            case flags.rulesFilter of
-                Just rulesToEnable ->
-                    let
-                        ruleNames : Set String
-                        ruleNames =
-                            List.map Rule.ruleName rulesWithIds
-                                |> Set.fromList
-                    in
-                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
-                    , Set.diff rulesToEnable ruleNames
-                        |> Set.toList
-                    )
-
-                Nothing ->
-                    ( rulesWithIds, [] )
-
-        rules : List Rule
-        rules =
-            List.map
-                (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
-                rulesFromConfig
-    in
-    ( { rules = rules
-      , fixAllRules = rules
-      , project = Project.new
-      , isInitialRun = True
-      , links = Dict.empty
-      , fixAllResultProject = Project.new
-      , fixMode = flags.fixMode
-      , fixLimit = flags.fixLimit
-      , fixExplanation = flags.fixExplanation
-      , enableExtract = flags.enableExtract
-      , unsuppressMode = flags.unsuppressMode
-      , detailsMode = flags.detailsMode
-      , reportMode = flags.reportMode
-      , reviewErrors = []
-      , reviewErrorsAfterSuppression = []
-      , suppressedErrors = SuppressedErrors.empty
-      , writeSuppressionFiles = flags.writeSuppressionFiles
-      , errorsHaveBeenFixedPreviously = False
-      , refusedErrorFixes = RefusedErrorFixes.empty
-      , errorAwaitingConfirmation = NotAwaiting
-      , fixAllErrors = Dict.empty
-      , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
-      , extracts = Dict.empty
-      , communicationKey = flags.logger
-      }
-    , if List.isEmpty config then
-        -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
-        abortWithDetails
-            { title = "CONFIGURATION IS EMPTY"
-            , message =
-                """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
+                rules : List Rule
+                rules =
+                    List.map
+                        (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
+                        rulesFromConfig
+            in
+            ( Running
+                { env = env
+                , fs = fs
+                , rules = rules
+                , fixAllRules = rules
+                , project = Project.new
+                , isInitialRun = True
+                , links = Dict.empty
+                , fixAllResultProject = Project.new
+                , fixMode = flags.fixMode
+                , fixLimit = flags.fixLimit
+                , fixExplanation = flags.fixExplanation
+                , enableExtract = flags.enableExtract
+                , unsuppressMode = flags.unsuppressMode
+                , detailsMode = flags.detailsMode
+                , reportMode = flags.reportMode
+                , reviewErrors = []
+                , reviewErrorsAfterSuppression = []
+                , suppressedErrors = SuppressedErrors.empty
+                , writeSuppressionFiles = flags.writeSuppressionFiles
+                , errorsHaveBeenFixedPreviously = False
+                , refusedErrorFixes = RefusedErrorFixes.empty
+                , errorAwaitingConfirmation = NotAwaiting
+                , fixAllErrors = Dict.empty
+                , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+                , extracts = Dict.empty
+                , communicationKey = flags.logger
+                }
+            , if List.isEmpty config then
+                -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
+                abortWithDetails
+                    env
+                    { title = "CONFIGURATION IS EMPTY"
+                    , message =
+                        """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
 
 I recommend you take a look at the following documents:
   - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
-            }
+                    }
 
-      else if not (List.isEmpty filterNames) then
-        abortWithDetails
-            (unknownRulesFilterMessage
-                { ruleNames =
-                    List.map Rule.ruleName config
-                        |> Set.fromList
-                        |> Set.toList
-                , filterNames = filterNames
-                }
+              else if not (List.isEmpty filterNames) then
+                abortWithDetails
+                    env
+                    (unknownRulesFilterMessage
+                        { ruleNames =
+                            List.map Rule.ruleName config
+                                |> Set.fromList
+                                |> Set.toList
+                        , filterNames = filterNames
+                        }
+                    )
+
+              else
+                case List.filterMap getConfigurationError config of
+                    [] ->
+                        Cmd.batch
+                            [ -- TODO Re-add cmd
+                              -- cmd
+                              -- TODO Don't trigger when the other cmd is `abort`
+                              rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
+                            , Fs.walkTree fs "src" (Just "*.elm") Fs.Any
+                                |> Task.attempt (FoundSourceFiles "src")
+                            ]
+
+                    configurationErrors ->
+                        abortForConfigurationErrors <|
+                            case flags.reportMode of
+                                HumanReadable ->
+                                    Reporter.formatConfigurationErrors
+                                        { detailsMode = flags.detailsMode
+                                        , configurationErrors = configurationErrors
+                                        }
+                                        |> encodeReport
+
+                                Json ->
+                                    encodeConfigurationErrors flags.detailsMode configurationErrors
             )
-
-      else
-        case List.filterMap getConfigurationError config of
-            [] ->
-                Cmd.batch
-                    [ cmd
-
-                    -- TODO Don't trigger when the other cmd is `abort`
-                    , rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-                    ]
-
-            configurationErrors ->
-                abortForConfigurationErrors <|
-                    case flags.reportMode of
-                        HumanReadable ->
-                            Reporter.formatConfigurationErrors
-                                { detailsMode = flags.detailsMode
-                                , configurationErrors = configurationErrors
-                                }
-                                |> encodeReport
-
-                        Json ->
-                            encodeConfigurationErrors flags.detailsMode configurationErrors
-    )
 
 
 getConfigurationError : Rule -> Maybe Reporter.Error
@@ -601,7 +612,7 @@ updateWrapper msg wrapper =
             ( Running newModel, cmd )
 
 
-update : Msg2 -> Model2 -> ( Model2, Cmd Msg2 )
+update : Msg2 -> Model -> ( Model, Cmd Msg2 )
 update msg model =
     case msg of
         FoundSourceFiles directory (Ok ( files, _ )) ->
@@ -740,6 +751,7 @@ updateOld msg model =
                     ( model
                     , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                         abortWithDetails
+                            model.env
                             { title = "FOUND PROBLEMATIC DEPENDENCIES"
                             , message =
                                 """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
@@ -756,6 +768,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
                       else
                         abortWithDetails
+                            model.env
                             { title = "PROBLEM READING DEPENDENCIES"
                             , message =
                                 "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
