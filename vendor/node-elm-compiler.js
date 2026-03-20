@@ -6,6 +6,7 @@
  */
 
 var spawn = require('cross-spawn');
+var elmBinaryName = 'elm';
 
 /** @satisfies {Partial<CompileOptions>} */
 var defaultOptions = {
@@ -48,7 +49,9 @@ function prepareProcessArgs(sources, options) {
   var preparedSources = prepareSources(sources);
   var compilerArgs = compilerArgsFromOptions(options);
 
-  return ['make'].concat(compilerArgs.concat(preparedSources || []));
+  return ['make'].concat(
+    preparedSources ? preparedSources.concat(compilerArgs) : compilerArgs
+  );
 }
 
 /**
@@ -79,7 +82,6 @@ function runCompiler(sources, options, pathToElm) {
   }
 
   var processArgs = prepareProcessArgs(sources, options);
-  console.log(processArgs);
   var processOpts = prepareProcessOpts(options);
 
   if (options.verbose) {
@@ -135,16 +137,17 @@ function compilerErrorToString(err, pathToElm) {
  */
 function compile(sources, options) {
   var optionsWithDefaults = prepareOptions(options, options.spawn || spawn);
+  var pathToElm = options.pathToElm || elmBinaryName;
 
   try {
-    return runCompiler(sources, optionsWithDefaults, options.pathToElm).on(
+    return runCompiler(sources, optionsWithDefaults, pathToElm).on(
       'error',
       function (err) {
         throw err;
       }
     );
   } catch (err) {
-    throw compilerErrorToString(err, options.pathToElm);
+    throw compilerErrorToString(err, pathToElm);
   }
 }
 
@@ -179,9 +182,9 @@ function compilerArgsFromOptions(options) {
           case 'help':
             return ['--help'];
           case 'output':
-            return ['--output=' + value];
+            return ['--output', value];
           case 'report':
-            return [];
+            return ['--report', value];
           case 'debug':
             return ['--debug'];
           case 'verbose':
@@ -191,7 +194,7 @@ function compilerArgsFromOptions(options) {
           case 'docs':
             return ['--docs', value];
           case 'optimize':
-            return [];
+            return ['--optimize'];
           case 'runtimeOptions':
             return ['+RTS', ...value, '-RTS'];
           default:
