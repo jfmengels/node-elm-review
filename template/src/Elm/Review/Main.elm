@@ -245,7 +245,8 @@ type alias Model2 =
 
 
 type Msg2
-    = FoundSourceFiles (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
+    = FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
+    | FileRead String (Result Fs.FsError String)
 
 
 init : Env -> ( ModelWrapper, Cmd Msg2 )
@@ -257,7 +258,7 @@ init env =
         Ok fs ->
             ( Running { env = env, fs = fs, project = Project.new }
             , Fs.walkTree fs "src" (Just "*.elm") Fs.Any
-                |> Task.attempt FoundSourceFiles
+                |> Task.attempt (FoundSourceFiles "src")
             )
 
 
@@ -770,21 +771,33 @@ updateWrapper msg wrapper =
 update : Msg2 -> Model2 -> ( Model2, Cmd Msg2 )
 update msg model =
     case msg of
-        FoundSourceFiles (Ok source) ->
+        FoundSourceFiles directory (Ok ( files, _ )) ->
             ( model
-            , Cmd.batch
-                [ Cli.println model.env.stdout (Debug.toString source)
-                , Cli.exit 0
-                ]
+            , Cli.println model.env.stdout (String.join "\n" files)
+                :: List.map (\filePath -> readFile model.fs (directory ++ "/" ++ filePath)) files
+                |> Cmd.batch
             )
 
-        FoundSourceFiles (Err err) ->
+        FoundSourceFiles _ (Err err) ->
             ( model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
-                , Cli.exit 1
                 ]
             )
+
+        FileRead filePath result ->
+            case result of
+                Ok source ->
+                    ( model, Cli.println model.env.stdout ("Read " ++ filePath ++ ": " ++ String.concat (List.take 1 (String.lines source))) )
+
+                Err err ->
+                    ( model, Cli.println model.env.stderr ("FileRead error: " ++ filePath ++ " - " ++ errorToString err) )
+
+
+readFile : FileSystem -> String -> Cmd Msg2
+readFile fs filePath =
+    Fs.readTextFile fs filePath
+        |> Task.attempt (FileRead filePath)
 
 
 errorToString : FsError -> String
