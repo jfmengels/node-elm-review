@@ -3,7 +3,6 @@ port module Elm.Review.Main exposing (main)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Docs
-import Elm.Parser as Parser
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
@@ -246,7 +245,7 @@ type alias Model2 =
 
 
 type Msg2
-    = FileRead (Result Fs.FsError String)
+    = FoundSourceFiles (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
 
 
 init : Env -> ( ModelWrapper, Cmd Msg2 )
@@ -257,7 +256,8 @@ init env =
 
         Ok fs ->
             ( Running { env = env, fs = fs, project = Project.new }
-            , Task.attempt FileRead (Fs.readTextFile fs "cli/ReadFile.elm")
+            , Fs.walkTree fs "src" (Just "*.elm") Fs.Any
+                |> Task.attempt FoundSourceFiles
             )
 
 
@@ -772,24 +772,15 @@ updateWrapper msg wrapper =
 update : Msg2 -> Model2 -> ( Model2, Cmd Msg2 )
 update msg model =
     case msg of
-        FileRead (Ok source) ->
-            let
-                json =
-                    case Parser.parseToFile source of
-                        Ok ast ->
-                            ast |> Elm.Syntax.File.encode |> Encode.encode 0
-
-                        Err _ ->
-                            "ERROR"
-            in
+        FoundSourceFiles (Ok source) ->
             ( model
             , Cmd.batch
-                [ Cli.println model.env.stdout json
+                [ Cli.println model.env.stdout (Debug.toString source)
                 , Cli.exit 0
                 ]
             )
 
-        FileRead (Err err) ->
+        FoundSourceFiles (Err err) ->
             ( model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
