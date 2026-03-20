@@ -776,7 +776,7 @@ update msg model =
         FoundSourceFiles directory (Ok ( files, _ )) ->
             ( model
             , Cli.println model.env.stdout (String.join "\n" files)
-                :: List.map (\filePath -> readFile model.fs (directory ++ "/" ++ filePath)) files
+                :: List.map (\filePath -> readFile model.fs (joinPaths directory filePath)) files
                 |> Cmd.batch
             )
 
@@ -790,10 +790,17 @@ update msg model =
         FileRead filePath result ->
             case result of
                 Ok source ->
-                    ( model, Cli.println model.env.stdout ("Read " ++ filePath ++ ": " ++ String.concat (List.take 1 (String.lines source))) )
+                    ( model
+                    , Cli.println model.env.stdout ("Read " ++ filePath ++ ": " ++ String.concat (List.take 1 (String.lines source)))
+                    )
 
                 Err err ->
                     ( model, Cli.println model.env.stderr ("FileRead error: " ++ filePath ++ " - " ++ errorToString err) )
+
+
+joinPaths : String -> String -> String
+joinPaths directory filePath =
+    directory ++ String.dropLeft 1 filePath ++ ""
 
 
 readFile : FileSystem -> String -> Cmd Msg2
