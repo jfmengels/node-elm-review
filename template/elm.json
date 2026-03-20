@@ -14,6 +14,7 @@
             "elm/project-metadata-utils": "1.0.2",
             "elm-run/cli": "1.0.0",
             "elm-run/fs": "1.0.0",
+            "elm-run/worker": "1.0.0",
             "jfmengels/elm-review": "2.16.6",
             "stil4m/elm-syntax": "7.3.9"
         },
