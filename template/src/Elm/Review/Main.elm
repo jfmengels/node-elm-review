@@ -240,6 +240,7 @@ type ModelWrapper
 
 type alias Model2 =
     { env : Env
+    , project : Project
     }
 
 
@@ -254,7 +255,7 @@ init env =
             ( Done, Cli.println env.stderr env.programName )
 
         Ok fs ->
-            ( Running { env = env }
+            ( Running { env = env, project = Project.new }
             , Task.attempt FileRead (Fs.readTextFile fs "cli/ReadFile.elm")
             )
 
