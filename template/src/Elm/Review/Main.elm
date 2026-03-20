@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Docs
+import Elm.Parser as Parser
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
@@ -16,6 +17,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
+import Fs exposing (FsError(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
@@ -26,6 +28,7 @@ import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
+import Task
 
 
 
@@ -109,12 +112,12 @@ type alias Flags =
     Encode.Value
 
 
-main : Cli.Program Model Msg
+main : Cli.Program Model2 Msg2
 main =
     Cli.program
         { init = init
         , update = update
-        , subscriptions = \_ -> subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -230,8 +233,33 @@ type ReportMode
 --    }
 
 
-init : Env -> ( Model, Cmd msg )
+type Model2
+    = Done
+    | Running { env : Env }
+
+
+type Msg2
+    = FileRead (Result Fs.FsError String)
+
+
+init : Env -> ( Model2, Cmd Msg2 )
 init env =
+    case Fs.require env of
+        Err msg ->
+            ( Done, Cli.println env.stderr env.programName )
+
+        Ok fs ->
+            ( Running { env = env }
+            , Task.attempt FileRead (Fs.readTextFile fs "cli/ReadFile.elm")
+            )
+
+
+initNew : Env -> ( Model, Cmd msg )
+initNew env =
+    let
+        _ =
+            Debug.log "foo" ()
+    in
     let
         ( flags, cmd ) =
             case Ok () of
@@ -718,8 +746,53 @@ type Msg
     | RequestedToKnowIfAFixConfirmationIsExpected
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg2 -> Model2 -> ( Model2, Cmd Msg2 )
 update msg model =
+    case ( msg, model ) of
+        ( FileRead (Ok source), Running { env } ) ->
+            let
+                json =
+                    case Parser.parseToFile source of
+                        Ok ast ->
+                            ast |> Elm.Syntax.File.encode |> Encode.encode 0
+
+                        Err _ ->
+                            "ERROR"
+            in
+            ( Done
+            , Cmd.batch
+                [ Cli.println env.stdout json
+                , Cli.exit 0
+                ]
+            )
+
+        ( FileRead (Err err), Running { env } ) ->
+            ( Done
+            , Cmd.batch
+                [ Cli.println env.stderr (errorToString err)
+                , Cli.exit 1
+                ]
+            )
+
+        _ ->
+            ( model, Cli.exit 1 )
+
+
+errorToString : FsError -> String
+errorToString fsError =
+    case fsError of
+        NotFound path ->
+            "File not found: " ++ path
+
+        PermissionDenied ->
+            "Permission denied"
+
+        IoError msg ->
+            "Unknown error: " ++ msg
+
+
+updateOld : Msg -> Model -> ( Model, Cmd Msg )
+updateOld msg model =
     case msg of
         ReceivedFile value ->
             case Decode.decodeValue Elm.Review.File.decode value of
