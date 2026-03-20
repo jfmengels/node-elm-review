@@ -112,11 +112,11 @@ type alias Flags =
     Encode.Value
 
 
-main : Cli.Program Model2 Msg2
+main : Cli.Program ModelWrapper Msg2
 main =
     Cli.program
         { init = init
-        , update = update
+        , update = updateWrapper
         , subscriptions = \_ -> Sub.none
         }
 
@@ -233,16 +233,21 @@ type ReportMode
 --    }
 
 
-type Model2
+type ModelWrapper
     = Done
-    | Running { env : Env }
+    | Running Model2
+
+
+type alias Model2 =
+    { env : Env
+    }
 
 
 type Msg2
     = FileRead (Result Fs.FsError String)
 
 
-init : Env -> ( Model2, Cmd Msg2 )
+init : Env -> ( ModelWrapper, Cmd Msg2 )
 init env =
     case Fs.require env of
         Err msg ->
@@ -746,10 +751,24 @@ type Msg
     | RequestedToKnowIfAFixConfirmationIsExpected
 
 
+updateWrapper : Msg2 -> ModelWrapper -> ( ModelWrapper, Cmd Msg2 )
+updateWrapper msg wrapper =
+    case wrapper of
+        Done ->
+            ( wrapper, Cmd.none )
+
+        Running model ->
+            let
+                ( newModel, cmd ) =
+                    update msg model
+            in
+            ( Running newModel, cmd )
+
+
 update : Msg2 -> Model2 -> ( Model2, Cmd Msg2 )
 update msg model =
-    case ( msg, model ) of
-        ( FileRead (Ok source), Running { env } ) ->
+    case msg of
+        FileRead (Ok source) ->
             let
                 json =
                     case Parser.parseToFile source of
@@ -759,23 +778,20 @@ update msg model =
                         Err _ ->
                             "ERROR"
             in
-            ( Done
+            ( model
             , Cmd.batch
-                [ Cli.println env.stdout json
+                [ Cli.println model.env.stdout json
                 , Cli.exit 0
                 ]
             )
 
-        ( FileRead (Err err), Running { env } ) ->
-            ( Done
+        FileRead (Err err) ->
+            ( model
             , Cmd.batch
-                [ Cli.println env.stderr (errorToString err)
+                [ Cli.println model.env.stderr (errorToString err)
                 , Cli.exit 1
                 ]
             )
-
-        _ ->
-            ( model, Cli.exit 1 )
 
 
 errorToString : FsError -> String
