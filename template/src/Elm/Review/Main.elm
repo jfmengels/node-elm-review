@@ -234,6 +234,7 @@ type ModelWrapper
 
 type Msg2
     = ReceivedElmJson String (Result Fs.FsError String)
+    | ReceivedReadme String (Result Fs.FsError String)
     | FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | FileRead String (Result Fs.FsError String)
 
@@ -364,6 +365,7 @@ I recommend you take a look at the following documents:
                               -- TODO Don't trigger when the other cmd is `abort`
                               rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
                             , fetchElmJson fs
+                            , fetchReadme fs
                             ]
 
                     configurationErrors ->
@@ -385,6 +387,11 @@ I recommend you take a look at the following documents:
 fetchElmJson : FileSystem -> Cmd Msg2
 fetchElmJson fs =
     readTextFile fs ReceivedElmJson "elm.json"
+
+
+fetchReadme : FileSystem -> Cmd Msg2
+fetchReadme fs =
+    readTextFile fs ReceivedReadme "README.md"
 
 
 readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String -> Cmd msg
@@ -605,7 +612,7 @@ type Msg
     = ReceivedFile Decode.Value
     | RemovedFile String
     | ReceivedElmJsonOld Decode.Value
-    | ReceivedReadme Decode.Value
+    | ReceivedReadmeOld Decode.Value
     | ReceivedExtraFiles Decode.Value
     | ReceivedDependencies Decode.Value
     | ReceivedSuppressedErrors Decode.Value
@@ -662,6 +669,16 @@ update msg model =
                 , Cli.exit 1
                 ]
             )
+
+        ReceivedReadme path result ->
+            case result of
+                Ok content ->
+                    ( { model | project = Project.addReadme { path = path, content = content } model.project }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
         FoundSourceFiles directory (Ok ( files, _ )) ->
             ( model
@@ -766,7 +783,7 @@ updateOld msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
-        ReceivedReadme rawReadme ->
+        ReceivedReadmeOld rawReadme ->
             let
                 readmeDecoder : Decode.Decoder { path : String, content : String }
                 readmeDecoder =
@@ -1838,7 +1855,7 @@ subscriptions =
         [ collectFile ReceivedFile
         , removeFile RemovedFile
         , collectElmJson ReceivedElmJsonOld
-        , collectReadme ReceivedReadme
+        , collectReadme ReceivedReadmeOld
         , collectExtraFiles ReceivedExtraFiles
         , collectDependencies ReceivedDependencies
         , collectSuppressedErrors ReceivedSuppressedErrors
