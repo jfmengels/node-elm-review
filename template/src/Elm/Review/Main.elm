@@ -233,7 +233,8 @@ type ModelWrapper
 
 
 type Msg2
-    = FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
+    = ReceivedElmJson (Result Fs.FsError String)
+    | FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | FileRead String (Result Fs.FsError String)
 
 
@@ -361,6 +362,7 @@ I recommend you take a look at the following documents:
                               -- cmd
                               -- TODO Don't trigger when the other cmd is `abort`
                               rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
+                            , fetchElmJson fs
                             , fetchElmFiles fs
                             ]
 
@@ -377,6 +379,12 @@ I recommend you take a look at the following documents:
                                 Json ->
                                     encodeConfigurationErrors flags.detailsMode configurationErrors
             )
+
+
+fetchElmJson : FileSystem -> Cmd Msg2
+fetchElmJson fs =
+    Fs.readTextFile fs "elm.json"
+        |> Task.attempt ReceivedElmJson
 
 
 fetchElmFiles : FileSystem -> Cmd Msg2
@@ -590,7 +598,7 @@ decodeRulesFilter =
 type Msg
     = ReceivedFile Decode.Value
     | RemovedFile String
-    | ReceivedElmJson Decode.Value
+    | ReceivedElmJsonOld Decode.Value
     | ReceivedReadme Decode.Value
     | ReceivedExtraFiles Decode.Value
     | ReceivedDependencies Decode.Value
@@ -620,6 +628,24 @@ updateWrapper msg wrapper =
 update : Msg2 -> Model -> ( Model, Cmd Msg2 )
 update msg model =
     case msg of
+        ReceivedElmJson (Ok rawElmJson) ->
+            case Decode.decodeString Elm.Project.decoder rawElmJson of
+                Ok elmJson ->
+                    ( { model | project = Project.addElmJson { path = "elm.json", raw = rawElmJson, project = elmJson } model.project }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        ReceivedElmJson (Err err) ->
+            ( model
+            , Cmd.batch
+                [ Cli.println model.env.stderr (errorToString err)
+                , Cli.exit 1
+                ]
+            )
+
         FoundSourceFiles directory (Ok ( files, _ )) ->
             ( model
             , Cli.println model.env.stdout (String.join "\n" files)
@@ -713,7 +739,7 @@ updateOld msg model =
         RemovedFile path ->
             ( { model | project = Project.removeFile path model.project }, Cmd.none )
 
-        ReceivedElmJson rawElmJson ->
+        ReceivedElmJsonOld rawElmJson ->
             case Decode.decodeValue elmJsonDecoder rawElmJson of
                 Ok elmJson ->
                     ( { model | project = Project.addElmJson elmJson model.project }
@@ -1875,7 +1901,7 @@ subscriptions =
     Sub.batch
         [ collectFile ReceivedFile
         , removeFile RemovedFile
-        , collectElmJson ReceivedElmJson
+        , collectElmJson ReceivedElmJsonOld
         , collectReadme ReceivedReadme
         , collectExtraFiles ReceivedExtraFiles
         , collectDependencies ReceivedDependencies
