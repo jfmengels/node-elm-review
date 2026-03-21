@@ -677,10 +677,10 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( decrementPendingTaskCount 1 model, Cmd.none )
+                    ( decrementPendingTaskCount model, Cmd.none )
 
         ReceivedElmJson _ (Err err) ->
-            ( decrementPendingTaskCount 1 model
+            ( decrementPendingTaskCount model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
                 , Cli.exit 1
@@ -698,7 +698,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( decrementPendingTaskCount 1 model, Cmd.none )
+                    ( decrementPendingTaskCount model, Cmd.none )
 
         FoundSourceFiles directory (Ok ( files, _ )) ->
             ( { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length files - 1) }
@@ -708,26 +708,29 @@ update msg model =
             )
 
         FoundSourceFiles _ (Err err) ->
-            ( decrementPendingTaskCount 1 model
+            ( decrementPendingTaskCount model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
                 ]
             )
 
-        FileRead filePath result ->
+        FileRead path result ->
             case result of
                 Ok source ->
-                    ( decrementPendingTaskCount 1 model
-                    , Cli.println model.env.stdout ("Read " ++ filePath ++ ": " ++ String.concat (List.take 1 (String.lines source)))
+                    ( { model
+                        | project = Project.addModule { path = path, source = source } model.project
+                        , pendingTaskCount = model.pendingTaskCount - 1
+                      }
+                    , Cli.println model.env.stdout ("Read " ++ path ++ ": " ++ String.concat (List.take 1 (String.lines source)))
                     )
 
                 Err err ->
-                    ( decrementPendingTaskCount 1 model, Cli.println model.env.stderr ("FileRead error: " ++ filePath ++ " - " ++ errorToString err) )
+                    ( decrementPendingTaskCount model, Cli.println model.env.stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err) )
 
 
-decrementPendingTaskCount : Int -> Model -> Model
-decrementPendingTaskCount n model =
-    { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount - n) }
+decrementPendingTaskCount : Model -> Model
+decrementPendingTaskCount model =
+    { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount - 1) }
 
 
 joinPaths : String -> String -> String
