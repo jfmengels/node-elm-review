@@ -1218,49 +1218,69 @@ makeReport model =
                 ( { model | rules = model.fixAllRules }, Encode.null )
     in
     ( newModel
-    , [ ( "success", Encode.bool <| List.isEmpty model.reviewErrorsAfterSuppression )
-      , ( "errors"
-        , case newModel.reportMode of
-            HumanReadable ->
-                let
-                    filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-                    filesWithError =
-                        groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
-                in
-                Reporter.formatReport
-                    { suppressedErrors = newModel.suppressedErrors
-                    , unsuppressMode = newModel.unsuppressMode
-                    , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
-                    , detailsMode = newModel.detailsMode
-                    , fixExplanation = newModel.fixExplanation
-                    , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , mode = fixModeToReportFixMode model.fixMode
-                    }
-                    filesWithError
-                    |> encodeReport
-
-            Json ->
-                let
-                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                    errorsByFile =
-                        groupErrorsByFile identity model.project model.reviewErrors
-                in
-                Encode.list
-                    (encodeErrorByFile
+    , Cmd.batch
+        [ [ ( "success", Encode.bool <| List.isEmpty model.reviewErrorsAfterSuppression )
+          , ( "errors"
+            , case newModel.reportMode of
+                HumanReadable ->
+                    let
+                        filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
+                        filesWithError =
+                            groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
+                    in
+                    Reporter.formatReport
                         { suppressedErrors = newModel.suppressedErrors
-                        , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                        , unsuppressMode = newModel.unsuppressMode
+                        , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
+                        , detailsMode = newModel.detailsMode
+                        , fixExplanation = newModel.fixExplanation
+                        , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+                        , mode = fixModeToReportFixMode model.fixMode
                         }
-                        newModel.links
-                        newModel.detailsMode
-                        newModel.fixExplanation
-                    )
-                    errorsByFile
-        )
-      , ( "extracts", Encode.dict identity identity newModel.extracts )
-      , ( "suppressedErrors", suppressedErrorsForJson )
-      ]
-        |> Encode.object
-        |> reviewReport
+                        filesWithError
+                        |> encodeReport
+
+                Json ->
+                    let
+                        errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                        errorsByFile =
+                            groupErrorsByFile identity model.project model.reviewErrors
+                    in
+                    Encode.list
+                        (encodeErrorByFile
+                            { suppressedErrors = newModel.suppressedErrors
+                            , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                            }
+                            newModel.links
+                            newModel.detailsMode
+                            newModel.fixExplanation
+                        )
+                        errorsByFile
+            )
+          , ( "extracts", Encode.dict identity identity newModel.extracts )
+          , ( "suppressedErrors", suppressedErrorsForJson )
+          ]
+            |> Encode.object
+            |> reviewReport
+        , let
+            filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
+            filesWithError =
+                groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
+          in
+          Reporter.formatReport
+            { suppressedErrors = newModel.suppressedErrors
+            , unsuppressMode = newModel.unsuppressMode
+            , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
+            , detailsMode = newModel.detailsMode
+            , fixExplanation = newModel.fixExplanation
+            , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+            , mode = fixModeToReportFixMode model.fixMode
+            }
+            filesWithError
+            |> encodeReport
+            |> Encode.encode 2
+            |> Cli.println model.env.stdout
+        ]
     )
 
 
