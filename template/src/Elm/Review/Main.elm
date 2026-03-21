@@ -639,7 +639,19 @@ updateWrapper msg wrapper =
                 ( newModel, cmd ) =
                     update msg model
             in
-            ( Running newModel, cmd )
+            if newModel.isInitialRun && newModel.pendingTaskCount == 0 then
+                let
+                    ( modelWithReviewResults, newCmd ) =
+                        { newModel | fixAllErrors = Dict.empty }
+                            |> runReview { fixesAllowed = True } newModel.project
+                            |> reportOrFix
+                in
+                ( Running modelWithReviewResults
+                , Cmd.batch [ cmd, newCmd ]
+                )
+
+            else
+                ( Running newModel, cmd )
 
 
 update : Msg2 -> Model -> ( Model, Cmd Msg2 )
