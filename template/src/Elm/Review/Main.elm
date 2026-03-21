@@ -233,7 +233,7 @@ type ModelWrapper
 
 
 type Msg2
-    = ReceivedElmJson (Result Fs.FsError String)
+    = ReceivedElmJson String (Result Fs.FsError String)
     | FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | FileRead String (Result Fs.FsError String)
 
@@ -382,8 +382,13 @@ I recommend you take a look at the following documents:
 
 fetchElmJson : FileSystem -> Cmd Msg2
 fetchElmJson fs =
-    Fs.readTextFile fs "elm.json"
-        |> Task.attempt ReceivedElmJson
+    let
+        path : String
+        path =
+            "elm.json"
+    in
+    Fs.readTextFile fs path
+        |> Task.attempt (ReceivedElmJson path)
 
 
 fetchElmFiles : FileSystem -> String -> Cmd Msg2
@@ -627,7 +632,7 @@ updateWrapper msg wrapper =
 update : Msg2 -> Model -> ( Model, Cmd Msg2 )
 update msg model =
     case msg of
-        ReceivedElmJson (Ok rawElmJson) ->
+        ReceivedElmJson path (Ok rawElmJson) ->
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
@@ -640,7 +645,7 @@ update msg model =
                                 Elm.Project.Package _ ->
                                     [ "src", "test" ]
                     in
-                    ( { model | project = Project.addElmJson { path = "elm.json", raw = rawElmJson, project = elmJson } model.project }
+                    ( { model | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project }
                     , List.map (fetchElmFiles model.fs) sourceDirectories
                         |> Cmd.batch
                     )
@@ -648,7 +653,7 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
-        ReceivedElmJson (Err err) ->
+        ReceivedElmJson _ (Err err) ->
             ( model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
