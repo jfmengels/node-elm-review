@@ -672,7 +672,7 @@ update msg model =
                     in
                     ( { model
                         | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
-                        , pendingTaskCount = Basics.min 0 (model.pendingTaskCount + List.length sourceDirectories - 1)
+                        , pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length sourceDirectories - 1)
                       }
                     , List.map (fetchElmFiles model.fs) sourceDirectories
                         |> Cmd.batch
@@ -703,7 +703,7 @@ update msg model =
                     ( decrementPendingTaskCount 1 model, Cmd.none )
 
         FoundSourceFiles directory (Ok ( files, _ )) ->
-            ( { model | pendingTaskCount = Basics.min 0 (model.pendingTaskCount + List.length files - 1) }
+            ( { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length files - 1) }
             , Cli.println model.env.stdout (String.join "\n" files)
                 :: List.map (\filePath -> readFile model.fs (joinPaths directory filePath)) files
                 |> Cmd.batch
@@ -729,7 +729,7 @@ update msg model =
 
 decrementPendingTaskCount : Int -> Model -> Model
 decrementPendingTaskCount n model =
-    { model | pendingTaskCount = Basics.min 0 (model.pendingTaskCount - n) }
+    { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount - n) }
 
 
 joinPaths : String -> String -> String
