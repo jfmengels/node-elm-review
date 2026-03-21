@@ -361,8 +361,7 @@ I recommend you take a look at the following documents:
                               -- cmd
                               -- TODO Don't trigger when the other cmd is `abort`
                               rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-                            , Fs.walkTree fs "src" (Just "*.elm") Fs.Any
-                                |> Task.attempt (FoundSourceFiles "src")
+                            , fetchElmFiles fs
                             ]
 
                     configurationErrors ->
@@ -378,6 +377,12 @@ I recommend you take a look at the following documents:
                                 Json ->
                                     encodeConfigurationErrors flags.detailsMode configurationErrors
             )
+
+
+fetchElmFiles : FileSystem -> Cmd Msg2
+fetchElmFiles fs =
+    Fs.walkTree fs "src" (Just "*.elm") Fs.Any
+        |> Task.attempt (FoundSourceFiles "src")
 
 
 getConfigurationError : Rule -> Maybe Reporter.Error
