@@ -364,7 +364,6 @@ I recommend you take a look at the following documents:
                               -- TODO Don't trigger when the other cmd is `abort`
                               rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
                             , fetchElmJson fs
-                            , fetchElmFiles fs
                             ]
 
                     configurationErrors ->
@@ -389,10 +388,10 @@ fetchElmJson fs =
         |> Task.attempt ReceivedElmJson
 
 
-fetchElmFiles : FileSystem -> Cmd Msg2
-fetchElmFiles fs =
-    Fs.walkTree fs "src" (Just "*.elm") Fs.Any
-        |> Task.attempt (FoundSourceFiles "src")
+fetchElmFiles : FileSystem -> String -> Cmd Msg2
+fetchElmFiles fs directory =
+    Fs.walkTree fs directory (Just "*.elm") Fs.Any
+        |> Task.attempt (FoundSourceFiles directory)
 
 
 getConfigurationError : Rule -> Maybe Reporter.Error
@@ -633,8 +632,19 @@ update msg model =
         ReceivedElmJson (Ok rawElmJson) ->
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
+                    let
+                        sourceDirectories : List String
+                        sourceDirectories =
+                            case elmJson of
+                                Elm.Project.Application application ->
+                                    "test" :: application.dirs
+
+                                Elm.Project.Package _ ->
+                                    [ "src", "test" ]
+                    in
                     ( { model | project = Project.addElmJson { path = "elm.json", raw = rawElmJson, project = elmJson } model.project }
-                    , Cmd.none
+                    , List.map (fetchElmFiles model.fs) sourceDirectories
+                        |> Cmd.batch
                     )
 
                 Err _ ->
