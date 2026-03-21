@@ -384,13 +384,13 @@ I recommend you take a look at the following documents:
 
 fetchElmJson : FileSystem -> Cmd Msg2
 fetchElmJson fs =
-    let
-        path : String
-        path =
-            "elm.json"
-    in
+    readTextFile fs ReceivedElmJson "elm.json"
+
+
+readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String -> Cmd msg
+readTextFile fs toMsg path =
     Fs.readTextFile fs path
-        |> Task.attempt (ReceivedElmJson path)
+        |> Task.attempt (\result -> toMsg path result)
 
 
 fetchElmFiles : FileSystem -> String -> Cmd Msg2
