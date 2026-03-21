@@ -138,6 +138,9 @@ type alias Model =
     , fs : FileSystem
 
     --
+    , pendingTaskCount : Int
+
+    --
     , rules : List Rule
     , fixAllRules : List Rule
     , project : Project
@@ -305,6 +308,7 @@ init env =
             ( Running
                 { env = env
                 , fs = fs
+                , pendingTaskCount = 2 -- Fetching elm.json and README
                 , rules = rules
                 , fixAllRules = rules
                 , project = Project.new
@@ -654,16 +658,19 @@ update msg model =
                                 Elm.Project.Package _ ->
                                     [ "src", "test" ]
                     in
-                    ( { model | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project }
+                    ( { model
+                        | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
+                        , pendingTaskCount = Basics.min 0 (model.pendingTaskCount + List.length sourceDirectories - 1)
+                      }
                     , List.map (fetchElmFiles model.fs) sourceDirectories
                         |> Cmd.batch
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( decrementPendingTaskCount 1 model, Cmd.none )
 
         ReceivedElmJson _ (Err err) ->
-            ( model
+            ( decrementPendingTaskCount 1 model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
                 , Cli.exit 1
@@ -673,22 +680,25 @@ update msg model =
         ReceivedReadme path result ->
             case result of
                 Ok content ->
-                    ( { model | project = Project.addReadme { path = path, content = content } model.project }
+                    ( { model
+                        | project = Project.addReadme { path = path, content = content } model.project
+                        , pendingTaskCount = model.pendingTaskCount - 1
+                      }
                     , Cmd.none
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( decrementPendingTaskCount 1 model, Cmd.none )
 
         FoundSourceFiles directory (Ok ( files, _ )) ->
-            ( model
+            ( { model | pendingTaskCount = Basics.min 0 (model.pendingTaskCount + List.length files - 1) }
             , Cli.println model.env.stdout (String.join "\n" files)
                 :: List.map (\filePath -> readFile model.fs (joinPaths directory filePath)) files
                 |> Cmd.batch
             )
 
         FoundSourceFiles _ (Err err) ->
-            ( model
+            ( decrementPendingTaskCount 1 model
             , Cmd.batch
                 [ Cli.println model.env.stderr (errorToString err)
                 ]
@@ -697,12 +707,17 @@ update msg model =
         FileRead filePath result ->
             case result of
                 Ok source ->
-                    ( model
+                    ( decrementPendingTaskCount 1 model
                     , Cli.println model.env.stdout ("Read " ++ filePath ++ ": " ++ String.concat (List.take 1 (String.lines source)))
                     )
 
                 Err err ->
-                    ( model, Cli.println model.env.stderr ("FileRead error: " ++ filePath ++ " - " ++ errorToString err) )
+                    ( decrementPendingTaskCount 1 model, Cli.println model.env.stderr ("FileRead error: " ++ filePath ++ " - " ++ errorToString err) )
+
+
+decrementPendingTaskCount : Int -> Model -> Model
+decrementPendingTaskCount n model =
+    { model | pendingTaskCount = Basics.min 0 (model.pendingTaskCount - n) }
 
 
 joinPaths : String -> String -> String
