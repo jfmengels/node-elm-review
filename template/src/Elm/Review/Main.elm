@@ -633,23 +633,8 @@ updateWrapper msg wrapper =
             ( wrapper, Cmd.none )
 
         Running model ->
-            let
-                ( newModel, cmd ) =
-                    update msg model
-            in
-            if newModel.isInitialRun && newModel.pendingTaskCount == 0 then
-                let
-                    ( modelWithReviewResults, newCmd ) =
-                        { newModel | fixAllErrors = Dict.empty }
-                            |> runReview { fixesAllowed = True } newModel.project
-                            |> reportOrFix
-                in
-                ( Running modelWithReviewResults
-                , Cmd.batch [ cmd, newCmd ]
-                )
-
-            else
-                ( Running newModel, cmd )
+            update msg model
+                |> Tuple.mapFirst Running
 
 
 update : Msg2 -> Model -> ( Model, Cmd Msg2 )
@@ -696,9 +681,11 @@ update msg model =
                       }
                     , Cmd.none
                     )
+                        |> startReviewIfNoPendingTasks
 
                 Err _ ->
                     ( decrementPendingTaskCount model, Cmd.none )
+                        |> startReviewIfNoPendingTasks
 
         FoundSourceFiles directory (Ok ( files, _ )) ->
             ( { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length files - 1) }
@@ -723,9 +710,28 @@ update msg model =
                       }
                     , Cli.println model.env.stdout ("Read " ++ path ++ ": " ++ String.concat (List.take 1 (String.lines source)))
                     )
+                        |> startReviewIfNoPendingTasks
 
                 Err err ->
                     ( decrementPendingTaskCount model, Cli.println model.env.stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err) )
+                        |> startReviewIfNoPendingTasks
+
+
+startReviewIfNoPendingTasks : ( Model, Cmd msg ) -> ( Model, Cmd msg )
+startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
+    if model.isInitialRun && Debug.log "count" model.pendingTaskCount == 0 then
+        let
+            ( modelWithReviewResults, newCmd ) =
+                { model | fixAllErrors = Dict.empty }
+                    |> runReview { fixesAllowed = True } model.project
+                    |> reportOrFix
+        in
+        ( modelWithReviewResults
+        , Cmd.batch [ cmd, newCmd ]
+        )
+
+    else
+        unchanged
 
 
 decrementPendingTaskCount : Model -> Model
