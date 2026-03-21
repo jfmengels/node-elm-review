@@ -639,7 +639,7 @@ updateWrapper msg wrapper =
                 ( newModel, cmd ) =
                     update msg model
             in
-            if newModel.isInitialRun && newModel.pendingTaskCount == 0 then
+            if Debug.log "condition" (newModel.isInitialRun && newModel.pendingTaskCount == 0) then
                 let
                     ( modelWithReviewResults, newCmd ) =
                         { newModel | fixAllErrors = Dict.empty }
