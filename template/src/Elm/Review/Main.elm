@@ -657,10 +657,12 @@ update msg model =
                     in
                     ( { model
                         | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
-                        , pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length sourceDirectories - 1)
+
+                        -- , pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length sourceDirectories - 1)
                       }
-                    , List.map (fetchElmFiles model.fs) sourceDirectories
-                        |> Cmd.batch
+                      --, List.map (fetchElmFiles model.fs) sourceDirectories
+                      --    |> Cmd.batch
+                    , readFile model.fs "dev-src/NoDebug.elm"
                     )
 
                 Err _ ->
