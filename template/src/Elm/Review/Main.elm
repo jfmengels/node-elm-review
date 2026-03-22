@@ -8,11 +8,13 @@ import Elm.Package
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
+import Elm.Review.Color as Color
 import Elm.Review.File
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
+import Elm.Review.Text as Text
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
@@ -1388,8 +1390,7 @@ makeReport previousSuppressedErrors model =
             , mode = fixModeToReportFixMode model.fixMode
             }
             filesWithError
-            |> encodeReport
-            |> Encode.encode 2
+            |> Text.toAnsi
             |> Cli.println model.env.stdout
         ]
     )
@@ -2077,7 +2078,7 @@ encodeReportPart { str, color, href } =
             fields =
                 []
                     |> maybeMapAndCons (\href_ -> ( "href", Encode.string href_ )) href
-                    |> maybeMapAndCons (\color_ -> ( "color", Encode.string color_ )) color
+                    |> maybeMapAndCons (\color_ -> ( "color", Encode.string (Color.toHex color_) )) color
         in
         Encode.object (( "string", Encode.string str ) :: fields)
 
