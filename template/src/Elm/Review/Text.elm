@@ -4,7 +4,7 @@ module Elm.Review.Text exposing
     , inBlue, inRed, inYellow, inGreen, inOrange
     , withLink
     , join, simplify
-    , toRecord
+    , toRecord, toAnsi
     )
 
 {-| Represents text with some styling applied to it.
@@ -41,9 +41,13 @@ module Elm.Review.Text exposing
 
 # Access
 
-@docs toRecord
+@docs toRecord, toAnsi
 
 -}
+
+import Elm.Review.Color as Color exposing (Color)
+
+
 
 -- DEFINITION
 
@@ -56,7 +60,7 @@ type Text
 
 type alias TextContent =
     { str : String
-    , color : Maybe String
+    , color : Maybe Color
     , href : Maybe String
     }
 
@@ -82,27 +86,27 @@ from value =
 
 inBlue : Text -> Text
 inBlue (Text text) =
-    Text { text | color = Just "#33BBC8" }
+    Text { text | color = Just Color.Blue }
 
 
 inRed : Text -> Text
 inRed (Text text) =
-    Text { text | color = Just "#FF0000" }
+    Text { text | color = Just Color.Red }
 
 
 inOrange : Text -> Text
 inOrange (Text text) =
-    Text { text | color = Just "#FFA500" }
+    Text { text | color = Just Color.Orange }
 
 
 inYellow : Text -> Text
 inYellow (Text text) =
-    Text { text | color = Just "#E8C338" }
+    Text { text | color = Just Color.Yellow }
 
 
 inGreen : Text -> Text
 inGreen (Text text) =
-    Text { text | color = Just "#008000" }
+    Text { text | color = Just Color.Green }
 
 
 withLink : Maybe String -> Text -> Text
@@ -160,3 +164,47 @@ different mediums.
 toRecord : Text -> TextContent
 toRecord (Text text) =
     text
+
+
+toAnsi : List TextContent -> String
+toAnsi segments =
+    toAnsiHelp segments ""
+
+
+toAnsiHelp : List TextContent -> String -> String
+toAnsiHelp segments acc =
+    case segments of
+        [] ->
+            acc
+
+        { str, color, href } :: rest ->
+            -- TODO Only add colors if colors are supported
+            -- TODO Only add terminal links when supported
+            let
+                ansiStr : String
+                ansiStr =
+                    str
+                        |> maybeApply addColor color
+                        |> maybeApply addLink href
+            in
+            toAnsiHelp rest (acc ++ ansiStr)
+
+
+maybeApply : (a -> b -> b) -> Maybe a -> b -> b
+maybeApply fn maybe data =
+    case maybe of
+        Just x ->
+            fn x data
+
+        Nothing ->
+            data
+
+
+addLink : String -> String -> String
+addLink url text =
+    "\u{001B}]8;;" ++ url ++ "\u{0007}" ++ text ++ "\u{001B}]8;;\u{0007}"
+
+
+addColor : Color -> String -> String
+addColor color str =
+    "\u{001B}[38;2;" ++ Color.toRGB color ++ "m" ++ str ++ "\u{001B}[39m"

@@ -10,6 +10,7 @@ module FormatTester exposing
 
 -}
 
+import Elm.Review.Color as Color
 import Elm.Review.Reporter exposing (TextContent)
 import Expect exposing (Expectation)
 
@@ -56,7 +57,7 @@ formatWithColors textList =
             (\{ str, color } ->
                 case color of
                     Just color_ ->
-                        "[" ++ str ++ "](" ++ color_ ++ ")"
+                        "[" ++ str ++ "](" ++ Color.toHex color_ ++ ")"
 
                     Nothing ->
                         str
