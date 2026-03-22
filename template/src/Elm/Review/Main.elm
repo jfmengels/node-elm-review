@@ -94,7 +94,13 @@ port askForFixConfirmationStatus : (() -> msg) -> Sub msg
 port fixConfirmationStatus : Bool -> Cmd msg
 
 
-port abort : String -> Cmd msg
+abort : Env -> String -> Cmd msg
+abort env message =
+    abortWithDetails
+        env
+        { title = "UNEXPECTED CRASH"
+        , message = "I encountered an unexpected crash with the following error message:\n\n" ++ String.trim message
+        }
 
 
 abortWithDetails : Env -> { title : String, message : String } -> Cmd msg
@@ -802,7 +808,7 @@ updateOld msg model =
                             )
 
                 Err err ->
-                    ( model, abort <| Decode.errorToString err )
+                    ( model, abort model.env (Decode.errorToString err) )
 
         RemovedFile path ->
             ( { model | project = Project.removeFile path model.project }, Cmd.none )
@@ -964,7 +970,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         -- we were not successful in preventing earlier.
                         ( model
                           -- TODO Improve abort message
-                        , abort <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
+                        , abort model.env <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
                         )
                         -- TODO Handle these cases
                         --else if dependenciesHaveChanged then
@@ -1019,7 +1025,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 |> makeReport model.suppressedErrors
 
                 Err err ->
-                    ( model, abort <| Decode.errorToString err )
+                    ( model, abort model.env (Decode.errorToString err) )
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
             ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
