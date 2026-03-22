@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Docs
+import Elm.Package
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
@@ -16,6 +17,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
+import Elm.Version
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -244,6 +246,7 @@ type ModelWrapper
 type Msg2
     = ReceivedElmJson String (Result Fs.FsError String)
     | ReceivedReadme String (Result Fs.FsError String)
+    | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
     | FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | FileRead String (Result Fs.FsError String)
 
@@ -400,6 +403,25 @@ fetchElmJson fs =
 fetchReadme : FileSystem -> Cmd Msg2
 fetchReadme fs =
     readTextFile fs ReceivedReadme "README.md"
+
+
+fetchDependency : FileSystem -> String -> String -> String -> Cmd Msg2
+fetchDependency fs elmHomePath packageName packageVersion =
+    let
+        -- TODO Get from somewhere
+        elmVersion : String
+        elmVersion =
+            "0.19.1"
+
+        directory : String
+        directory =
+            -- TODO Use path functions
+            String.join "/" [ elmHomePath, elmVersion, "packages", packageName, packageVersion ]
+    in
+    Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
+        (Fs.readTextFile fs (directory ++ "/elm.json"))
+        (Fs.readTextFile fs (directory ++ "/docs.json"))
+        |> Task.attempt (ReceivedDependency packageName)
 
 
 readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String -> Cmd msg
@@ -658,12 +680,39 @@ update msg model =
 
                                 Elm.Project.Package _ ->
                                     [ "src", "test" ]
+
+                        elmHomePath : String
+                        elmHomePath =
+                            --TODO Get from somewhere
+                            "/Users/m1/.elm/"
+
+                        dependencies : List ( String, String )
+                        dependencies =
+                            case elmJson of
+                                Elm.Project.Application application ->
+                                    -- TODO Optimize
+                                    let
+                                        toStrings : ( Elm.Package.Name, Elm.Version.Version ) -> ( String, String )
+                                        toStrings ( name, version ) =
+                                            ( Elm.Package.toString name, Elm.Version.toString version )
+                                    in
+                                    List.concat
+                                        [ List.map toStrings application.depsDirect
+                                        , List.map toStrings application.depsIndirect
+                                        , List.map toStrings application.testDepsDirect
+                                        , List.map toStrings application.testDepsIndirect
+                                        ]
+
+                                Elm.Project.Package _ ->
+                                    -- TODO Handle package deps
+                                    []
                     in
                     ( { model
                         | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
-                        , pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length sourceDirectories - 1)
+                        , pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length sourceDirectories + List.length dependencies - 1)
                       }
                     , List.map (fetchElmFiles model.fs) sourceDirectories
+                        ++ List.map (\( name, version ) -> fetchDependency model.fs elmHomePath name version) dependencies
                         |> Cmd.batch
                     )
 
@@ -690,6 +739,62 @@ update msg model =
                         |> startReviewIfNoPendingTasks
 
                 Err _ ->
+                    ( decrementPendingTaskCount model, Cmd.none )
+                        |> startReviewIfNoPendingTasks
+
+        ReceivedDependency packageName result ->
+            case result of
+                Ok { elmJson, docsJson } ->
+                    case
+                        Result.map2 (Dependency.create packageName)
+                            (Decode.decodeString Elm.Project.decoder elmJson)
+                            (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson)
+                    of
+                        Ok dependency ->
+                            ( { model
+                                | project = Project.addDependency dependency model.project
+                                , pendingTaskCount = model.pendingTaskCount - 1
+                              }
+                            , Cmd.none
+                            )
+                                |> startReviewIfNoPendingTasks
+
+                        Err decodeError ->
+                            if model.ignoreProblematicDependencies then
+                                ( decrementPendingTaskCount model, Cmd.none )
+                                    |> startReviewIfNoPendingTasks
+
+                            else
+                                ( model
+                                , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
+                                    abortWithDetails
+                                        model.env
+                                        { title = "FOUND PROBLEMATIC DEPENDENCIES"
+                                        , message =
+                                            """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
+
+    elm-review --ignore-problematic-dependencies
+
+This will ignore the problematic dependencies, and can GIVE YOU INCORRECT RESULTS! This is a temporary measure.
+
+If I am mistaken about the nature of problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
+
+"""
+                                                ++ Decode.errorToString decodeError
+                                        }
+
+                                  else
+                                    abortWithDetails
+                                        model.env
+                                        { title = "PROBLEM READING DEPENDENCIES"
+                                        , message =
+                                            "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
+                                                ++ Decode.errorToString decodeError
+                                        }
+                                )
+
+                Err _ ->
+                    -- TODO Download dependencies
                     ( decrementPendingTaskCount model, Cmd.none )
                         |> startReviewIfNoPendingTasks
 
