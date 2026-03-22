@@ -112,6 +112,7 @@ abortWithDetails env { title, message } =
         titleText =
             "-- " ++ title ++ String.repeat (80 - String.length title - 4) "-"
     in
+    -- TODO Only add colors if colors are supported
     Cmd.batch
         [ Cli.println env.stderr ("\u{001B}[32m" ++ titleText ++ "\u{001B}[39m\n\n" ++ String.trim message)
         , Cli.exit 1
