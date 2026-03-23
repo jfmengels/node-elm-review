@@ -237,6 +237,13 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             |> Cmd.batch
                     }
 
+                Err (Fs.NotFound _) ->
+                    { fileFetch = toModel (pendingTaskCount - 1)
+                    , project = project
+                    , suppressedErrors = suppressedErrors
+                    , cmd = Cmd.none
+                    }
+
                 Err err ->
                     { fileFetch = toModel (pendingTaskCount - 1)
                     , project = project
