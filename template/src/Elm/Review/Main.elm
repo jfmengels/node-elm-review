@@ -255,6 +255,8 @@ type Msg2
     | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
     | FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | FileRead String (Result Fs.FsError String)
+    | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
+    | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
 
 
 init : Env -> ( ModelWrapper, Cmd Msg2 )
@@ -387,6 +389,9 @@ I recommend you take a look at the following documents:
                               rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
                             , fetchElmJson fs
                             , fetchReadme fs
+
+                            -- TODO Get review folder from somewhere
+                            , fetchSuppressionFiles fs "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
                             ]
 
                     configurationErrors ->
@@ -443,6 +448,12 @@ fetchElmFiles : FileSystem -> String -> Cmd Msg2
 fetchElmFiles fs directory =
     Fs.walkTree fs directory (Just "*.elm") Fs.Any
         |> Task.attempt (FoundSourceFiles directory)
+
+
+fetchSuppressionFiles : FileSystem -> String -> Cmd Msg2
+fetchSuppressionFiles fs directory =
+    Fs.walkTree fs directory (Just "*.json") Fs.Any
+        |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
 getConfigurationError : Rule -> Maybe Reporter.Error
@@ -654,7 +665,7 @@ type Msg
     | ReceivedReadmeOld Decode.Value
     | ReceivedExtraFiles Decode.Value
     | ReceivedDependencies Decode.Value
-    | ReceivedSuppressedErrors Decode.Value
+    | ReceivedSuppressedErrorsOld Decode.Value
     | UpdateSuppressedErrors Decode.Value
     | ReceivedLinks Decode.Value
     | GotRequestToReview
@@ -814,6 +825,24 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                 |> Cmd.batch
             )
 
+        ReceivedSuppressedErrorsList directory result ->
+            case result of
+                Ok ( files, _ ) ->
+                    ( { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length files - 1) }
+                    , List.map
+                        (\filePath ->
+                            Fs.readTextFile model.fs (directory ++ "/" ++ filePath)
+                                |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
+                        )
+                        files
+                        |> Cmd.batch
+                    )
+                        |> startReviewIfNoPendingTasks
+
+                Err _ ->
+                    ( decrementPendingTaskCount model, Cmd.none )
+                        |> startReviewIfNoPendingTasks
+
         FoundSourceFiles _ (Err err) ->
             ( decrementPendingTaskCount model
             , Cmd.batch
@@ -829,6 +858,27 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         , pendingTaskCount = model.pendingTaskCount - 1
                       }
                     , Cli.println model.env.stdout ("Read " ++ path ++ ": " ++ String.concat (List.take 1 (String.lines source)))
+                    )
+                        |> startReviewIfNoPendingTasks
+
+                Err err ->
+                    ( decrementPendingTaskCount model, Cli.println model.env.stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err) )
+                        |> startReviewIfNoPendingTasks
+
+        ReceivedSuppressedErrorsFile path result ->
+            case result of
+                Ok contents ->
+                    let
+                        ruleName : String
+                        ruleName =
+                            -- Remove leading "./" and trailing ".json"
+                            String.slice 2 -5 path
+                    in
+                    ( { model
+                        | suppressedErrors = SuppressedErrors.addFromFile ruleName contents model.suppressedErrors
+                        , pendingTaskCount = model.pendingTaskCount - 1
+                      }
+                    , Cmd.none
                     )
                         |> startReviewIfNoPendingTasks
 
@@ -1006,7 +1056,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     , Cmd.none
                     )
 
-        ReceivedSuppressedErrors json ->
+        ReceivedSuppressedErrorsOld json ->
             case Decode.decodeValue SuppressedErrors.decoder json of
                 Err _ ->
                     -- TODO Report something?
@@ -1405,12 +1455,11 @@ makeReport previousSuppressedErrors model =
         , if model.watch then
             Cmd.none
 
-          else
-            if success then
-                Cli.exit 0
+          else if success then
+            Cli.exit 0
 
-            else
-                Cli.exit 1
+          else
+            Cli.exit 1
         ]
     )
 
@@ -2125,7 +2174,7 @@ subscriptions =
         , collectReadme ReceivedReadmeOld
         , collectExtraFiles ReceivedExtraFiles
         , collectDependencies ReceivedDependencies
-        , collectSuppressedErrors ReceivedSuppressedErrors
+        , collectSuppressedErrors ReceivedSuppressedErrorsOld
         , updateSuppressedErrors UpdateSuppressedErrors
         , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
