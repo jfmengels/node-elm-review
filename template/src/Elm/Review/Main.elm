@@ -181,6 +181,9 @@ type alias Model =
     , fixAllResultProject : Project
     , fixAllErrors : Dict String (List Rule.ReviewError)
     , communicationKey : CliCommunication.Key
+
+    -- WATCH
+    , watch : Bool
     }
 
 
@@ -345,6 +348,9 @@ init env =
                 , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
                 , extracts = Dict.empty
                 , communicationKey = flags.logger
+
+                -- TODO Get from flags
+                , watch = False
                 }
             , if List.isEmpty config then
                 -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
