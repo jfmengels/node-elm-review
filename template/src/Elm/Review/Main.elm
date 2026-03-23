@@ -1402,6 +1402,15 @@ makeReport previousSuppressedErrors model =
             filesWithError
             |> Text.toAnsi
             |> Cli.println model.env.stdout
+        , if model.watch then
+            Cmd.none
+
+          else
+            if success then
+                Cli.exit 0
+
+            else
+                Cli.exit 1
         ]
     )
 
