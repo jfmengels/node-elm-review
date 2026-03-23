@@ -135,8 +135,7 @@ update { msg, fs, stderr, fileFetch, project, suppressedErrors, ignoreProblemati
                                         ]
 
                                 Elm.Project.Package _ ->
-                                    -- TODO Handle package deps
-                                    []
+                                    Debug.todo "Handle package deps"
                     in
                     { fileFetch = toModel (pendingTaskCount + List.length sourceDirectories + List.length dependencies - 1)
                     , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } project
