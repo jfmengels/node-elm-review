@@ -725,17 +725,10 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
         GotRequestToGenerateSuppressionErrors ->
             let
-                project : Project
-                project =
-                    Project.precomputeModuleGraph model.project
-
                 newModel : Model
                 newModel =
-                    { model
-                        | project = project
-                        , fixAllErrors = Dict.empty
-                    }
-                        |> runReview { fixesAllowed = False } project
+                    { model | fixAllErrors = Dict.empty }
+                        |> runReview { fixesAllowed = False } model.project
             in
             ( newModel
             , newModel.reviewErrors
