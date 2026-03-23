@@ -1,5 +1,6 @@
 module Elm.Review.SuppressedErrors exposing
     ( SuppressedErrors
+    , addFromFile
     , addToReviewOptions
     , apply
     , count
@@ -28,6 +29,21 @@ type SuppressedErrors
 empty : SuppressedErrors
 empty =
     SuppressedErrors Dict.empty
+
+
+addFromFile : String -> String -> SuppressedErrors -> SuppressedErrors
+addFromFile ruleName suppressionFileContent ((SuppressedErrors previous) as untouched) =
+    case Decode.decodeString suppressionFileDecoder suppressionFileContent of
+        Ok newSuppressions ->
+            List.foldl
+                (\( filePath, count_ ) dict -> Dict.insert ( ruleName, filePath ) count_ dict)
+                (Dict.filter (\( ruleName_, _ ) _ -> ruleName /= ruleName_) previous)
+                newSuppressions
+                |> SuppressedErrors
+
+        Err _ ->
+            -- TODO Report error?
+            untouched
 
 
 fromReviewErrors : List Rule.ReviewError -> SuppressedErrors
@@ -128,6 +144,11 @@ suppressedErrorEntryDecoder =
         )
         (Decode.field "rule" Decode.string)
         (Decode.field "suppressions" (Decode.list fileEntryDecoder))
+
+
+suppressionFileDecoder : Decoder (List ( String, Int ))
+suppressionFileDecoder =
+    Decode.field "suppressions" (Decode.list fileEntryDecoder)
 
 
 fileEntryDecoder : Decoder ( String, Int )
