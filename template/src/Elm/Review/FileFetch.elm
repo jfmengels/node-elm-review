@@ -10,6 +10,7 @@ import Cli exposing (Env)
 import Elm.Docs
 import Elm.Package
 import Elm.Project
+import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import Fs exposing (FileSystem, FsError(..))
@@ -67,6 +68,7 @@ type Msg
 type alias UpdateInput =
     { msg : Msg
     , fs : FileSystem
+    , runEnvironment : RunEnvironment
     , stderr : Console
     , fileFetch : Model
     , project : Project
@@ -85,7 +87,7 @@ type alias UpdateOutput =
 
 
 update : UpdateInput -> UpdateOutput
-update { msg, fs, stderr, fileFetch, project, suppressedErrors, ignoreProblematicDependencies, abortWithDetails } =
+update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, ignoreProblematicDependencies, abortWithDetails } =
     let
         (Model pendingTaskCount) =
             fileFetch
@@ -112,16 +114,11 @@ update { msg, fs, stderr, fileFetch, project, suppressedErrors, ignoreProblemati
                                 Elm.Project.Package _ ->
                                     [ "src", "test" ]
 
-                        elmHomePath : String
-                        elmHomePath =
-                            --TODO Get from somewhere
-                            "/Users/m1/.elm/"
-
                         addDeps : List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
                         addDeps deps initial =
                             List.foldl
                                 (\( name, version ) acc ->
-                                    fetchDependency fs elmHomePath (Elm.Package.toString name) (Elm.Version.toString version) :: acc
+                                    fetchDependency fs runEnvironment (Elm.Package.toString name) (Elm.Version.toString version) :: acc
                                 )
                                 initial
                                 deps
@@ -355,18 +352,13 @@ fetchElmFiles fs directory =
         |> Task.attempt (ReceivedElmFileList directory)
 
 
-fetchDependency : FileSystem -> String -> String -> String -> Cmd Msg
-fetchDependency fs elmHomePath packageName packageVersion =
+fetchDependency : FileSystem -> RunEnvironment -> String -> String -> Cmd Msg
+fetchDependency fs runEnvironment packageName packageVersion =
     let
-        -- TODO Get from somewhere
-        elmVersion : String
-        elmVersion =
-            "0.19.1"
-
         directory : String
         directory =
             -- TODO Use path functions
-            String.join "/" [ elmHomePath, elmVersion, "packages", packageName, packageVersion ]
+            String.join "/" [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages", packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
         -- TODO Use path functions
