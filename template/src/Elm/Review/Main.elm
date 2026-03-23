@@ -288,6 +288,7 @@ init env =
                              , writeSuppressionFiles = False
                              , logger = CliCommunication.dummy
                              , suppress = False
+                             , watch = False
                              }
                              -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                             )
@@ -368,9 +369,7 @@ initValid env fs flags rulesFromConfig =
             , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
             , extracts = Dict.empty
             , communicationKey = flags.logger
-
-            -- TODO Get from flags
-            , watch = False
+            , watch = flags.watch
             }
     in
     ( Running model
@@ -514,6 +513,7 @@ type alias DecodedFlags =
     , writeSuppressionFiles : Bool
     , logger : CliCommunication.Key
     , suppress : Bool
+    , watch : Bool
     }
 
 
@@ -535,6 +535,7 @@ decodeFlags =
         |> field "writeSuppressionFiles" Decode.bool
         |> field "logger" CliCommunication.decoder
         |> field "suppress" Decode.bool
+        |> field "watch" Decode.bool
 
 
 toDecodedFlags :
@@ -553,8 +554,9 @@ toDecodedFlags :
     -> Bool
     -> CliCommunication.Key
     -> Bool
+    -> Bool
     -> DecodedFlags
-toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress =
+toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress watch =
     { fixMode = fixMode fileRemovalFixesEnabled
     , fixLimit = fixLimit
     , fixExplanation =
@@ -574,6 +576,7 @@ toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enable
     , writeSuppressionFiles = writeSuppressionFiles
     , logger = logger
     , suppress = suppress
+    , watch = watch
     }
 
 
