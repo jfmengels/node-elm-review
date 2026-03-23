@@ -375,6 +375,21 @@ I recommend you take a look at the following documents:
 
     else
         case List.filterMap getConfigurationError config of
+            (_ :: _) as configurationErrors ->
+                ( Done
+                , abortForConfigurationErrors <|
+                    case flags.reportMode of
+                        HumanReadable ->
+                            Reporter.formatConfigurationErrors
+                                { detailsMode = flags.detailsMode
+                                , configurationErrors = configurationErrors
+                                }
+                                |> encodeReport
+
+                        Json ->
+                            encodeConfigurationErrors flags.detailsMode configurationErrors
+                )
+
             [] ->
                 let
                     model : Model
@@ -426,21 +441,6 @@ I recommend you take a look at the following documents:
                       else
                         fetchSuppressionFiles fs model.suppressionFolder
                     ]
-                )
-
-            configurationErrors ->
-                ( Done
-                , abortForConfigurationErrors <|
-                    case flags.reportMode of
-                        HumanReadable ->
-                            Reporter.formatConfigurationErrors
-                                { detailsMode = flags.detailsMode
-                                , configurationErrors = configurationErrors
-                                }
-                                |> encodeReport
-
-                        Json ->
-                            encodeConfigurationErrors flags.detailsMode configurationErrors
                 )
 
 
