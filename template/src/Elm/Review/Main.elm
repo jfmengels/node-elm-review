@@ -337,40 +337,43 @@ init env =
                     else
                         -- Fetching elm.json and README and suppression list
                         3
-            in
-            ( Running
-                { env = env
-                , fs = fs
-                , pendingTaskCount = pendingTaskCount
-                , rules = rules
-                , fixAllRules = rules
-                , project = Project.new
-                , isInitialRun = True
-                , links = Dict.empty
-                , fixAllResultProject = Project.new
-                , fixMode = flags.fixMode
-                , fixLimit = flags.fixLimit
-                , fixExplanation = flags.fixExplanation
-                , enableExtract = flags.enableExtract
-                , unsuppressMode = flags.unsuppressMode
-                , detailsMode = flags.detailsMode
-                , reportMode = flags.reportMode
-                , reviewErrors = []
-                , reviewErrorsAfterSuppression = []
-                , suppress = suppress
-                , suppressedErrors = SuppressedErrors.empty
-                , writeSuppressionFiles = flags.writeSuppressionFiles
-                , errorsHaveBeenFixedPreviously = False
-                , refusedErrorFixes = RefusedErrorFixes.empty
-                , errorAwaitingConfirmation = NotAwaiting
-                , fixAllErrors = Dict.empty
-                , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
-                , extracts = Dict.empty
-                , communicationKey = flags.logger
 
-                -- TODO Get from flags
-                , watch = False
-                }
+                model : Model
+                model =
+                    { env = env
+                    , fs = fs
+                    , pendingTaskCount = pendingTaskCount
+                    , rules = rules
+                    , fixAllRules = rules
+                    , project = Project.new
+                    , isInitialRun = True
+                    , links = Dict.empty
+                    , fixAllResultProject = Project.new
+                    , fixMode = flags.fixMode
+                    , fixLimit = flags.fixLimit
+                    , fixExplanation = flags.fixExplanation
+                    , enableExtract = flags.enableExtract
+                    , unsuppressMode = flags.unsuppressMode
+                    , detailsMode = flags.detailsMode
+                    , reportMode = flags.reportMode
+                    , reviewErrors = []
+                    , reviewErrorsAfterSuppression = []
+                    , suppress = suppress
+                    , suppressedErrors = SuppressedErrors.empty
+                    , writeSuppressionFiles = flags.writeSuppressionFiles
+                    , errorsHaveBeenFixedPreviously = False
+                    , refusedErrorFixes = RefusedErrorFixes.empty
+                    , errorAwaitingConfirmation = NotAwaiting
+                    , fixAllErrors = Dict.empty
+                    , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+                    , extracts = Dict.empty
+                    , communicationKey = flags.logger
+
+                    -- TODO Get from flags
+                    , watch = False
+                    }
+            in
+            ( Running model
             , if List.isEmpty config then
                 -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
                 abortWithDetails
