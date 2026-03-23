@@ -1335,10 +1335,14 @@ makeReport previousSuppressedErrors model =
 
             else
                 ( { model | rules = model.fixAllRules }, Encode.null )
+
+        success : Bool
+        success =
+            List.isEmpty model.reviewErrorsAfterSuppression
     in
     ( newModel
     , Cmd.batch
-        [ [ ( "success", Encode.bool <| List.isEmpty model.reviewErrorsAfterSuppression )
+        [ [ ( "success", Encode.bool success )
           , ( "errors"
             , case newModel.reportMode of
                 HumanReadable ->
