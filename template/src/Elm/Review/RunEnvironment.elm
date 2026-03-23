@@ -10,4 +10,5 @@ module Elm.Review.RunEnvironment exposing (RunEnvironment)
 type alias RunEnvironment =
     { elmVersion : String
     , elmHomePath : String
+    , reviewFolder : String
     }
