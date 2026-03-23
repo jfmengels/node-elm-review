@@ -167,6 +167,7 @@ type alias Model =
     , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
+    , suppress : Bool
     , suppressedErrors : SuppressedErrors
     , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
@@ -341,6 +342,7 @@ init env =
                 , reportMode = flags.reportMode
                 , reviewErrors = []
                 , reviewErrorsAfterSuppression = []
+                , suppress = False
                 , suppressedErrors = SuppressedErrors.empty
                 , writeSuppressionFiles = flags.writeSuppressionFiles
                 , errorsHaveBeenFixedPreviously = False
@@ -890,15 +892,30 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 startReviewIfNoPendingTasks : ( Model, Cmd msg ) -> ( Model, Cmd msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
     if model.isInitialRun && Debug.log "count" model.pendingTaskCount == 0 then
-        let
-            ( modelWithReviewResults, newCmd ) =
-                { model | fixAllErrors = Dict.empty }
-                    |> runReview { fixesAllowed = True } model.project
-                    |> reportOrFix
-        in
-        ( modelWithReviewResults
-        , Cmd.batch [ cmd, newCmd ]
-        )
+        if model.suppress then
+            let
+                newModel : Model
+                newModel =
+                    { model | fixAllErrors = Dict.empty }
+                        |> runReview { fixesAllowed = False } model.project
+            in
+            ( newModel
+            , newModel.reviewErrors
+                |> SuppressedErrors.fromReviewErrors
+                |> SuppressedErrors.encode []
+                |> suppressionsResponse
+            )
+
+        else
+            let
+                ( modelWithReviewResults, newCmd ) =
+                    { model | fixAllErrors = Dict.empty }
+                        |> runReview { fixesAllowed = True } model.project
+                        |> reportOrFix
+            in
+            ( modelWithReviewResults
+            , Cmd.batch [ cmd, newCmd ]
+            )
 
     else
         unchanged
