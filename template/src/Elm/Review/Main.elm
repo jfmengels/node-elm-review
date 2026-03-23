@@ -338,49 +338,11 @@ init env =
                     else
                         -- Fetching elm.json and README and suppression list
                         3
-
-                model : Model
-                model =
-                    { env = env
-                    , fs = fs
-                    , pendingTaskCount = pendingTaskCount
-                    , rules = rules
-                    , fixAllRules = rules
-                    , project = Project.new
-                    , isInitialRun = True
-                    , links = Dict.empty
-                    , fixAllResultProject = Project.new
-                    , fixMode = flags.fixMode
-                    , fixLimit = flags.fixLimit
-                    , fixExplanation = flags.fixExplanation
-                    , enableExtract = flags.enableExtract
-                    , unsuppressMode = flags.unsuppressMode
-                    , detailsMode = flags.detailsMode
-                    , reportMode = flags.reportMode
-                    , reviewErrors = []
-                    , reviewErrorsAfterSuppression = []
-                    , suppress = suppress
-
-                    -- TODO Get from flags
-                    , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
-                    , suppressedErrors = SuppressedErrors.empty
-                    , writeSuppressionFiles = flags.writeSuppressionFiles
-                    , errorsHaveBeenFixedPreviously = False
-                    , refusedErrorFixes = RefusedErrorFixes.empty
-                    , errorAwaitingConfirmation = NotAwaiting
-                    , fixAllErrors = Dict.empty
-                    , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
-                    , extracts = Dict.empty
-                    , communicationKey = flags.logger
-
-                    -- TODO Get from flags
-                    , watch = False
-                    }
             in
-            ( Running model
-            , if List.isEmpty config then
+            if List.isEmpty config then
                 -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
-                abortWithDetails
+                ( Done
+                , abortWithDetails
                     env
                     { title = "CONFIGURATION IS EMPTY"
                     , message =
@@ -390,9 +352,11 @@ I recommend you take a look at the following documents:
   - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
                     }
+                )
 
-              else if not (List.isEmpty filterNames) then
-                abortWithDetails
+            else if not (List.isEmpty filterNames) then
+                ( Done
+                , abortWithDetails
                     env
                     (unknownRulesFilterMessage
                         { ruleNames =
@@ -402,15 +366,53 @@ I recommend you take a look at the following documents:
                         , filterNames = filterNames
                         }
                     )
+                )
 
-              else
+            else
                 case List.filterMap getConfigurationError config of
                     [] ->
-                        Cmd.batch
-                            [ -- TODO Re-add cmd
-                              -- cmd
-                              -- TODO Don't trigger when the other cmd is `abort`
-                              rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
+                        let
+                            model : Model
+                            model =
+                                { env = env
+                                , fs = fs
+                                , pendingTaskCount = pendingTaskCount
+                                , rules = rules
+                                , fixAllRules = rules
+                                , project = Project.new
+                                , isInitialRun = True
+                                , links = Dict.empty
+                                , fixAllResultProject = Project.new
+                                , fixMode = flags.fixMode
+                                , fixLimit = flags.fixLimit
+                                , fixExplanation = flags.fixExplanation
+                                , enableExtract = flags.enableExtract
+                                , unsuppressMode = flags.unsuppressMode
+                                , detailsMode = flags.detailsMode
+                                , reportMode = flags.reportMode
+                                , reviewErrors = []
+                                , reviewErrorsAfterSuppression = []
+                                , suppress = suppress
+
+                                -- TODO Get from flags
+                                , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+                                , suppressedErrors = SuppressedErrors.empty
+                                , writeSuppressionFiles = flags.writeSuppressionFiles
+                                , errorsHaveBeenFixedPreviously = False
+                                , refusedErrorFixes = RefusedErrorFixes.empty
+                                , errorAwaitingConfirmation = NotAwaiting
+                                , fixAllErrors = Dict.empty
+                                , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+                                , extracts = Dict.empty
+                                , communicationKey = flags.logger
+
+                                -- TODO Get from flags
+                                , watch = False
+                                }
+                        in
+                        ( Running model
+                        , Cmd.batch
+                            [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
                             , fetchElmJson fs
                             , fetchReadme fs
                             , if suppress then
@@ -419,9 +421,11 @@ I recommend you take a look at the following documents:
                               else
                                 fetchSuppressionFiles fs model.suppressionFolder
                             ]
+                        )
 
                     configurationErrors ->
-                        abortForConfigurationErrors <|
+                        ( Done
+                        , abortForConfigurationErrors <|
                             case flags.reportMode of
                                 HumanReadable ->
                                     Reporter.formatConfigurationErrors
@@ -432,7 +436,7 @@ I recommend you take a look at the following documents:
 
                                 Json ->
                                     encodeConfigurationErrors flags.detailsMode configurationErrors
-            )
+                        )
 
 
 fetchElmJson : FileSystem -> Cmd Msg2
