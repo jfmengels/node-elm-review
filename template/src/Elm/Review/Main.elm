@@ -287,6 +287,7 @@ init env =
                              , ignoredFiles = []
                              , writeSuppressionFiles = False
                              , logger = CliCommunication.dummy
+                             , suppress = False
                              }
                              -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                             )
@@ -323,11 +324,6 @@ initValid env fs flags rulesFromConfig =
               reviewFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review"
             }
 
-        suppress : Bool
-        suppress =
-            -- TODO Get from flags
-            False
-
         suppressionFolder : String
         suppressionFolder =
             -- TODO Use path functions
@@ -336,7 +332,7 @@ initValid env fs flags rulesFromConfig =
         ( fileFetch, fileFetchCmd ) =
             FileFetch.init
                 { fs = fs
-                , suppress = suppress
+                , suppress = flags.suppress
                 , suppressionFolder = suppressionFolder
                 }
 
@@ -361,7 +357,7 @@ initValid env fs flags rulesFromConfig =
             , reportMode = flags.reportMode
             , reviewErrors = []
             , reviewErrorsAfterSuppression = []
-            , suppress = suppress
+            , suppress = flags.suppress
             , suppressionFolder = suppressionFolder
             , suppressedErrors = SuppressedErrors.empty
             , writeSuppressionFiles = flags.writeSuppressionFiles
@@ -517,6 +513,7 @@ type alias DecodedFlags =
     , ignoredFiles : List String
     , writeSuppressionFiles : Bool
     , logger : CliCommunication.Key
+    , suppress : Bool
     }
 
 
@@ -537,6 +534,7 @@ decodeFlags =
         |> field "ignoredFiles" (Decode.list Decode.string)
         |> field "writeSuppressionFiles" Decode.bool
         |> field "logger" CliCommunication.decoder
+        |> field "suppress" Decode.bool
 
 
 toDecodedFlags :
@@ -554,8 +552,9 @@ toDecodedFlags :
     -> List String
     -> Bool
     -> CliCommunication.Key
+    -> Bool
     -> DecodedFlags
-toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger =
+toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress =
     { fixMode = fixMode fileRemovalFixesEnabled
     , fixLimit = fixLimit
     , fixExplanation =
@@ -574,6 +573,7 @@ toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enable
     , ignoredFiles = ignoredFiles
     , writeSuppressionFiles = writeSuppressionFiles
     , logger = logger
+    , suppress = suppress
     }
 
 
