@@ -296,147 +296,153 @@ init env =
                              }
                              -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                             )
-
-                rulesWithIds : List Rule
-                rulesWithIds =
-                    List.indexedMap Rule.withRuleId config
-
-                ( rulesFromConfig, filterNames ) =
-                    case flags.rulesFilter of
-                        Just rulesToEnable ->
-                            let
-                                ruleNames : Set String
-                                ruleNames =
-                                    List.map Rule.ruleName rulesWithIds
-                                        |> Set.fromList
-                            in
-                            ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
-                            , Set.diff rulesToEnable ruleNames
-                                |> Set.toList
-                            )
-
-                        Nothing ->
-                            ( rulesWithIds, [] )
-
-                rules : List Rule
-                rules =
-                    List.map
-                        (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
-                        rulesFromConfig
-
-                suppress : Bool
-                suppress =
-                    -- TODO Get from flags
-                    False
-
-                pendingTaskCount : Int
-                pendingTaskCount =
-                    if suppress then
-                        -- Fetching elm.json and README
-                        2
-
-                    else
-                        -- Fetching elm.json and README and suppression list
-                        3
             in
-            if List.isEmpty config then
-                -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
-                ( Done
-                , abortWithDetails
-                    env
-                    { title = "CONFIGURATION IS EMPTY"
-                    , message =
-                        """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
+            initWithFlags env fs flags
+
+
+initWithFlags : Env -> FileSystem -> DecodedFlags -> ( ModelWrapper, Cmd Msg2 )
+initWithFlags env fs flags =
+    let
+        rulesWithIds : List Rule
+        rulesWithIds =
+            List.indexedMap Rule.withRuleId config
+
+        ( rulesFromConfig, filterNames ) =
+            case flags.rulesFilter of
+                Just rulesToEnable ->
+                    let
+                        ruleNames : Set String
+                        ruleNames =
+                            List.map Rule.ruleName rulesWithIds
+                                |> Set.fromList
+                    in
+                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
+                    , Set.diff rulesToEnable ruleNames
+                        |> Set.toList
+                    )
+
+                Nothing ->
+                    ( rulesWithIds, [] )
+
+        rules : List Rule
+        rules =
+            List.map
+                (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
+                rulesFromConfig
+
+        suppress : Bool
+        suppress =
+            -- TODO Get from flags
+            False
+
+        pendingTaskCount : Int
+        pendingTaskCount =
+            if suppress then
+                -- Fetching elm.json and README
+                2
+
+            else
+                -- Fetching elm.json and README and suppression list
+                3
+    in
+    if List.isEmpty config then
+        -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
+        ( Done
+        , abortWithDetails
+            env
+            { title = "CONFIGURATION IS EMPTY"
+            , message =
+                """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
 
 I recommend you take a look at the following documents:
   - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
-                    }
-                )
+            }
+        )
 
-            else if not (List.isEmpty filterNames) then
-                ( Done
-                , abortWithDetails
-                    env
-                    (unknownRulesFilterMessage
-                        { ruleNames =
-                            List.map Rule.ruleName config
-                                |> Set.fromList
-                                |> Set.toList
-                        , filterNames = filterNames
+    else if not (List.isEmpty filterNames) then
+        ( Done
+        , abortWithDetails
+            env
+            (unknownRulesFilterMessage
+                { ruleNames =
+                    List.map Rule.ruleName config
+                        |> Set.fromList
+                        |> Set.toList
+                , filterNames = filterNames
+                }
+            )
+        )
+
+    else
+        case List.filterMap getConfigurationError config of
+            [] ->
+                let
+                    model : Model
+                    model =
+                        { env = env
+                        , fs = fs
+                        , pendingTaskCount = pendingTaskCount
+                        , rules = rules
+                        , fixAllRules = rules
+                        , project = Project.new
+                        , isInitialRun = True
+                        , links = Dict.empty
+                        , fixAllResultProject = Project.new
+                        , fixMode = flags.fixMode
+                        , fixLimit = flags.fixLimit
+                        , fixExplanation = flags.fixExplanation
+                        , enableExtract = flags.enableExtract
+                        , unsuppressMode = flags.unsuppressMode
+                        , detailsMode = flags.detailsMode
+                        , reportMode = flags.reportMode
+                        , reviewErrors = []
+                        , reviewErrorsAfterSuppression = []
+                        , suppress = suppress
+
+                        -- TODO Get from flags
+                        , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+                        , suppressedErrors = SuppressedErrors.empty
+                        , writeSuppressionFiles = flags.writeSuppressionFiles
+                        , errorsHaveBeenFixedPreviously = False
+                        , refusedErrorFixes = RefusedErrorFixes.empty
+                        , errorAwaitingConfirmation = NotAwaiting
+                        , fixAllErrors = Dict.empty
+                        , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+                        , extracts = Dict.empty
+                        , communicationKey = flags.logger
+
+                        -- TODO Get from flags
+                        , watch = False
                         }
-                    )
+                in
+                ( Running model
+                , Cmd.batch
+                    [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
+                    , fetchElmJson fs
+                    , fetchReadme fs
+                    , if suppress then
+                        Cmd.none
+
+                      else
+                        fetchSuppressionFiles fs model.suppressionFolder
+                    ]
                 )
 
-            else
-                case List.filterMap getConfigurationError config of
-                    [] ->
-                        let
-                            model : Model
-                            model =
-                                { env = env
-                                , fs = fs
-                                , pendingTaskCount = pendingTaskCount
-                                , rules = rules
-                                , fixAllRules = rules
-                                , project = Project.new
-                                , isInitialRun = True
-                                , links = Dict.empty
-                                , fixAllResultProject = Project.new
-                                , fixMode = flags.fixMode
-                                , fixLimit = flags.fixLimit
-                                , fixExplanation = flags.fixExplanation
-                                , enableExtract = flags.enableExtract
-                                , unsuppressMode = flags.unsuppressMode
-                                , detailsMode = flags.detailsMode
-                                , reportMode = flags.reportMode
-                                , reviewErrors = []
-                                , reviewErrorsAfterSuppression = []
-                                , suppress = suppress
-
-                                -- TODO Get from flags
-                                , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
-                                , suppressedErrors = SuppressedErrors.empty
-                                , writeSuppressionFiles = flags.writeSuppressionFiles
-                                , errorsHaveBeenFixedPreviously = False
-                                , refusedErrorFixes = RefusedErrorFixes.empty
-                                , errorAwaitingConfirmation = NotAwaiting
-                                , fixAllErrors = Dict.empty
-                                , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
-                                , extracts = Dict.empty
-                                , communicationKey = flags.logger
-
-                                -- TODO Get from flags
-                                , watch = False
+            configurationErrors ->
+                ( Done
+                , abortForConfigurationErrors <|
+                    case flags.reportMode of
+                        HumanReadable ->
+                            Reporter.formatConfigurationErrors
+                                { detailsMode = flags.detailsMode
+                                , configurationErrors = configurationErrors
                                 }
-                        in
-                        ( Running model
-                        , Cmd.batch
-                            [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-                            , fetchElmJson fs
-                            , fetchReadme fs
-                            , if suppress then
-                                Cmd.none
+                                |> encodeReport
 
-                              else
-                                fetchSuppressionFiles fs model.suppressionFolder
-                            ]
-                        )
-
-                    configurationErrors ->
-                        ( Done
-                        , abortForConfigurationErrors <|
-                            case flags.reportMode of
-                                HumanReadable ->
-                                    Reporter.formatConfigurationErrors
-                                        { detailsMode = flags.detailsMode
-                                        , configurationErrors = configurationErrors
-                                        }
-                                        |> encodeReport
-
-                                Json ->
-                                    encodeConfigurationErrors flags.detailsMode configurationErrors
-                        )
+                        Json ->
+                            encodeConfigurationErrors flags.detailsMode configurationErrors
+                )
 
 
 fetchElmJson : FileSystem -> Cmd Msg2
