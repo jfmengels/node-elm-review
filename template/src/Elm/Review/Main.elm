@@ -4,12 +4,12 @@ import Array exposing (Array)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Docs
-import Elm.Package
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.Color as Color
 import Elm.Review.File
+import Elm.Review.FileFetch as FileFetch
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
@@ -19,7 +19,6 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
-import Elm.Version
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -31,7 +30,6 @@ import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
-import Task
 
 
 
@@ -150,7 +148,7 @@ type alias Model =
     , fs : FileSystem
 
     --
-    , pendingTaskCount : Int
+    , fileFetch : FileFetch.Model
 
     --
     , rules : List Rule
@@ -252,13 +250,7 @@ type ModelWrapper
 
 
 type Msg2
-    = ReceivedElmJson String (Result Fs.FsError String)
-    | ReceivedReadme String (Result Fs.FsError String)
-    | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
-    | FoundSourceFiles String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
-    | FileRead String (Result Fs.FsError String)
-    | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
-    | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
+    = FileFetchMsg FileFetch.Msg
 
 
 init : Env -> ( ModelWrapper, Cmd Msg2 )
@@ -324,21 +316,23 @@ initValid env fs flags rulesFromConfig =
             -- TODO Get from flags
             False
 
-        pendingTaskCount : Int
-        pendingTaskCount =
-            if suppress then
-                -- Fetching elm.json and README
-                2
+        suppressionFolder : String
+        suppressionFolder =
+            -- TODO Get from flags
+            "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
 
-            else
-                -- Fetching elm.json and README and suppression list
-                3
+        ( fileFetch, fileFetchCmd ) =
+            FileFetch.init
+                { fs = fs
+                , suppress = suppress
+                , suppressionFolder = suppressionFolder
+                }
 
         model : Model
         model =
             { env = env
             , fs = fs
-            , pendingTaskCount = pendingTaskCount
+            , fileFetch = fileFetch
             , rules = rules
             , fixAllRules = rules
             , project = Project.new
@@ -355,9 +349,7 @@ initValid env fs flags rulesFromConfig =
             , reviewErrors = []
             , reviewErrorsAfterSuppression = []
             , suppress = suppress
-
-            -- TODO Get from flags
-            , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+            , suppressionFolder = suppressionFolder
             , suppressedErrors = SuppressedErrors.empty
             , writeSuppressionFiles = flags.writeSuppressionFiles
             , errorsHaveBeenFixedPreviously = False
@@ -375,13 +367,7 @@ initValid env fs flags rulesFromConfig =
     ( Running model
     , Cmd.batch
         [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-        , fetchElmJson fs
-        , fetchReadme fs
-        , if suppress then
-            Cmd.none
-
-          else
-            fetchSuppressionFiles fs model.suppressionFolder
+        , Cmd.map FileFetchMsg fileFetchCmd
         ]
     )
 
@@ -458,53 +444,6 @@ I recommend you take a look at the following documents:
                     (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
                     rulesFromConfig
                     |> Ok
-
-
-fetchElmJson : FileSystem -> Cmd Msg2
-fetchElmJson fs =
-    readTextFile fs ReceivedElmJson "elm.json"
-
-
-fetchReadme : FileSystem -> Cmd Msg2
-fetchReadme fs =
-    readTextFile fs ReceivedReadme "README.md"
-
-
-fetchDependency : FileSystem -> String -> String -> String -> Cmd Msg2
-fetchDependency fs elmHomePath packageName packageVersion =
-    let
-        -- TODO Get from somewhere
-        elmVersion : String
-        elmVersion =
-            "0.19.1"
-
-        directory : String
-        directory =
-            -- TODO Use path functions
-            String.join "/" [ elmHomePath, elmVersion, "packages", packageName, packageVersion ]
-    in
-    Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
-        (Fs.readTextFile fs (directory ++ "/elm.json"))
-        (Fs.readTextFile fs (directory ++ "/docs.json"))
-        |> Task.attempt (ReceivedDependency packageName)
-
-
-readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String -> Cmd msg
-readTextFile fs toMsg path =
-    Fs.readTextFile fs path
-        |> Task.attempt (\result -> toMsg path result)
-
-
-fetchElmFiles : FileSystem -> String -> Cmd Msg2
-fetchElmFiles fs directory =
-    Fs.walkTree fs directory (Just "*.elm") Fs.Any
-        |> Task.attempt (FoundSourceFiles directory)
-
-
-fetchSuppressionFiles : FileSystem -> String -> Cmd Msg2
-fetchSuppressionFiles fs directory =
-    Fs.walkTree fs directory (Just "*.json") Fs.Any
-        |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
 getConfigurationError : Rule -> Maybe Reporter.Error
@@ -739,208 +678,33 @@ updateWrapper msg wrapper =
 update : Msg2 -> Model -> ( Model, Cmd Msg2 )
 update msg model =
     case msg of
-        ReceivedElmJson path (Ok rawElmJson) ->
-            case Decode.decodeString Elm.Project.decoder rawElmJson of
-                Ok elmJson ->
-                    let
-                        sourceDirectories : List String
-                        sourceDirectories =
-                            case elmJson of
-                                Elm.Project.Application application ->
-                                    "test" :: application.dirs
-
-                                Elm.Project.Package _ ->
-                                    [ "src", "test" ]
-
-                        elmHomePath : String
-                        elmHomePath =
-                            --TODO Get from somewhere
-                            "/Users/m1/.elm/"
-
-                        dependencies : List ( String, String )
-                        dependencies =
-                            case elmJson of
-                                Elm.Project.Application application ->
-                                    -- TODO Optimize
-                                    let
-                                        toStrings : ( Elm.Package.Name, Elm.Version.Version ) -> ( String, String )
-                                        toStrings ( name, version ) =
-                                            ( Elm.Package.toString name, Elm.Version.toString version )
-                                    in
-                                    List.concat
-                                        [ List.map toStrings application.depsDirect
-                                        , List.map toStrings application.depsIndirect
-                                        , List.map toStrings application.testDepsDirect
-                                        , List.map toStrings application.testDepsIndirect
-                                        ]
-
-                                Elm.Project.Package _ ->
-                                    -- TODO Handle package deps
-                                    []
-                    in
-                    ( { model
-                        | project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
-                        , pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length sourceDirectories + List.length dependencies - 1)
-                      }
-                    , List.map (fetchElmFiles model.fs) sourceDirectories
-                        ++ List.map (\( name, version ) -> fetchDependency model.fs elmHomePath name version) dependencies
-                        |> Cmd.batch
-                    )
-
-                Err _ ->
-                    ( decrementPendingTaskCount model, Cmd.none )
-
-        ReceivedElmJson _ (Err err) ->
-            ( decrementPendingTaskCount model
-            , Cmd.batch
-                [ Cli.println model.env.stderr (errorToString err)
-                , Cli.exit 1
-                ]
-            )
-
-        ReceivedReadme path result ->
-            case result of
-                Ok content ->
-                    ( { model
-                        | project = Project.addReadme { path = path, content = content } model.project
-                        , pendingTaskCount = model.pendingTaskCount - 1
-                      }
-                    , Cmd.none
-                    )
-                        |> startReviewIfNoPendingTasks
-
-                Err _ ->
-                    ( decrementPendingTaskCount model, Cmd.none )
-                        |> startReviewIfNoPendingTasks
-
-        ReceivedDependency packageName result ->
-            case result of
-                Ok { elmJson, docsJson } ->
-                    case
-                        Result.map2 (Dependency.create packageName)
-                            (Decode.decodeString Elm.Project.decoder elmJson)
-                            (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson)
-                    of
-                        Ok dependency ->
-                            ( { model
-                                | project = Project.addDependency dependency model.project
-                                , pendingTaskCount = model.pendingTaskCount - 1
-                              }
-                            , Cmd.none
-                            )
-                                |> startReviewIfNoPendingTasks
-
-                        Err decodeError ->
-                            if model.ignoreProblematicDependencies then
-                                ( decrementPendingTaskCount model, Cmd.none )
-                                    |> startReviewIfNoPendingTasks
-
-                            else
-                                ( model
-                                , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
-                                    abortWithDetails
-                                        model.env
-                                        { title = "FOUND PROBLEMATIC DEPENDENCIES"
-                                        , message =
-                                            """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
-
-    elm-review --ignore-problematic-dependencies
-
-This will ignore the problematic dependencies, and can GIVE YOU INCORRECT RESULTS! This is a temporary measure.
-
-If I am mistaken about the nature of problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
-
-"""
-                                                ++ Decode.errorToString decodeError
-                                        }
-
-                                  else
-                                    abortWithDetails
-                                        model.env
-                                        { title = "PROBLEM READING DEPENDENCIES"
-                                        , message =
-                                            "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
-                                                ++ Decode.errorToString decodeError
-                                        }
-                                )
-
-                Err _ ->
-                    -- TODO Download dependencies
-                    ( decrementPendingTaskCount model, Cmd.none )
-                        |> startReviewIfNoPendingTasks
-
-        FoundSourceFiles directory (Ok ( files, _ )) ->
-            ( { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length files - 1) }
-            , Cli.println model.env.stdout (String.join "\n" files)
-                :: List.map (\filePath -> readFile model.fs (joinPaths directory filePath)) files
-                |> Cmd.batch
-            )
-
-        ReceivedSuppressedErrorsList directory result ->
-            case result of
-                Ok ( files, _ ) ->
-                    ( { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount + List.length files - 1) }
-                    , List.map
-                        (\filePath ->
-                            Fs.readTextFile model.fs (directory ++ "/" ++ filePath)
-                                |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
-                        )
-                        files
-                        |> Cmd.batch
-                    )
-                        |> startReviewIfNoPendingTasks
-
-                Err _ ->
-                    ( decrementPendingTaskCount model, Cmd.none )
-                        |> startReviewIfNoPendingTasks
-
-        FoundSourceFiles _ (Err err) ->
-            ( decrementPendingTaskCount model
-            , Cmd.batch
-                [ Cli.println model.env.stderr (errorToString err)
-                ]
-            )
-
-        FileRead path result ->
-            case result of
-                Ok source ->
-                    ( { model
-                        | project = Project.addModule { path = path, source = source } model.project
-                        , pendingTaskCount = model.pendingTaskCount - 1
-                      }
-                    , Cli.println model.env.stdout ("Read " ++ path ++ ": " ++ String.concat (List.take 1 (String.lines source)))
-                    )
-                        |> startReviewIfNoPendingTasks
-
-                Err err ->
-                    ( decrementPendingTaskCount model, Cli.println model.env.stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err) )
-                        |> startReviewIfNoPendingTasks
-
-        ReceivedSuppressedErrorsFile path result ->
-            case result of
-                Ok contents ->
-                    let
-                        ruleName : String
-                        ruleName =
-                            -- Remove leading "./" and trailing ".json"
-                            String.slice 2 -5 path
-                    in
-                    ( { model
-                        | suppressedErrors = SuppressedErrors.addFromFile ruleName contents model.suppressedErrors
-                        , pendingTaskCount = model.pendingTaskCount - 1
-                      }
-                    , Cmd.none
-                    )
-                        |> startReviewIfNoPendingTasks
-
-                Err err ->
-                    ( decrementPendingTaskCount model, Cli.println model.env.stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err) )
-                        |> startReviewIfNoPendingTasks
+        FileFetchMsg subMsg ->
+            let
+                { fileFetch, project, suppressedErrors, cmd } =
+                    FileFetch.update
+                        { msg = subMsg
+                        , fs = model.fs
+                        , stderr = model.env.stderr
+                        , fileFetch = model.fileFetch
+                        , project = model.project
+                        , suppressedErrors = model.suppressedErrors
+                        , ignoreProblematicDependencies = model.ignoreProblematicDependencies
+                        , abortWithDetails = abortWithDetails model.env
+                        }
+            in
+            startReviewIfNoPendingTasks
+                ( { model
+                    | fileFetch = fileFetch
+                    , project = project
+                    , suppressedErrors = suppressedErrors
+                  }
+                , Cmd.map FileFetchMsg cmd
+                )
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd msg ) -> ( Model, Cmd msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
-    if model.isInitialRun && Debug.log "count" model.pendingTaskCount == 0 then
+    if model.isInitialRun && FileFetch.hasPendingTasks model.fileFetch then
         if model.suppress then
             let
                 newModel : Model
@@ -977,35 +741,6 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
 
     else
         unchanged
-
-
-decrementPendingTaskCount : Model -> Model
-decrementPendingTaskCount model =
-    { model | pendingTaskCount = Basics.max 0 (model.pendingTaskCount - 1) }
-
-
-joinPaths : String -> String -> String
-joinPaths directory filePath =
-    directory ++ String.dropLeft 1 filePath ++ ""
-
-
-readFile : FileSystem -> String -> Cmd Msg2
-readFile fs filePath =
-    Fs.readTextFile fs filePath
-        |> Task.attempt (FileRead filePath)
-
-
-errorToString : FsError -> String
-errorToString fsError =
-    case fsError of
-        NotFound path ->
-            "File not found: " ++ path
-
-        PermissionDenied ->
-            "Permission denied"
-
-        IoError msg ->
-            "Unknown error: " ++ msg
 
 
 updateOld : Msg -> Model -> ( Model, Cmd Msg )
