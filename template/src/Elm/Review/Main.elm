@@ -168,6 +168,7 @@ type alias Model =
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppress : Bool
+    , suppressionFolder : String
     , suppressedErrors : SuppressedErrors
     , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
@@ -359,6 +360,9 @@ init env =
                     , reviewErrors = []
                     , reviewErrorsAfterSuppression = []
                     , suppress = suppress
+
+                    -- TODO Get from flags
+                    , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
                     , suppressedErrors = SuppressedErrors.empty
                     , writeSuppressionFiles = flags.writeSuppressionFiles
                     , errorsHaveBeenFixedPreviously = False
@@ -409,13 +413,11 @@ I recommend you take a look at the following documents:
                               rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
                             , fetchElmJson fs
                             , fetchReadme fs
-
-                            -- TODO Get review folder from somewhere
                             , if suppress then
                                 Cmd.none
 
                               else
-                                fetchSuppressionFiles fs "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+                                fetchSuppressionFiles fs model.suppressionFolder
                             ]
 
                     configurationErrors ->
@@ -922,10 +924,18 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         |> runReview { fixesAllowed = False } model.project
             in
             ( newModel
-            , newModel.reviewErrors
-                |> SuppressedErrors.fromReviewErrors
-                |> SuppressedErrors.encode []
-                |> suppressionsResponse
+            , Cmd.batch
+                [ -- TODO Replace by file writes
+                  newModel.reviewErrors
+                    |> SuppressedErrors.fromReviewErrors
+                    |> SuppressedErrors.encode []
+                    |> suppressionsResponse
+
+                -- TODO Only add colors if colors are supported
+                -- TODO Don't print in JSON report mode
+                , Cli.println model.env.stdout ("I created suppressions files in " ++ Color.toAnsi Color.Orange model.suppressionFolder)
+                , Cli.exit 0
+                ]
             )
 
         else
@@ -935,6 +945,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         |> runReview { fixesAllowed = True } model.project
                         |> reportOrFix
             in
+            -- TODO Update suppressions
             ( modelWithReviewResults
             , Cmd.batch [ cmd, newCmd ]
             )

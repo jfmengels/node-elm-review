@@ -1,12 +1,12 @@
 module Elm.Review.Color exposing
     ( Color(..)
-    , toHex, toRGB
+    , toHex, toAnsi
     )
 
 {-| Terminal colors.
 
 @docs Color
-@docs toHex, toRGB
+@docs toHex, toAnsi
 
 -}
 
@@ -36,6 +36,11 @@ toHex color =
 
         Green ->
             "#008000"
+
+
+toAnsi : Color -> String -> String
+toAnsi color str =
+    "\u{001B}[38;2;" ++ toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
 
 
 toRGB : Color -> String
