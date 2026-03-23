@@ -13,6 +13,7 @@ import Elm.Review.FileFetch as FileFetch
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
+import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -146,6 +147,7 @@ main =
 type alias Model =
     { env : Env
     , fs : FileSystem
+    , runEnvironment : RunEnvironment
 
     --
     , fileFetch : FileFetch.Model
@@ -328,10 +330,19 @@ initValid env fs flags rulesFromConfig =
                 , suppressionFolder = suppressionFolder
                 }
 
+        runEnvironment : RunEnvironment
+        runEnvironment =
+            { --TODO Get from somewhere
+              elmHomePath = "/Users/m1/.elm/"
+            , -- TODO Get from somewhere
+              elmVersion = "0.19.1"
+            }
+
         model : Model
         model =
             { env = env
             , fs = fs
+            , runEnvironment = runEnvironment
             , fileFetch = fileFetch
             , rules = rules
             , fixAllRules = rules
@@ -684,6 +695,7 @@ update msg model =
                     FileFetch.update
                         { msg = subMsg
                         , fs = model.fs
+                        , runEnvironment = model.runEnvironment
                         , stderr = model.env.stderr
                         , fileFetch = model.fileFetch
                         , project = model.project
