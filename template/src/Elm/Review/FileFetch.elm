@@ -253,6 +253,24 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     , cmd = Cli.println stderr (errorToString err)
                     }
 
+        ReceivedElmFile path result ->
+            case result of
+                Ok source ->
+                    { fileFetch = toModel (pendingTaskCount - 1)
+                    , project = Project.addModule { path = path, source = source } project
+                    , suppressedErrors = suppressedErrors
+                    , cmd = Cmd.none
+                    }
+
+                Err err ->
+                    { fileFetch = toModel (pendingTaskCount - 1)
+                    , project = project
+                    , suppressedErrors = suppressedErrors
+
+                    -- TODO Exit?
+                    , cmd = Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
+                    }
+
         ReceivedSuppressedErrorsList directory result ->
             case result of
                 Ok ( files, _ ) ->
@@ -275,24 +293,6 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                 Err _ ->
                     -- TODO Exit?
                     decrementTaskCount ()
-
-        ReceivedElmFile path result ->
-            case result of
-                Ok source ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
-                    , project = Project.addModule { path = path, source = source } project
-                    , suppressedErrors = suppressedErrors
-                    , cmd = Cmd.none
-                    }
-
-                Err err ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
-                    , project = project
-                    , suppressedErrors = suppressedErrors
-
-                    -- TODO Exit?
-                    , cmd = Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
-                    }
 
         ReceivedSuppressedErrorsFile path result ->
             case result of
