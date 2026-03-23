@@ -313,6 +313,16 @@ initValid env fs flags rulesFromConfig =
                 (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
                 rulesFromConfig
 
+        runEnvironment : RunEnvironment
+        runEnvironment =
+            { --TODO Get from somewhere
+              elmHomePath = "/Users/m1/.elm"
+            , -- TODO Get from somewhere
+              elmVersion = "0.19.1"
+            , -- TODO Get from somewhere
+              reviewFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review"
+            }
+
         suppress : Bool
         suppress =
             -- TODO Get from flags
@@ -320,8 +330,8 @@ initValid env fs flags rulesFromConfig =
 
         suppressionFolder : String
         suppressionFolder =
-            -- TODO Get from flags
-            "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+            -- TODO Use path functions
+            runEnvironment.reviewFolder ++ "/suppressed"
 
         ( fileFetch, fileFetchCmd ) =
             FileFetch.init
@@ -329,14 +339,6 @@ initValid env fs flags rulesFromConfig =
                 , suppress = suppress
                 , suppressionFolder = suppressionFolder
                 }
-
-        runEnvironment : RunEnvironment
-        runEnvironment =
-            { --TODO Get from somewhere
-              elmHomePath = "/Users/m1/.elm/"
-            , -- TODO Get from somewhere
-              elmVersion = "0.19.1"
-            }
 
         model : Model
         model =
