@@ -346,7 +346,6 @@ initWithFlags env fs flags =
                 3
     in
     if List.isEmpty config then
-        -- TODO Add color/styling to this message. It was taken and adapted from the post-init step message
         ( Done
         , abortWithDetails
             env
