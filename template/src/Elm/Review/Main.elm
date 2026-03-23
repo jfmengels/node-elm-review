@@ -322,11 +322,26 @@ init env =
                     List.map
                         (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
                         rulesFromConfig
+
+                suppress : Bool
+                suppress =
+                    -- TODO Get from flags
+                    False
+
+                pendingTaskCount : Int
+                pendingTaskCount =
+                    if suppress then
+                        -- Fetching elm.json and README
+                        2
+
+                    else
+                        -- Fetching elm.json and README and suppression list
+                        3
             in
             ( Running
                 { env = env
                 , fs = fs
-                , pendingTaskCount = 2 -- Fetching elm.json and README
+                , pendingTaskCount = pendingTaskCount
                 , rules = rules
                 , fixAllRules = rules
                 , project = Project.new
@@ -342,7 +357,7 @@ init env =
                 , reportMode = flags.reportMode
                 , reviewErrors = []
                 , reviewErrorsAfterSuppression = []
-                , suppress = False
+                , suppress = suppress
                 , suppressedErrors = SuppressedErrors.empty
                 , writeSuppressionFiles = flags.writeSuppressionFiles
                 , errorsHaveBeenFixedPreviously = False
@@ -393,7 +408,11 @@ I recommend you take a look at the following documents:
                             , fetchReadme fs
 
                             -- TODO Get review folder from somewhere
-                            , fetchSuppressionFiles fs "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+                            , if suppress then
+                                Cmd.none
+
+                              else
+                                fetchSuppressionFiles fs "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
                             ]
 
                     configurationErrors ->
