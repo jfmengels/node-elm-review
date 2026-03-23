@@ -13,7 +13,7 @@ import Elm.Review.FileFetch as FileFetch
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
-import Elm.Review.RunEnvironment exposing (RunEnvironment)
+import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -168,7 +168,6 @@ type alias Model =
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppress : Bool
-    , suppressionFolder : String
     , suppressedErrors : SuppressedErrors
     , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
@@ -325,16 +324,11 @@ initValid env fs flags rulesFromConfig =
               reviewFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review"
             }
 
-        suppressionFolder : String
-        suppressionFolder =
-            -- TODO Use path functions
-            runEnvironment.reviewFolder ++ "/suppressed"
-
         ( fileFetch, fileFetchCmd ) =
             FileFetch.init
                 { fs = fs
                 , suppress = flags.suppress
-                , suppressionFolder = suppressionFolder
+                , runEnvironment = runEnvironment
                 }
 
         model : Model
@@ -359,7 +353,6 @@ initValid env fs flags rulesFromConfig =
             , reviewErrors = []
             , reviewErrorsAfterSuppression = []
             , suppress = flags.suppress
-            , suppressionFolder = suppressionFolder
             , suppressedErrors = SuppressedErrors.empty
             , writeSuppressionFiles = flags.writeSuppressionFiles
             , errorsHaveBeenFixedPreviously = False
@@ -739,7 +732,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
 
                 -- TODO Only add colors if colors are supported
                 -- TODO Don't print in JSON report mode
-                , Cli.println model.env.stdout ("I created suppressions files in " ++ Color.toAnsi Color.Orange model.suppressionFolder)
+                , Cli.println model.env.stdout ("I created suppressions files in " ++ Color.toAnsi Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment))
                 , Cli.exit 0
                 ]
             )

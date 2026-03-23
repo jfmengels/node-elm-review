@@ -10,7 +10,7 @@ import Cli exposing (Env)
 import Elm.Docs
 import Elm.Package
 import Elm.Project
-import Elm.Review.RunEnvironment exposing (RunEnvironment)
+import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import Fs exposing (FileSystem, FsError(..))
@@ -29,8 +29,8 @@ type alias PendingTaskCount =
     Int
 
 
-init : { fs : FileSystem, suppress : Bool, suppressionFolder : String } -> ( Model, Cmd Msg )
-init { fs, suppress, suppressionFolder } =
+init : { fs : FileSystem, suppress : Bool, runEnvironment : RunEnvironment } -> ( Model, Cmd Msg )
+init { fs, suppress, runEnvironment } =
     let
         tasks : List (Cmd Msg)
         tasks =
@@ -42,7 +42,7 @@ init { fs, suppress, suppressionFolder } =
                     Nothing
 
                   else
-                    Just (fetchSuppressionFiles fs suppressionFolder)
+                    Just (fetchSuppressionFiles fs (RunEnvironment.suppressionFolder runEnvironment))
                 ]
     in
     ( Model (List.length tasks)
