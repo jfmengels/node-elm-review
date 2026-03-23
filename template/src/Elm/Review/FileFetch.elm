@@ -369,6 +369,7 @@ fetchDependency fs elmHomePath packageName packageVersion =
             String.join "/" [ elmHomePath, elmVersion, "packages", packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
+        -- TODO Use path functions
         (Fs.readTextFile fs (directory ++ "/elm.json"))
         (Fs.readTextFile fs (directory ++ "/docs.json"))
         |> Task.attempt (ReceivedDependency packageName)
