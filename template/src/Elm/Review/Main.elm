@@ -323,27 +323,6 @@ initWithFlags env fs flags =
 
                 Nothing ->
                     ( rulesWithIds, [] )
-
-        rules : List Rule
-        rules =
-            List.map
-                (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
-                rulesFromConfig
-
-        suppress : Bool
-        suppress =
-            -- TODO Get from flags
-            False
-
-        pendingTaskCount : Int
-        pendingTaskCount =
-            if suppress then
-                -- Fetching elm.json and README
-                2
-
-            else
-                -- Fetching elm.json and README and suppression list
-                3
     in
     if List.isEmpty config then
         ( Done
@@ -391,57 +370,83 @@ I recommend you take a look at the following documents:
                 )
 
             [] ->
-                let
-                    model : Model
-                    model =
-                        { env = env
-                        , fs = fs
-                        , pendingTaskCount = pendingTaskCount
-                        , rules = rules
-                        , fixAllRules = rules
-                        , project = Project.new
-                        , isInitialRun = True
-                        , links = Dict.empty
-                        , fixAllResultProject = Project.new
-                        , fixMode = flags.fixMode
-                        , fixLimit = flags.fixLimit
-                        , fixExplanation = flags.fixExplanation
-                        , enableExtract = flags.enableExtract
-                        , unsuppressMode = flags.unsuppressMode
-                        , detailsMode = flags.detailsMode
-                        , reportMode = flags.reportMode
-                        , reviewErrors = []
-                        , reviewErrorsAfterSuppression = []
-                        , suppress = suppress
+                initValid env fs flags rulesFromConfig
 
-                        -- TODO Get from flags
-                        , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
-                        , suppressedErrors = SuppressedErrors.empty
-                        , writeSuppressionFiles = flags.writeSuppressionFiles
-                        , errorsHaveBeenFixedPreviously = False
-                        , refusedErrorFixes = RefusedErrorFixes.empty
-                        , errorAwaitingConfirmation = NotAwaiting
-                        , fixAllErrors = Dict.empty
-                        , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
-                        , extracts = Dict.empty
-                        , communicationKey = flags.logger
 
-                        -- TODO Get from flags
-                        , watch = False
-                        }
-                in
-                ( Running model
-                , Cmd.batch
-                    [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-                    , fetchElmJson fs
-                    , fetchReadme fs
-                    , if suppress then
-                        Cmd.none
+initValid : Env -> FileSystem -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg2 )
+initValid env fs flags rulesFromConfig =
+    let
+        rules : List Rule
+        rules =
+            List.map
+                (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
+                rulesFromConfig
 
-                      else
-                        fetchSuppressionFiles fs model.suppressionFolder
-                    ]
-                )
+        suppress : Bool
+        suppress =
+            -- TODO Get from flags
+            False
+
+        pendingTaskCount : Int
+        pendingTaskCount =
+            if suppress then
+                -- Fetching elm.json and README
+                2
+
+            else
+                -- Fetching elm.json and README and suppression list
+                3
+
+        model : Model
+        model =
+            { env = env
+            , fs = fs
+            , pendingTaskCount = pendingTaskCount
+            , rules = rules
+            , fixAllRules = rules
+            , project = Project.new
+            , isInitialRun = True
+            , links = Dict.empty
+            , fixAllResultProject = Project.new
+            , fixMode = flags.fixMode
+            , fixLimit = flags.fixLimit
+            , fixExplanation = flags.fixExplanation
+            , enableExtract = flags.enableExtract
+            , unsuppressMode = flags.unsuppressMode
+            , detailsMode = flags.detailsMode
+            , reportMode = flags.reportMode
+            , reviewErrors = []
+            , reviewErrorsAfterSuppression = []
+            , suppress = suppress
+
+            -- TODO Get from flags
+            , suppressionFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review/suppressed"
+            , suppressedErrors = SuppressedErrors.empty
+            , writeSuppressionFiles = flags.writeSuppressionFiles
+            , errorsHaveBeenFixedPreviously = False
+            , refusedErrorFixes = RefusedErrorFixes.empty
+            , errorAwaitingConfirmation = NotAwaiting
+            , fixAllErrors = Dict.empty
+            , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+            , extracts = Dict.empty
+            , communicationKey = flags.logger
+
+            -- TODO Get from flags
+            , watch = False
+            }
+    in
+    ( Running model
+    , Cmd.batch
+        [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
+        , fetchElmJson fs
+        , fetchReadme fs
+        , if suppress then
+            Cmd.none
+
+          else
+            fetchSuppressionFiles fs model.suppressionFolder
+        ]
+    )
 
 
 fetchElmJson : FileSystem -> Cmd Msg2
