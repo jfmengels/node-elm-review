@@ -117,33 +117,37 @@ update { msg, fs, stderr, fileFetch, project, suppressedErrors, ignoreProblemati
                             --TODO Get from somewhere
                             "/Users/m1/.elm/"
 
-                        dependencies : List ( String, String )
-                        dependencies =
+                        addDeps : List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
+                        addDeps deps initial =
+                            List.foldl
+                                (\( name, version ) acc ->
+                                    fetchDependency fs elmHomePath (Elm.Package.toString name) (Elm.Version.toString version) :: acc
+                                )
+                                initial
+                                deps
+
+                        addDependencies : List (Cmd Msg) -> List (Cmd Msg)
+                        addDependencies initial =
                             case elmJson of
                                 Elm.Project.Application application ->
-                                    -- TODO Optimize
-                                    let
-                                        toStrings : ( Elm.Package.Name, Elm.Version.Version ) -> ( String, String )
-                                        toStrings ( name, version ) =
-                                            ( Elm.Package.toString name, Elm.Version.toString version )
-                                    in
-                                    List.concat
-                                        [ List.map toStrings application.depsDirect
-                                        , List.map toStrings application.depsIndirect
-                                        , List.map toStrings application.testDepsDirect
-                                        , List.map toStrings application.testDepsIndirect
-                                        ]
+                                    initial
+                                        |> addDeps application.depsDirect
+                                        |> addDeps application.depsIndirect
+                                        |> addDeps application.testDepsDirect
+                                        |> addDeps application.testDepsIndirect
 
                                 Elm.Project.Package _ ->
                                     Debug.todo "Handle package deps"
+
+                        tasks : List (Cmd Msg)
+                        tasks =
+                            List.map (fetchElmFiles fs) sourceDirectories
+                                |> addDependencies
                     in
-                    { fileFetch = toModel (pendingTaskCount + List.length sourceDirectories + List.length dependencies - 1)
+                    { fileFetch = toModel (pendingTaskCount + List.length tasks - 1)
                     , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } project
                     , suppressedErrors = suppressedErrors
-                    , cmd =
-                        List.map (fetchElmFiles fs) sourceDirectories
-                            ++ List.map (\( name, version ) -> fetchDependency fs elmHomePath name version) dependencies
-                            |> Cmd.batch
+                    , cmd = Cmd.batch tasks
                     }
 
                 Err _ ->
