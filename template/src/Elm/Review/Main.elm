@@ -302,75 +302,12 @@ init env =
 
 initWithFlags : Env -> FileSystem -> DecodedFlags -> ( ModelWrapper, Cmd Msg2 )
 initWithFlags env fs flags =
-    let
-        rulesWithIds : List Rule
-        rulesWithIds =
-            List.indexedMap Rule.withRuleId config
+    case computeRulesToRun env flags of
+        Err cmd ->
+            ( Done, cmd )
 
-        ( rulesFromConfig, filterNames ) =
-            case flags.rulesFilter of
-                Just rulesToEnable ->
-                    let
-                        ruleNames : Set String
-                        ruleNames =
-                            List.map Rule.ruleName rulesWithIds
-                                |> Set.fromList
-                    in
-                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
-                    , Set.diff rulesToEnable ruleNames
-                        |> Set.toList
-                    )
-
-                Nothing ->
-                    ( rulesWithIds, [] )
-    in
-    if List.isEmpty config then
-        ( Done
-        , abortWithDetails
-            env
-            { title = "CONFIGURATION IS EMPTY"
-            , message =
-                """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
-
-I recommend you take a look at the following documents:
-  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
-  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
-            }
-        )
-
-    else if not (List.isEmpty filterNames) then
-        ( Done
-        , abortWithDetails
-            env
-            (unknownRulesFilterMessage
-                { ruleNames =
-                    List.map Rule.ruleName config
-                        |> Set.fromList
-                        |> Set.toList
-                , filterNames = filterNames
-                }
-            )
-        )
-
-    else
-        case List.filterMap getConfigurationError config of
-            (_ :: _) as configurationErrors ->
-                ( Done
-                , abortForConfigurationErrors <|
-                    case flags.reportMode of
-                        HumanReadable ->
-                            Reporter.formatConfigurationErrors
-                                { detailsMode = flags.detailsMode
-                                , configurationErrors = configurationErrors
-                                }
-                                |> encodeReport
-
-                        Json ->
-                            encodeConfigurationErrors flags.detailsMode configurationErrors
-                )
-
-            [] ->
-                initValid env fs flags rulesFromConfig
+        Ok rules ->
+            initValid env fs flags rules
 
 
 initValid : Env -> FileSystem -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg2 )
@@ -447,6 +384,80 @@ initValid env fs flags rulesFromConfig =
             fetchSuppressionFiles fs model.suppressionFolder
         ]
     )
+
+
+computeRulesToRun : Env -> DecodedFlags -> Result (Cmd msg) (List Rule)
+computeRulesToRun env flags =
+    let
+        rulesWithIds : List Rule
+        rulesWithIds =
+            List.indexedMap Rule.withRuleId config
+
+        ( rulesFromConfig, filterNames ) =
+            case flags.rulesFilter of
+                Just rulesToEnable ->
+                    let
+                        ruleNames : Set String
+                        ruleNames =
+                            List.map Rule.ruleName rulesWithIds
+                                |> Set.fromList
+                    in
+                    ( List.filter (\rule -> Set.member (Rule.ruleName rule) rulesToEnable) rulesWithIds
+                    , Set.diff rulesToEnable ruleNames
+                        |> Set.toList
+                    )
+
+                Nothing ->
+                    ( rulesWithIds, [] )
+    in
+    if List.isEmpty config then
+        abortWithDetails
+            env
+            { title = "CONFIGURATION IS EMPTY"
+            , message =
+                """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
+
+I recommend you take a look at the following documents:
+  - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
+  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
+            }
+            |> Err
+
+    else if not (List.isEmpty filterNames) then
+        abortWithDetails
+            env
+            (unknownRulesFilterMessage
+                { ruleNames =
+                    List.map Rule.ruleName config
+                        |> Set.fromList
+                        |> Set.toList
+                , filterNames = filterNames
+                }
+            )
+            |> Err
+
+    else
+        case List.filterMap getConfigurationError config of
+            (_ :: _) as configurationErrors ->
+                (case flags.reportMode of
+                    HumanReadable ->
+                        Reporter.formatConfigurationErrors
+                            { detailsMode = flags.detailsMode
+                            , configurationErrors = configurationErrors
+                            }
+                            |> encodeReport
+
+                    Json ->
+                        encodeConfigurationErrors flags.detailsMode configurationErrors
+                )
+                    |> abortForConfigurationErrors
+                    |> Err
+
+            [] ->
+                List.map
+                    (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
+                    rulesFromConfig
+                    |> Ok
 
 
 fetchElmJson : FileSystem -> Cmd Msg2
