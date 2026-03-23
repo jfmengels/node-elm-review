@@ -184,7 +184,7 @@ toAnsiHelp segments acc =
                 ansiStr : String
                 ansiStr =
                     str
-                        |> maybeApply addColor color
+                        |> maybeApply Color.toAnsi color
                         |> maybeApply addLink href
             in
             toAnsiHelp rest (acc ++ ansiStr)
@@ -203,8 +203,3 @@ maybeApply fn maybe data =
 addLink : String -> String -> String
 addLink url text =
     "\u{001B}]8;;" ++ url ++ "\u{0007}" ++ text ++ "\u{001B}]8;;\u{0007}"
-
-
-addColor : Color -> String -> String
-addColor color str =
-    "\u{001B}[38;2;" ++ Color.toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
