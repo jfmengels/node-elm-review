@@ -226,23 +226,25 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     -- TODO Download dependencies
                     decrementTaskCount ()
 
-        ReceivedElmFileList directory (Ok ( files, _ )) ->
-            { fileFetch = toModel (pendingTaskCount + List.length files - 1)
-            , project = project
-            , suppressedErrors = suppressedErrors
-            , cmd =
-                List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
-                    |> Cmd.batch
-            }
+        ReceivedElmFileList directory result ->
+            case result of
+                Ok ( files, _ ) ->
+                    { fileFetch = toModel (pendingTaskCount + List.length files - 1)
+                    , project = project
+                    , suppressedErrors = suppressedErrors
+                    , cmd =
+                        List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
+                            |> Cmd.batch
+                    }
 
-        ReceivedElmFileList _ (Err err) ->
-            { fileFetch = toModel (pendingTaskCount - 1)
-            , project = project
-            , suppressedErrors = suppressedErrors
+                Err err ->
+                    { fileFetch = toModel (pendingTaskCount - 1)
+                    , project = project
+                    , suppressedErrors = suppressedErrors
 
-            -- TODO Exit?
-            , cmd = Cli.println stderr (errorToString err)
-            }
+                    -- TODO Exit?
+                    , cmd = Cli.println stderr (errorToString err)
+                    }
 
         ReceivedSuppressedErrorsList directory result ->
             case result of
