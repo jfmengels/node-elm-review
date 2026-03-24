@@ -79,7 +79,6 @@ type alias FileWithError =
 type FilePath
     = FilePath String
     | Global
-    | ConfigurationError
 
 
 filePathToString : FilePath -> String
@@ -89,9 +88,6 @@ filePathToString path_ =
             str
 
         Global ->
-            ""
-
-        ConfigurationError ->
             ""
 
 
@@ -535,9 +531,6 @@ filePathToPosition filePath range =
 
         Global ->
             " GLOBAL ERROR"
-
-        ConfigurationError ->
-            " CONFIGURATION ERROR"
 
 
 formatIndividualError : DetailsMode -> FixExplanation -> Source -> Error -> List TextContent
@@ -1249,9 +1242,6 @@ countErrorsHelp files acc =
                         { numberOfFileErrors = acc.numberOfFileErrors
                         , numberOfGlobalErrors = acc.numberOfGlobalErrors + List.length file.errors
                         }
-
-                ConfigurationError ->
-                    countErrorsHelp xs acc
 
 
 fixableErrors : List FileWithError -> List Error
