@@ -1244,9 +1244,6 @@ encodeFilePath filePath =
         Reporter.Global ->
             Encode.null
 
-        Reporter.ConfigurationError ->
-            Encode.null
-
 
 encodeError :
     { suppressedErrors : SuppressedErrors
