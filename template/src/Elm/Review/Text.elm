@@ -166,9 +166,13 @@ toRecord (Text text) =
     text
 
 
-toAnsi : List TextContent -> String
-toAnsi segments =
-    toAnsiHelp segments ""
+toAnsi : Bool -> List TextContent -> String
+toAnsi supportsColor segments =
+    if supportsColor then
+        toAnsiHelp segments ""
+
+    else
+        List.map .str segments |> String.concat
 
 
 toAnsiHelp : List TextContent -> String -> String
@@ -178,13 +182,12 @@ toAnsiHelp segments acc =
             acc
 
         { str, color, href } :: rest ->
-            -- TODO Only add colors if colors are supported
             -- TODO Only add terminal links when supported
             let
                 ansiStr : String
                 ansiStr =
                     str
-                        |> maybeApply Color.toAnsi color
+                        |> maybeApply (\c -> Color.toAnsi True c) color
                         |> maybeApply addLink href
             in
             toAnsiHelp rest (acc ++ ansiStr)
