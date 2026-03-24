@@ -38,9 +38,13 @@ toHex color =
             "#008000"
 
 
-toAnsi : Color -> String -> String
-toAnsi color str =
-    "\u{001B}[38;2;" ++ toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
+toAnsi : Bool -> Color -> String -> String
+toAnsi supportsColor color str =
+    if supportsColor then
+        "\u{001B}[38;2;" ++ toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
+
+    else
+        str
 
 
 toRGB : Color -> String
