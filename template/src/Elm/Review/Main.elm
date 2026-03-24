@@ -457,15 +457,11 @@ I recommend you take a look at the following documents:
                         -- TODO Support ndjson
                         -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
                         Cmd.batch
-                            [ Encode.object
-                                [ ( "version", Encode.string "1" )
-                                , ( "cliVersion", Encode.string CliVersion.version )
-                                , ( "type", Encode.string "review-errors" )
-                                , ( "errors", encodeConfigurationErrors flags.detailsMode configurationErrors )
-                                ]
-                                -- TODO In debug mode encode with 2
-                                |> Encode.encode 0
-                                |> Cli.println env.stdout
+                            [ printJson
+                                env
+                                flags.debug
+                                (encodeConfigurationErrors flags.detailsMode configurationErrors)
+                                (Encode.object [])
                             , Cli.exit 1
                             ]
                             |> Err
@@ -1324,6 +1320,28 @@ makeReport previousSuppressedErrors model =
             Cli.exit 1
         ]
     )
+
+
+printJson : Env -> Bool -> Encode.Value -> Encode.Value -> Cmd msg
+printJson env debug errors extracts =
+    let
+        indent : Int
+        indent =
+            if debug then
+                2
+
+            else
+                0
+    in
+    Encode.object
+        [ ( "version", Encode.string "1" )
+        , ( "cliVersion", Encode.string CliVersion.version )
+        , ( "type", Encode.string "review-errors" )
+        , ( "errors", errors )
+        , ( "extracts", extracts )
+        ]
+        |> Encode.encode indent
+        |> Cli.println env.stdout
 
 
 fixModeToReportFixMode : FixMode -> Reporter.Mode
