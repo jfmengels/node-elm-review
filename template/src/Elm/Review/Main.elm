@@ -1293,23 +1293,50 @@ makeReport previousSuppressedErrors model =
           ]
             |> Encode.object
             |> reviewReport
-        , let
-            filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-            filesWithError =
-                groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
-          in
-          Reporter.formatReport
-            { suppressedErrors = newModel.suppressedErrors
-            , unsuppressMode = newModel.unsuppressMode
-            , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-            , detailsMode = newModel.detailsMode
-            , fixExplanation = newModel.fixExplanation
-            , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-            , mode = fixModeToReportFixMode model.fixMode
-            }
-            filesWithError
-            |> Text.toAnsi model.supportsColor
-            |> Cli.println model.env.stdout
+        , case newModel.reportMode of
+            HumanReadable ->
+                let
+                    filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
+                    filesWithError =
+                        groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
+                in
+                Reporter.formatReport
+                    { suppressedErrors = newModel.suppressedErrors
+                    , unsuppressMode = newModel.unsuppressMode
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
+                    , detailsMode = newModel.detailsMode
+                    , fixExplanation = newModel.fixExplanation
+                    , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+                    , mode = fixModeToReportFixMode model.fixMode
+                    }
+                    filesWithError
+                    |> Text.toAnsi model.supportsColor
+                    |> Cli.println model.env.stdout
+
+            Json ->
+                let
+                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                    errorsByFile =
+                        groupErrorsByFile identity model.project model.reviewErrors
+
+                    errors : Encode.Value
+                    errors =
+                        Encode.list
+                            (encodeErrorByFile
+                                { suppressedErrors = newModel.suppressedErrors
+                                , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                                }
+                                newModel.links
+                                newModel.detailsMode
+                                newModel.fixExplanation
+                            )
+                            errorsByFile
+                in
+                printJson
+                    model.env
+                    model.debug
+                    errors
+                    (Encode.dict identity identity newModel.extracts)
         , if model.watch then
             Cmd.none
 
