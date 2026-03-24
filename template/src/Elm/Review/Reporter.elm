@@ -270,16 +270,15 @@ listFailingRules ruleName rulePackage initial =
 -}
 formatConfigurationErrors : { detailsMode : DetailsMode, configurationErrors : List Error } -> List TextContent
 formatConfigurationErrors { detailsMode, configurationErrors } =
-    let
-        filesWithErrors : List FileWithError
-        filesWithErrors =
-            [ { path = ConfigurationError
-              , source = Source Array.empty
-              , errors = configurationErrors
-              }
-            ]
-    in
-    [ formatReports detailsMode FixExplanation.Succinct Reviewing filesWithErrors
+    [ configurationErrors
+        |> List.indexedMap
+            (\index error ->
+                Text.join "\n\n"
+                    [ [ header (index == 0) ConfigurationError error.range ]
+                    , formatConfigurationError detailsMode error
+                    ]
+            )
+        |> Text.join "\n\n"
     , [ Text.from "I found "
       , pluralize (List.length configurationErrors) "configuration error" |> Text.from |> Text.inRed
       , Text.from "."
@@ -287,6 +286,27 @@ formatConfigurationErrors { detailsMode, configurationErrors } =
     ]
         |> Text.join "\n\n"
         |> Text.simplify
+
+
+formatConfigurationError : DetailsMode -> Error -> List Text
+formatConfigurationError detailsMode error =
+    let
+        details : List Text
+        details =
+            case detailsMode of
+                WithDetails ->
+                    Text.from "\n\n"
+                        :: (List.map Text.from error.details
+                                |> List.intersperse (Text.from "\n\n")
+                           )
+
+                WithoutDetails ->
+                    []
+    in
+    List.concat
+        [ formatErrorTitleSimple error
+        , details
+        ]
 
 
 formatTally : List a -> Int -> Int -> List Text
