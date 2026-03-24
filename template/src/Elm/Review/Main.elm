@@ -1225,14 +1225,14 @@ encodeErrorsForNDJson suppressedErrorsData links detailsMode explainFixFailure f
 encodeConfigurationErrors : Reporter.DetailsMode -> List Reporter.Error -> Encode.Value
 encodeConfigurationErrors detailsMode errors =
     Encode.object
-        [ ( "path", encodeFilePath Reporter.ConfigurationError )
+        [ ( "path", Encode.null )
         , ( "errors", Encode.list (encodeConfigurationError detailsMode []) errors )
         ]
 
 
 encodeConfigurationErrorsForNDJson : Reporter.DetailsMode -> List Reporter.Error -> List Encode.Value
 encodeConfigurationErrorsForNDJson detailsMode errors =
-    List.map (encodeConfigurationError detailsMode [ ( "path", encodeFilePath Reporter.ConfigurationError ) ]) errors
+    List.map (encodeConfigurationError detailsMode [ ( "path", Encode.null ) ]) errors
 
 
 encodeFilePath : Reporter.FilePath -> Encode.Value
