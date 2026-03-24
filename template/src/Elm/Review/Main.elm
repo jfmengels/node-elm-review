@@ -1654,12 +1654,24 @@ encodeReportPart { str, color, href } =
         Encode.string str
 
     else
-        [ Just ( "string", Encode.string str )
-        , Maybe.map (Encode.string >> Tuple.pair "color") color
-        , Maybe.map (Encode.string >> Tuple.pair "href") href
-        ]
-            |> List.filterMap identity
-            |> Encode.object
+        let
+            fields : List ( String, Encode.Value )
+            fields =
+                []
+                    |> maybeMapAndCons (\href_ -> ( "href", Encode.string href_ )) href
+                    |> maybeMapAndCons (\color_ -> ( "color", Encode.string color_ )) color
+        in
+        Encode.object (( "string", Encode.string str ) :: fields)
+
+
+maybeMapAndCons : (a -> b) -> Maybe a -> List b -> List b
+maybeMapAndCons fn maybe list =
+    case maybe of
+        Just x ->
+            fn x :: list
+
+        Nothing ->
+            list
 
 
 
