@@ -422,7 +422,6 @@ I recommend you take a look at the following documents:
                             |> Err
 
                     Json ->
-                        -- TODO Support ndjson
                         -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
                         Cmd.batch
                             [ printJson
@@ -430,6 +429,13 @@ I recommend you take a look at the following documents:
                                 flags.debug
                                 (encodeConfigurationErrors flags.detailsMode configurationErrors)
                                 (Encode.object [])
+                            , Cli.exit 1
+                            ]
+                            |> Err
+
+                    NDJson ->
+                        Cmd.batch
+                            [ printNDJson env (encodeConfigurationErrorsForNDJson flags.detailsMode configurationErrors)
                             , Cli.exit 1
                             ]
                             |> Err
@@ -1093,6 +1099,24 @@ makeReport previousSuppressedErrors model =
                     model.debug
                     errors
                     (Encode.dict identity identity newModel.extracts)
+
+            NDJson ->
+                let
+                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                    errorsByFile =
+                        groupErrorsByFile identity model.project model.reviewErrors
+                in
+                errorsByFile
+                    |> List.concatMap
+                        (encodeErrorsForNDJson
+                            { suppressedErrors = newModel.suppressedErrors
+                            , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                            }
+                            newModel.links
+                            newModel.detailsMode
+                            newModel.fixExplanation
+                        )
+                    |> printNDJson model.env
         , if model.watch then
             Cmd.none
 
@@ -1124,6 +1148,14 @@ printJson env debug errors extracts =
         , ( "extracts", extracts )
         ]
         |> Encode.encode indent
+        |> Cli.println env.stdout
+
+
+printNDJson : Env -> List Encode.Value -> Cmd msg
+printNDJson env lines =
+    lines
+        |> List.map (Encode.encode 0)
+        |> String.join "\n"
         |> Cli.println env.stdout
 
 
@@ -1163,17 +1195,44 @@ encodeErrorByFile suppressedErrorsData links detailsMode explainFixFailure file 
                             order ->
                                 order
                     )
-                |> Encode.list (encodeError suppressedErrorsData links detailsMode explainFixFailure file.source)
+                |> Encode.list (encodeError suppressedErrorsData Nothing links detailsMode explainFixFailure file.source)
           )
         ]
+
+
+encodeErrorsForNDJson :
+    { suppressedErrors : SuppressedErrors
+    , reviewErrorsAfterSuppression : List Rule.ReviewError
+    }
+    -> Dict String String
+    -> Reporter.DetailsMode
+    -> FixExplanation
+    -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+    -> List Encode.Value
+encodeErrorsForNDJson suppressedErrorsData links detailsMode explainFixFailure file =
+    List.map
+        (encodeError
+            suppressedErrorsData
+            (Just ( "path", encodeFilePath file.path ))
+            links
+            detailsMode
+            explainFixFailure
+            file.source
+        )
+        file.errors
 
 
 encodeConfigurationErrors : Reporter.DetailsMode -> List Reporter.Error -> Encode.Value
 encodeConfigurationErrors detailsMode errors =
     Encode.object
         [ ( "path", encodeFilePath Reporter.ConfigurationError )
-        , ( "errors", Encode.list (encodeConfigurationError detailsMode) errors )
+        , ( "errors", Encode.list (encodeConfigurationError detailsMode []) errors )
         ]
+
+
+encodeConfigurationErrorsForNDJson : Reporter.DetailsMode -> List Reporter.Error -> List Encode.Value
+encodeConfigurationErrorsForNDJson detailsMode errors =
+    List.map (encodeConfigurationError detailsMode [ ( "path", encodeFilePath Reporter.ConfigurationError ) ]) errors
 
 
 encodeFilePath : Reporter.FilePath -> Encode.Value
@@ -1193,19 +1252,21 @@ encodeError :
     { suppressedErrors : SuppressedErrors
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     }
+    -> Maybe ( String, Encode.Value )
     -> Dict String String
     -> Reporter.DetailsMode
     -> FixExplanation
     -> Reporter.Source
     -> Rule.ReviewError
     -> Encode.Value
-encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode explainFixFailure source error =
+encodeError { suppressedErrors, reviewErrorsAfterSuppression } pathField links detailsMode explainFixFailure source error =
     let
         originallySuppressed : Bool
         originallySuppressed =
             SuppressedErrors.member error suppressedErrors
     in
-    [ Just ( "rule", Encode.string <| Rule.errorRuleName error )
+    [ pathField
+    , Just ( "rule", Encode.string <| Rule.errorRuleName error )
     , Just ( "message", Encode.string <| Rule.errorMessage error )
     , linkToRule links error
         |> Maybe.map (Encode.string >> Tuple.pair "ruleLink")
@@ -1230,15 +1291,16 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } links detailsMode
         |> Encode.object
 
 
-encodeConfigurationError : Reporter.DetailsMode -> Reporter.Error -> Encode.Value
-encodeConfigurationError detailsMode error =
-    Encode.object
-        [ ( "rule", Encode.string error.ruleName )
-        , ( "message", Encode.string error.message )
-        , ( "details", Encode.list Encode.string error.details )
-        , ( "region", encodeRange Range.empty )
-        , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source Array.empty) error) )
-        ]
+encodeConfigurationError : Reporter.DetailsMode -> List ( String, Encode.Value ) -> Reporter.Error -> Encode.Value
+encodeConfigurationError detailsMode pathField error =
+    pathField
+        ++ [ ( "rule", Encode.string error.ruleName )
+           , ( "message", Encode.string error.message )
+           , ( "details", Encode.list Encode.string error.details )
+           , ( "region", encodeRange Range.empty )
+           , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source Array.empty) error) )
+           ]
+        |> Encode.object
 
 
 linkToRule : Dict String String -> Rule.ReviewError -> Maybe String
