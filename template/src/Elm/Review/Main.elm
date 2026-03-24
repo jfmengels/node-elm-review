@@ -1238,6 +1238,7 @@ makeReport previousSuppressedErrors model =
                         SuppressedErrors.fromReviewErrors model.reviewErrors
                 in
                 ( { model | suppressedErrors = suppressedErrors, rules = model.fixAllRules }
+                  -- TODO Write suppression files
                 , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
                 )
 
@@ -1250,50 +1251,7 @@ makeReport previousSuppressedErrors model =
     in
     ( newModel
     , Cmd.batch
-        [ [ ( "success", Encode.bool success )
-          , ( "errors"
-            , case newModel.reportMode of
-                HumanReadable ->
-                    let
-                        filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-                        filesWithError =
-                            groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
-                    in
-                    Reporter.formatReport
-                        { suppressedErrors = newModel.suppressedErrors
-                        , unsuppressMode = newModel.unsuppressMode
-                        , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-                        , detailsMode = newModel.detailsMode
-                        , fixExplanation = newModel.fixExplanation
-                        , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                        , mode = fixModeToReportFixMode model.fixMode
-                        }
-                        filesWithError
-                        |> encodeReport
-
-                Json ->
-                    let
-                        errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                        errorsByFile =
-                            groupErrorsByFile identity model.project model.reviewErrors
-                    in
-                    Encode.list
-                        (encodeErrorByFile
-                            { suppressedErrors = newModel.suppressedErrors
-                            , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
-                            }
-                            newModel.links
-                            newModel.detailsMode
-                            newModel.fixExplanation
-                        )
-                        errorsByFile
-            )
-          , ( "extracts", Encode.dict identity identity newModel.extracts )
-          , ( "suppressedErrors", suppressedErrorsForJson )
-          ]
-            |> Encode.object
-            |> reviewReport
-        , case newModel.reportMode of
+        [ case newModel.reportMode of
             HumanReadable ->
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
