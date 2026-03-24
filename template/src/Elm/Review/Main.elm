@@ -18,7 +18,7 @@ import Elm.Review.Reporter as Reporter
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
-import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
+import Elm.Review.UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
@@ -252,26 +252,25 @@ init : Env -> ( ModelWrapper, Cmd Msg )
 init env =
     case Fs.require env of
         Err msg ->
-            ( Done, Cli.println env.stderr (env.programName ++ ": " ++ msg) )
+            ( Done
+            , Cmd.batch
+                [ Cli.println env.stderr (env.programName ++ ": " ++ msg)
+                , Cli.exit 1
+                ]
+            )
 
         Ok fs ->
-            let
-                flags : Flags
-                flags =
-                    -- TODO Decode flags from parent process
-                    -- case Decode.decodeValue decodeFlags rawFlags of
-                    case Err () of
-                        Ok decodedFlags ->
-                            (decodedFlags
-                             -- , Cmd.none
-                            )
+            case Flags.parse env of
+                Err error ->
+                    ( Done
+                    , Cmd.batch
+                        [ Cli.println env.stderr error
+                        , Cli.exit 1
+                        ]
+                    )
 
-                        Err error ->
-                            (Flags.default
-                             -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
-                            )
-            in
-            initWithFlags env fs flags
+                Ok flags ->
+                    initWithFlags env fs flags
 
 
 initWithFlags : Env -> FileSystem -> Flags -> ( ModelWrapper, Cmd Msg )
