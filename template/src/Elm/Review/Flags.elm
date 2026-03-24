@@ -1,10 +1,10 @@
-module Elm.Review.Flags exposing (FixMode(..), Flags, ReportMode(..), decoder, default)
+module Elm.Review.Flags exposing (FixMode(..), Flags, ReportMode(..), parse)
 
+import Cli exposing (Env)
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
-import Json.Decode as Decode
 import Set exposing (Set)
 
 
@@ -40,73 +40,99 @@ type ReportMode
     | Json
 
 
-decoder : Decode.Decoder Flags
-decoder =
-    Decode.succeed toDecodedFlags
-        |> field "fixMode" decodeFix
-        |> field "fixLimit" decodeFixLimit
-        |> field "fileRemovalFixesEnabled" Decode.bool
-        |> field "explainFixFailure" Decode.bool
-        |> field "enableExtract" Decode.bool
-        |> field "unsuppress" UnsuppressMode.decoder
-        |> field "detailsMode" decodeDetailsMode
-        |> field "report" decodeReportMode
-        |> field "ignoreProblematicDependencies" Decode.bool
-        |> field "rulesFilter" decodeRulesFilter
-        |> field "ignoredDirs" (Decode.list Decode.string)
-        |> field "ignoredFiles" (Decode.list Decode.string)
-        |> field "writeSuppressionFiles" Decode.bool
-        |> field "logger" CliCommunication.decoder
-        |> field "suppress" Decode.bool
-        |> field "watch" Decode.bool
-        |> field "color" Decode.bool
-        |> field "debug" Decode.bool
+parse : Env -> Result String Flags
+parse env =
+    parseHelp env.args default
 
 
-toDecodedFlags :
-    (Bool -> FixMode)
-    -> Maybe Int
-    -> Bool
-    -> Bool
-    -> Bool
-    -> UnsuppressMode
-    -> Reporter.DetailsMode
-    -> ReportMode
-    -> Bool
-    -> Maybe (Set String)
-    -> List String
-    -> List String
-    -> Bool
-    -> CliCommunication.Key
-    -> Bool
-    -> Bool
-    -> Bool
-    -> Bool
-    -> Flags
-toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress watch supportsColor debug =
-    { fixMode = fixMode fileRemovalFixesEnabled
-    , fixLimit = fixLimit
-    , fixExplanation =
-        if explainFixFailure then
-            FixExplanation.Detailed
+parseHelp : List String -> Flags -> Result String Flags
+parseHelp args flags =
+    case args of
+        [] ->
+            Ok flags
 
-        else
-            FixExplanation.Succinct
-    , enableExtract = enableExtract
-    , unsuppressMode = unsuppressMode
-    , detailsMode = detailsMode
-    , reportMode = reportMode
-    , ignoreProblematicDependencies = ignoreProblematicDependencies
-    , rulesFilter = rulesFilter
-    , ignoredDirs = ignoredDirs
-    , ignoredFiles = ignoredFiles
-    , writeSuppressionFiles = writeSuppressionFiles
-    , logger = logger
-    , suppress = suppress
-    , watch = watch
-    , supportsColor = supportsColor
-    , debug = debug
-    }
+        arg :: rest ->
+            case applyArg arg flags of
+                Ok newFlags ->
+                    parseHelp rest newFlags
+
+                Err err ->
+                    Err err
+
+
+applyArg : String -> Flags -> Result String Flags
+applyArg arg flags =
+    case String.split "=" arg of
+        [ "--fix" ] ->
+            Ok { flags | fixMode = Mode_Fix False }
+
+        [ "--fix-remove-files" ] ->
+            Ok { flags | fixMode = Mode_Fix True }
+
+        [ "--fix-all" ] ->
+            Ok { flags | fixMode = Mode_FixAll False }
+
+        [ "--fix-all-remove-files" ] ->
+            Ok { flags | fixMode = Mode_FixAll True }
+
+        [ "--fix-limit", n ] ->
+            case String.toInt n of
+                Just fixLimit ->
+                    Ok { flags | fixLimit = Just fixLimit }
+
+                Nothing ->
+                    Err ("Couldn't parse fix limit `" ++ n ++ "`")
+
+        [ "--explain-fix-failure" ] ->
+            Ok { flags | fixExplanation = FixExplanation.Detailed }
+
+        [ "--extract" ] ->
+            Ok { flags | enableExtract = True }
+
+        [ "--unsuppress", ruleNames ] ->
+            Ok { flags | unsuppressMode = UnsuppressMode.UnsuppressRules (Set.fromList (String.split "," ruleNames)) }
+
+        [ "--unsuppress" ] ->
+            Ok { flags | unsuppressMode = UnsuppressMode.UnsuppressAll }
+
+        [ "--no-details" ] ->
+            Ok { flags | detailsMode = Reporter.WithoutDetails }
+
+        [ "--report", "human" ] ->
+            Ok { flags | reportMode = HumanReadable }
+
+        [ "--report", "json" ] ->
+            Ok { flags | reportMode = Json }
+
+        [ "--report", "ndjson" ] ->
+            Debug.todo "Support ndjson"
+
+        [ "--ignore-problematic-dependencies" ] ->
+            Ok { flags | ignoreProblematicDependencies = True }
+
+        [ "--rules", ruleNames ] ->
+            Ok { flags | rulesFilter = Just (Set.fromList (String.split "," ruleNames)) }
+
+        [ "--ignore-dirs", ruleNames ] ->
+            Ok { flags | ignoredDirs = String.split "," ruleNames }
+
+        [ "--ignore-files", ruleNames ] ->
+            Ok { flags | ignoredFiles = String.split "," ruleNames }
+
+        [ "--suppress" ] ->
+            Ok { flags | suppress = True }
+
+        [ "--watch" ] ->
+            Ok { flags | watch = True }
+
+        [ "--no-color" ] ->
+            Ok { flags | supportsColor = False }
+
+        [ "--debug" ] ->
+            Ok { flags | debug = True }
+
+        _ ->
+            Err ("Unknown flag `" ++ arg ++ "`")
 
 
 default : Flags
@@ -129,83 +155,3 @@ default =
     , supportsColor = True
     , debug = False
     }
-
-
-field : String -> Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
-field key valDecoder decoder_ =
-    Decode.map2
-        (|>)
-        (Decode.field key valDecoder)
-        decoder_
-
-
-decodeFix : Decode.Decoder (Bool -> FixMode)
-decodeFix =
-    Decode.string
-        |> Decode.andThen
-            (\fixMode ->
-                case fixMode of
-                    "dontfix" ->
-                        Decode.succeed (always Mode_DontFix)
-
-                    "fix" ->
-                        Decode.succeed Mode_Fix
-
-                    "fixAll" ->
-                        Decode.succeed Mode_FixAll
-
-                    _ ->
-                        Decode.fail <| "I could not understand the following fix mode: " ++ fixMode
-            )
-
-
-decodeFixLimit : Decode.Decoder (Maybe Int)
-decodeFixLimit =
-    Decode.oneOf
-        [ Decode.int
-            |> Decode.map (\n -> Just (max 1 n))
-        , Decode.null Nothing
-        ]
-
-
-decodeDetailsMode : Decode.Decoder Reporter.DetailsMode
-decodeDetailsMode =
-    Decode.string
-        |> Decode.andThen
-            (\detailsMode ->
-                case detailsMode of
-                    "with-details" ->
-                        Decode.succeed Reporter.WithDetails
-
-                    "without-details" ->
-                        Decode.succeed Reporter.WithoutDetails
-
-                    _ ->
-                        Decode.fail <| "I could not understand the following details mode: " ++ detailsMode
-            )
-
-
-decodeReportMode : Decode.Decoder ReportMode
-decodeReportMode =
-    Decode.string
-        |> Decode.andThen
-            (\reportMode ->
-                case reportMode of
-                    "human" ->
-                        Decode.succeed HumanReadable
-
-                    "json" ->
-                        Decode.succeed Json
-
-                    _ ->
-                        Decode.fail <| "I could not understand the following report mode: " ++ reportMode
-            )
-
-
-decodeRulesFilter : Decode.Decoder (Maybe (Set String))
-decodeRulesFilter =
-    Decode.oneOf
-        [ Decode.list Decode.string
-            |> Decode.map (Set.fromList >> Just)
-        , Decode.null Nothing
-        ]
