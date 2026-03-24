@@ -38,6 +38,7 @@ type FixMode
 type ReportMode
     = HumanReadable
     | Json
+    | NDJson
 
 
 parse : Env -> Result String Flags
@@ -105,7 +106,7 @@ applyArg arg flags =
             Ok { flags | reportMode = Json }
 
         [ "--report", "ndjson" ] ->
-            Debug.todo "Support ndjson"
+            Ok { flags | reportMode = NDJson }
 
         [ "--ignore-problematic-dependencies" ] ->
             Ok { flags | ignoreProblematicDependencies = True }
