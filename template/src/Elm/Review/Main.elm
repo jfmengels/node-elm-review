@@ -1518,9 +1518,6 @@ groupErrorsByFile mapper project errors =
                         if path == "GLOBAL ERROR" then
                             Reporter.Global
 
-                        else if path == "CONFIGURATION ERROR" then
-                            Reporter.ConfigurationError
-
                         else
                             Reporter.FilePath path
                     , source = Reporter.Source source
@@ -1553,7 +1550,6 @@ collectFiles project =
         |> addMaybe (\{ path, raw } acc -> Dict.insert path raw acc) (Project.elmJson project)
         |> addMaybe (\{ path, content } acc -> Dict.insert path content acc) (Project.readme project)
         |> addSingle "GLOBAL ERROR"
-        |> addSingle "CONFIGURATION ERROR"
         |> addMultiple (Project.modulesThatFailedToParse project)
         |> addFromDict (Project.extraFiles project)
 
