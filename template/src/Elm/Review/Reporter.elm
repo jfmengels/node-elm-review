@@ -274,7 +274,7 @@ formatConfigurationErrors { detailsMode, configurationErrors } =
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
-                    [ [ header (index == 0) (filePathToPosition ConfigurationError error.range) ]
+                    [ [ header (index == 0) " CONFIGURATION" ]
                     , formatConfigurationError detailsMode error
                     ]
             )
