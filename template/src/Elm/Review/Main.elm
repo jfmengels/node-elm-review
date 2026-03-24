@@ -445,19 +445,23 @@ I recommend you take a look at the following documents:
     else
         case List.filterMap getConfigurationError config of
             (_ :: _) as configurationErrors ->
-                (case flags.reportMode of
+                case flags.reportMode of
                     HumanReadable ->
-                        Reporter.formatConfigurationErrors
-                            { detailsMode = flags.detailsMode
-                            , configurationErrors = configurationErrors
-                            }
-                            |> encodeReport
+                        Cmd.batch
+                            [ Reporter.formatConfigurationErrors
+                                { detailsMode = flags.detailsMode
+                                , configurationErrors = configurationErrors
+                                }
+                                |> Text.toAnsi supportsColor
+                                |> Cli.println env.stdout
+                            , Cli.exit 1
+                            ]
+                            |> Err
 
                     Json ->
                         encodeConfigurationErrors flags.detailsMode configurationErrors
-                )
-                    |> abortForConfigurationErrors
-                    |> Err
+                            |> abortForConfigurationErrors
+                            |> Err
 
             [] ->
                 List.map
