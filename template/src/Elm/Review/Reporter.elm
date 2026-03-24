@@ -510,6 +510,11 @@ firstErrorPrefix =
     "-- ELM-REVIEW ERROR -"
 
 
+firstErrorPrefixLength : Int
+firstErrorPrefixLength =
+    String.length firstErrorPrefix
+
+
 header : Bool -> FilePath -> Range -> Text
 header isFirstError filePath range =
     let
@@ -526,7 +531,7 @@ header isFirstError filePath range =
                     " CONFIGURATION ERROR"
     in
     if isFirstError then
-        (firstErrorPrefix ++ String.padLeft (80 - String.length firstErrorPrefix) '-' position ++ "")
+        (firstErrorPrefix ++ String.padLeft (80 - firstErrorPrefixLength) '-' position ++ "")
             |> Text.from
             |> Text.inBlue
 
