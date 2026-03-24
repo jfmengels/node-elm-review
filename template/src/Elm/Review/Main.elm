@@ -97,25 +97,33 @@ port askForFixConfirmationStatus : (() -> msg) -> Sub msg
 port fixConfirmationStatus : Bool -> Cmd msg
 
 
-abort : Env -> String -> Cmd msg
-abort env message =
+abort : Env -> Bool -> String -> Cmd msg
+abort env supportsColor message =
     abortWithDetails
         env
+        supportsColor
         { title = "UNEXPECTED CRASH"
         , message = "I encountered an unexpected crash with the following error message:\n\n" ++ String.trim message
         }
 
 
-abortWithDetails : Env -> { title : String, message : String } -> Cmd msg
-abortWithDetails env { title, message } =
+abortWithDetails : Env -> Bool -> { title : String, message : String } -> Cmd msg
+abortWithDetails env supportsColor { title, message } =
     let
         titleText : String
         titleText =
             "-- " ++ title ++ String.repeat (80 - String.length title - 4) "-"
+
+        colorize : String -> String
+        colorize str =
+            if supportsColor then
+                "\u{001B}[32m" ++ str ++ "\u{001B}[39m"
+
+            else
+                str
     in
-    -- TODO Only add colors if colors are supported
     Cmd.batch
-        [ Cli.println env.stderr ("\u{001B}[32m" ++ titleText ++ "\u{001B}[39m\n\n" ++ String.trim message)
+        [ Cli.println env.stderr (colorize titleText ++ "\n\n" ++ String.trim message)
         , Cli.exit 1
         ]
 
@@ -147,6 +155,7 @@ main =
 type alias Model =
     { env : Env
     , fs : FileSystem
+    , supportsColor : Bool
     , runEnvironment : RunEnvironment
 
     --
@@ -291,22 +300,27 @@ init env =
                              }
                              -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                             )
+
+                supportsColor : Bool
+                supportsColor =
+                    -- TODO Compute color support
+                    True
             in
-            initWithFlags env fs flags
+            initWithFlags env fs supportsColor flags
 
 
-initWithFlags : Env -> FileSystem -> DecodedFlags -> ( ModelWrapper, Cmd Msg2 )
-initWithFlags env fs flags =
-    case computeRulesToRun env flags of
+initWithFlags : Env -> FileSystem -> Bool -> DecodedFlags -> ( ModelWrapper, Cmd Msg2 )
+initWithFlags env fs supportsColor flags =
+    case computeRulesToRun env supportsColor flags of
         Err cmd ->
             ( Done, cmd )
 
         Ok rules ->
-            initValid env fs flags rules
+            initValid env fs supportsColor flags rules
 
 
-initValid : Env -> FileSystem -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg2 )
-initValid env fs flags rulesFromConfig =
+initValid : Env -> FileSystem -> Bool -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg2 )
+initValid env fs supportsColor flags rulesFromConfig =
     let
         rules : List Rule
         rules =
@@ -335,6 +349,9 @@ initValid env fs flags rulesFromConfig =
         model =
             { env = env
             , fs = fs
+
+            -- TODO Compute color support
+            , supportsColor = supportsColor
             , runEnvironment = runEnvironment
             , fileFetch = fileFetch
             , rules = rules
@@ -373,8 +390,8 @@ initValid env fs flags rulesFromConfig =
     )
 
 
-computeRulesToRun : Env -> DecodedFlags -> Result (Cmd msg) (List Rule)
-computeRulesToRun env flags =
+computeRulesToRun : Env -> Bool -> DecodedFlags -> Result (Cmd msg) (List Rule)
+computeRulesToRun env supportsColor flags =
     let
         rulesWithIds : List Rule
         rulesWithIds =
@@ -400,6 +417,7 @@ computeRulesToRun env flags =
     if List.isEmpty config then
         abortWithDetails
             env
+            supportsColor
             { title = "CONFIGURATION IS EMPTY"
             , message =
                 """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
@@ -413,6 +431,7 @@ I recommend you take a look at the following documents:
     else if not (List.isEmpty filterNames) then
         abortWithDetails
             env
+            supportsColor
             (unknownRulesFilterMessage
                 { ruleNames =
                     List.map Rule.ruleName config
@@ -699,7 +718,7 @@ update msg model =
                         , project = model.project
                         , suppressedErrors = model.suppressedErrors
                         , ignoreProblematicDependencies = model.ignoreProblematicDependencies
-                        , abortWithDetails = abortWithDetails model.env
+                        , abortWithDetails = abortWithDetails model.env model.supportsColor
                         }
             in
             startReviewIfNoPendingTasks
@@ -730,9 +749,11 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     |> SuppressedErrors.encode []
                     |> suppressionsResponse
 
-                -- TODO Only add colors if colors are supported
                 -- TODO Don't print in JSON report mode
-                , Cli.println model.env.stdout ("I created suppressions files in " ++ Color.toAnsi Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment))
+                , Cli.println model.env.stdout
+                    ("I created suppressions files in "
+                        ++ Color.toAnsi model.supportsColor Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment)
+                    )
                 , Cli.exit 0
                 ]
             )
@@ -792,7 +813,7 @@ updateOld msg model =
                             )
 
                 Err err ->
-                    ( model, abort model.env (Decode.errorToString err) )
+                    ( model, abort model.env model.supportsColor (Decode.errorToString err) )
 
         RemovedFile path ->
             ( { model | project = Project.removeFile path model.project }, Cmd.none )
@@ -841,6 +862,7 @@ updateOld msg model =
                     , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                         abortWithDetails
                             model.env
+                            model.supportsColor
                             { title = "FOUND PROBLEMATIC DEPENDENCIES"
                             , message =
                                 """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
@@ -858,6 +880,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                       else
                         abortWithDetails
                             model.env
+                            model.supportsColor
                             { title = "PROBLEM READING DEPENDENCIES"
                             , message =
                                 "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
@@ -954,7 +977,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         -- we were not successful in preventing earlier.
                         ( model
                           -- TODO Improve abort message
-                        , abort model.env <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
+                        , abort model.env model.supportsColor <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
                         )
                         -- TODO Handle these cases
                         --else if dependenciesHaveChanged then
@@ -1009,7 +1032,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 |> makeReport model.suppressedErrors
 
                 Err err ->
-                    ( model, abort model.env (Decode.errorToString err) )
+                    ( model, abort model.env model.supportsColor (Decode.errorToString err) )
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
             ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
@@ -1270,7 +1293,7 @@ makeReport previousSuppressedErrors model =
             , mode = fixModeToReportFixMode model.fixMode
             }
             filesWithError
-            |> Text.toAnsi
+            |> Text.toAnsi model.supportsColor
             |> Cli.println model.env.stdout
         , if model.watch then
             Cmd.none
