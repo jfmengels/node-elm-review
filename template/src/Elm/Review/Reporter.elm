@@ -517,27 +517,27 @@ firstErrorPrefixLength =
 
 header : Bool -> FilePath -> Range -> Text
 header isFirstError filePath range =
-    let
-        position : String
-        position =
-            case filePath of
-                FilePath str ->
-                    " " ++ str ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
-
-                Global ->
-                    " GLOBAL ERROR"
-
-                ConfigurationError ->
-                    " CONFIGURATION ERROR"
-    in
     if isFirstError then
-        (firstErrorPrefix ++ String.padLeft (80 - firstErrorPrefixLength) '-' position ++ "")
+        (firstErrorPrefix ++ String.padLeft (80 - firstErrorPrefixLength) '-' (filePathToPosition filePath range) ++ "")
             |> Text.from
             |> Text.inBlue
 
     else
-        ("────" ++ String.padLeft 76 '─' position)
+        ("────" ++ String.padLeft 76 '─' (filePathToPosition filePath range))
             |> Text.from
+
+
+filePathToPosition : FilePath -> Range -> String
+filePathToPosition filePath range =
+    case filePath of
+        FilePath str ->
+            " " ++ str ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
+
+        Global ->
+            " GLOBAL ERROR"
+
+        ConfigurationError ->
+            " CONFIGURATION ERROR"
 
 
 formatIndividualError : DetailsMode -> FixExplanation -> Source -> Error -> List TextContent
