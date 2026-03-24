@@ -155,6 +155,7 @@ type alias Model =
     , fs : FileSystem
     , supportsColor : Bool
     , runEnvironment : RunEnvironment
+    , debug : Bool
 
     --
     , fileFetch : FileFetch.Model
@@ -296,6 +297,7 @@ init env =
                              , suppress = False
                              , watch = False
                              , supportsColor = True
+                             , debug = False
                              }
                              -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                             )
@@ -343,6 +345,7 @@ initValid env fs flags rulesFromConfig =
         model =
             { env = env
             , fs = fs
+            , debug = flags.debug
             , supportsColor = flags.supportsColor
             , runEnvironment = runEnvironment
             , fileFetch = fileFetch
@@ -535,6 +538,7 @@ type alias DecodedFlags =
     , suppress : Bool
     , watch : Bool
     , supportsColor : Bool
+    , debug : Bool
     }
 
 
@@ -558,6 +562,7 @@ decodeFlags =
         |> field "suppress" Decode.bool
         |> field "watch" Decode.bool
         |> field "color" Decode.bool
+        |> field "debug" Decode.bool
 
 
 toDecodedFlags :
@@ -578,8 +583,9 @@ toDecodedFlags :
     -> Bool
     -> Bool
     -> Bool
+    -> Bool
     -> DecodedFlags
-toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress watch supportsColor =
+toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress watch supportsColor debug =
     { fixMode = fixMode fileRemovalFixesEnabled
     , fixLimit = fixLimit
     , fixExplanation =
@@ -601,6 +607,7 @@ toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enable
     , suppress = suppress
     , watch = watch
     , supportsColor = supportsColor
+    , debug = debug
     }
 
 
