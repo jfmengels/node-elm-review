@@ -160,8 +160,8 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             filesWithErrors : List FileWithError
             filesWithErrors =
                 files
-                    |> List.filter (.errors >> List.isEmpty >> not)
-                    |> List.sortBy (.path >> filePathToString)
+                    |> List.filter (\{ errors } -> not (List.isEmpty errors))
+                    |> List.sortBy (\{ path } -> filePathToString path)
 
             { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)
