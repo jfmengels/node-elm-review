@@ -346,7 +346,7 @@ getConfigurationError rule =
                 , ruleLink = Nothing
                 , message = configurationError.message
                 , details = configurationError.details
-                , range = Range.emptyRange
+                , range = Range.empty
                 , providesFix = False
                 , fixProblem = Nothing
                 , providesFileRemovalFix = False
@@ -1151,7 +1151,7 @@ encodeConfigurationError detailsMode error =
         [ ( "rule", Encode.string error.ruleName )
         , ( "message", Encode.string error.message )
         , ( "details", Encode.list Encode.string error.details )
-        , ( "region", encodeRange Range.emptyRange )
+        , ( "region", encodeRange Range.empty )
         , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source "") error) )
         ]
 
