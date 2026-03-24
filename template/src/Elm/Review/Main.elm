@@ -7,6 +7,7 @@ import Elm.Docs
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
+import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
 import Elm.Review.FileFetch as FileFetch
@@ -450,10 +451,15 @@ I recommend you take a look at the following documents:
                             |> Err
 
                     Json ->
+                        -- TODO Support ndjson
+                        -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
                         Cmd.batch
-                            [ encodeConfigurationErrors flags.detailsMode configurationErrors
-                                -- TODO Add version/cliVersion/type fields
-                                -- TODO Support ndjson
+                            [ Encode.object
+                                [ ( "version", Encode.string "1" )
+                                , ( "cliVersion", Encode.string CliVersion.version )
+                                , ( "type", Encode.string "review-errors" )
+                                , ( "errors", encodeConfigurationErrors flags.detailsMode configurationErrors )
+                                ]
                                 -- TODO In debug mode encode with 2
                                 |> Encode.encode 0
                                 |> Cli.println env.stdout
