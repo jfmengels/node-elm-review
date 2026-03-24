@@ -270,8 +270,8 @@ listFailingRules ruleName rulePackage initial =
 
 {-| Reports configuration errors reported by `elm-review` in a nice human-readable way.
 -}
-formatConfigurationErrors : { detailsMode : DetailsMode, mode : Mode, configurationErrors : List Error } -> List TextContent
-formatConfigurationErrors { detailsMode, mode, configurationErrors } =
+formatConfigurationErrors : { detailsMode : DetailsMode, configurationErrors : List Error } -> List TextContent
+formatConfigurationErrors { detailsMode, configurationErrors } =
     let
         filesWithErrors : List FileWithError
         filesWithErrors =
@@ -281,7 +281,7 @@ formatConfigurationErrors { detailsMode, mode, configurationErrors } =
               }
             ]
     in
-    [ formatReports detailsMode FixExplanation.Succinct mode filesWithErrors
+    [ formatReports detailsMode FixExplanation.Succinct Reviewing filesWithErrors
     , [ Text.from "I found "
       , pluralize (List.length configurationErrors) "configuration error" |> Text.from |> Text.inRed
       , Text.from "."

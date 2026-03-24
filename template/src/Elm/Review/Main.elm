@@ -328,7 +328,6 @@ I recommend you take a look at the following documents:
                         HumanReadable ->
                             Reporter.formatConfigurationErrors
                                 { detailsMode = flags.detailsMode
-                                , mode = Reporter.Reviewing
                                 , configurationErrors = configurationErrors
                                 }
                                 |> encodeReport
