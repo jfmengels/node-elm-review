@@ -274,7 +274,7 @@ formatConfigurationErrors { detailsMode, configurationErrors } =
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
-                    [ [ header (index == 0) ConfigurationError error.range ]
+                    [ [ header (index == 0) (filePathToPosition ConfigurationError error.range) ]
                     , formatConfigurationError detailsMode error
                     ]
             )
@@ -498,7 +498,7 @@ formatReportForFileWithExtract detailsMode fixExplanation mode file =
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
-                    [ [ header (index == 0) file.path error.range ]
+                    [ [ header (index == 0) (filePathToPosition file.path error.range) ]
                     , formatErrorWithExtract detailsMode fixExplanation mode file.source error
                     ]
             )
@@ -515,15 +515,15 @@ firstErrorPrefixLength =
     String.length firstErrorPrefix
 
 
-header : Bool -> FilePath -> Range -> Text
-header isFirstError filePath range =
+header : Bool -> String -> Text
+header isFirstError position =
     if isFirstError then
-        (firstErrorPrefix ++ String.padLeft (80 - firstErrorPrefixLength) '-' (filePathToPosition filePath range) ++ "")
+        (firstErrorPrefix ++ String.padLeft (80 - firstErrorPrefixLength) '-' position ++ "")
             |> Text.from
             |> Text.inBlue
 
     else
-        ("────" ++ String.padLeft 76 '─' (filePathToPosition filePath range))
+        ("────" ++ String.padLeft 76 '─' position)
             |> Text.from
 
 
