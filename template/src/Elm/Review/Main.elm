@@ -136,7 +136,7 @@ type alias Flags =
     Encode.Value
 
 
-main : Cli.Program ModelWrapper Msg2
+main : Cli.Program ModelWrapper Msg
 main =
     Cli.program
         { init = init
@@ -256,11 +256,11 @@ type ModelWrapper
     | Running Model
 
 
-type Msg2
+type Msg
     = FileFetchMsg FileFetch.Msg
 
 
-init : Env -> ( ModelWrapper, Cmd Msg2 )
+init : Env -> ( ModelWrapper, Cmd Msg )
 init env =
     case Fs.require env of
         Err msg ->
@@ -306,7 +306,7 @@ init env =
             initWithFlags env fs supportsColor flags
 
 
-initWithFlags : Env -> FileSystem -> Bool -> DecodedFlags -> ( ModelWrapper, Cmd Msg2 )
+initWithFlags : Env -> FileSystem -> Bool -> DecodedFlags -> ( ModelWrapper, Cmd Msg )
 initWithFlags env fs supportsColor flags =
     case computeRulesToRun env supportsColor flags of
         Err cmd ->
@@ -316,7 +316,7 @@ initWithFlags env fs supportsColor flags =
             initValid env fs supportsColor flags rules
 
 
-initValid : Env -> FileSystem -> Bool -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg2 )
+initValid : Env -> FileSystem -> Bool -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg )
 initValid env fs supportsColor flags rulesFromConfig =
     let
         rules : List Rule
@@ -684,7 +684,7 @@ decodeRulesFilter =
 -- UPDATE
 
 
-type Msg
+type MsgOld
     = ReceivedFile Decode.Value
     | RemovedFile String
     | ReceivedElmJsonOld Decode.Value
@@ -700,7 +700,7 @@ type Msg
     | RequestedToKnowIfAFixConfirmationIsExpected
 
 
-updateWrapper : Msg2 -> ModelWrapper -> ( ModelWrapper, Cmd Msg2 )
+updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
 updateWrapper msg wrapper =
     case wrapper of
         Done ->
@@ -711,7 +711,7 @@ updateWrapper msg wrapper =
                 |> Tuple.mapFirst Running
 
 
-update : Msg2 -> Model -> ( Model, Cmd Msg2 )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FileFetchMsg subMsg ->
@@ -782,7 +782,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
         unchanged
 
 
-updateOld : Msg -> Model -> ( Model, Cmd Msg )
+updateOld : MsgOld -> Model -> ( Model, Cmd MsgOld )
 updateOld msg model =
     case msg of
         ReceivedFile value ->
@@ -2016,7 +2016,7 @@ maybeMapAndCons fn maybe list =
 -- REVIEWING
 
 
-subscriptions : Sub Msg
+subscriptions : Sub MsgOld
 subscriptions =
     Sub.batch
         [ collectFile ReceivedFile
