@@ -128,9 +128,6 @@ abortWithDetails env supportsColor { title, message } =
         ]
 
 
-port abortForConfigurationErrors : Encode.Value -> Cmd msg
-
-
 
 -- PROGRAM
 
@@ -459,8 +456,15 @@ I recommend you take a look at the following documents:
                             |> Err
 
                     Json ->
-                        encodeConfigurationErrors flags.detailsMode configurationErrors
-                            |> abortForConfigurationErrors
+                        Cmd.batch
+                            [ encodeConfigurationErrors flags.detailsMode configurationErrors
+                                -- TODO Add version/cliVersion/type fields
+                                -- TODO Support ndjson
+                                -- TODO In debug mode encode with 2
+                                |> Encode.encode 0
+                                |> Cli.println env.stdout
+                            , Cli.exit 1
+                            ]
                             |> Err
 
             [] ->
