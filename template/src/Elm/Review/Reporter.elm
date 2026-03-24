@@ -574,13 +574,18 @@ formatErrorWithExtract detailsMode fixExplanation mode source error =
 
 formatErrorTitle : Mode -> Error -> List Text
 formatErrorTitle mode error =
+    formatErrorTitleSimple error
+        |> addFixPrefix mode error
+        |> addSuppressedPrefix error
+
+
+formatErrorTitleSimple : Error -> List Text
+formatErrorTitleSimple error =
     [ Text.from error.ruleName
         |> Text.inRed
         |> Text.withLink error.ruleLink
     , Text.from (": " ++ error.message)
     ]
-        |> addFixPrefix mode error
-        |> addSuppressedPrefix error
 
 
 addSuppressedPrefix : Error -> List Text -> List Text
