@@ -294,30 +294,26 @@ init env =
                              , logger = CliCommunication.dummy
                              , suppress = False
                              , watch = False
+                             , supportsColor = True
                              }
                              -- , abort <| "Problem decoding the flags when running the elm-review runner:\n  " ++ Decode.errorToString error
                             )
-
-                supportsColor : Bool
-                supportsColor =
-                    -- TODO Compute color support
-                    True
             in
-            initWithFlags env fs supportsColor flags
+            initWithFlags env fs flags
 
 
-initWithFlags : Env -> FileSystem -> Bool -> DecodedFlags -> ( ModelWrapper, Cmd Msg )
-initWithFlags env fs supportsColor flags =
-    case computeRulesToRun env supportsColor flags of
+initWithFlags : Env -> FileSystem -> DecodedFlags -> ( ModelWrapper, Cmd Msg )
+initWithFlags env fs flags =
+    case computeRulesToRun env flags of
         Err cmd ->
             ( Done, cmd )
 
         Ok rules ->
-            initValid env fs supportsColor flags rules
+            initValid env fs flags rules
 
 
-initValid : Env -> FileSystem -> Bool -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg )
-initValid env fs supportsColor flags rulesFromConfig =
+initValid : Env -> FileSystem -> DecodedFlags -> List Rule -> ( ModelWrapper, Cmd Msg )
+initValid env fs flags rulesFromConfig =
     let
         rules : List Rule
         rules =
@@ -346,9 +342,7 @@ initValid env fs supportsColor flags rulesFromConfig =
         model =
             { env = env
             , fs = fs
-
-            -- TODO Compute color support
-            , supportsColor = supportsColor
+            , supportsColor = flags.supportsColor
             , runEnvironment = runEnvironment
             , fileFetch = fileFetch
             , rules = rules
@@ -387,8 +381,8 @@ initValid env fs supportsColor flags rulesFromConfig =
     )
 
 
-computeRulesToRun : Env -> Bool -> DecodedFlags -> Result (Cmd msg) (List Rule)
-computeRulesToRun env supportsColor flags =
+computeRulesToRun : Env -> DecodedFlags -> Result (Cmd msg) (List Rule)
+computeRulesToRun env flags =
     let
         rulesWithIds : List Rule
         rulesWithIds =
@@ -414,7 +408,7 @@ computeRulesToRun env supportsColor flags =
     if List.isEmpty config then
         abortWithDetails
             env
-            supportsColor
+            flags.supportsColor
             { title = "CONFIGURATION IS EMPTY"
             , message =
                 """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
@@ -428,7 +422,7 @@ I recommend you take a look at the following documents:
     else if not (List.isEmpty filterNames) then
         abortWithDetails
             env
-            supportsColor
+            flags.supportsColor
             (unknownRulesFilterMessage
                 { ruleNames =
                     List.map Rule.ruleName config
@@ -449,7 +443,7 @@ I recommend you take a look at the following documents:
                                 { detailsMode = flags.detailsMode
                                 , configurationErrors = configurationErrors
                                 }
-                                |> Text.toAnsi supportsColor
+                                |> Text.toAnsi flags.supportsColor
                                 |> Cli.println env.stdout
                             , Cli.exit 1
                             ]
@@ -534,6 +528,7 @@ type alias DecodedFlags =
     , logger : CliCommunication.Key
     , suppress : Bool
     , watch : Bool
+    , supportsColor : Bool
     }
 
 
@@ -556,6 +551,7 @@ decodeFlags =
         |> field "logger" CliCommunication.decoder
         |> field "suppress" Decode.bool
         |> field "watch" Decode.bool
+        |> field "color" Decode.bool
 
 
 toDecodedFlags :
@@ -575,8 +571,9 @@ toDecodedFlags :
     -> CliCommunication.Key
     -> Bool
     -> Bool
+    -> Bool
     -> DecodedFlags
-toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress watch =
+toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enableExtract unsuppressMode detailsMode reportMode ignoreProblematicDependencies rulesFilter ignoredDirs ignoredFiles writeSuppressionFiles logger suppress watch supportsColor =
     { fixMode = fixMode fileRemovalFixesEnabled
     , fixLimit = fixLimit
     , fixExplanation =
@@ -597,6 +594,7 @@ toDecodedFlags fixMode fixLimit fileRemovalFixesEnabled explainFixFailure enable
     , logger = logger
     , suppress = suppress
     , watch = watch
+    , supportsColor = supportsColor
     }
 
 
