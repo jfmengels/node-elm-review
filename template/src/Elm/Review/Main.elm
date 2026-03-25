@@ -1502,31 +1502,35 @@ type alias FixedFile =
 
 groupErrorsByFile : (Rule.ReviewError -> reportError) -> Project -> List Rule.ReviewError -> List { path : Reporter.FilePath, source : Reporter.Source, errors : List reportError }
 groupErrorsByFile mapper project errors =
-    let
-        files : Dict String String
-        files =
-            collectFiles project
-    in
-    Dict.foldr
-        (\path source acc ->
-            case collectErrorsForFile mapper path errors of
-                [] ->
-                    acc
-
-                fileErrors ->
-                    { path =
-                        if path == "GLOBAL ERROR" then
-                            Reporter.Global
-
-                        else
-                            Reporter.FilePath path
-                    , source = Reporter.Source source
-                    , errors = fileErrors
-                    }
-                        :: acc
-        )
+    if List.isEmpty errors then
         []
-        files
+
+    else
+        let
+            files : Dict String String
+            files =
+                collectFiles project
+        in
+        Dict.foldr
+            (\path source acc ->
+                case collectErrorsForFile mapper path errors of
+                    [] ->
+                        acc
+
+                    fileErrors ->
+                        { path =
+                            if path == "GLOBAL ERROR" then
+                                Reporter.Global
+
+                            else
+                                Reporter.FilePath path
+                        , source = Reporter.Source source
+                        , errors = fileErrors
+                        }
+                            :: acc
+            )
+            []
+            files
 
 
 collectErrorsForFile : (Rule.ReviewError -> a) -> String -> List Rule.ReviewError -> List a
