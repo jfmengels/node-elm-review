@@ -1079,7 +1079,19 @@ encodeErrorByFile :
 encodeErrorByFile suppressedErrorsData links detailsMode explainFixFailure file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
-        , ( "errors", Encode.list (encodeError suppressedErrorsData links detailsMode explainFixFailure file.source) file.errors )
+        , ( "errors"
+          , file.errors
+                |> List.sortWith
+                    (\a b ->
+                        case Reporter.compareRange (Rule.errorRange a) (Rule.errorRange b) of
+                            EQ ->
+                                compare (Rule.errorRuleName a) (Rule.errorRuleName b)
+
+                            order ->
+                                order
+                    )
+                |> Encode.list (encodeError suppressedErrorsData links detailsMode explainFixFailure file.source)
+          )
         ]
 
 
