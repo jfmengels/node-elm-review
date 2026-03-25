@@ -1529,9 +1529,9 @@ groupErrorsByFile mapper project errors =
 
     else
         let
-            files : Dict String String
-            files =
-                collectFiles project
+            findSource_ : String -> String
+            findSource_ =
+                findSource project
         in
         List.foldl
             (\error dict ->
@@ -1550,7 +1550,7 @@ groupErrorsByFile mapper project errors =
 
                                 else
                                     Reporter.FilePath path
-                            , source = Reporter.Source (Maybe.withDefault "" (Dict.get path files))
+                            , source = Reporter.Source (findSource_ path)
                             , errors = [ mapper error ]
                             }
                             dict
@@ -1585,33 +1585,59 @@ orderFiles ( path, _ ) =
         ( -1, path )
 
 
-collectFiles : Project -> Dict String String
-collectFiles project =
-    Dict.empty
-        |> addMultiple (Project.modules project)
-        |> addMaybe (\{ path, raw } acc -> Dict.insert path raw acc) (Project.elmJson project)
-        |> addMaybe (\{ path, content } acc -> Dict.insert path content acc) (Project.readme project)
-        |> addFromDict (Project.extraFiles project)
+findSource : Project -> String -> String
+findSource project =
+    let
+        elmModules : Dict String String
+        elmModules =
+            -- TODO Add some kind of `Project.getModuleByPath path` to `jfmengels/elm-review` to avoid unnecessary conversion
+            -- or simply one returning a `Dict PathAsString ProjectModules`
+            List.foldl (\{ path, source } acc -> Dict.insert path source acc) Dict.empty (Project.modules project)
+
+        elmJson : Maybe { path : String, raw : String, project : Elm.Project.Project }
+        elmJson =
+            Project.elmJson project
+
+        readme : Maybe { path : String, content : String }
+        readme =
+            Project.readme project
+    in
+    \filePath ->
+        case Dict.get filePath elmModules of
+            Just source ->
+                source
+
+            Nothing ->
+                case Dict.get filePath (Project.extraFiles project) of
+                    Just source ->
+                        source
+
+                    Nothing ->
+                        case maybeWithCondition .path .raw filePath elmJson of
+                            Just source ->
+                                source
+
+                            Nothing ->
+                                case maybeWithCondition .path .content filePath readme of
+                                    Just source ->
+                                        source
+
+                                    Nothing ->
+                                        ""
 
 
-addMaybe : (a -> b -> b) -> Maybe a -> b -> b
-addMaybe mapper maybe acc =
+maybeWithCondition : (a -> String) -> (a -> String) -> String -> Maybe a -> Maybe String
+maybeWithCondition getFilePath getSource filePath maybe =
     case maybe of
-        Just a ->
-            mapper a acc
-
         Nothing ->
-            acc
+            Nothing
 
+        Just a ->
+            if getFilePath a == filePath then
+                Just (getSource a)
 
-addMultiple : List { a | path : String, source : String } -> Dict String String -> Dict String String
-addMultiple list initial =
-    List.foldl (\{ path, source } acc -> Dict.insert path source acc) initial list
-
-
-addFromDict : Dict String String -> Dict String String -> Dict String String
-addFromDict dict initial =
-    Dict.foldr Dict.insert initial dict
+            else
+                Nothing
 
 
 fromReviewError : SuppressedErrors -> Dict String String -> Rule.ReviewError -> Reporter.Error
