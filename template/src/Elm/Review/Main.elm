@@ -1565,8 +1565,24 @@ groupErrorsByFile mapper project errors =
             )
             Dict.empty
             errors
-            -- TODO Sort to be in the same order as before?
-            |> Dict.values
+            |> Dict.toList
+            |> List.sortBy orderFiles
+            |> List.map Tuple.second
+
+
+orderFiles : ( String, b ) -> ( Int, String )
+orderFiles ( path, _ ) =
+    if path == "GLOBAL ERROR" then
+        ( 0, "" )
+
+    else if path == "elm.json" then
+        ( 1, "" )
+
+    else if path == "README.md" then
+        ( 2, "" )
+
+    else
+        ( -1, path )
 
 
 collectFiles : Project -> Dict String String
