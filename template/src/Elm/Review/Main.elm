@@ -10,12 +10,12 @@ import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
-import Elm.Review.FileFetch as FileFetch
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.Flags as Flags exposing (FixMode(..), Flags, ReportMode(..))
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
+import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
 import Elm.Review.UnsuppressMode exposing (UnsuppressMode)
@@ -155,7 +155,7 @@ type alias Model =
     , debug : Bool
 
     --
-    , fileFetch : FileFetch.Model
+    , store : Store.Model
 
     --
     , rules : List Rule
@@ -245,7 +245,7 @@ type ModelWrapper
 
 
 type Msg
-    = FileFetchMsg FileFetch.Msg
+    = StoreMsg Store.Msg
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -302,8 +302,8 @@ initValid env fs flags rulesFromConfig =
               reviewFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review"
             }
 
-        ( fileFetch, fileFetchCmd ) =
-            FileFetch.init
+        ( store, storeCmd ) =
+            Store.init
                 { fs = fs
                 , suppress = flags.suppress
                 , runEnvironment = runEnvironment
@@ -316,7 +316,7 @@ initValid env fs flags rulesFromConfig =
             , debug = flags.debug
             , supportsColor = flags.supportsColor
             , runEnvironment = runEnvironment
-            , fileFetch = fileFetch
+            , store = store
             , rules = rules
             , fixAllRules = rules
             , project = Project.new
@@ -348,7 +348,7 @@ initValid env fs flags rulesFromConfig =
     ( Running model
     , Cmd.batch
         [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-        , Cmd.map FileFetchMsg fileFetchCmd
+        , Cmd.map StoreMsg storeCmd
         ]
     )
 
@@ -525,32 +525,32 @@ updateWrapper msg wrapper =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FileFetchMsg subMsg ->
+        StoreMsg storeMsg ->
             let
-                ( fileFetch, cmd ) =
-                    FileFetch.update
-                        { msg = subMsg
+                ( store, cmd ) =
+                    Store.update
+                        { msg = storeMsg
                         , fs = model.fs
                         , runEnvironment = model.runEnvironment
                         , stderr = model.env.stderr
                         , ignoreProblematicDependencies = model.ignoreProblematicDependencies
                         , abortWithDetails = abortWithDetails model.env model.supportsColor
                         }
-                        model.fileFetch
+                        model.store
             in
             startReviewIfNoPendingTasks
                 ( { model
-                    | fileFetch = fileFetch
-                    , project = FileFetch.project fileFetch
-                    , suppressedErrors = FileFetch.suppressedErrors fileFetch
+                    | store = store
+                    , project = Store.project store
+                    , suppressedErrors = Store.suppressedErrors store
                   }
-                , Cmd.map FileFetchMsg cmd
+                , Cmd.map StoreMsg cmd
                 )
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd msg ) -> ( Model, Cmd msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
-    if model.isInitialRun && FileFetch.hasPendingTasks model.fileFetch then
+    if model.isInitialRun && Store.hasPendingTasks model.store then
         if model.suppress then
             let
                 newModel : Model
