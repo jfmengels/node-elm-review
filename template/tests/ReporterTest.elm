@@ -1,5 +1,6 @@
 module ReporterTest exposing (multipleErrorsIncludingGlobalErrorTest, suite)
 
+import Array
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
@@ -33,12 +34,12 @@ noErrorTest =
     test "report that all is fine when there are no errors" <|
         \() ->
             [ { path = Reporter.FilePath "src/FileA.elm"
-              , source = Reporter.Source """module FileA exposing (a)
+              , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
               , errors = []
               }
             , { path = Reporter.FilePath "src/FileB.elm"
-              , source = Reporter.Source """module FileB exposing (a)
+              , source = source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
               , errors = []
               }
@@ -63,12 +64,12 @@ noErrorButPreviousTest =
     test "report that all is fine when there are no errors but some have been fixed" <|
         \() ->
             [ { path = Reporter.FilePath "src/FileA.elm"
-              , source = Reporter.Source """module FileA exposing (a)
+              , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
               , errors = []
               }
             , { path = Reporter.FilePath "src/FileB.elm"
-              , source = Reporter.Source """module FileB exposing (a)
+              , source = source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
               , errors = []
               }
@@ -93,7 +94,7 @@ singleErrorTest =
     test "report a single error in a file" <|
         \() ->
             [ { path = Reporter.FilePath "src/FileA.elm"
-              , source = Reporter.Source """module FileA exposing (a)
+              , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
               , errors =
                     [ { ruleName = "NoDebug"
@@ -159,7 +160,7 @@ singleCompactErrorTest =
     test "report a single error in a file in compact mode" <|
         \() ->
             [ { path = Reporter.FilePath "src/FileA.elm"
-              , source = Reporter.Source """module FileA exposing (a)
+              , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
               , errors =
                     [ { ruleName = "NoDebug"
@@ -217,7 +218,7 @@ multilineErrorTest =
     test "report a single error spanning multiple lines" <|
         \() ->
             [ { path = Reporter.FilePath "src/FileA.elm"
-              , source = Reporter.Source """module FileA exposing (a)
+              , source = source """module FileA exposing (a)
 
 
 a =
@@ -307,7 +308,7 @@ multipleErrorsTests =
                         ]
                 in
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1
 b = foo <| Debug.log "other debug" 1"""
                   , errors =
@@ -406,7 +407,7 @@ I found [2 errors](#FF0000) in [1 file](#E8C338)."""
         , test "report errors in multiple files" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -428,7 +429,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 , { path = Reporter.FilePath "src/FileB.elm"
-                  , source = Reporter.Source """module FileB exposing (a)
+                  , source = source """module FileB exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -450,7 +451,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 , { path = Reporter.FilePath "src/FileC.elm"
-                  , source = Reporter.Source """module FileC exposing (a)
+                  , source = source """module FileC exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -586,7 +587,7 @@ fixAvailableTest =
         [ test "should mention a fix is available when the error provides one" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -645,7 +646,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "should mention a fix is failing when the error provides one in fix mode (succinct)" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -722,7 +723,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "should mention a fix is failing when the error provides one in fix mode (detailed)" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -811,7 +812,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "should mention an error's fix fails when it's known in review mode" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1079,7 +1080,7 @@ Details
             "\n\nI found [1 error](#FF0000) in [1 file](#E8C338)."
     in
     [ { path = Reporter.FilePath "src/FileA.elm"
-      , source = Reporter.Source """module FileA exposing (a)
+      , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
       , errors =
             [ { ruleName = "NoDebug"
@@ -1126,7 +1127,7 @@ globalErrorTest =
     test "report a global error that has no source code" <|
         \() ->
             [ { path = Reporter.Global
-              , source = Reporter.Source ""
+              , source = source ""
               , errors =
                     [ { ruleName = "NoDebug"
                       , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
@@ -1175,7 +1176,7 @@ multipleErrorsIncludingGlobalErrorTest =
     test "report a global error that has no source code" <|
         \() ->
             [ { path = Reporter.Global
-              , source = Reporter.Source ""
+              , source = source ""
               , errors =
                     [ { ruleName = "NoDebug"
                       , ruleLink = Just "https://package.elm-lang.org/packages/author/package/1.0.0/NoDebug"
@@ -1196,7 +1197,7 @@ multipleErrorsIncludingGlobalErrorTest =
                     ]
               }
             , { path = Reporter.FilePath "src/FileA.elm"
-              , source = Reporter.Source """module FileA exposing (a)
+              , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
               , errors =
                     [ { ruleName = "NoDebug"
@@ -1333,7 +1334,7 @@ There are still [2 suppressed errors](#FFA500) to address, and you just fixed [4
         , test "report report suppressed errors" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1398,7 +1399,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "report report all errors when unsuppressMode is UnsuppressAll" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1420,7 +1421,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 , { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug2"
@@ -1522,7 +1523,7 @@ I found [2 errors](#FF0000) in [2 files](#E8C338)."""
         , test "report not show suppressed warning when the rules that report errors are unsuppressed" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1544,7 +1545,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 , { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug2"
@@ -1646,7 +1647,7 @@ I found [2 errors](#FF0000) in [2 files](#E8C338)."""
         , test "report show suppressed warning when getting errors from suppressed rules that are not the unsuppressed ones" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1668,7 +1669,7 @@ a = Debug.log "debug" 1"""
                         ]
                   }
                 , { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug2"
@@ -1780,7 +1781,7 @@ unicodeTests =
         [ test "add underline at the correct position when unicode characters are in front of the underlined string" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = "🔧" <| Debug.log "debug" 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1835,7 +1836,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "add underline at the correct position when unicode characters are contained in the underlined string" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = "🔧" ++ 1"""
                   , errors =
                         [ { ruleName = "NoDebug"
@@ -1890,7 +1891,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "add underline at the correct position in multiline strings" <|
             \() ->
                 [ { path = Reporter.FilePath "src/FileA.elm"
-                  , source = Reporter.Source """module FileA exposing (a)
+                  , source = source """module FileA exposing (a)
 a = "🔧" ++ "🔧
     "🔧" ++ "🔧"
   yes" ++ 1"""
@@ -1953,3 +1954,11 @@ Some description.
 I found [1 error](#FF0000) in [1 file](#E8C338)."""
                         }
         ]
+
+
+source : String -> Reporter.Source
+source string =
+    string
+        |> String.lines
+        |> Array.fromList
+        |> Reporter.Source

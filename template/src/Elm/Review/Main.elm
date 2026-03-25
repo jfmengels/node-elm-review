@@ -1,5 +1,6 @@
 port module Elm.Review.Main exposing (main)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Elm.Docs
 import Elm.Project
@@ -1164,7 +1165,7 @@ encodeConfigurationError detailsMode error =
         , ( "message", Encode.string error.message )
         , ( "details", Encode.list Encode.string error.details )
         , ( "region", encodeRange Range.empty )
-        , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source "") error) )
+        , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source Array.empty) error) )
         ]
 
 
@@ -1265,7 +1266,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                                 Project.Edited { after } ->
                                     Just
                                         { path = Reporter.FilePath path
-                                        , source = Reporter.Source after
+                                        , source = Reporter.Source (after |> String.lines |> Array.fromList)
                                         }
 
                                 Project.Removed ->
@@ -1314,7 +1315,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
 pathAndSource : Project -> String -> { path : Reporter.FilePath, source : Reporter.Source }
 pathAndSource project path =
     if path == "GLOBAL ERROR" then
-        { path = Reporter.Global, source = Reporter.Source "" }
+        { path = Reporter.Global, source = Reporter.Source Array.empty }
 
     else
         let
@@ -1333,8 +1334,17 @@ pathAndSource project path =
 
                         Nothing ->
                             Dict.get path (Project.extraFiles project)
+
+            fileLines : Array String
+            fileLines =
+                case fileSource of
+                    Just source ->
+                        source |> String.lines |> Array.fromList
+
+                    Nothing ->
+                        Array.empty
         in
-        { path = Reporter.FilePath path, source = Reporter.Source (Maybe.withDefault "" fileSource) }
+        { path = Reporter.FilePath path, source = Reporter.Source fileLines }
 
 
 sendFixPromptForMultipleFixes : Bool -> Model -> List FixedFile -> Int -> Cmd msg
@@ -1381,7 +1391,7 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
                         Project.Edited { after } ->
                             Just
                                 { path = Reporter.FilePath path
-                                , source = Reporter.Source after
+                                , source = Reporter.Source (after |> String.lines |> Array.fromList)
                                 }
 
                         Project.Removed ->
@@ -1462,7 +1472,7 @@ encodeChangedFile changedFile =
     in
     Encode.object
         [ ( "path", encodeFilePath changedFile.path )
-        , ( "source", Encode.string source )
+        , ( "source", Encode.string (source |> Array.toList |> String.join "\n") )
         ]
 
 
@@ -1521,7 +1531,7 @@ groupErrorsByFile mapper project errors =
         List.map
             (\error ->
                 { path = Reporter.FilePath (Rule.errorFilePath error)
-                , source = Reporter.Source ""
+                , source = Reporter.Source Array.empty
                 , errors = [ mapper error ]
                 }
             )
@@ -1529,7 +1539,7 @@ groupErrorsByFile mapper project errors =
 
     else
         let
-            findSource_ : String -> String
+            findSource_ : String -> Array String
             findSource_ =
                 findSource project
         in
@@ -1585,7 +1595,7 @@ orderFiles ( path, _ ) =
         ( -1, path )
 
 
-findSource : Project -> String -> String
+findSource : Project -> String -> Array String
 findSource project =
     let
         elmModules : Dict String String
@@ -1605,25 +1615,25 @@ findSource project =
     \filePath ->
         case Dict.get filePath elmModules of
             Just source ->
-                source
+                source |> String.lines |> Array.fromList
 
             Nothing ->
                 case Dict.get filePath (Project.extraFiles project) of
                     Just source ->
-                        source
+                        source |> String.lines |> Array.fromList
 
                     Nothing ->
                         case maybeWithCondition .path .raw filePath elmJson of
                             Just source ->
-                                source
+                                source |> String.lines |> Array.fromList
 
                             Nothing ->
                                 case maybeWithCondition .path .content filePath readme of
                                     Just source ->
-                                        source
+                                        source |> String.lines |> Array.fromList
 
                                     Nothing ->
-                                        ""
+                                        Array.empty
 
 
 maybeWithCondition : (a -> String) -> (a -> String) -> String -> Maybe a -> Maybe String

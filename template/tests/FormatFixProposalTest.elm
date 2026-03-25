@@ -1,5 +1,6 @@
 module FormatFixProposalTest exposing (suite)
 
+import Array
 import Elm.Review.FixExplanation as FixExplanation
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import FormatTester exposing (expect)
@@ -79,7 +80,7 @@ some =
                     file : File
                     file =
                         { path = Reporter.FilePath path
-                        , source = Reporter.Source fileBefore
+                        , source = source fileBefore
                         }
                 in
                 Reporter.formatSingleFixProposal
@@ -156,7 +157,7 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
                     file : File
                     file =
                         { path = Reporter.FilePath path
-                        , source = Reporter.Source fileBefore
+                        , source = source fileBefore
                         }
 
                     path : String
@@ -258,7 +259,7 @@ Some details
                     file : File
                     file =
                         { path = Reporter.FilePath path
-                        , source = Reporter.Source fileBefore
+                        , source = source fileBefore
                         }
 
                     path : String
@@ -361,7 +362,7 @@ b =
                     file : File
                     file =
                         { path = Reporter.FilePath path
-                        , source = Reporter.Source fileBefore
+                        , source = source fileBefore
                         }
                 in
                 Reporter.formatSingleFixProposal
@@ -442,7 +443,7 @@ b =
                     file : File
                     file =
                         { path = Reporter.FilePath path
-                        , source = Reporter.Source fileBefore
+                        , source = source fileBefore
                         }
                 in
                 Reporter.formatSingleFixProposal
@@ -547,7 +548,7 @@ b =
                     file : File
                     file =
                         { path = Reporter.FilePath path
-                        , source = Reporter.Source fileBefore
+                        , source = source fileBefore
                         }
                 in
                 Reporter.formatSingleFixProposal
@@ -629,3 +630,11 @@ Some details
 """
                         }
         ]
+
+
+source : String -> Reporter.Source
+source string =
+    string
+        |> String.lines
+        |> Array.fromList
+        |> Reporter.Source

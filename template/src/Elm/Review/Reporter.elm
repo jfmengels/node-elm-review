@@ -96,7 +96,7 @@ filePathToString path_ =
 
 
 type Source
-    = Source String
+    = Source (Array String)
 
 
 {-| Represents styled text.
@@ -274,7 +274,7 @@ formatConfigurationErrors { detailsMode, configurationErrors } =
         filesWithErrors : List FileWithError
         filesWithErrors =
             [ { path = ConfigurationError
-              , source = Source ""
+              , source = Source Array.empty
               , errors = configurationErrors
               }
             ]
@@ -772,7 +772,7 @@ After applying the fixes, """ ++ filePath)
                         |> Text.inYellow
                   , Text.from "\n\n"
                   ]
-                , codeExtract (Source invalid.source)
+                , codeExtract (Source (String.lines invalid.source |> Array.fromList))
                     { start = { row = firstParsingError.row, column = firstParsingError.col }
                     , end = { row = firstParsingError.row, column = firstParsingError.col + 1 }
                     }
@@ -961,14 +961,8 @@ compareRange a b =
 
 
 codeExtract : Source -> Range -> Maybe String -> List Text
-codeExtract (Source source) { start, end } messageAfterCarets =
+codeExtract (Source lines) { start, end } messageAfterCarets =
     let
-        lines : Array String
-        lines =
-            source
-                |> String.lines
-                |> Array.fromList
-
         getRowAtLine : Int -> String
         getRowAtLine rowIndex =
             case Array.get rowIndex lines of
