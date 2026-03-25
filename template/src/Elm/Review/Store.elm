@@ -1,4 +1,4 @@
-module Elm.Review.FileFetch exposing
+module Elm.Review.Store exposing
     ( Model(..)
     , Msg
     , hasPendingTasks
