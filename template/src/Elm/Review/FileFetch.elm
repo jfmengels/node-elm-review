@@ -96,7 +96,7 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
 
         decrementTaskCount : () -> UpdateOutput
         decrementTaskCount () =
-            { fileFetch = toModel (pendingTaskCount - 1)
+            { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
             , project = project
             , suppressedErrors = suppressedErrors
             , cmd = Cmd.none
@@ -143,7 +143,7 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
                             List.map (fetchElmFiles fs) sourceDirectories
                                 |> addDependencies
                     in
-                    { fileFetch = toModel (pendingTaskCount + List.length tasks - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount + List.length tasks - 1) fileFetch
                     , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } project
                     , suppressedErrors = suppressedErrors
                     , cmd = Cmd.batch tasks
@@ -153,7 +153,7 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
                     decrementTaskCount ()
 
         ReceivedElmJson _ (Err err) ->
-            { fileFetch = toModel (pendingTaskCount - 1)
+            { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
             , project = project
             , suppressedErrors = suppressedErrors
             , cmd =
@@ -166,7 +166,7 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
         ReceivedReadme path result ->
             case result of
                 Ok content ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = Project.addReadme { path = path, content = content } project
                     , suppressedErrors = suppressedErrors
                     , cmd = Cmd.none
@@ -184,7 +184,7 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
                             (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson)
                     of
                         Ok dependency ->
-                            { fileFetch = toModel (pendingTaskCount - 1)
+                            { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                             , project = Project.addDependency dependency project
                             , suppressedErrors = suppressedErrors
                             , cmd = Cmd.none
@@ -195,7 +195,7 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
                                 decrementTaskCount ()
 
                             else
-                                { fileFetch = toModel (pendingTaskCount - 1)
+                                { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                                 , project = project
                                 , suppressedErrors = suppressedErrors
                                 , cmd =
@@ -231,7 +231,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         ReceivedElmFileList directory result ->
             case result of
                 Ok ( files, _ ) ->
-                    { fileFetch = toModel (pendingTaskCount + List.length files - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount + List.length files - 1) fileFetch
                     , project = project
                     , suppressedErrors = suppressedErrors
                     , cmd =
@@ -240,14 +240,14 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     }
 
                 Err (Fs.NotFound _) ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = project
                     , suppressedErrors = suppressedErrors
                     , cmd = Cmd.none
                     }
 
                 Err err ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = project
                     , suppressedErrors = suppressedErrors
 
@@ -258,14 +258,14 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         ReceivedElmFile path result ->
             case result of
                 Ok source ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = Project.addModule { path = path, source = source } project
                     , suppressedErrors = suppressedErrors
                     , cmd = Cmd.none
                     }
 
                 Err err ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = project
                     , suppressedErrors = suppressedErrors
 
@@ -276,7 +276,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         ReceivedSuppressedErrorsList directory result ->
             case result of
                 Ok ( files, _ ) ->
-                    { fileFetch = toModel (pendingTaskCount + List.length files - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount + List.length files - 1) fileFetch
                     , project = project
                     , suppressedErrors = suppressedErrors
                     , cmd =
@@ -305,14 +305,14 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             -- Remove leading "./" and trailing ".json"
                             String.slice 2 -5 path
                     in
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = project
                     , suppressedErrors = SuppressedErrors.addFromFile ruleName contents suppressedErrors
                     , cmd = Cmd.none
                     }
 
                 Err err ->
-                    { fileFetch = toModel (pendingTaskCount - 1)
+                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
                     , project = project
                     , suppressedErrors = suppressedErrors
 
@@ -321,11 +321,9 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     }
 
 
-toModel : PendingTaskCount -> Model
-toModel pendingTaskCount =
-    Model
-        { pendingTaskCount = Basics.max 0 pendingTaskCount
-        }
+setPendingTaskCount : PendingTaskCount -> Model -> Model
+setPendingTaskCount pendingTaskCount (Model model) =
+    Model { model | pendingTaskCount = Basics.max 0 pendingTaskCount }
 
 
 fetchElmFile : FileSystem -> String -> Cmd Msg
