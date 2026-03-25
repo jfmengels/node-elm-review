@@ -541,8 +541,8 @@ update msg model =
             startReviewIfNoPendingTasks
                 ( { model
                     | fileFetch = fileFetch
-                    , project = FileFetch.getProject fileFetch
-                    , suppressedErrors = FileFetch.getSuppressedErrors fileFetch
+                    , project = FileFetch.project fileFetch
+                    , suppressedErrors = FileFetch.suppressedErrors fileFetch
                   }
                 , Cmd.map FileFetchMsg cmd
                 )
