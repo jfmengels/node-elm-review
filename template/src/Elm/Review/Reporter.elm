@@ -159,9 +159,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
         let
             filesWithErrors : List FileWithError
             filesWithErrors =
-                files
-                    |> List.filter (\{ errors } -> not (List.isEmpty errors))
-                    |> List.sortBy (\{ path } -> filePathToString path)
+                List.sortBy (\{ path } -> filePathToString path) files
 
             { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)

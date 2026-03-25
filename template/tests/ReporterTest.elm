@@ -114,11 +114,6 @@ a = Debug.log "debug" 1"""
                       }
                     ]
               }
-            , { path = Reporter.FilePath "src/FileB.elm"
-              , source = Reporter.Source """module FileB exposing (a)
-a = Debug.log "debug" 1"""
-              , errors = []
-              }
             ]
                 |> Reporter.formatReport
                     { suppressedErrors = SuppressedErrors.empty
@@ -184,11 +179,6 @@ a = Debug.log "debug" 1"""
                       , suppressed = False
                       }
                     ]
-              }
-            , { path = Reporter.FilePath "src/FileB.elm"
-              , source = Reporter.Source """module FileB exposing (a)
-a = Debug.log "debug" 1"""
-              , errors = []
               }
             ]
                 |> Reporter.formatReport
@@ -348,11 +338,6 @@ b = foo <| Debug.log "other debug" 1"""
                           , suppressed = False
                           }
                         ]
-                  }
-                , { path = Reporter.FilePath "src/FileB.elm"
-                  , source = Reporter.Source """module FileB exposing (a)
-a = Debug.log "debug" 1"""
-                  , errors = []
                   }
                 ]
                     |> Reporter.formatReport
