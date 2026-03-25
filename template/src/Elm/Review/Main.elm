@@ -1539,7 +1539,7 @@ groupErrorsByFile mapper project errors =
 
     else
         let
-            findSource_ : String -> Array String
+            findSource_ : String -> String
             findSource_ =
                 findSource project
         in
@@ -1554,28 +1554,19 @@ groupErrorsByFile mapper project errors =
                     Nothing ->
                         Dict.insert
                             path
-                            { path =
+                            { source =
                                 if path == "GLOBAL ERROR" then
-                                    Reporter.Global
+                                    ""
 
                                 else
-                                    Reporter.FilePath path
-                            , source =
-                                Reporter.Source
-                                    (if path == "GLOBAL ERROR" then
-                                        Array.empty
-
-                                     else
-                                        findSource_ path
-                                    )
+                                    findSource_ path
                             , errors = [ mapper error ]
                             }
                             dict
 
                     Just entry ->
                         Dict.insert path
-                            { path = entry.path
-                            , source = entry.source
+                            { source = entry.source
                             , errors = mapper error :: entry.errors
                             }
                             dict
@@ -1584,7 +1575,23 @@ groupErrorsByFile mapper project errors =
             errors
             |> Dict.toList
             |> List.sortBy orderFiles
-            |> List.map Tuple.second
+            |> List.map
+                (\( path, value ) ->
+                    { path =
+                        if path == "GLOBAL ERROR" then
+                            Reporter.Global
+
+                        else
+                            Reporter.FilePath path
+                    , source =
+                        if value.source == "" then
+                            Reporter.Source Array.empty
+
+                        else
+                            value.source |> String.lines |> Array.fromList |> Reporter.Source
+                    , errors = value.errors
+                    }
+                )
 
 
 orderFiles : ( String, b ) -> ( Int, String )
@@ -1602,7 +1609,7 @@ orderFiles ( path, _ ) =
         ( -1, path )
 
 
-findSource : Project -> String -> Array String
+findSource : Project -> String -> String
 findSource project =
     let
         elmModules : Dict String String
@@ -1622,25 +1629,25 @@ findSource project =
     \filePath ->
         case Dict.get filePath elmModules of
             Just source ->
-                source |> String.lines |> Array.fromList
+                source
 
             Nothing ->
                 case Dict.get filePath (Project.extraFiles project) of
                     Just source ->
-                        source |> String.lines |> Array.fromList
+                        source
 
                     Nothing ->
                         case maybeWithCondition .path .raw filePath elmJson of
                             Just source ->
-                                source |> String.lines |> Array.fromList
+                                source
 
                             Nothing ->
                                 case maybeWithCondition .path .content filePath readme of
                                     Just source ->
-                                        source |> String.lines |> Array.fromList
+                                        source
 
                                     Nothing ->
-                                        Array.empty
+                                        ""
 
 
 maybeWithCondition : (a -> String) -> (a -> String) -> String -> Maybe a -> Maybe String
