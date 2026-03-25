@@ -31,7 +31,7 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
-import Elm.Syntax.Range exposing (Location)
+import Elm.Syntax.Range as Range exposing (Location)
 import Json.Decode
 import Parser
 import Review.Fix
@@ -526,12 +526,16 @@ formatErrorWithExtract detailsMode fixExplanation mode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
-            case codeExtract source error.range Nothing of
-                [] ->
-                    []
+            if error.range == Range.empty then
+                []
 
-                sourceCodeExtract ->
-                    Text.from "\n\n" :: sourceCodeExtract
+            else
+                case codeExtract source error.range Nothing of
+                    [] ->
+                        []
+
+                    sourceCodeExtract ->
+                        Text.from "\n\n" :: sourceCodeExtract
 
         details : List Text
         details =
