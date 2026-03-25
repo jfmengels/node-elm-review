@@ -22,7 +22,9 @@ import Worker.Capabilities exposing (Console)
 
 
 type Model
-    = Model PendingTaskCount
+    = Model
+        { pendingTaskCount : PendingTaskCount
+        }
 
 
 type alias PendingTaskCount =
@@ -45,13 +47,13 @@ init { fs, suppress, runEnvironment } =
                     Just (fetchSuppressionFiles fs (RunEnvironment.suppressionFolder runEnvironment))
                 ]
     in
-    ( Model (List.length tasks)
+    ( Model { pendingTaskCount = List.length tasks }
     , Cmd.batch tasks
     )
 
 
 hasPendingTasks : Model -> Bool
-hasPendingTasks (Model pendingTaskCount) =
+hasPendingTasks (Model { pendingTaskCount }) =
     pendingTaskCount == 0
 
 
@@ -89,7 +91,7 @@ type alias UpdateOutput =
 update : UpdateInput -> UpdateOutput
 update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, ignoreProblematicDependencies, abortWithDetails } =
     let
-        (Model pendingTaskCount) =
+        (Model { pendingTaskCount }) =
             fileFetch
 
         decrementTaskCount : () -> UpdateOutput
@@ -321,7 +323,9 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
 toModel : PendingTaskCount -> Model
 toModel pendingTaskCount =
-    Model (Basics.max 0 pendingTaskCount)
+    Model
+        { pendingTaskCount = Basics.max 0 pendingTaskCount
+        }
 
 
 fetchElmFile : FileSystem -> String -> Cmd Msg
