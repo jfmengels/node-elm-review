@@ -1,10 +1,10 @@
 module Elm.Review.FileFetch exposing
     ( Model(..)
     , Msg
-    , getProject
-    , getSuppressedErrors
     , hasPendingTasks
     , init
+    , project
+    , suppressedErrors
     , update
     )
 
@@ -104,14 +104,11 @@ update inputs (Model model) =
 updateInner : UpdateInput -> ModelData -> ( ModelData, Cmd Msg )
 updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWithDetails } model =
     let
-        { pendingTaskCount, project, suppressedErrors } =
-            model
-
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
-            ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-              , project = project
-              , suppressedErrors = suppressedErrors
+            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , project = model.project
+              , suppressedErrors = model.suppressedErrors
               }
             , Cmd.none
             )
@@ -157,9 +154,9 @@ updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, ab
                             List.map (fetchElmFiles fs) sourceDirectories
                                 |> addDependencies
                     in
-                    ( { pendingTaskCount = minimum (pendingTaskCount + List.length tasks - 1)
-                      , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length tasks - 1)
+                      , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                     , Cmd.batch tasks
                     )
@@ -168,9 +165,9 @@ updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, ab
                     decrementTaskCount ()
 
         ReceivedElmJson _ (Err err) ->
-            ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-              , project = project
-              , suppressedErrors = suppressedErrors
+            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , project = model.project
+              , suppressedErrors = model.suppressedErrors
               }
             , Cmd.batch
                 [ Cli.println stderr (errorToString err)
@@ -181,9 +178,9 @@ updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, ab
         ReceivedReadme path result ->
             case result of
                 Ok content ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                      , project = Project.addReadme { path = path, content = content } project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , project = Project.addReadme { path = path, content = content } model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                     , Cmd.none
                     )
@@ -200,9 +197,9 @@ updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, ab
                             (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson)
                     of
                         Ok dependency ->
-                            ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                              , project = Project.addDependency dependency project
-                              , suppressedErrors = suppressedErrors
+                            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , project = Project.addDependency dependency model.project
+                              , suppressedErrors = model.suppressedErrors
                               }
                             , Cmd.none
                             )
@@ -212,9 +209,9 @@ updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, ab
                                 decrementTaskCount ()
 
                             else
-                                ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                                  , project = project
-                                  , suppressedErrors = suppressedErrors
+                                ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                                  , project = model.project
+                                  , suppressedErrors = model.suppressedErrors
                                   }
                                 , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                                     abortWithDetails
@@ -248,9 +245,9 @@ If I am mistaken about the nature of problem, please open a bug report at https:
         ReceivedElmFileList directory result ->
             case result of
                 Ok ( files, _ ) ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount + List.length files - 1)
-                      , project = project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
+                      , project = model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                     , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
                         |> Cmd.batch
@@ -260,9 +257,9 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     decrementTaskCount ()
 
                 Err err ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                      , project = project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , project = model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                       -- TODO Exit?
                     , Cli.println stderr (errorToString err)
@@ -271,17 +268,17 @@ If I am mistaken about the nature of problem, please open a bug report at https:
         ReceivedElmFile path result ->
             case result of
                 Ok source ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                      , project = Project.addModule { path = path, source = source } project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , project = Project.addModule { path = path, source = source } model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                     , Cmd.none
                     )
 
                 Err err ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                      , project = project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , project = model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                     , -- TODO Exit?
                       Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
@@ -290,9 +287,9 @@ If I am mistaken about the nature of problem, please open a bug report at https:
         ReceivedSuppressedErrorsList directory result ->
             case result of
                 Ok ( files, _ ) ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount + List.length files - 1)
-                      , project = project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
+                      , project = model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                     , List.map
                         (\filePath ->
@@ -319,17 +316,17 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                             -- Remove leading "./" and trailing ".json"
                             String.slice 2 -5 path
                     in
-                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                      , project = project
-                      , suppressedErrors = SuppressedErrors.addFromFile ruleName contents suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , project = model.project
+                      , suppressedErrors = SuppressedErrors.addFromFile ruleName contents model.suppressedErrors
                       }
                     , Cmd.none
                     )
 
                 Err err ->
-                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
-                      , project = project
-                      , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , project = model.project
+                      , suppressedErrors = model.suppressedErrors
                       }
                       -- TODO Exit?
                     , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
@@ -341,14 +338,14 @@ minimum =
     Basics.max 0
 
 
-getProject : Model -> Project
-getProject (Model { project }) =
-    project
+project : Model -> Project
+project (Model model) =
+    model.project
 
 
-getSuppressedErrors : Model -> SuppressedErrors
-getSuppressedErrors (Model { suppressedErrors }) =
-    suppressedErrors
+suppressedErrors : Model -> SuppressedErrors
+suppressedErrors (Model model) =
+    model.suppressedErrors
 
 
 fetchElmFile : FileSystem -> String -> Cmd Msg
