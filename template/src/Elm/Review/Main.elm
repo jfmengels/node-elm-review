@@ -1505,6 +1505,16 @@ groupErrorsByFile mapper project errors =
     if List.isEmpty errors then
         []
 
+    else if not (List.isEmpty (Project.modulesThatFailedToParse project)) then
+        List.map
+            (\error ->
+                { path = Reporter.FilePath (Rule.errorFilePath error)
+                , source = Reporter.Source ""
+                , errors = [ mapper error ]
+                }
+            )
+            errors
+
     else
         let
             files : Dict String String
@@ -1554,7 +1564,6 @@ collectFiles project =
         |> addMaybe (\{ path, raw } acc -> Dict.insert path raw acc) (Project.elmJson project)
         |> addMaybe (\{ path, content } acc -> Dict.insert path content acc) (Project.readme project)
         |> addSingle "GLOBAL ERROR"
-        |> addMultiple (Project.modulesThatFailedToParse project)
         |> addFromDict (Project.extraFiles project)
 
 
