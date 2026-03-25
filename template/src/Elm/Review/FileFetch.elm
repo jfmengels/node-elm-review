@@ -24,6 +24,7 @@ import Worker.Capabilities exposing (Console)
 type Model
     = Model
         { pendingTaskCount : PendingTaskCount
+        , project : Project
         }
 
 
@@ -47,7 +48,10 @@ init { fs, suppress, runEnvironment } =
                     Just (fetchSuppressionFiles fs (RunEnvironment.suppressionFolder runEnvironment))
                 ]
     in
-    ( Model { pendingTaskCount = List.length tasks }
+    ( Model
+        { pendingTaskCount = List.length tasks
+        , project = Project.new
+        }
     , Cmd.batch tasks
     )
 
