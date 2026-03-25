@@ -527,24 +527,22 @@ update msg model =
     case msg of
         FileFetchMsg subMsg ->
             let
-                { fileFetch, project, suppressedErrors, cmd } =
+                ( fileFetch, cmd ) =
                     FileFetch.update
                         { msg = subMsg
                         , fs = model.fs
                         , runEnvironment = model.runEnvironment
                         , stderr = model.env.stderr
-                        , fileFetch = model.fileFetch
-                        , project = model.project
-                        , suppressedErrors = model.suppressedErrors
                         , ignoreProblematicDependencies = model.ignoreProblematicDependencies
                         , abortWithDetails = abortWithDetails model.env model.supportsColor
                         }
+                        model.fileFetch
             in
             startReviewIfNoPendingTasks
                 ( { model
                     | fileFetch = fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
+                    , project = FileFetch.getProject fileFetch
+                    , suppressedErrors = FileFetch.getSuppressedErrors fileFetch
                   }
                 , Cmd.map FileFetchMsg cmd
                 )
