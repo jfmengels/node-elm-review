@@ -1560,7 +1560,14 @@ groupErrorsByFile mapper project errors =
 
                                 else
                                     Reporter.FilePath path
-                            , source = Reporter.Source (findSource_ path)
+                            , source =
+                                Reporter.Source
+                                    (if path == "GLOBAL ERROR" then
+                                        Array.empty
+
+                                     else
+                                        findSource_ path
+                                    )
                             , errors = [ mapper error ]
                             }
                             dict
