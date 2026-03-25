@@ -1543,55 +1543,52 @@ groupErrorsByFile mapper project errors =
             findSource_ =
                 findSource project
         in
-        List.foldl
-            (\error dict ->
-                let
-                    path : String
-                    path =
-                        Rule.errorFilePath error
-                in
-                case Dict.get path dict of
-                    Nothing ->
-                        Dict.insert
-                            path
-                            { source =
-                                if path == "GLOBAL ERROR" then
-                                    ""
-
-                                else
-                                    findSource_ path
-                            , errors = [ mapper error ]
-                            }
-                            dict
-
-                    Just entry ->
-                        Dict.insert path
-                            { source = entry.source
-                            , errors = mapper error :: entry.errors
-                            }
-                            dict
-            )
-            Dict.empty
-            errors
+        errors
+            |> groupPerPath
             |> Dict.toList
             |> List.sortBy orderFiles
             |> List.map
-                (\( path, value ) ->
-                    { path =
-                        if path == "GLOBAL ERROR" then
-                            Reporter.Global
+                (\( path, errorsForFile ) ->
+                    if path == "GLOBAL ERROR" then
+                        { path = Reporter.Global
+                        , source = Reporter.Source Array.empty
+                        , errors = List.map mapper errorsForFile
+                        }
 
-                        else
-                            Reporter.FilePath path
-                    , source =
-                        if value.source == "" then
-                            Reporter.Source Array.empty
+                    else
+                        { path = Reporter.FilePath path
+                        , source =
+                            if List.all (\error -> Rule.errorRange error == Range.empty) errorsForFile then
+                                Reporter.Source Array.empty
 
-                        else
-                            value.source |> String.lines |> Array.fromList |> Reporter.Source
-                    , errors = value.errors
-                    }
+                            else
+                                findSource_ path
+                                    |> String.lines
+                                    |> Array.fromList
+                                    |> Reporter.Source
+                        , errors = List.map mapper errorsForFile
+                        }
                 )
+
+
+groupPerPath : List Rule.ReviewError -> Dict String (List Rule.ReviewError)
+groupPerPath errors =
+    List.foldl
+        (\error dict ->
+            let
+                path : String
+                path =
+                    Rule.errorFilePath error
+            in
+            case Dict.get path dict of
+                Nothing ->
+                    Dict.insert path [ error ] dict
+
+                Just errorsSoFar ->
+                    Dict.insert path (error :: errorsSoFar) dict
+        )
+        Dict.empty
+        errors
 
 
 orderFiles : ( String, b ) -> ( Int, String )
