@@ -1,6 +1,8 @@
 module Elm.Review.FileFetch exposing
     ( Model(..)
     , Msg
+    , getProject
+    , getSuppressedErrors
     , hasPendingTasks
     , init
     , update
@@ -22,10 +24,14 @@ import Worker.Capabilities exposing (Console)
 
 
 type Model
-    = Model
-        { pendingTaskCount : PendingTaskCount
-        , project : Project
-        }
+    = Model ModelData
+
+
+type alias ModelData =
+    { pendingTaskCount : PendingTaskCount
+    , project : Project
+    , suppressedErrors : SuppressedErrors
+    }
 
 
 type alias PendingTaskCount =
@@ -51,6 +57,7 @@ init { fs, suppress, runEnvironment } =
     ( Model
         { pendingTaskCount = List.length tasks
         , project = Project.new
+        , suppressedErrors = SuppressedErrors.empty
         }
     , Cmd.batch tasks
     )
@@ -76,9 +83,6 @@ type alias UpdateInput =
     , fs : FileSystem
     , runEnvironment : RunEnvironment
     , stderr : Console
-    , fileFetch : Model
-    , project : Project
-    , suppressedErrors : SuppressedErrors
     , ignoreProblematicDependencies : Bool
     , abortWithDetails : { title : String, message : String } -> Cmd Msg
     }
@@ -86,25 +90,31 @@ type alias UpdateInput =
 
 type alias UpdateOutput =
     { fileFetch : Model
-    , project : Project
     , suppressedErrors : SuppressedErrors
     , cmd : Cmd Msg
     }
 
 
-update : UpdateInput -> UpdateOutput
-update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, ignoreProblematicDependencies, abortWithDetails } =
-    let
-        (Model { pendingTaskCount }) =
-            fileFetch
+update : UpdateInput -> Model -> ( Model, Cmd Msg )
+update inputs (Model model) =
+    updateInner inputs model
+        |> Tuple.mapFirst Model
 
-        decrementTaskCount : () -> UpdateOutput
+
+updateInner : UpdateInput -> ModelData -> ( ModelData, Cmd Msg )
+updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWithDetails } model =
+    let
+        { pendingTaskCount, project, suppressedErrors } =
+            model
+
+        decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
-            { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-            , project = project
-            , suppressedErrors = suppressedErrors
-            , cmd = Cmd.none
-            }
+            ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+              , project = project
+              , suppressedErrors = suppressedErrors
+              }
+            , Cmd.none
+            )
     in
     case msg of
         ReceivedElmJson path (Ok rawElmJson) ->
@@ -147,34 +157,36 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
                             List.map (fetchElmFiles fs) sourceDirectories
                                 |> addDependencies
                     in
-                    { fileFetch = setPendingTaskCount (pendingTaskCount + List.length tasks - 1) fileFetch
-                    , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } project
-                    , suppressedErrors = suppressedErrors
-                    , cmd = Cmd.batch tasks
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount + List.length tasks - 1)
+                      , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } project
+                      , suppressedErrors = suppressedErrors
+                      }
+                    , Cmd.batch tasks
+                    )
 
                 Err _ ->
                     decrementTaskCount ()
 
         ReceivedElmJson _ (Err err) ->
-            { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-            , project = project
-            , suppressedErrors = suppressedErrors
-            , cmd =
-                Cmd.batch
-                    [ Cli.println stderr (errorToString err)
-                    , Cli.exit 1
-                    ]
-            }
+            ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+              , project = project
+              , suppressedErrors = suppressedErrors
+              }
+            , Cmd.batch
+                [ Cli.println stderr (errorToString err)
+                , Cli.exit 1
+                ]
+            )
 
         ReceivedReadme path result ->
             case result of
                 Ok content ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = Project.addReadme { path = path, content = content } project
-                    , suppressedErrors = suppressedErrors
-                    , cmd = Cmd.none
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                      , project = Project.addReadme { path = path, content = content } project
+                      , suppressedErrors = suppressedErrors
+                      }
+                    , Cmd.none
+                    )
 
                 Err _ ->
                     decrementTaskCount ()
@@ -188,26 +200,27 @@ update { msg, fs, runEnvironment, stderr, fileFetch, project, suppressedErrors, 
                             (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson)
                     of
                         Ok dependency ->
-                            { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                            , project = Project.addDependency dependency project
-                            , suppressedErrors = suppressedErrors
-                            , cmd = Cmd.none
-                            }
+                            ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                              , project = Project.addDependency dependency project
+                              , suppressedErrors = suppressedErrors
+                              }
+                            , Cmd.none
+                            )
 
                         Err decodeError ->
                             if ignoreProblematicDependencies then
                                 decrementTaskCount ()
 
                             else
-                                { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                                , project = project
-                                , suppressedErrors = suppressedErrors
-                                , cmd =
-                                    if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
-                                        abortWithDetails
-                                            { title = "FOUND PROBLEMATIC DEPENDENCIES"
-                                            , message =
-                                                """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
+                                ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                                  , project = project
+                                  , suppressedErrors = suppressedErrors
+                                  }
+                                , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
+                                    abortWithDetails
+                                        { title = "FOUND PROBLEMATIC DEPENDENCIES"
+                                        , message =
+                                            """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
 
     elm-review --ignore-problematic-dependencies
 
@@ -216,17 +229,17 @@ This will ignore the problematic dependencies, and can GIVE YOU INCORRECT RESULT
 If I am mistaken about the nature of problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
 
 """
-                                                    ++ Decode.errorToString decodeError
-                                            }
+                                                ++ Decode.errorToString decodeError
+                                        }
 
-                                    else
-                                        abortWithDetails
-                                            { title = "PROBLEM READING DEPENDENCIES"
-                                            , message =
-                                                "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
-                                                    ++ Decode.errorToString decodeError
-                                            }
-                                }
+                                  else
+                                    abortWithDetails
+                                        { title = "PROBLEM READING DEPENDENCIES"
+                                        , message =
+                                            "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
+                                                ++ Decode.errorToString decodeError
+                                        }
+                                )
 
                 Err _ ->
                     -- TODO Download dependencies
@@ -235,63 +248,60 @@ If I am mistaken about the nature of problem, please open a bug report at https:
         ReceivedElmFileList directory result ->
             case result of
                 Ok ( files, _ ) ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount + List.length files - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
-                    , cmd =
-                        List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
-                            |> Cmd.batch
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount + List.length files - 1)
+                      , project = project
+                      , suppressedErrors = suppressedErrors
+                      }
+                    , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
+                        |> Cmd.batch
+                    )
 
                 Err (Fs.NotFound _) ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
-                    , cmd = Cmd.none
-                    }
+                    decrementTaskCount ()
 
                 Err err ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
-
-                    -- TODO Exit?
-                    , cmd = Cli.println stderr (errorToString err)
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                      , project = project
+                      , suppressedErrors = suppressedErrors
+                      }
+                      -- TODO Exit?
+                    , Cli.println stderr (errorToString err)
+                    )
 
         ReceivedElmFile path result ->
             case result of
                 Ok source ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = Project.addModule { path = path, source = source } project
-                    , suppressedErrors = suppressedErrors
-                    , cmd = Cmd.none
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                      , project = Project.addModule { path = path, source = source } project
+                      , suppressedErrors = suppressedErrors
+                      }
+                    , Cmd.none
+                    )
 
                 Err err ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
-
-                    -- TODO Exit?
-                    , cmd = Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                      , project = project
+                      , suppressedErrors = suppressedErrors
+                      }
+                    , -- TODO Exit?
+                      Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
+                    )
 
         ReceivedSuppressedErrorsList directory result ->
             case result of
                 Ok ( files, _ ) ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount + List.length files - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
-                    , cmd =
-                        List.map
-                            (\filePath ->
-                                Fs.readTextFile fs (directory ++ "/" ++ filePath)
-                                    |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
-                            )
-                            files
-                            |> Cmd.batch
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount + List.length files - 1)
+                      , project = project
+                      , suppressedErrors = suppressedErrors
+                      }
+                    , List.map
+                        (\filePath ->
+                            Fs.readTextFile fs (directory ++ "/" ++ filePath)
+                                |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
+                        )
+                        files
+                        |> Cmd.batch
+                    )
 
                 Err (Fs.NotFound _) ->
                     decrementTaskCount ()
@@ -309,25 +319,36 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                             -- Remove leading "./" and trailing ".json"
                             String.slice 2 -5 path
                     in
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = SuppressedErrors.addFromFile ruleName contents suppressedErrors
-                    , cmd = Cmd.none
-                    }
+                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                      , project = project
+                      , suppressedErrors = SuppressedErrors.addFromFile ruleName contents suppressedErrors
+                      }
+                    , Cmd.none
+                    )
 
                 Err err ->
-                    { fileFetch = setPendingTaskCount (pendingTaskCount - 1) fileFetch
-                    , project = project
-                    , suppressedErrors = suppressedErrors
+                    ( { pendingTaskCount = minimum (pendingTaskCount - 1)
+                      , project = project
+                      , suppressedErrors = suppressedErrors
+                      }
+                      -- TODO Exit?
+                    , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
+                    )
 
-                    -- TODO Exit?
-                    , cmd = Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
-                    }
+
+minimum : Int -> Int
+minimum =
+    Basics.max 0
 
 
-setPendingTaskCount : PendingTaskCount -> Model -> Model
-setPendingTaskCount pendingTaskCount (Model model) =
-    Model { model | pendingTaskCount = Basics.max 0 pendingTaskCount }
+getProject : Model -> Project
+getProject (Model { project }) =
+    project
+
+
+getSuppressedErrors : Model -> SuppressedErrors
+getSuppressedErrors (Model { suppressedErrors }) =
+    suppressedErrors
 
 
 fetchElmFile : FileSystem -> String -> Cmd Msg
