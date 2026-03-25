@@ -1521,40 +1521,40 @@ groupErrorsByFile mapper project errors =
             files =
                 collectFiles project
         in
-        Dict.foldr
-            (\path source acc ->
-                case collectErrorsForFile mapper path errors of
-                    [] ->
-                        acc
+        List.foldl
+            (\error dict ->
+                let
+                    path : String
+                    path =
+                        Rule.errorFilePath error
+                in
+                case Dict.get path dict of
+                    Nothing ->
+                        Dict.insert
+                            path
+                            { path =
+                                if path == "GLOBAL ERROR" then
+                                    Reporter.Global
 
-                    fileErrors ->
-                        { path =
-                            if path == "GLOBAL ERROR" then
-                                Reporter.Global
+                                else
+                                    Reporter.FilePath path
+                            , source = Reporter.Source (Maybe.withDefault "" (Dict.get path files))
+                            , errors = [ mapper error ]
+                            }
+                            dict
 
-                            else
-                                Reporter.FilePath path
-                        , source = Reporter.Source source
-                        , errors = fileErrors
-                        }
-                            :: acc
+                    Just entry ->
+                        Dict.insert path
+                            { path = entry.path
+                            , source = entry.source
+                            , errors = mapper error :: entry.errors
+                            }
+                            dict
             )
-            []
-            files
-
-
-collectErrorsForFile : (Rule.ReviewError -> a) -> String -> List Rule.ReviewError -> List a
-collectErrorsForFile mapper path errors =
-    List.foldr
-        (\error subAcc ->
-            if path == Rule.errorFilePath error then
-                mapper error :: subAcc
-
-            else
-                subAcc
-        )
-        []
-        errors
+            Dict.empty
+            errors
+            -- TODO Sort to be in the same order as before?
+            |> Dict.values
 
 
 collectFiles : Project -> Dict String String
@@ -1563,7 +1563,6 @@ collectFiles project =
         |> addMultiple (Project.modules project)
         |> addMaybe (\{ path, raw } acc -> Dict.insert path raw acc) (Project.elmJson project)
         |> addMaybe (\{ path, content } acc -> Dict.insert path content acc) (Project.readme project)
-        |> addSingle "GLOBAL ERROR"
         |> addFromDict (Project.extraFiles project)
 
 
@@ -1575,11 +1574,6 @@ addMaybe mapper maybe acc =
 
         Nothing ->
             acc
-
-
-addSingle : String -> Dict String String -> Dict String String
-addSingle path acc =
-    Dict.insert path "" acc
 
 
 addMultiple : List { a | path : String, source : String } -> Dict String String -> Dict String String
