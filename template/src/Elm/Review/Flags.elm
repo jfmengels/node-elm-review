@@ -26,6 +26,7 @@ type alias Flags =
     , watch : Bool
     , supportsColor : Bool
     , debug : Bool
+    , namespace : String
     }
 
 
@@ -132,6 +133,9 @@ applyArg arg flags =
         [ "--debug" ] ->
             Ok { flags | debug = True }
 
+        [ "--namespace", namespace ] ->
+            Ok { flags | namespace = namespace }
+
         _ ->
             Err ("Unknown flag `" ++ arg ++ "`")
 
@@ -155,4 +159,5 @@ default =
     , watch = False
     , supportsColor = True
     , debug = False
+    , namespace = "cli"
     }
