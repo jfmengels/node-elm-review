@@ -29,7 +29,6 @@ export type Ports = {
   collectFile: SendPort<ElmFile>;
   removeFile: SendPort<Path>;
   updateSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
-  collectLinks: SendPort<LinksToRuleDocs>;
   collectExtraFiles: SendPort<NonElmFiles>;
   userConfirmedFix: SendPort<FixConfirmation>;
 

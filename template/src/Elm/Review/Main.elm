@@ -63,9 +63,6 @@ port collectDependencies : (Decode.Value -> msg) -> Sub msg
 port updateSuppressedErrors : (Decode.Value -> msg) -> Sub msg
 
 
-port collectLinks : (Decode.Value -> msg) -> Sub msg
-
-
 port cacheFile : Encode.Value -> Cmd msg
 
 
@@ -158,7 +155,6 @@ type alias Model =
     , rules : List Rule
     , fixAllRules : List Rule
     , isInitialRun : Bool
-    , links : Dict String String
     , fixMode : FixMode
     , fixLimit : Maybe Int
     , fixExplanation : FixExplanation
@@ -315,7 +311,6 @@ initValid env fs flags rulesFromConfig =
             , rules = rules
             , fixAllRules = rules
             , isInitialRun = True
-            , links = Dict.empty
             , fixAllResultProject = Project.new
             , fixMode = flags.fixMode
             , fixLimit = flags.fixLimit
@@ -496,7 +491,6 @@ type MsgOld
     | ReceivedExtraFiles Decode.Value
     | ReceivedDependencies Decode.Value
     | UpdateSuppressedErrors Decode.Value
-    | ReceivedLinks Decode.Value
     | GotRequestToReview
     | GotRequestToGenerateSuppressionErrors
     | UserConfirmedFix Decode.Value
@@ -732,14 +726,6 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 | store = Store.setSuppressedErrors suppressedErrors model.store
                                 , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode suppressedErrors model.reviewErrors
                             }
-
-        ReceivedLinks json ->
-            case Decode.decodeValue (Decode.dict Decode.string) json of
-                Err _ ->
-                    ( model, Cmd.none )
-
-                Ok links ->
-                    ( { model | links = links }, Cmd.none )
 
         GotRequestToReview ->
             { model | fixAllErrors = Dict.empty }
@@ -1047,6 +1033,10 @@ makeReport previousSuppressedErrors model =
         newSuppressedErrors : SuppressedErrors
         newSuppressedErrors =
             Store.suppressedErrors newModel.store
+
+        ruleLinks : Dict String String
+        ruleLinks =
+            Store.ruleLinks newModel.store
     in
     ( newModel
     , Cmd.batch
@@ -1055,7 +1045,7 @@ makeReport previousSuppressedErrors model =
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
-                        groupErrorsByFile (fromReviewError newSuppressedErrors newModel.links) (Store.project model.store) model.reviewErrorsAfterSuppression
+                        groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) model.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
                     { suppressedErrors = newSuppressedErrors
@@ -1083,7 +1073,7 @@ makeReport previousSuppressedErrors model =
                                 { suppressedErrors = newSuppressedErrors
                                 , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                                 }
-                                newModel.links
+                                ruleLinks
                                 newModel.detailsMode
                                 newModel.fixExplanation
                             )
@@ -1107,7 +1097,7 @@ makeReport previousSuppressedErrors model =
                             { suppressedErrors = newSuppressedErrors
                             , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                             }
-                            newModel.links
+                            ruleLinks
                             newModel.detailsMode
                             newModel.fixExplanation
                         )
@@ -1420,7 +1410,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                     model.fixExplanation
                     fileRemovalFixesEnabled
                     (pathAndSource (Store.project model.store) filePath)
-                    (fromReviewError (Store.suppressedErrors model.store) model.links error)
+                    (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
                     diffs
                     |> encodeReport
                 )
@@ -1488,7 +1478,7 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
                                         (\( fixedFile, _ ) subSubAcc ->
                                             Dict.update fixedFile
                                                 (\previousErrors ->
-                                                    fromReviewError (Store.suppressedErrors model.store) model.links error
+                                                    fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error
                                                         :: Maybe.withDefault [] previousErrors
                                                         |> Just
                                                 )
@@ -1892,7 +1882,6 @@ subscriptions =
         , collectExtraFiles ReceivedExtraFiles
         , collectDependencies ReceivedDependencies
         , updateSuppressedErrors UpdateSuppressedErrors
-        , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
         , startGeneratingSuppressions (always GotRequestToGenerateSuppressionErrors)
         , userConfirmedFix UserConfirmedFix
