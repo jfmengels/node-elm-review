@@ -3,7 +3,7 @@ module Elm.Review.Store exposing
     , Msg, update
     , isReady
     , project
-    , suppressedErrors
+    , suppressedErrors, setSuppressedErrors
     )
 
 {-|
@@ -12,7 +12,7 @@ module Elm.Review.Store exposing
 @docs Msg, update
 @docs isReady
 @docs project
-@docs suppressedErrors
+@docs suppressedErrors, setSuppressedErrors
 
 -}
 
@@ -354,6 +354,15 @@ project (Model model) =
 suppressedErrors : Model -> SuppressedErrors
 suppressedErrors (Model model) =
     model.suppressedErrors
+
+
+setSuppressedErrors : SuppressedErrors -> Model -> Model
+setSuppressedErrors newSuppressedErrors (Model model) =
+    Model
+        { pendingTaskCount = model.pendingTaskCount
+        , project = model.project
+        , suppressedErrors = newSuppressedErrors
+        }
 
 
 fetchElmFile : FileSystem -> String -> Cmd Msg
