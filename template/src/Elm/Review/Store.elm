@@ -91,7 +91,7 @@ type Msg
     | ReceivedElmFile String (Result Fs.FsError String)
     | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
-    | ReceivedRuleLinks (Dict String String)
+    | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
 
 
 type alias UpdateInput =
@@ -353,7 +353,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
                     )
 
-        ReceivedRuleLinks links ->
+        ReceivedRuleLinks { links, fromCache } ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , project = model.project
               , suppressedErrors = model.suppressedErrors
@@ -479,7 +479,7 @@ fetchRuleLinks fs runEnvironment =
                         Task.succeed Dict.empty
             )
         |> Task.onError (\_ -> Task.succeed Dict.empty)
-        |> Task.perform ReceivedRuleLinks
+        |> Task.perform (\links -> ReceivedRuleLinks { links = links, fromCache = False })
 
 
 readElmJson : FileSystem -> String -> ( Elm.Package.Name, Elm.Version.Version ) -> Task x (List ( String, String ))
