@@ -291,6 +291,8 @@ initValid env fs flags rulesFromConfig =
               elmVersion = "0.19.1"
             , -- TODO Get from somewhere
               reviewFolder = "/Users/m1/dev/node-elm-review/test/project-with-suppressed-errors/review"
+            , -- TODO Get from flags
+              namespace = flags.namespace
             }
 
         ( store, storeCmd ) =
