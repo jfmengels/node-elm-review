@@ -525,13 +525,13 @@ update msg model =
             let
                 ( store, cmd ) =
                     Store.update
-                        { msg = storeMsg
-                        , fs = model.fs
+                        { fs = model.fs
                         , runEnvironment = model.runEnvironment
                         , stderr = model.env.stderr
                         , ignoreProblematicDependencies = model.ignoreProblematicDependencies
                         , abortWithDetails = abortWithDetails model.env model.supportsColor
                         }
+                        storeMsg
                         model.store
             in
             startReviewIfNoPendingTasks
