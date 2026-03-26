@@ -2,6 +2,7 @@ module WrapperMain exposing (main)
 
 import Cli exposing (Env)
 import Fs exposing (FileSystem)
+import Wrapper.Flags as Flags
 
 
 main : Cli.Program ModelWrapper Msg
@@ -40,12 +41,22 @@ init env =
             )
 
         Ok fs ->
-            ( Running { env = env, fs = fs }
-            , Cmd.batch
-                [ Cli.println env.stdout "Hi there!"
-                , Cli.exit 0
-                ]
-            )
+            case Flags.parse env of
+                Err error ->
+                    ( Done
+                    , Cmd.batch
+                        [ Cli.println env.stderr error
+                        , Cli.exit 1
+                        ]
+                    )
+
+                Ok flags ->
+                    ( Running { env = env, fs = fs }
+                    , Cmd.batch
+                        [ Cli.println env.stdout ("Got app binary " ++ flags.appBinary)
+                        , Cli.exit 0
+                        ]
+                    )
 
 
 updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
