@@ -1,6 +1,6 @@
 module Elm.Review.Store exposing
     ( Model, init
-    , Msg, update
+    , Msg, update, UpdateInput
     , hasPendingTasks
     , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
@@ -9,14 +9,14 @@ module Elm.Review.Store exposing
 {-|
 
 @docs Model, init
-@docs Msg, update
+@docs Msg, update, UpdateInput
 @docs hasPendingTasks
 @docs project, setProject, updateProject
 @docs suppressedErrors, setSuppressedErrors
 
 -}
 
-import Cli exposing (Env)
+import Cli
 import Elm.Docs
 import Elm.Package
 import Elm.Project
@@ -26,7 +26,7 @@ import Elm.Version
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
-import Review.Project.Dependency as Dependency exposing (Dependency)
+import Review.Project.Dependency as Dependency
 import Task
 import Worker.Capabilities exposing (Console)
 
@@ -92,13 +92,6 @@ type alias UpdateInput =
     , stderr : Console
     , ignoreProblematicDependencies : Bool
     , abortWithDetails : { title : String, message : String } -> Cmd Msg
-    }
-
-
-type alias UpdateOutput =
-    { fileFetch : Model
-    , suppressedErrors : SuppressedErrors
-    , cmd : Cmd Msg
     }
 
 

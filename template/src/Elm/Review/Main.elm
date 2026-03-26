@@ -1,4 +1,4 @@
-port module Elm.Review.Main exposing (main)
+port module Elm.Review.Main exposing (ModelWrapper, Msg, main)
 
 import Array exposing (Array)
 import Cli exposing (Env)
@@ -58,9 +58,6 @@ port collectExtraFiles : (Decode.Value -> msg) -> Sub msg
 
 
 port collectDependencies : (Decode.Value -> msg) -> Sub msg
-
-
-port collectSuppressedErrors : (Decode.Value -> msg) -> Sub msg
 
 
 port updateSuppressedErrors : (Decode.Value -> msg) -> Sub msg
@@ -498,7 +495,6 @@ type MsgOld
     | ReceivedReadmeOld Decode.Value
     | ReceivedExtraFiles Decode.Value
     | ReceivedDependencies Decode.Value
-    | ReceivedSuppressedErrorsOld Decode.Value
     | UpdateSuppressedErrors Decode.Value
     | ReceivedLinks Decode.Value
     | GotRequestToReview
@@ -711,18 +707,6 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 )
                                 model.store
                       }
-                    , Cmd.none
-                    )
-
-        ReceivedSuppressedErrorsOld json ->
-            case Decode.decodeValue SuppressedErrors.decoder json of
-                Err _ ->
-                    -- TODO Report something?
-                    -- TODO Report if version is not supported
-                    ( model, Cmd.none )
-
-                Ok suppressedErrors ->
-                    ( model
                     , Cmd.none
                     )
 
@@ -1060,10 +1044,6 @@ makeReport previousSuppressedErrors model =
             else
                 ( { model | rules = model.fixAllRules }, Encode.null )
 
-        success : Bool
-        success =
-            List.isEmpty model.reviewErrorsAfterSuppression
-
         newSuppressedErrors : SuppressedErrors
         newSuppressedErrors =
             Store.suppressedErrors newModel.store
@@ -1135,7 +1115,7 @@ makeReport previousSuppressedErrors model =
         , if model.watch then
             Cmd.none
 
-          else if success then
+          else if List.isEmpty model.reviewErrorsAfterSuppression then
             Cli.exit 0
 
           else
@@ -1911,7 +1891,6 @@ subscriptions =
         , collectReadme ReceivedReadmeOld
         , collectExtraFiles ReceivedExtraFiles
         , collectDependencies ReceivedDependencies
-        , collectSuppressedErrors ReceivedSuppressedErrorsOld
         , updateSuppressedErrors UpdateSuppressedErrors
         , collectLinks ReceivedLinks
         , startReview (always GotRequestToReview)
