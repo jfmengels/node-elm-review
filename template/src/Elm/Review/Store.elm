@@ -4,6 +4,7 @@ module Elm.Review.Store exposing
     , hasPendingTasks
     , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
+    , ruleLinks
     )
 
 {-|
@@ -13,11 +14,14 @@ module Elm.Review.Store exposing
 @docs hasPendingTasks
 @docs project, setProject, updateProject
 @docs suppressedErrors, setSuppressedErrors
+@docs ruleLinks
 
 -}
 
 import Cli
+import Dict exposing (Dict)
 import Elm.Docs
+import Elm.Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
@@ -27,7 +31,7 @@ import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
-import Task
+import Task exposing (Task)
 import Worker.Capabilities exposing (Console)
 
 
@@ -39,6 +43,7 @@ type alias ModelData =
     { pendingTaskCount : PendingTaskCount
     , project : Project
     , suppressedErrors : SuppressedErrors
+    , ruleLinks : Dict String String
     }
 
 
@@ -60,12 +65,14 @@ init { fs, suppress, runEnvironment } =
 
                   else
                     Just (fetchSuppressionFiles fs (RunEnvironment.suppressionFolder runEnvironment))
+                , Just (fetchRuleLinks fs runEnvironment)
                 ]
     in
     ( Model
         { pendingTaskCount = List.length tasks
         , project = Project.new
         , suppressedErrors = SuppressedErrors.empty
+        , ruleLinks = Dict.empty
         }
     , Cmd.batch tasks
     )
@@ -84,6 +91,7 @@ type Msg
     | ReceivedElmFile String (Result Fs.FsError String)
     | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
+    | ReceivedRuleLinks (Dict String String)
 
 
 type alias UpdateInput =
@@ -109,6 +117,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , project = model.project
               , suppressedErrors = model.suppressedErrors
+              , ruleLinks = model.ruleLinks
               }
             , Cmd.none
             )
@@ -157,6 +166,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length tasks - 1)
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , Cmd.batch tasks
                     )
@@ -168,6 +178,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , project = model.project
               , suppressedErrors = model.suppressedErrors
+              , ruleLinks = model.ruleLinks
               }
             , Cmd.batch
                 [ Cli.println stderr (errorToString err)
@@ -181,6 +192,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                       , project = Project.addReadme { path = path, content = content } model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , Cmd.none
                     )
@@ -200,6 +212,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                               , project = Project.addDependency dependency model.project
                               , suppressedErrors = model.suppressedErrors
+                              , ruleLinks = model.ruleLinks
                               }
                             , Cmd.none
                             )
@@ -212,6 +225,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                                 ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                                   , project = model.project
                                   , suppressedErrors = model.suppressedErrors
+                                  , ruleLinks = model.ruleLinks
                                   }
                                 , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                                     abortWithDetails
@@ -248,6 +262,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
                         |> Cmd.batch
@@ -260,6 +275,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                       -- TODO Exit?
                     , Cli.println stderr (errorToString err)
@@ -271,6 +287,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                       , project = Project.addModule { path = path, source = source } model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , Cmd.none
                     )
@@ -279,6 +296,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , -- TODO Exit?
                       Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
@@ -290,6 +308,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , List.map
                         (\filePath ->
@@ -319,6 +338,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                       , project = model.project
                       , suppressedErrors = SuppressedErrors.addFromFile ruleName contents model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                     , Cmd.none
                     )
@@ -327,10 +347,20 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
+                      , ruleLinks = model.ruleLinks
                       }
                       -- TODO Exit?
                     , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
                     )
+
+        ReceivedRuleLinks links ->
+            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , project = model.project
+              , suppressedErrors = model.suppressedErrors
+              , ruleLinks = links
+              }
+            , Cmd.none
+            )
 
 
 minimum : Int -> Int
@@ -349,6 +379,7 @@ setProject newProject (Model model) =
         { pendingTaskCount = model.pendingTaskCount
         , project = newProject
         , suppressedErrors = model.suppressedErrors
+        , ruleLinks = model.ruleLinks
         }
 
 
@@ -358,6 +389,7 @@ updateProject updateFn (Model model) =
         { pendingTaskCount = model.pendingTaskCount
         , project = updateFn model.project
         , suppressedErrors = model.suppressedErrors
+        , ruleLinks = model.ruleLinks
         }
 
 
@@ -372,7 +404,13 @@ setSuppressedErrors newSuppressedErrors (Model model) =
         { pendingTaskCount = model.pendingTaskCount
         , project = model.project
         , suppressedErrors = newSuppressedErrors
+        , ruleLinks = model.ruleLinks
         }
+
+
+ruleLinks : Model -> Dict String String
+ruleLinks (Model model) =
+    model.ruleLinks
 
 
 fetchElmFile : FileSystem -> String -> Cmd Msg
@@ -416,6 +454,87 @@ fetchDependency fs runEnvironment packageName packageVersion =
         (Fs.readTextFile fs (directory ++ "/elm.json"))
         (Fs.readTextFile fs (directory ++ "/docs.json"))
         |> Task.attempt (ReceivedDependency packageName)
+
+
+fetchRuleLinks : FileSystem -> RunEnvironment -> Cmd Msg
+fetchRuleLinks fs runEnvironment =
+    -- TODO Use path functions
+    Fs.readTextFile fs (runEnvironment.reviewFolder ++ "/elm.json")
+        |> Task.andThen
+            (\elmJson ->
+                case Decode.decodeString Elm.Project.decoder elmJson of
+                    Ok (Elm.Project.Application { depsDirect, depsIndirect }) ->
+                        let
+                            packagesDirectory : String
+                            packagesDirectory =
+                                -- TODO Use path functions
+                                String.join "/" [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages" ]
+                        in
+                        (depsDirect ++ depsIndirect)
+                            |> List.map (readElmJson fs packagesDirectory)
+                            |> Task.sequence
+                            |> Task.map (List.concat >> Dict.fromList)
+
+                    _ ->
+                        Task.succeed Dict.empty
+            )
+        |> Task.onError (\_ -> Task.succeed Dict.empty)
+        |> Task.perform ReceivedRuleLinks
+
+
+readElmJson : FileSystem -> String -> ( Elm.Package.Name, Elm.Version.Version ) -> Task x (List ( String, String ))
+readElmJson fs packagesDirectory ( rawPackageName, rawPackageVersion ) =
+    let
+        packageName : String
+        packageName =
+            Elm.Package.toString rawPackageName
+
+        packageVersion : String
+        packageVersion =
+            Elm.Version.toString rawPackageVersion
+    in
+    -- TODO Use path functions
+    String.join "/" [ packagesDirectory, packageName, packageVersion, "elm.json" ]
+        |> Fs.readTextFile fs
+        |> Task.map
+            (\elmJson ->
+                case Decode.decodeString Elm.Project.decoder elmJson of
+                    Ok (Elm.Project.Package package) ->
+                        if packageDependsOnElmReview package.deps then
+                            moduleLinks packageName packageVersion package
+
+                        else
+                            []
+
+                    _ ->
+                        []
+            )
+        |> Task.onError (\_ -> Task.succeed [])
+
+
+packageDependsOnElmReview : Elm.Project.Deps version -> Bool
+packageDependsOnElmReview deps =
+    List.any (\( pkgName, _ ) -> Elm.Package.toString pkgName == "jfmengels/elm-review") deps
+
+
+moduleLinks : String -> String -> Elm.Project.PackageInfo -> List ( String, String )
+moduleLinks packageName packageVersion package =
+    case package.exposed of
+        Elm.Project.ExposedList names ->
+            List.map (linkToModule packageName packageVersion) names
+
+        Elm.Project.ExposedDict list ->
+            List.concatMap Tuple.second list |> List.map (linkToModule packageName packageVersion)
+
+
+linkToModule : String -> String -> Elm.Module.Name -> ( String, String )
+linkToModule dependencyName packageVersion rawModuleName =
+    let
+        moduleName : String
+        moduleName =
+            Elm.Module.toString rawModuleName
+    in
+    ( moduleName, "https://package.elm-lang.org/packages/" ++ dependencyName ++ "/" ++ packageVersion ++ "/" ++ String.replace "." "-" moduleName )
 
 
 readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String -> Cmd msg
