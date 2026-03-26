@@ -181,7 +181,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
               , ruleLinks = model.ruleLinks
               }
             , Cmd.batch
-                [ Cli.println stderr (errorToString err)
+                [ Cli.println stderr ("elm.json - " ++ errorToString err)
                 , Cli.exit 1
                 ]
             )
@@ -278,7 +278,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                       , ruleLinks = model.ruleLinks
                       }
                       -- TODO Exit?
-                    , Cli.println stderr (errorToString err)
+                    , Cli.println stderr (directory ++ " - " ++ errorToString err)
                     )
 
         ReceivedElmFile path result ->
