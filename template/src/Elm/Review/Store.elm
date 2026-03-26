@@ -1,12 +1,20 @@
 module Elm.Review.Store exposing
-    ( Model
-    , Msg
+    ( Model, init
+    , Msg, update
     , hasPendingTasks
-    , init
     , project
     , suppressedErrors
-    , update
     )
+
+{-|
+
+@docs Model, init
+@docs Msg, update
+@docs hasPendingTasks
+@docs project
+@docs suppressedErrors
+
+-}
 
 import Cli exposing (Env)
 import Elm.Docs
