@@ -2,7 +2,7 @@ module Elm.Review.Store exposing
     ( Model, init
     , Msg, update
     , hasPendingTasks
-    , project
+    , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
     )
 
@@ -11,7 +11,7 @@ module Elm.Review.Store exposing
 @docs Model, init
 @docs Msg, update
 @docs hasPendingTasks
-@docs project
+@docs project, setProject, updateProject
 @docs suppressedErrors, setSuppressedErrors
 
 -}
@@ -349,6 +349,24 @@ minimum =
 project : Model -> Project
 project (Model model) =
     model.project
+
+
+setProject : Project -> Model -> Model
+setProject newProject (Model model) =
+    Model
+        { pendingTaskCount = model.pendingTaskCount
+        , project = newProject
+        , suppressedErrors = model.suppressedErrors
+        }
+
+
+updateProject : (Project -> Project) -> Model -> Model
+updateProject updateFn (Model model) =
+    Model
+        { pendingTaskCount = model.pendingTaskCount
+        , project = updateFn model.project
+        , suppressedErrors = model.suppressedErrors
+        }
 
 
 suppressedErrors : Model -> SuppressedErrors

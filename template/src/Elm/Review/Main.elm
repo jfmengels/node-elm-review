@@ -160,7 +160,6 @@ type alias Model =
     --
     , rules : List Rule
     , fixAllRules : List Rule
-    , project : Project
     , isInitialRun : Bool
     , links : Dict String String
     , fixMode : FixMode
@@ -318,7 +317,6 @@ initValid env fs flags rulesFromConfig =
             , store = store
             , rules = rules
             , fixAllRules = rules
-            , project = Project.new
             , isInitialRun = True
             , links = Dict.empty
             , fixAllResultProject = Project.new
@@ -537,10 +535,7 @@ update msg model =
                         model.store
             in
             startReviewIfNoPendingTasks
-                ( { model
-                    | store = store
-                    , project = Store.project store
-                  }
+                ( { model | store = store }
                 , Cmd.map StoreMsg cmd
                 )
 
@@ -553,7 +548,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                 newModel : Model
                 newModel =
                     { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = False } model.project
+                        |> runReview { fixesAllowed = False } (Store.project model.store)
             in
             ( newModel
             , Cmd.batch
@@ -576,7 +571,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
             let
                 ( modelWithReviewResults, newCmd ) =
                     { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = True } model.project
+                        |> runReview { fixesAllowed = True } (Store.project model.store)
                         |> reportOrFix
             in
             -- TODO Update suppressions
@@ -599,9 +594,9 @@ updateOld msg model =
                             let
                                 project : Project
                                 project =
-                                    Project.addModule { path = rawFile.path, source = rawFile.source } model.project
+                                    Project.addModule { path = rawFile.path, source = rawFile.source } (Store.project model.store)
                             in
-                            ( { model | project = project }
+                            ( { model | store = Store.updateProject (Project.addModule { path = rawFile.path, source = rawFile.source }) model.store }
                             , Encode.object
                                 [ ( "path", Encode.string rawFile.path )
                                 , ( "cacheRequest", cacheFileRequest project rawFile.source )
@@ -611,13 +606,15 @@ updateOld msg model =
 
                         Just ast ->
                             ( { model
-                                | project =
-                                    Project.addParsedModule
-                                        { path = rawFile.path
-                                        , source = rawFile.source
-                                        , ast = ast
-                                        }
-                                        model.project
+                                | store =
+                                    Store.updateProject
+                                        (Project.addParsedModule
+                                            { path = rawFile.path
+                                            , source = rawFile.source
+                                            , ast = ast
+                                            }
+                                        )
+                                        model.store
                               }
                             , Encode.object
                                 [ ( "path", Encode.string rawFile.path )
@@ -630,12 +627,12 @@ updateOld msg model =
                     ( model, abort model.env model.supportsColor (Decode.errorToString err) )
 
         RemovedFile path ->
-            ( { model | project = Project.removeFile path model.project }, Cmd.none )
+            ( { model | store = Store.updateProject (Project.removeFile path) model.store }, Cmd.none )
 
         ReceivedElmJsonOld rawElmJson ->
             case Decode.decodeValue elmJsonDecoder rawElmJson of
                 Ok elmJson ->
-                    ( { model | project = Project.addElmJson elmJson model.project }
+                    ( { model | store = Store.updateProject (Project.addElmJson elmJson) model.store }
                     , Cmd.none
                     )
 
@@ -652,7 +649,7 @@ updateOld msg model =
             in
             case Decode.decodeValue readmeDecoder rawReadme of
                 Ok readme ->
-                    ( { model | project = Project.addReadme readme model.project }
+                    ( { model | store = Store.updateProject (Project.addReadme readme) model.store }
                     , Cmd.none
                     )
 
@@ -662,7 +659,7 @@ updateOld msg model =
         ReceivedExtraFiles rawFiles ->
             case Decode.decodeValue (Decode.dict Decode.string) rawFiles of
                 Ok files ->
-                    ( { model | project = Project.addExtraFiles files model.project }
+                    ( { model | store = Store.updateProject (Project.addExtraFiles files) model.store }
                     , Cmd.none
                     )
 
@@ -704,11 +701,15 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
                 Ok dependencies ->
                     ( { model
-                        | project =
-                            List.foldl
-                                Project.addDependency
-                                (Project.removeDependencies model.project)
-                                dependencies
+                        | store =
+                            Store.updateProject
+                                (\project ->
+                                    List.foldl
+                                        Project.addDependency
+                                        (Project.removeDependencies project)
+                                        dependencies
+                                )
+                                model.store
                       }
                     , Cmd.none
                     )
@@ -758,7 +759,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
         GotRequestToReview ->
             { model | fixAllErrors = Dict.empty }
-                |> runReview { fixesAllowed = True } model.project
+                |> runReview { fixesAllowed = True } (Store.project model.store)
                 |> reportOrFix
 
         GotRequestToGenerateSuppressionErrors ->
@@ -766,7 +767,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                 newModel : Model
                 newModel =
                     { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = False } model.project
+                        |> runReview { fixesAllowed = False } (Store.project model.store)
             in
             ( newModel
             , newModel.reviewErrors
@@ -809,7 +810,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
 
                     else
                         { model
-                            | project = newProject
+                            | store = Store.setProject newProject model.store
                             , rules = model.fixAllRules
                             , fixAllErrors = Dict.empty
                             , errorsHaveBeenFixedPreviously = True
@@ -825,27 +826,32 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 )
 
                 Ok Refused ->
+                    let
+                        project : Project
+                        project =
+                            Store.project model.store
+                    in
                     case model.errorAwaitingConfirmation of
                         AwaitingError error ->
                             { model
                                 | errorAwaitingConfirmation = NotAwaiting
-                                , fixAllResultProject = model.project
+                                , fixAllResultProject = project
                             }
                                 |> refuseError error
-                                |> runReview { fixesAllowed = True } model.project
+                                |> runReview { fixesAllowed = True } (Store.project model.store)
                                 |> reportOrFix
 
                         AwaitingFixAll ->
                             { model
                                 | errorAwaitingConfirmation = NotAwaiting
-                                , fixAllResultProject = model.project
+                                , fixAllResultProject = project
                             }
-                                |> runReview { fixesAllowed = False } model.project
+                                |> runReview { fixesAllowed = False } project
                                 |> makeReport (Store.suppressedErrors model.store)
 
                         NotAwaiting ->
                             -- Should not be possible?
-                            runReview { fixesAllowed = False } model.project model
+                            runReview { fixesAllowed = False } project model
                                 |> makeReport (Store.suppressedErrors model.store)
 
                 Err err ->
@@ -1004,12 +1010,12 @@ runReview { fixesAllowed } initialProject model =
                 model.rules
         , isInitialRun = False
         , fixAllRules = rules
-        , project =
+        , store =
             if model.fixMode == Mode_DontFix then
-                project
+                Store.setProject project model.store
 
             else
-                model.project
+                model.store
         , fixAllResultProject = project
         , fixAllErrors = fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
@@ -1069,7 +1075,7 @@ makeReport previousSuppressedErrors model =
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
-                        groupErrorsByFile (fromReviewError newSuppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
+                        groupErrorsByFile (fromReviewError newSuppressedErrors newModel.links) (Store.project model.store) model.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
                     { suppressedErrors = newSuppressedErrors
@@ -1088,7 +1094,7 @@ makeReport previousSuppressedErrors model =
                 let
                     errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
                     errorsByFile =
-                        groupErrorsByFile identity model.project model.reviewErrors
+                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
 
                     errors : Encode.Value
                     errors =
@@ -1113,7 +1119,7 @@ makeReport previousSuppressedErrors model =
                 let
                     errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
                     errorsByFile =
-                        groupErrorsByFile identity model.project model.reviewErrors
+                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
                 in
                 errorsByFile
                     |> List.concatMap
@@ -1376,7 +1382,7 @@ applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
         makeReport (Store.suppressedErrors model.store) model
 
     else
-        case Project.diffV2 { before = model.project, after = model.fixAllResultProject } of
+        case Project.diffV2 { before = Store.project model.store, after = model.fixAllResultProject } of
             [] ->
                 makeReport (Store.suppressedErrors model.store) model
 
@@ -1433,7 +1439,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                     model.detailsMode
                     model.fixExplanation
                     fileRemovalFixesEnabled
-                    (pathAndSource model.project filePath)
+                    (pathAndSource (Store.project model.store) filePath)
                     (fromReviewError (Store.suppressedErrors model.store) model.links error)
                     diffs
                     |> encodeReport
