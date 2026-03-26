@@ -6,6 +6,7 @@ module FormatTester exposing
 {-| Write expectations for the result of formatting functions.
 
 @docs expect
+@docs formatWithColors, formatWithoutColors
 
 -}
 
