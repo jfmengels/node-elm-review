@@ -173,7 +173,6 @@ type alias Model =
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppress : Bool
-    , suppressedErrors : SuppressedErrors
     , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
     , extracts : Dict String Encode.Value
@@ -333,7 +332,6 @@ initValid env fs flags rulesFromConfig =
             , reviewErrors = []
             , reviewErrorsAfterSuppression = []
             , suppress = flags.suppress
-            , suppressedErrors = SuppressedErrors.empty
             , writeSuppressionFiles = flags.writeSuppressionFiles
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
@@ -542,7 +540,6 @@ update msg model =
                 ( { model
                     | store = store
                     , project = Store.project store
-                    , suppressedErrors = Store.suppressedErrors store
                   }
                 , Cmd.map StoreMsg cmd
                 )
@@ -724,9 +721,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     ( model, Cmd.none )
 
                 Ok suppressedErrors ->
-                    ( { model
-                        | suppressedErrors = suppressedErrors
-                      }
+                    ( model
                     , Cmd.none
                     )
 
@@ -738,13 +733,18 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     ( model, Cmd.none )
 
                 Ok suppressedErrors ->
-                    if suppressedErrors == model.suppressedErrors then
+                    let
+                        previousSuppressErrors : SuppressedErrors
+                        previousSuppressErrors =
+                            Store.suppressedErrors model.store
+                    in
+                    if suppressedErrors == previousSuppressErrors then
                         ( model, Cmd.none )
 
                     else
-                        makeReport model.suppressedErrors
+                        makeReport previousSuppressErrors
                             { model
-                                | suppressedErrors = suppressedErrors
+                                | store = Store.setSuppressedErrors suppressedErrors model.store
                                 , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode suppressedErrors model.reviewErrors
                             }
 
@@ -841,12 +841,12 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 , fixAllResultProject = model.project
                             }
                                 |> runReview { fixesAllowed = False } model.project
-                                |> makeReport model.suppressedErrors
+                                |> makeReport (Store.suppressedErrors model.store)
 
                         NotAwaiting ->
                             -- Should not be possible?
                             runReview { fixesAllowed = False } model.project model
-                                |> makeReport model.suppressedErrors
+                                |> makeReport (Store.suppressedErrors model.store)
 
                 Err err ->
                     ( model, abort model.env model.supportsColor (Decode.errorToString err) )
@@ -970,6 +970,10 @@ confirmationDecoder ignoreProblematicDependencies =
 runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
 runReview { fixesAllowed } initialProject model =
     let
+        suppressedErrors : SuppressedErrors
+        suppressedErrors =
+            Store.suppressedErrors model.store
+
         { errors, rules, project, extracts, fixedErrors } =
             initialProject
                 |> CliCommunication.timerStart model.communicationKey "run-review"
@@ -980,7 +984,7 @@ runReview { fixesAllowed } initialProject model =
                         |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
                         |> ReviewOptions.withFileRemovalFixes (isFileRemovalFixesEnabled model.fixMode)
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
-                        |> SuppressedErrors.addToReviewOptions model.suppressedErrors
+                        |> SuppressedErrors.addToReviewOptions suppressedErrors
                     )
                     model.rules
                 |> CliCommunication.timerEnd model.communicationKey "run-review"
@@ -990,7 +994,7 @@ runReview { fixesAllowed } initialProject model =
         , reviewErrorsAfterSuppression =
             errors
                 |> CliCommunication.timerStart model.communicationKey "apply-suppressions"
-                |> SuppressedErrors.apply model.unsuppressMode model.suppressedErrors
+                |> SuppressedErrors.apply model.unsuppressMode suppressedErrors
                 |> CliCommunication.timerEnd model.communicationKey "apply-suppressions"
         , rules =
             if model.isInitialRun || model.fixMode == Mode_DontFix then
@@ -1019,7 +1023,7 @@ reportOrFix model =
         Mode_DontFix ->
             model
                 |> CliCommunication.timerStart model.communicationKey "process-errors"
-                |> makeReport model.suppressedErrors
+                |> makeReport (Store.suppressedErrors model.store)
                 |> CliCommunication.timerEnd model.communicationKey "process-errors"
 
         Mode_Fix fileRemovalFixesEnabled ->
@@ -1039,7 +1043,10 @@ makeReport previousSuppressedErrors model =
                     suppressedErrors =
                         SuppressedErrors.fromReviewErrors model.reviewErrors
                 in
-                ( { model | suppressedErrors = suppressedErrors, rules = model.fixAllRules }
+                ( { model
+                    | store = Store.setSuppressedErrors suppressedErrors model.store
+                    , rules = model.fixAllRules
+                  }
                   -- TODO Write suppression files
                 , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
                 )
@@ -1050,6 +1057,10 @@ makeReport previousSuppressedErrors model =
         success : Bool
         success =
             List.isEmpty model.reviewErrorsAfterSuppression
+
+        newSuppressedErrors : SuppressedErrors
+        newSuppressedErrors =
+            Store.suppressedErrors newModel.store
     in
     ( newModel
     , Cmd.batch
@@ -1058,10 +1069,10 @@ makeReport previousSuppressedErrors model =
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
-                        groupErrorsByFile (fromReviewError newModel.suppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
+                        groupErrorsByFile (fromReviewError newSuppressedErrors newModel.links) model.project model.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
-                    { suppressedErrors = newModel.suppressedErrors
+                    { suppressedErrors = newSuppressedErrors
                     , unsuppressMode = newModel.unsuppressMode
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
                     , detailsMode = newModel.detailsMode
@@ -1083,7 +1094,7 @@ makeReport previousSuppressedErrors model =
                     errors =
                         Encode.list
                             (encodeErrorByFile
-                                { suppressedErrors = newModel.suppressedErrors
+                                { suppressedErrors = newSuppressedErrors
                                 , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                                 }
                                 newModel.links
@@ -1107,7 +1118,7 @@ makeReport previousSuppressedErrors model =
                 errorsByFile
                     |> List.concatMap
                         (encodeErrorsForNDJson
-                            { suppressedErrors = newModel.suppressedErrors
+                            { suppressedErrors = newSuppressedErrors
                             , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                             }
                             newModel.links
@@ -1362,12 +1373,12 @@ encodePosition position =
 applyFixesAfterReview : Model -> Bool -> Bool -> ( Model, Cmd msg )
 applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
     if Dict.isEmpty model.fixAllErrors then
-        makeReport model.suppressedErrors model
+        makeReport (Store.suppressedErrors model.store) model
 
     else
         case Project.diffV2 { before = model.project, after = model.fixAllResultProject } of
             [] ->
-                makeReport model.suppressedErrors model
+                makeReport (Store.suppressedErrors model.store) model
 
             diffs ->
                 if allowPrintingSingleFix then
@@ -1423,7 +1434,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                     model.fixExplanation
                     fileRemovalFixesEnabled
                     (pathAndSource model.project filePath)
-                    (fromReviewError model.suppressedErrors model.links error)
+                    (fromReviewError (Store.suppressedErrors model.store) model.links error)
                     diffs
                     |> encodeReport
                 )
@@ -1491,7 +1502,7 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
                                         (\( fixedFile, _ ) subSubAcc ->
                                             Dict.update fixedFile
                                                 (\previousErrors ->
-                                                    fromReviewError model.suppressedErrors model.links error
+                                                    fromReviewError (Store.suppressedErrors model.store) model.links error
                                                         :: Maybe.withDefault [] previousErrors
                                                         |> Just
                                                 )
