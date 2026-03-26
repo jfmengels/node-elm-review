@@ -1,5 +1,5 @@
 module Elm.Review.Store exposing
-    ( Model(..)
+    ( Model
     , Msg
     , hasPendingTasks
     , init
