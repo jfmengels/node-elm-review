@@ -137,7 +137,6 @@ type alias Model =
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     , suppressedErrors : SuppressedErrors
-    , originalNumberOfSuppressedErrors : Int
     , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
     , extracts : Dict String Encode.Value
@@ -280,7 +279,6 @@ init rawFlags =
       , reviewErrors = []
       , reviewErrorsAfterSuppression = []
       , suppressedErrors = SuppressedErrors.empty
-      , originalNumberOfSuppressedErrors = 0
       , writeSuppressionFiles = flags.writeSuppressionFiles
       , errorsHaveBeenFixedPreviously = False
       , refusedErrorFixes = RefusedErrorFixes.empty
@@ -687,7 +685,6 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                 Ok suppressedErrors ->
                     ( { model
                         | suppressedErrors = suppressedErrors
-                        , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
                       }
                     , Cmd.none
                     )
@@ -704,7 +701,7 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                         ( model, Cmd.none )
 
                     else
-                        makeReport
+                        makeReport model.suppressedErrors
                             { model
                                 | suppressedErrors = suppressedErrors
                                 , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode suppressedErrors model.reviewErrors
@@ -803,12 +800,12 @@ If I am mistaken about the nature of problem, please open a bug report at https:
                                 , fixAllResultProject = model.project
                             }
                                 |> runReview { fixesAllowed = False } model.project
-                                |> makeReport
+                                |> makeReport model.suppressedErrors
 
                         NotAwaiting ->
                             -- Should not be possible?
                             runReview { fixesAllowed = False } model.project model
-                                |> makeReport
+                                |> makeReport model.suppressedErrors
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
@@ -981,7 +978,7 @@ reportOrFix model =
         Mode_DontFix ->
             model
                 |> CliCommunication.timerStart model.communicationKey "process-errors"
-                |> makeReport
+                |> makeReport model.suppressedErrors
                 |> CliCommunication.timerEnd model.communicationKey "process-errors"
 
         Mode_Fix fileRemovalFixesEnabled ->
@@ -991,8 +988,8 @@ reportOrFix model =
             applyFixesAfterReview model False fileRemovalFixesEnabled
 
 
-makeReport : Model -> ( Model, Cmd msg )
-makeReport model =
+makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
+makeReport previousSuppressedErrors model =
     let
         ( newModel, suppressedErrorsForJson ) =
             if List.isEmpty model.reviewErrorsAfterSuppression && model.writeSuppressionFiles then
@@ -1021,7 +1018,7 @@ makeReport model =
                 Reporter.formatReport
                     { suppressedErrors = newModel.suppressedErrors
                     , unsuppressMode = newModel.unsuppressMode
-                    , originalNumberOfSuppressedErrors = newModel.originalNumberOfSuppressedErrors
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
                     , detailsMode = newModel.detailsMode
                     , fixExplanation = newModel.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
@@ -1233,12 +1230,12 @@ encodePosition position =
 applyFixesAfterReview : Model -> Bool -> Bool -> ( Model, Cmd msg )
 applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
     if Dict.isEmpty model.fixAllErrors then
-        makeReport model
+        makeReport model.suppressedErrors model
 
     else
         case Project.diffV2 { before = model.project, after = model.fixAllResultProject } of
             [] ->
-                makeReport model
+                makeReport model.suppressedErrors model
 
             diffs ->
                 if allowPrintingSingleFix then
