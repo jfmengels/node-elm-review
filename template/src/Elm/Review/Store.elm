@@ -87,8 +87,7 @@ type Msg
 
 
 type alias UpdateInput =
-    { msg : Msg
-    , fs : FileSystem
+    { fs : FileSystem
     , runEnvironment : RunEnvironment
     , stderr : Console
     , ignoreProblematicDependencies : Bool
@@ -103,14 +102,14 @@ type alias UpdateOutput =
     }
 
 
-update : UpdateInput -> Model -> ( Model, Cmd Msg )
-update inputs (Model model) =
-    updateInner inputs model
+update : UpdateInput -> Msg -> Model -> ( Model, Cmd Msg )
+update inputs msg (Model model) =
+    updateInner inputs msg model
         |> Tuple.mapFirst Model
 
 
-updateInner : UpdateInput -> ModelData -> ( ModelData, Cmd Msg )
-updateInner { msg, fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWithDetails } model =
+updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, Cmd Msg )
+updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWithDetails } msg model =
     let
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
