@@ -1,6 +1,7 @@
 module Wrapper.Options exposing
     ( Options
     , Flag, Argument(..), Display
+    , Section(..)
     )
 
 {-|
@@ -43,9 +44,20 @@ type Argument
 
 
 type alias Display =
-    { sections : List String
+    { sections : List Section
     , color : Color
     , description : List String
     , initDescription : Maybe (List String)
     , newPackageDescription : Maybe (List String)
     }
+
+
+type Section
+    = Regular
+    | Suppress
+    | Fix
+    | Init
+    | NewRule
+    | NewPackage
+    | SuppressSubcommand
+    | PrepareOffline
