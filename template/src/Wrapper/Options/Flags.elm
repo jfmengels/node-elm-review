@@ -8,7 +8,7 @@ flags : List Flag
 flags =
     [ { name = "unsuppress"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | unsuppress = True })
       , display =
             Just
                 (\c ->
@@ -68,7 +68,7 @@ flags =
       }
     , { name = "watch"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | watch = True, watchConfig = True })
       , display =
             Just
                 (\_ ->
@@ -86,12 +86,12 @@ flags =
       }
     , { name = "watch-code"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | watch = True })
       , display = Nothing
       }
     , { name = "extract"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | extract = True })
       , display =
             Just
                 (\c ->
@@ -217,7 +217,7 @@ flags =
       }
     , { name = "version"
       , alias = Just "v"
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | version = True })
       , display =
             Just
                 (\_ ->
@@ -233,12 +233,12 @@ flags =
       }
     , { name = "help"
       , alias = Just "h"
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | help = True })
       , display = Nothing
       }
     , { name = "debug"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | debug = True })
       , display =
             Just
                 (\_ ->
@@ -256,7 +256,7 @@ flags =
       }
     , { name = "benchmark-info"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | showBenchmark = True })
       , display =
             Just
                 (\_ ->
@@ -273,12 +273,12 @@ flags =
       }
     , { name = "color"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | color = True })
       , display = Nothing
       }
     , { name = "no-color"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | color = False })
       , display =
             Just
                 (\_ ->
@@ -293,7 +293,7 @@ flags =
     , reportFlag
     , { name = "no-details"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | details = False })
       , display =
             Just
                 (\_ ->
@@ -309,12 +309,12 @@ flags =
       }
     , { name = "details"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | details = True })
       , display = Nothing
       }
     , { name = "fix"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | fix = True })
       , display =
             Just
                 (\c ->
@@ -334,7 +334,7 @@ flags =
       }
     , { name = "fix-all"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | fixAll = True })
       , display =
             Just
                 (\c ->
@@ -354,7 +354,7 @@ flags =
       }
     , { name = "fix-all-without-prompt"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | fixAllWithoutPrompt = True })
       , display =
             Just
                 (\c ->
@@ -391,7 +391,7 @@ flags =
       }
     , { name = "allow-remove-files"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | fileRemovalFixesEnabled = True })
       , display =
             Just
                 (\_ ->
@@ -405,7 +405,7 @@ flags =
       }
     , { name = "explain-fix-failure"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | explainFixFailure = True })
       , display =
             Just
                 (\_ ->
@@ -438,22 +438,22 @@ flags =
       }
     , { name = "ignore-problematic-dependencies"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | ignoreProblematicDependencies = True })
       , display = Nothing
       }
     , { name = "FOR-TESTS"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | forTests = True })
       , display = Nothing
       }
     , { name = "force-build"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | forceBuild = True })
       , display = Nothing
       }
     , { name = "offline"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | offline = True })
       , display =
             Just
                 (\c ->
@@ -531,7 +531,7 @@ flags =
       }
     , { name = "check-after-tests"
       , alias = Nothing
-      , argument = ArgumentAbsent
+      , argument = ArgumentAbsent (\options -> { options | suppressCheckAfterTests = True })
       , display =
             Just
                 (\_ ->

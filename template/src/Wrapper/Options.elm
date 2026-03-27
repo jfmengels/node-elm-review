@@ -34,7 +34,7 @@ type alias Flag =
 
 
 type Argument
-    = ArgumentAbsent
+    = ArgumentAbsent (InternalOptions -> InternalOptions)
     | ArgumentPresent
         { argName : String
         , mayBeUsedSeveralTimes : Bool
