@@ -3,7 +3,7 @@ module Wrapper.Options.Flags exposing (buildFlagArgs, flags, flagsByAlias, flags
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Wrapper.Color exposing (Color(..))
-import Wrapper.Options exposing (Argument(..), Flag)
+import Wrapper.Options exposing (Argument(..), Flag, Section(..))
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 
 
@@ -55,7 +55,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular", "suppress" ]
+                    , sections = [ Regular, Suppress ]
                     , description =
                         [ "Include " ++ c Orange "suppressed" ++ " errors in the error report for all rules."
                         ]
@@ -77,7 +77,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "suppress" ]
+                    , sections = [ Suppress ]
                     , description =
                         [ "Include " ++ c Orange "suppressed" ++ " errors in the error report for the listed rules."
                         , "Specify the rules by their name, and separate them by commas."
@@ -100,7 +100,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Run with a subsection of the rules in the configuration."
                         , "Specify them by their name, and separate them by commas."
@@ -117,7 +117,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Re-run " ++ c GreenBright "elm-review" ++ " automatically when your project or configuration"
                         , "changes. Use " ++ c Cyan "--watch-code" ++ " to re-run only on project changes."
@@ -140,7 +140,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Enable extracting data from the project for the rules that have a"
                         , "data extractor. Requires running with " ++ c Cyan "--report=json" ++ "."
@@ -165,7 +165,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular", "prepare-offline" ]
+                    , sections = [ Regular, PrepareOffline ]
                     , description =
                         [ "Specify the path to the elm.json file of the project. By default,"
                         , "the one in the current directory or its parent directories will be used."
@@ -188,7 +188,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular", "init", "prepare-offline" ]
+                    , sections = [ Regular, Init, PrepareOffline ]
                     , description =
                         [ "Use the review configuration in the specified directory instead of the"
                         , "one found in the current directory or one of its parents."
@@ -216,7 +216,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular", "init", "new-package", "prepare-offline" ]
+                    , sections = [ Regular, Init, NewPackage, PrepareOffline ]
                     , description =
                         [ "Specify the path to the " ++ c MagentaBright "elm" ++ " compiler."
                         ]
@@ -256,7 +256,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "new-rule", "new-package" ]
+                    , sections = [ NewRule, NewPackage ]
                     , description =
                         [ "Whether the starting rule should be a module rule or a project rule."
                         , "Module rules are simpler but look at Elm modules in isolation, whereas"
@@ -276,7 +276,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Print the version of the " ++ c GreenBright "elm-review" ++ " CLI."
                         ]
@@ -297,7 +297,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Add helpful pieces of information for debugging purposes."
                         , "This will also run the compiler with " ++ c Cyan " --debug" ++ ", allowing you to use"
@@ -315,7 +315,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Print out how much time it took for rules and phases of the process to"
                         , "run. This is meant for benchmarking purposes."
@@ -337,7 +337,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description = [ "Disable colors in the output." ]
                     , initDescription = Nothing
                     , newPackageDescription = Nothing
@@ -352,7 +352,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Hide the details from error reports for a more compact view."
                         ]
@@ -373,7 +373,7 @@ flags =
             Just
                 (\c ->
                     { color = BlueBright
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description =
                         [ c GreenBright "elm-review" ++ " will present fixes for the errors that offer an automatic"
                         , "fix, which you can then accept or refuse one by one. When there are no"
@@ -393,7 +393,7 @@ flags =
             Just
                 (\c ->
                     { color = BlueBright
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description =
                         [ c GreenBright "elm-review" ++ " will present a single fix containing the application of all"
                         , "available automatic fixes, which you can then accept or refuse."
@@ -413,7 +413,7 @@ flags =
             Just
                 (\c ->
                     { color = BlueBright
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description =
                         [ "Same as " ++ c BlueBright "--fix-all" ++ " but fixes are applied without a prompt."
                         , "I recommend committing all changes prior to running with this option and"
@@ -444,7 +444,7 @@ flags =
             Just
                 (\_ ->
                     { color = BlueBright
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description = [ "Limit the number of fixes applied in a single batch to N." ]
                     , initDescription = Nothing
                     , newPackageDescription = Nothing
@@ -458,7 +458,7 @@ flags =
             Just
                 (\_ ->
                     { color = BlueBright
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description = [ "Allow files to be removed by automatic fixes." ]
                     , initDescription = Nothing
                     , newPackageDescription = Nothing
@@ -472,7 +472,7 @@ flags =
             Just
                 (\_ ->
                     { color = BlueBright
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description = [ "Get more information about fixes that failed to apply." ]
                     , initDescription = Nothing
                     , newPackageDescription = Nothing
@@ -492,7 +492,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "fix" ]
+                    , sections = [ Fix ]
                     , description = [ "Specify the path to " ++ c MagentaBright "elm-format" ++ "." ]
                     , initDescription = Nothing
                     , newPackageDescription = Nothing
@@ -521,7 +521,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Prevent making network calls. You might need to run"
                         , c Yellow "elm-review prepare-offline" ++ " beforehand to avoid problems."
@@ -567,7 +567,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description =
                         [ "Ignore the reports of all rules for the specified directories."
                         ]
@@ -589,7 +589,7 @@ flags =
             Just
                 (\_ ->
                     { color = Cyan
-                    , sections = [ "regular" ]
+                    , sections = [ Regular ]
                     , description = [ "Ignore the reports of all rules for the specified files." ]
                     , initDescription = Nothing
                     , newPackageDescription = Nothing
@@ -603,7 +603,7 @@ flags =
             Just
                 (\c ->
                     { color = Cyan
-                    , sections = [ "suppress-subcommand" ]
+                    , sections = [ SuppressSubcommand ]
                     , description =
                         [ "Checks whether there are uncommitted suppression files. They may get"
                         , "updated when running " ++ c GreenBright "elm-review" ++ ", which people can forget to commit"
@@ -675,7 +675,7 @@ reportFlag =
         Just
             (\c ->
                 { color = Cyan
-                , sections = [ "regular" ]
+                , sections = [ Regular ]
                 , description =
                     [ "Error reports will be in JSON format. " ++ c Magenta "json" ++ " prints a single JSON object"
                     , "while " ++ c Magenta "ndjson" ++ " will print one JSON object per error each on a new line."
@@ -718,7 +718,7 @@ templateFlag =
         Just
             (\c ->
                 { color = Cyan
-                , sections = [ "regular", "init" ]
+                , sections = [ Regular, Init ]
                 , description =
                     [ "Use the review configuration from a GitHub repository. You can use this"
                     , "to try out " ++ c GreenBright "elm-review" ++ ", a configuration or a single rule."
