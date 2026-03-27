@@ -1,14 +1,14 @@
 module Wrapper.Options.Flags exposing (flags)
 
 import Dict exposing (Dict)
-import Wrapper.Options as Flags exposing (Color(..), Flag)
+import Wrapper.Options as Flags exposing (Argument(..), Color(..), Flag)
 
 
 flags : List Flag
 flags =
     [ { name = "unsuppress"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\c ->
@@ -25,7 +25,7 @@ flags =
     , { name = "unsuppress-rules"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<rule1,rule2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
@@ -47,7 +47,7 @@ flags =
     , { name = "rules"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<rule1,rule2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
@@ -68,7 +68,7 @@ flags =
       }
     , { name = "watch"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -86,12 +86,12 @@ flags =
       }
     , { name = "watch-code"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "extract"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\c ->
@@ -111,7 +111,7 @@ flags =
     , { name = "elmjson"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<path-to-elm.json>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -133,7 +133,7 @@ flags =
     , { name = "config"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<path-to-review-directory>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -160,7 +160,7 @@ flags =
     , { name = "compiler"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<path-to-elm>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -193,7 +193,7 @@ flags =
     , { name = "rule-type"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<module|project>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -217,7 +217,7 @@ flags =
       }
     , { name = "version"
       , alias = Just "v"
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -233,12 +233,12 @@ flags =
       }
     , { name = "help"
       , alias = Just "h"
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "debug"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -256,7 +256,7 @@ flags =
       }
     , { name = "benchmark-info"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -273,12 +273,12 @@ flags =
       }
     , { name = "color"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "no-color"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -293,7 +293,7 @@ flags =
     , reportFlag
     , { name = "no-details"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -309,12 +309,12 @@ flags =
       }
     , { name = "details"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "fix"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\c ->
@@ -334,7 +334,7 @@ flags =
       }
     , { name = "fix-all"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\c ->
@@ -354,7 +354,7 @@ flags =
       }
     , { name = "fix-all-without-prompt"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\c ->
@@ -373,7 +373,7 @@ flags =
     , { name = "fix-limit"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "N"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = True
@@ -391,7 +391,7 @@ flags =
       }
     , { name = "allow-remove-files"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -405,7 +405,7 @@ flags =
       }
     , { name = "explain-fix-failure"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -420,7 +420,7 @@ flags =
     , { name = "elm-format-path"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<path-to-elm-format>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -438,22 +438,22 @@ flags =
       }
     , { name = "ignore-problematic-dependencies"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "FOR-TESTS"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "force-build"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display = Nothing
       }
     , { name = "offline"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\c ->
@@ -472,7 +472,7 @@ flags =
     , { name = "namespace"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<namespace>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -482,7 +482,7 @@ flags =
     , { name = "prefill"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "[author name[, package name[, license]]]"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
@@ -492,7 +492,7 @@ flags =
     , { name = "ignore-dirs"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<dir1,dir2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
@@ -513,7 +513,7 @@ flags =
     , { name = "ignore-files"
       , alias = Nothing
       , argument =
-            Just
+            ArgumentPresent
                 { argName = "<file1,file2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
@@ -531,7 +531,7 @@ flags =
       }
     , { name = "check-after-tests"
       , alias = Nothing
-      , argument = Nothing
+      , argument = ArgumentAbsent
       , display =
             Just
                 (\_ ->
@@ -557,7 +557,7 @@ gitHubAuthFlag =
     { name = "github-auth"
     , alias = Nothing
     , argument =
-        Just
+        ArgumentPresent
             { argName = "<github-api-token>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
@@ -586,7 +586,7 @@ reportFlag =
     { name = "report"
     , alias = Nothing
     , argument =
-        Just
+        ArgumentPresent
             { argName = "<json or ndjson>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
@@ -613,7 +613,7 @@ templateFlag =
     { name = "template"
     , alias = Nothing
     , argument =
-        Just
+        ArgumentPresent
             { argName = "<author>/<repo>[/path-to-the-config-folder][#branch-or-commit]"
             , mayBeUsedSeveralTimes = False
             , usesEquals = False

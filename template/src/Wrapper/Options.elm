@@ -1,6 +1,6 @@
 module Wrapper.Options exposing
     ( Options, SubCommand(..)
-    , Flag, Argument, Display
+    , Flag, Argument(..), Display
     , Color(..)
     )
 
@@ -32,16 +32,18 @@ type SubCommand
 type alias Flag =
     { name : String
     , alias : Maybe String
-    , argument : Maybe Argument
+    , argument : Argument
     , display : Maybe ((Color -> String -> String) -> Display)
     }
 
 
-type alias Argument =
-    { argName : String
-    , mayBeUsedSeveralTimes : Bool
-    , usesEquals : Bool
-    }
+type Argument
+    = ArgumentAbsent
+    | ArgumentPresent
+        { argName : String
+        , mayBeUsedSeveralTimes : Bool
+        , usesEquals : Bool
+        }
 
 
 type alias Display =
