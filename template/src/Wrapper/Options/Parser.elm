@@ -62,7 +62,7 @@ parseHelp args options =
         arg :: rest ->
             case parseFlagAndEqual arg of
                 NotFlag () ->
-                    case checkIfIsSubcommand options arg of
+                    case checkForSubcommand options arg of
                         Just subcommand ->
                             parseHelp rest
                                 { options
@@ -154,8 +154,8 @@ notFlag =
     NotFlag ()
 
 
-checkIfIsSubcommand : InternalOptions -> String -> Maybe Subcommand
-checkIfIsSubcommand options arg =
+checkForSubcommand : InternalOptions -> String -> Maybe Subcommand
+checkForSubcommand options arg =
     if options.subcommandPossible then
         parseSubcommand arg
 
