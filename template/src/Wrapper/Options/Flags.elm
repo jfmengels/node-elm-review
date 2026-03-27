@@ -1,10 +1,11 @@
-module Wrapper.Options.Flags exposing (buildFlagArgs, flags, flagsByName, flagsNotToDuplicate)
+module Wrapper.Options.Flags exposing (buildFlagArgs, buildFlags, flags, flagsByName, flagsNotToDuplicate)
 
 import Dict exposing (Dict)
 import Set exposing (Set)
-import Wrapper.Color exposing (Color(..))
-import Wrapper.Options exposing (Argument(..), Flag, Section(..))
+import Wrapper.Color exposing (Color(..), Colorize)
+import Wrapper.Options exposing (Argument(..), Display, Flag, Section(..))
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
+import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
 flagsByName : Dict String Flag
@@ -702,6 +703,70 @@ templateFlag =
             , newPackageDescription = Nothing
             }
     }
+
+
+buildFlags : Colorize -> Section -> Maybe Subcommand -> String
+buildFlags c section maybeSubcommand =
+    List.filterMap
+        (\flag ->
+            case flag.display of
+                Just display ->
+                    if List.member section display.sections then
+                        Just (buildFlag c maybeSubcommand flag display)
+
+                    else
+                        Nothing
+
+                Nothing ->
+                    Nothing
+        )
+        flags
+        |> String.join "\n\n"
+
+
+buildFlag : Colorize -> Maybe Subcommand -> Flag -> Display -> String
+buildFlag c maybeSubCommand flag display =
+    let
+        description : (Color -> String -> String) -> List String
+        description =
+            preferredDescriptionFieldFor maybeSubCommand display
+
+        alias : String
+        alias =
+            case flag.alias of
+                Just alias_ ->
+                    ", -" ++ alias_
+
+                Nothing ->
+                    ""
+
+        flagPresentation : String
+        flagPresentation =
+            "--" ++ flag.name ++ alias ++ buildFlagArgs flag
+    in
+    "    " ++ c display.color flagPresentation ++ "\n        " ++ String.join "\n        " (description c)
+
+
+preferredDescriptionFieldFor : Maybe Subcommand -> Display -> (Colorize -> List String)
+preferredDescriptionFieldFor subcommand display =
+    case subcommand of
+        Just Subcommand.Init ->
+            Maybe.withDefault display.description display.initDescription
+
+        Just Subcommand.NewPackage ->
+            Maybe.withDefault display.description display.newPackageDescription
+
+        Just Subcommand.NewRule ->
+            display.description
+
+        Just Subcommand.Suppress ->
+            display.description
+
+        Just Subcommand.PrepareOffline ->
+            display.description
+
+        Nothing ->
+            display.description
 
 
 buildFlagArgs : Flag -> String
