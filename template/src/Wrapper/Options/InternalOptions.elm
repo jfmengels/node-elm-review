@@ -8,7 +8,7 @@ type alias InternalOptions =
     , help : Bool
     , debug : Bool
     , showBenchmark : Bool
-    , enableExtract : Bool
+    , extract : Bool
     , fileRemovalFixesEnabled : Bool
     , explainFixFailure : Bool
     , ignoreProblematicDependencies : Bool
@@ -16,6 +16,7 @@ type alias InternalOptions =
     , watch : Bool
     , watchConfig : Bool
     , forceBuild : Bool
+    , forTests : Bool
     , offline : Bool
     , reportOnOneLine : Bool
 
@@ -47,7 +48,7 @@ initialOptions =
     , help = False
     , debug = False
     , showBenchmark = False
-    , enableExtract = False
+    , extract = False
     , fileRemovalFixesEnabled = False
     , explainFixFailure = False
     , ignoreProblematicDependencies = False
@@ -55,6 +56,7 @@ initialOptions =
     , watch = False
     , watchConfig = False
     , forceBuild = False
+    , forTests = False
     , offline = False
     , reportOnOneLine = False
     , color = True
