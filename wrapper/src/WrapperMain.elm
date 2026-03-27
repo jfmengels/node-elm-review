@@ -48,7 +48,8 @@ init env =
                 Err error ->
                     ( Done
                     , Cmd.batch
-                        [ Cli.println env.stderr error
+                        [ -- TODO Make pretty error message
+                          Cli.println env.stderr (error.title ++ ": " ++ error.message)
                         , Cli.exit 1
                         ]
                     )
