@@ -17,26 +17,26 @@ parse { args, env } =
 
 type OptionsParseResult
     = ParseSuccess Options
-    | ShowHelp Color.Support (Maybe Subcommand)
+    | ShowHelp Colorize (Maybe Subcommand)
     | ParseError { title : String, message : String }
 
 
 toOptions : Dict String String -> InternalOptions -> OptionsParseResult
 toOptions env options =
     let
-        colorSupport : Color.Support
-        colorSupport =
-            Color.supportsColor env options.color
+        c : Colorize
+        c =
+            Color.toAnsi (Color.supportsColor env options.color)
     in
     if options.help then
-        ShowHelp colorSupport options.subcommand
+        ShowHelp c options.subcommand
 
     else
         case options.problem of
             Just problem ->
                 ParseError
                     (problem
-                        { c = Color.toAnsi colorSupport
+                        { c = c
                         , subcommand = options.subcommand
                         }
                     )

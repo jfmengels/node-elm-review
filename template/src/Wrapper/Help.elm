@@ -1,11 +1,11 @@
 module Wrapper.Help exposing (show)
 
-import Wrapper.Color as Color
+import Wrapper.Color exposing (Colorize)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
-show : Color.Support -> Maybe Subcommand -> String
-show colorSupport maybeSubcommand =
+show : Colorize -> Maybe Subcommand -> String
+show c maybeSubcommand =
     case maybeSubcommand of
         Nothing ->
             "This is the help!"

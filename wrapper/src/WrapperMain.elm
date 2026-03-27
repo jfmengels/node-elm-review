@@ -56,11 +56,11 @@ init env =
                         ]
                     )
 
-                OptionsParser.ShowHelp colorSupport subcommand ->
+                OptionsParser.ShowHelp c subcommand ->
                     ( Done
                     , Cmd.batch
                         [ -- TODO Make pretty help
-                          Cli.println env.stdout (Help.show colorSupport subcommand)
+                          Cli.println env.stdout (Help.show c subcommand)
                         , Cli.exit 0
                         ]
                     )
