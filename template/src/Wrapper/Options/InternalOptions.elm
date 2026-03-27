@@ -2,6 +2,7 @@ module Wrapper.Options.InternalOptions exposing (InternalOptions, ProblemData, i
 
 import Dict exposing (Dict)
 import Wrapper.Color exposing (Color, Colorize)
+import Wrapper.ReportMode as ReportMode exposing (ReportMode)
 import Wrapper.Section exposing (Section)
 import Wrapper.Subcommand exposing (Subcommand)
 
@@ -26,9 +27,7 @@ type alias InternalOptions =
     , reportOnOneLine : Bool
     , color : Maybe Bool
     , details : Bool
-
-    -- TODO Custom type
-    , report : String
+    , report : ReportMode
     , version : Bool
     , fix : Bool
     , fixAll : Bool
@@ -91,7 +90,7 @@ initialOptions =
     , reportOnOneLine = False
     , color = Nothing
     , details = True
-    , report = "human"
+    , report = ReportMode.HumanReadable
     , version = False
     , fix = False
     , fixAll = False

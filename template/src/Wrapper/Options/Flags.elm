@@ -5,6 +5,7 @@ import Set exposing (Set)
 import Wrapper.Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
+import Wrapper.ReportMode as ReportMode
 import Wrapper.Section as Section
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
@@ -651,13 +652,13 @@ reportFlag =
 applyReport : String -> InternalOptions -> Result () InternalOptions
 applyReport arg options =
     if arg == "human" then
-        Ok { options | report = "human" }
+        Ok { options | report = ReportMode.HumanReadable }
 
     else if arg == "json" then
-        Ok { options | report = "json" }
+        Ok { options | report = ReportMode.Json }
 
     else if arg == "ndjson" then
-        Ok { options | report = "ndjson", reportOnOneLine = True }
+        Ok { options | report = ReportMode.Json, reportOnOneLine = True }
 
     else
         Err ()
