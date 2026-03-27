@@ -1,11 +1,15 @@
 module WrapperMain exposing (main)
 
 import Cli exposing (Env)
+import Elm.Review.CliVersion as CliVersion
 import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Task
-import Wrapper.Flags as Flags
+import Wrapper.Help as Help
+import Wrapper.Options
+import Wrapper.Options.Parser as OptionsParser
+import Wrapper.Problem as Problem
 
 
 main : Cli.Program ModelWrapper Msg
@@ -44,16 +48,29 @@ init env =
             )
 
         Ok { fs, os } ->
-            case Flags.parse env of
-                Err error ->
+            case OptionsParser.parse env of
+                OptionsParser.ParseError formatOptions problem ->
+                    ( Done
+                    , exitWithProblem env formatOptions problem
+                    )
+
+                OptionsParser.ShowHelp options ->
                     ( Done
                     , Cmd.batch
-                        [ Cli.println env.stderr error
-                        , Cli.exit 1
+                        [ Cli.println env.stdout (Help.show options)
+                        , Cli.exit 0
                         ]
                     )
 
-                Ok flags ->
+                OptionsParser.ShowVersion ->
+                    ( Done
+                    , Cmd.batch
+                        [ Cli.println env.stdout CliVersion.version
+                        , Cli.exit 0
+                        ]
+                    )
+
+                OptionsParser.ParseSuccess flags ->
                     ( Running { env = env, fs = fs }
                     , Process.run os
                         flags.appBinary
@@ -107,6 +124,14 @@ update (ReviewProcessEnded result) model =
                 , Cli.exit 1
                 ]
             )
+
+
+exitWithProblem : Env -> Problem.FormatOptions options -> Problem.Problem -> Cmd msg
+exitWithProblem env formatOptions problem =
+    Cmd.batch
+        [ Cli.println env.stderr (Problem.format formatOptions problem)
+        , Cli.exit 1
+        ]
 
 
 processErrorToString : ProcessError -> String
