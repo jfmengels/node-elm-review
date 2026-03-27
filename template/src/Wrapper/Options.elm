@@ -29,7 +29,7 @@ type alias Flag =
     { name : String
     , alias : Maybe String
     , argument : Argument
-    , display : Maybe (Colorize -> Display)
+    , display : Maybe Display
     }
 
 
@@ -46,9 +46,9 @@ type Argument
 type alias Display =
     { sections : List Section
     , color : Color
-    , description : List String
-    , initDescription : Maybe (List String)
-    , newPackageDescription : Maybe (List String)
+    , description : Colorize -> List String
+    , initDescription : Maybe (Colorize -> List String)
+    , newPackageDescription : Maybe (Colorize -> List String)
     }
 
 

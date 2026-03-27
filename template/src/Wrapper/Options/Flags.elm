@@ -38,16 +38,15 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | unsuppress = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular, Suppress ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular, Suppress ]
+                , description =
+                    \c ->
                         [ "Include " ++ c Orange "suppressed" ++ " errors in the error report for all rules."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "unsuppress-rules"
       , alias = Nothing
@@ -60,17 +59,16 @@ flags =
                 }
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Suppress ]
-                    , description =
+                { color = Cyan
+                , sections = [ Suppress ]
+                , description =
+                    \c ->
                         [ "Include " ++ c Orange "suppressed" ++ " errors in the error report for the listed rules."
                         , "Specify the rules by their name, and separate them by commas."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "rules"
       , alias = Nothing
@@ -83,35 +81,33 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \_ ->
                         [ "Run with a subsection of the rules in the configuration."
                         , "Specify them by their name, and separate them by commas."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "watch"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | watch = True, watchConfig = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \c ->
                         [ "Re-run " ++ c GreenBright "elm-review" ++ " automatically when your project or configuration"
                         , "changes. Use " ++ c Cyan "--watch-code" ++ " to re-run only on project changes."
                         , "You can use " ++ c Cyan "--watch" ++ " and " ++ c BlueBright "--fix" ++ " together."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "watch-code"
       , alias = Nothing
@@ -123,19 +119,18 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | extract = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \c ->
                         [ "Enable extracting data from the project for the rules that have a"
                         , "data extractor. Requires running with " ++ c Cyan "--report=json" ++ "."
                         , "Learn more by reading the section about \"Extracting information\""
                         , "at https://bit.ly/3UmNr0V"
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "elmjson"
       , alias = Nothing
@@ -148,17 +143,16 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular, PrepareOffline ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular, PrepareOffline ]
+                , description =
+                    \_ ->
                         [ "Specify the path to the elm.json file of the project. By default,"
                         , "the one in the current directory or its parent directories will be used."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "config"
       , alias = Nothing
@@ -171,21 +165,22 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular, Init, PrepareOffline ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular, Init, PrepareOffline ]
+                , description =
+                    \_ ->
                         [ "Use the review configuration in the specified directory instead of the"
                         , "one found in the current directory or one of its parents."
                         ]
-                    , initDescription =
-                        Just
+                , initDescription =
+                    Just
+                        (\_ ->
                             [ "Create the configuration files in the specified directory instead of in"
                             , "the review/ directory."
                             ]
-                    , newPackageDescription = Nothing
-                    }
-                )
+                        )
+                , newPackageDescription = Nothing
+                }
       }
     , templateFlag
     , { name = "compiler"
@@ -199,28 +194,31 @@ flags =
                 }
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular, Init, NewPackage, PrepareOffline ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular, Init, NewPackage, PrepareOffline ]
+                , description =
+                    \c ->
                         [ "Specify the path to the " ++ c MagentaBright "elm" ++ " compiler."
                         ]
-                    , initDescription =
-                        Just
+                , initDescription =
+                    Just
+                        (\c ->
                             [ "Specify the path to the " ++ c MagentaBright "elm" ++ " compiler."
                             , "The " ++ c MagentaBright "elm" ++ " compiler is used to know the version of the compiler to write"
                             , "down in the " ++ c Yellow "review/elm.json" ++ " file’s \"elm-version\" field. Use this if you"
                             , "have multiple versions of the " ++ c MagentaBright "elm" ++ " compiler on your device."
                             ]
-                    , newPackageDescription =
-                        Just
+                        )
+                , newPackageDescription =
+                    Just
+                        (\c ->
                             [ "Specify the path to the " ++ c MagentaBright "elm" ++ " compiler."
                             , "The " ++ c MagentaBright "elm" ++ " compiler is used to know the version of the compiler to write"
                             , "down in the " ++ c Yellow "review/elm.json" ++ " file’s \"elm-version\" field. Use this if you"
                             , "have multiple versions of the " ++ c MagentaBright "elm" ++ " compiler on your device."
                             ]
-                    }
-                )
+                        )
+                }
       }
     , { name = "rule-type"
       , alias = Nothing
@@ -239,36 +237,34 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ NewRule, NewPackage ]
-                    , description =
+                { color = Cyan
+                , sections = [ NewRule, NewPackage ]
+                , description =
+                    \_ ->
                         [ "Whether the starting rule should be a module rule or a project rule."
                         , "Module rules are simpler but look at Elm modules in isolation, whereas"
                         , "project rules are more complex but have access to information from the"
                         , "entire project. You can always switch from a module rule to a project"
                         , "rule manually later on."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "version"
       , alias = Just "v"
       , argument = ArgumentAbsent (\options -> { options | version = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \c ->
                         [ "Print the version of the " ++ c GreenBright "elm-review" ++ " CLI."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "help"
       , alias = Just "h"
@@ -280,35 +276,33 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | debug = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \c ->
                         [ "Add helpful pieces of information for debugging purposes."
                         , "This will also run the compiler with " ++ c Cyan " --debug" ++ ", allowing you to use"
                         , c Yellow "Debug" ++ " functions in your custom rules."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "benchmark-info"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | showBenchmark = True })
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \_ ->
                         [ "Print out how much time it took for rules and phases of the process to"
                         , "run. This is meant for benchmarking purposes."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "color"
       , alias = Nothing
@@ -320,14 +314,12 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | color = Just False })
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description = [ "Disable colors in the output." ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                { color = Cyan
+                , sections = [ Regular ]
+                , description = \_ -> [ "Disable colors in the output." ]
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , reportFlag
     , { name = "no-details"
@@ -335,16 +327,15 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | details = False })
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \_ ->
                         [ "Hide the details from error reports for a more compact view."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "details"
       , alias = Nothing
@@ -356,58 +347,55 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | fix = True })
       , display =
             Just
-                (\c ->
-                    { color = BlueBright
-                    , sections = [ Fix ]
-                    , description =
+                { color = BlueBright
+                , sections = [ Fix ]
+                , description =
+                    \c ->
                         [ c GreenBright "elm-review" ++ " will present fixes for the errors that offer an automatic"
                         , "fix, which you can then accept or refuse one by one. When there are no"
                         , "more fixable errors left, " ++ c GreenBright "elm-review" ++ " will report the remaining errors as"
                         , "if it was called without " ++ c BlueBright " --fix" ++ "."
                         , "Fixed files will be reformatted using " ++ c MagentaBright "elm-format" ++ "."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "fix-all"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | fixAll = True })
       , display =
             Just
-                (\c ->
-                    { color = BlueBright
-                    , sections = [ Fix ]
-                    , description =
+                { color = BlueBright
+                , sections = [ Fix ]
+                , description =
+                    \c ->
                         [ c GreenBright "elm-review" ++ " will present a single fix containing the application of all"
                         , "available automatic fixes, which you can then accept or refuse."
                         , "Afterwards, " ++ c GreenBright "elm-review" ++ " will report the remaining errors as if it was"
                         , "called without " ++ c BlueBright "--fix-all" ++ "."
                         , "Fixed files will be reformatted using " ++ c MagentaBright "elm-format" ++ "."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "fix-all-without-prompt"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | fixAllWithoutPrompt = True })
       , display =
             Just
-                (\c ->
-                    { color = BlueBright
-                    , sections = [ Fix ]
-                    , description =
+                { color = BlueBright
+                , sections = [ Fix ]
+                , description =
+                    \c ->
                         [ "Same as " ++ c BlueBright "--fix-all" ++ " but fixes are applied without a prompt."
                         , "I recommend committing all changes prior to running with this option and"
                         , "reviewing the applied changes afterwards."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "fix-limit"
       , alias = Nothing
@@ -427,42 +415,36 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = BlueBright
-                    , sections = [ Fix ]
-                    , description = [ "Limit the number of fixes applied in a single batch to N." ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                { color = BlueBright
+                , sections = [ Fix ]
+                , description = \_ -> [ "Limit the number of fixes applied in a single batch to N." ]
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "allow-remove-files"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | fileRemovalFixesEnabled = True })
       , display =
             Just
-                (\_ ->
-                    { color = BlueBright
-                    , sections = [ Fix ]
-                    , description = [ "Allow files to be removed by automatic fixes." ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                { color = BlueBright
+                , sections = [ Fix ]
+                , description = \_ -> [ "Allow files to be removed by automatic fixes." ]
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "explain-fix-failure"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | explainFixFailure = True })
       , display =
             Just
-                (\_ ->
-                    { color = BlueBright
-                    , sections = [ Fix ]
-                    , description = [ "Get more information about fixes that failed to apply." ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                { color = BlueBright
+                , sections = [ Fix ]
+                , description = \_ -> [ "Get more information about fixes that failed to apply." ]
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "elm-format-path"
       , alias = Nothing
@@ -475,14 +457,12 @@ flags =
                 }
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Fix ]
-                    , description = [ "Specify the path to " ++ c MagentaBright "elm-format" ++ "." ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                { color = Cyan
+                , sections = [ Fix ]
+                , description = \c -> [ "Specify the path to " ++ c MagentaBright "elm-format" ++ "." ]
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "ignore-problematic-dependencies"
       , alias = Nothing
@@ -504,17 +484,16 @@ flags =
       , argument = ArgumentAbsent (\options -> { options | offline = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \c ->
                         [ "Prevent making network calls. You might need to run"
                         , c Yellow "elm-review prepare-offline" ++ " beforehand to avoid problems."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , gitHubAuthFlag
     , { name = "namespace"
@@ -550,16 +529,15 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description =
+                { color = Cyan
+                , sections = [ Regular ]
+                , description =
+                    \_ ->
                         [ "Ignore the reports of all rules for the specified directories."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "ignore-files"
       , alias = Nothing
@@ -572,34 +550,31 @@ flags =
                 }
       , display =
             Just
-                (\_ ->
-                    { color = Cyan
-                    , sections = [ Regular ]
-                    , description = [ "Ignore the reports of all rules for the specified files." ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                { color = Cyan
+                , sections = [ Regular ]
+                , description = \_ -> [ "Ignore the reports of all rules for the specified files." ]
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "check-after-tests"
       , alias = Nothing
       , argument = ArgumentAbsent (\options -> { options | suppressCheckAfterTests = True })
       , display =
             Just
-                (\c ->
-                    { color = Cyan
-                    , sections = [ SuppressSubcommand ]
-                    , description =
+                { color = Cyan
+                , sections = [ SuppressSubcommand ]
+                , description =
+                    \c ->
                         [ "Checks whether there are uncommitted suppression files. They may get"
                         , "updated when running " ++ c GreenBright "elm-review" ++ ", which people can forget to commit"
                         , "before making a pull request. Running " ++ c Orange "elm-review suppress" ++ " with this flag"
                         , "at the end of your test suite makes sure these files stay up to date."
                         , "This command does not cause your project to be reviewed though."
                         ]
-                    , initDescription = Nothing
-                    , newPackageDescription = Nothing
-                    }
-                )
+                , initDescription = Nothing
+                , newPackageDescription = Nothing
+                }
       }
     , { name = "app"
       , alias = Nothing
@@ -628,20 +603,19 @@ gitHubAuthFlag =
             }
     , display =
         Just
-            (\c ->
-                { color = Cyan
-                , sections = []
-                , description =
+            { color = Cyan
+            , sections = []
+            , description =
+                \c ->
                     [ "To be used along with " ++ c Cyan "--template" ++ " to avoid GitHub rate limiting."
                     , "Follow https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to create an API token. The API token needs access to public repositories."
                     , ""
                     , "Then use the flag like this:"
                     , c GreenBright "  --github-auth=github_pat_abcdef01234567890"
                     ]
-                , initDescription = Nothing
-                , newPackageDescription = Nothing
-                }
-            )
+            , initDescription = Nothing
+            , newPackageDescription = Nothing
+            }
     }
 
 
@@ -658,18 +632,17 @@ reportFlag =
             }
     , display =
         Just
-            (\c ->
-                { color = Cyan
-                , sections = [ Regular ]
-                , description =
+            { color = Cyan
+            , sections = [ Regular ]
+            , description =
+                \c ->
                     [ "Error reports will be in JSON format. " ++ c Magenta "json" ++ " prints a single JSON object"
                     , "while " ++ c Magenta "ndjson" ++ " will print one JSON object per error each on a new line."
                     , "The formats are described in this document: https://bit.ly/31F6jzz"
                     ]
-                , initDescription = Nothing
-                , newPackageDescription = Nothing
-                }
-            )
+            , initDescription = Nothing
+            , newPackageDescription = Nothing
+            }
     }
 
 
@@ -701,10 +674,10 @@ templateFlag =
             }
     , display =
         Just
-            (\c ->
-                { color = Cyan
-                , sections = [ Regular, Init ]
-                , description =
+            { color = Cyan
+            , sections = [ Regular, Init ]
+            , description =
+                \c ->
                     [ "Use the review configuration from a GitHub repository. You can use this"
                     , "to try out " ++ c GreenBright "elm-review" ++ ", a configuration or a single rule."
                     , "This flag requires Internet access, even after the first run."
@@ -715,8 +688,9 @@ templateFlag =
                     , "I recommend to only use this temporarily, and run " ++ c Yellow "elm-review init" ++ " with"
                     , "this same flag to copy the configuration to your project."
                     ]
-                , initDescription =
-                    Just
+            , initDescription =
+                Just
+                    (\_ ->
                         [ "Copy the review configuration from a GitHub repository, at the root or"
                         , "in a folder. Examples:"
                         , "- elm-review init --template author/elm-review-configuration"
@@ -724,9 +698,9 @@ templateFlag =
                         , "- elm-review init --template jfmengels/elm-review-config/application"
                         , "- elm-review init --template jfmengels/elm-review-unused/example#master"
                         ]
-                , newPackageDescription = Nothing
-                }
-            )
+                    )
+            , newPackageDescription = Nothing
+            }
     }
 
 
