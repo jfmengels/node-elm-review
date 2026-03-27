@@ -2,6 +2,7 @@ module WrapperMain exposing (main)
 
 import Cli exposing (Env)
 import Fs exposing (FileSystem)
+import Os exposing (ProcessCapability)
 import Wrapper.Flags as Flags
 
 
@@ -31,7 +32,7 @@ type Msg
 
 init : Env -> ( ModelWrapper, Cmd Msg )
 init env =
-    case Fs.require env of
+    case requireCapabilities env of
         Err msg ->
             ( Done
             , Cmd.batch
@@ -40,7 +41,7 @@ init env =
                 ]
             )
 
-        Ok fs ->
+        Ok { fs, os } ->
             case Flags.parse env of
                 Err error ->
                     ( Done
@@ -57,6 +58,21 @@ init env =
                         , Cli.exit 0
                         ]
                     )
+
+
+requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
+requireCapabilities env =
+    case Fs.require env of
+        Err msg ->
+            Err (env.programName ++ ": " ++ msg)
+
+        Ok fs ->
+            case Os.requireProcess env of
+                Err msg ->
+                    Err (env.programName ++ ": " ++ msg)
+
+                Ok os ->
+                    Ok { fs = fs, os = os }
 
 
 updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
