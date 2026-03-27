@@ -17,6 +17,7 @@ parse { args, env } =
 
 type OptionsParseResult
     = ParseSuccess Options
+    | ShowHelp Color.Support (Maybe Subcommand)
     | ParseError { title : String, message : String }
 
 
@@ -27,25 +28,29 @@ toOptions env options =
         colorSupport =
             Color.supportsColor env options.color
     in
-    case options.problem of
-        Just problem ->
-            ParseError (problem (Color.toAnsi colorSupport))
+    if options.help then
+        ShowHelp colorSupport options.subcommand
 
-        Nothing ->
-            case options.appBinary of
-                Nothing ->
-                    ParseError
-                        { title = "MISSING BINARY APP"
-                        , message = "This is temporarily needed"
-                        }
+    else
+        case options.problem of
+            Just problem ->
+                ParseError (problem (Color.toAnsi colorSupport))
 
-                Just appBinary ->
-                    ParseSuccess
-                        { subcommand = options.subcommand
-                        , help = options.help
-                        , directoriesToAnalyze = options.directoriesToAnalyze
-                        , appBinary = appBinary
-                        }
+            Nothing ->
+                case options.appBinary of
+                    Nothing ->
+                        ParseError
+                            { title = "MISSING BINARY APP"
+                            , message = "This is temporarily needed"
+                            }
+
+                    Just appBinary ->
+                        ParseSuccess
+                            { subcommand = options.subcommand
+                            , help = options.help
+                            , directoriesToAnalyze = options.directoriesToAnalyze
+                            , appBinary = appBinary
+                            }
 
 
 parseHelp : List String -> InternalOptions -> InternalOptions

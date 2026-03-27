@@ -5,6 +5,7 @@ import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Task
+import Wrapper.Help as Help
 import Wrapper.Options
 import Wrapper.Options.Parser as OptionsParser
 
@@ -52,6 +53,15 @@ init env =
                         [ -- TODO Make pretty error message
                           Cli.println env.stderr (error.title ++ ": " ++ error.message)
                         , Cli.exit 1
+                        ]
+                    )
+
+                OptionsParser.ShowHelp colorSupport subcommand ->
+                    ( Done
+                    , Cmd.batch
+                        [ -- TODO Make pretty help
+                          Cli.println env.stdout (Help.show colorSupport subcommand)
+                        , Cli.exit 0
                         ]
                     )
 
