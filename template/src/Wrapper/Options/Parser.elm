@@ -62,8 +62,15 @@ parseHelp args options =
         arg :: rest ->
             case parseFlagAndEqual arg of
                 NotFlag () ->
-                    case checkIfIsSubcommand options arg of
+                    case
+                        Debug.log "Commenting this out changes behavior" <|
+                            checkIfIsSubcommand options arg
+                    of
                         Just subcommand ->
+                            let
+                                _ =
+                                    Debug.log "YES" ()
+                            in
                             parseHelp rest
                                 { options
                                     | subcommand = Just subcommand
@@ -71,6 +78,10 @@ parseHelp args options =
                                 }
 
                         Nothing ->
+                            let
+                                _ =
+                                    Debug.log "NO" ()
+                            in
                             parseHelp rest
                                 { options
                                     | directoriesToAnalyze = arg :: options.directoriesToAnalyze
@@ -158,6 +169,7 @@ checkIfIsSubcommand : InternalOptions -> String -> Maybe Subcommand
 checkIfIsSubcommand options arg =
     if options.subcommandPossible then
         parseSubcommand arg
+            |> Debug.log "checkIfIsSubcommand"
 
     else
         Nothing
