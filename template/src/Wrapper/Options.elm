@@ -1,17 +1,16 @@
 module Wrapper.Options exposing
     ( Options
     , Flag, Argument(..), Display
-    , Color(..)
     )
 
 {-|
 
 @docs Options
 @docs Flag, Argument, Display
-@docs Color
 
 -}
 
+import Wrapper.Color exposing (Color, Colorize)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 import Wrapper.SubCommand exposing (SubCommand)
 
@@ -29,7 +28,7 @@ type alias Flag =
     { name : String
     , alias : Maybe String
     , argument : Argument
-    , display : Maybe ((Color -> String -> String) -> Display)
+    , display : Maybe (Colorize -> Display)
     }
 
 
@@ -50,13 +49,3 @@ type alias Display =
     , initDescription : Maybe (List String)
     , newPackageDescription : Maybe (List String)
     }
-
-
-type Color
-    = Cyan
-    | Orange
-    | Yellow
-    | Magenta
-    | GreenBright
-    | BlueBright
-    | MagentaBright

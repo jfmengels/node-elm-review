@@ -3,7 +3,10 @@ module OptionsParserTest exposing (all)
 import Dict
 import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
+import Wrapper.Color as Color
+import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
+import Wrapper.SubCommand as SubCommand
 
 
 all : Test
@@ -15,12 +18,44 @@ all =
                 , args = [ "--app", "binaryLocation" ]
                 }
                     |> OptionsParser.parse
-                    |> Expect.equal
-                        (ParseSuccess
-                            { subCommand = Nothing
-                            , help = False
-                            , directoriesToAnalyze = []
-                            , appBinary = "binaryLocation"
-                            }
-                        )
+                    |> expectEqual
+                        { subCommand = Nothing
+                        , help = False
+                        , directoriesToAnalyze = []
+                        , appBinary = "binaryLocation"
+                        }
+        , test "Parse subcommand init" <|
+            \() ->
+                { env = Dict.empty
+                , args = [ "init", "--app", "binaryLocation" ]
+                }
+                    |> OptionsParser.parse
+                    |> expectEqual
+                        { subCommand = Just SubCommand.Init
+                        , help = False
+                        , directoriesToAnalyze = []
+                        , appBinary = "binaryLocation"
+                        }
+        , test "Consider unknown args as directories to analyze" <|
+            \() ->
+                { env = Dict.empty
+                , args = [ "unknown", "--app", "binaryLocation", "other" ]
+                }
+                    |> OptionsParser.parse
+                    |> expectEqual
+                        { subCommand = Nothing
+                        , help = False
+                        , directoriesToAnalyze = [ "other", "unknown" ]
+                        , appBinary = "binaryLocation"
+                        }
         ]
+
+
+expectEqual : Options -> OptionsParseResult -> Expectation
+expectEqual expected received =
+    case received of
+        ParseSuccess result ->
+            Expect.equal expected result
+
+        ParseError { title, message } ->
+            Expect.fail ("Unexpected parsing failure:\n\n" ++ title ++ "\n\n" ++ message)

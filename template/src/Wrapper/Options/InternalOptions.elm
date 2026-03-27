@@ -1,5 +1,6 @@
 module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 
+import Wrapper.Color exposing (Colorize)
 import Wrapper.SubCommand exposing (SubCommand)
 
 
@@ -49,7 +50,7 @@ type alias InternalOptions =
     , githubAuth : Maybe String
     , -- TODO Remove field
       appBinary : Maybe String
-    , problem : Maybe { title : String, message : String }
+    , problem : Maybe (Colorize -> { title : String, message : String })
     }
 
 
