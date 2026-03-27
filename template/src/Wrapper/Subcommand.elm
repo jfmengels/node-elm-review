@@ -1,7 +1,7 @@
-module Wrapper.SubCommand exposing (SubCommand(..))
+module Wrapper.Subcommand exposing (Subcommand(..))
 
 
-type SubCommand
+type Subcommand
     = Init
     | NewPackage
     | NewRule

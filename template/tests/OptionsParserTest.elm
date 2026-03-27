@@ -6,7 +6,7 @@ import Test exposing (Test, describe, test)
 import Wrapper.Color as Color
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
-import Wrapper.SubCommand as SubCommand
+import Wrapper.Subcommand as Subcommand
 
 
 all : Test
@@ -19,7 +19,7 @@ all =
                 }
                     |> OptionsParser.parse
                     |> expectEqual
-                        { subCommand = Nothing
+                        { subcommand = Nothing
                         , help = False
                         , directoriesToAnalyze = []
                         , appBinary = "binaryLocation"
@@ -31,7 +31,7 @@ all =
                 }
                     |> OptionsParser.parse
                     |> expectEqual
-                        { subCommand = Just SubCommand.Init
+                        { subcommand = Just Subcommand.Init
                         , help = False
                         , directoriesToAnalyze = []
                         , appBinary = "binaryLocation"
@@ -43,7 +43,7 @@ all =
                 }
                     |> OptionsParser.parse
                     |> expectEqual
-                        { subCommand = Nothing
+                        { subcommand = Nothing
                         , help = False
                         , directoriesToAnalyze = [ "other", "unknown" ]
                         , appBinary = "binaryLocation"
