@@ -39,6 +39,7 @@ type Argument
         { argName : String
         , mayBeUsedSeveralTimes : Bool
         , usesEquals : Bool
+        , apply : String -> InternalOptions -> Result () InternalOptions
         }
 
 

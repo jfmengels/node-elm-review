@@ -2,6 +2,7 @@ module Wrapper.Options.Flags exposing (flags)
 
 import Dict exposing (Dict)
 import Wrapper.Options as Flags exposing (Argument(..), Color(..), Flag)
+import Wrapper.Options.InternalOptions exposing (InternalOptions)
 
 
 flags : List Flag
@@ -29,6 +30,7 @@ flags =
                 { argName = "<rule1,rule2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | unsuppressRules = options.unsuppressRules ++ String.split "," arg }
                 }
       , display =
             Just
@@ -51,6 +53,7 @@ flags =
                 { argName = "<rule1,rule2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | rules = options.rules ++ String.split "," arg }
                 }
       , display =
             Just
@@ -115,6 +118,7 @@ flags =
                 { argName = "<path-to-elm.json>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | elmJsonPath = arg }
                 }
       , display =
             Just
@@ -137,6 +141,7 @@ flags =
                 { argName = "<path-to-review-directory>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | configPath = arg }
                 }
       , display =
             Just
@@ -164,6 +169,7 @@ flags =
                 { argName = "<path-to-elm>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | compilerPath = Just arg }
                 }
       , display =
             Just
@@ -197,6 +203,13 @@ flags =
                 { argName = "<module|project>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply =
+                    \arg options ->
+                        if arg == "module" || arg == "project" then
+                            Ok { options | compilerPath = Just arg }
+
+                        else
+                            Err ()
                 }
       , display =
             Just
@@ -377,6 +390,14 @@ flags =
                 { argName = "N"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = True
+                , apply =
+                    \arg options ->
+                        case String.toInt arg of
+                            Just n ->
+                                Ok { options | fixLimit = Just n }
+
+                            Nothing ->
+                                Err ()
                 }
       , display =
             Just
@@ -424,6 +445,7 @@ flags =
                 { argName = "<path-to-elm-format>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | elmFormatPath = Just arg }
                 }
       , display =
             Just
@@ -476,6 +498,7 @@ flags =
                 { argName = "<namespace>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | namespace = Just arg }
                 }
       , display = Nothing
       }
@@ -486,6 +509,7 @@ flags =
                 { argName = "[author name[, package name[, license]]]"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
+                , apply = \_ _ -> Debug.todo "prefill"
                 }
       , display = Nothing
       }
@@ -496,6 +520,7 @@ flags =
                 { argName = "<dir1,dir2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | ignoredDirs = options.ignoredDirs ++ String.split "," arg }
                 }
       , display =
             Just
@@ -517,6 +542,7 @@ flags =
                 { argName = "<file1,file2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
+                , apply = \arg options -> Ok { options | ignoredFiles = options.ignoredFiles ++ String.split "," arg }
                 }
       , display =
             Just
@@ -561,6 +587,7 @@ gitHubAuthFlag =
             { argName = "<github-api-token>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
+            , apply = \arg options -> Ok { options | githubAuth = Just arg }
             }
     , display =
         Just
@@ -587,9 +614,10 @@ reportFlag =
     , alias = Nothing
     , argument =
         ArgumentPresent
-            { argName = "<json or ndjson>"
+            { argName = "<human|json|ndjson>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
+            , apply = applyReport
             }
     , display =
         Just
@@ -608,6 +636,21 @@ reportFlag =
     }
 
 
+applyReport : String -> InternalOptions -> Result () InternalOptions
+applyReport arg options =
+    if arg == "human" then
+        Ok { options | report = "human" }
+
+    else if arg == "json" then
+        Ok { options | report = "json" }
+
+    else if arg == "ndjson" then
+        Ok { options | report = "ndjson", reportOnOneLine = True }
+
+    else
+        Err ()
+
+
 templateFlag : Flag
 templateFlag =
     { name = "template"
@@ -617,6 +660,7 @@ templateFlag =
             { argName = "<author>/<repo>[/path-to-the-config-folder][#branch-or-commit]"
             , mayBeUsedSeveralTimes = False
             , usesEquals = False
+            , apply = \arg options -> Debug.todo "template"
             }
     , display =
         Just
