@@ -1,6 +1,6 @@
 module Wrapper.Options.Parser exposing (OptionsParseResult(..), parse)
 
-import Dict
+import Dict exposing (Dict)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (Argument(..), Flag, Options)
@@ -9,10 +9,10 @@ import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions
 import Wrapper.SubCommand as SubCommand exposing (SubCommand)
 
 
-parse : { env | args : List String, env : b } -> OptionsParseResult
+parse : { env | args : List String, env : Dict String String } -> OptionsParseResult
 parse { args, env } =
     parseHelp args initialOptions
-        |> toOptions
+        |> toOptions env
 
 
 type OptionsParseResult
@@ -21,17 +21,16 @@ type OptionsParseResult
     | ParseError { title : String, message : String }
 
 
-toOptions : InternalOptions -> OptionsParseResult
-toOptions options =
+toOptions : Dict String String -> InternalOptions -> OptionsParseResult
+toOptions env options =
     let
-        supportsColor : Bool
-        supportsColor =
-            -- TODO Include ENV
-            options.color
+        supportsColor_ : Bool
+        supportsColor_ =
+            Color.supportsColor env options.color
     in
     case options.problem of
         Just problem ->
-            ParseError (problem (Color.toAnsi supportsColor))
+            ParseError (problem (Color.toAnsi supportsColor_))
 
         Nothing ->
             case options.appBinary of
