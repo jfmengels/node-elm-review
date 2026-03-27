@@ -108,6 +108,25 @@ parseHelp args options =
                                         Nothing ->
                                             markProblem (missingValueForFlag flagName) options
 
+                ShorthandFlags [] ->
+                    parseHelp rest (markProblem (\_ -> Debug.todo "Plain - used alone") options)
+
+                ShorthandFlags shorthands ->
+                    List.foldl applyShorthand options shorthands
+
+
+applyShorthand : Char -> InternalOptions -> InternalOptions
+applyShorthand shorthand options =
+    case shorthand of
+        'v' ->
+            { options | version = True }
+
+        'h' ->
+            { options | help = True }
+
+        _ ->
+            markProblem (\_ -> Debug.todo "Unknown shorthand") options
+
 
 nextValue : Maybe String -> List String -> Maybe ( String, List String )
 nextValue equalValue args =
@@ -126,6 +145,7 @@ nextValue equalValue args =
 
 type ArgShape
     = FlagArg { flagName : String, equalValue : Maybe String }
+    | ShorthandFlags (List Char)
     | NotFlag ()
 
 
@@ -144,6 +164,9 @@ parseFlagAndEqual arg =
                     { flagName = String.slice 2 index arg
                     , equalValue = Just (String.dropLeft (index + 1) arg)
                     }
+
+    else if String.startsWith "-" arg then
+        ShorthandFlags (String.toList (String.dropLeft 1 arg))
 
     else
         notFlag

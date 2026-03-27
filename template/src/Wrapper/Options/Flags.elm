@@ -1,4 +1,4 @@
-module Wrapper.Options.Flags exposing (buildFlagArgs, flags, flagsByAlias, flagsByName, flagsNotToDuplicate)
+module Wrapper.Options.Flags exposing (buildFlagArgs, flags, flagsByName, flagsNotToDuplicate)
 
 import Dict exposing (Dict)
 import Set exposing (Set)
@@ -10,21 +10,6 @@ import Wrapper.Options.InternalOptions exposing (InternalOptions)
 flagsByName : Dict String Flag
 flagsByName =
     List.foldl (\flag dict -> Dict.insert flag.name flag dict) Dict.empty flags
-
-
-flagsByAlias : Dict String Flag
-flagsByAlias =
-    List.foldl
-        (\flag dict ->
-            case flag.alias of
-                Just alias ->
-                    Dict.insert alias flag dict
-
-                Nothing ->
-                    dict
-        )
-        Dict.empty
-        flags
 
 
 flagsNotToDuplicate : Set String

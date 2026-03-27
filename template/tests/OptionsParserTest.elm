@@ -68,6 +68,13 @@ all =
                 }
                     |> OptionsParser.parse
                     |> expectHelp (Just Subcommand.Init)
+        , test "Enter help mode by using the -h shorthand" <|
+            \() ->
+                { env = Dict.empty
+                , args = [ "-h" ]
+                }
+                    |> OptionsParser.parse
+                    |> expectHelp Nothing
         ]
 
 
