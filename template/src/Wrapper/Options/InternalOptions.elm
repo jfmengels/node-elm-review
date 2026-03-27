@@ -49,7 +49,7 @@ type alias InternalOptions =
     , githubAuth : Maybe String
     , -- TODO Remove field
       appBinary : Maybe String
-    , unknownFlag : Maybe String
+    , problem : Maybe { title : String, message : String }
     }
 
 
@@ -93,5 +93,5 @@ initialOptions =
     , githubAuth = Nothing
     , directoriesToAnalyze = []
     , appBinary = Nothing
-    , unknownFlag = Nothing
+    , problem = Nothing
     }

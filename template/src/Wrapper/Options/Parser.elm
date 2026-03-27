@@ -1,33 +1,38 @@
-module Wrapper.Options.Parser exposing (parse)
+module Wrapper.Options.Parser exposing (OptionsParseResult(..), parse)
 
-import Dict exposing (Dict)
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.SubCommand as SubCommand exposing (SubCommand)
 
 
-parse : { env | args : List String, env : Dict String String } -> Result { title : String, message : String } Options
+parse : { env | args : List String, env : b } -> OptionsParseResult
 parse { args, env } =
     parseHelp args initialOptions
         |> toOptions
 
 
-toOptions : InternalOptions -> Result { title : String, message : String } Options
+type OptionsParseResult
+    = ParseSuccess Options
+      -- | Help Section
+    | ParseError { title : String, message : String }
+
+
+toOptions : InternalOptions -> OptionsParseResult
 toOptions options =
-    case checkForUnknownArg options of
-        Just error ->
-            Err error
+    case options.problem of
+        Just problem ->
+            ParseError problem
 
         Nothing ->
             case options.appBinary of
                 Nothing ->
-                    Err
+                    ParseError
                         { title = "MISSING BINARY APP"
                         , message = "This is temporarily needed"
                         }
 
                 Just appBinary ->
-                    Ok
+                    ParseSuccess
                         { subCommand = options.subCommand
                         , help = options.help
                         , directoriesToAnalyze = options.directoriesToAnalyze
@@ -102,21 +107,14 @@ parseSubCommand arg =
             Nothing
 
 
-checkForUnknownArg : InternalOptions -> Maybe { title : String, message : String }
-checkForUnknownArg options =
-    case options.unknownFlag of
-        Just unknown ->
-            if options.help then
-                Nothing
-
-            else
-                Just
-                    { title = "UNKNOWN FLAG"
-                    , message = unknownFlagMessage unknown
-                    }
+markProblem : { title : String, message : String } -> InternalOptions -> InternalOptions
+markProblem problem internalOptions =
+    case internalOptions.problem of
+        Just _ ->
+            internalOptions
 
         Nothing ->
-            Nothing
+            { internalOptions | problem = Just problem }
 
 
 unknownFlagMessage : String -> String
