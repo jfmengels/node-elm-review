@@ -11,6 +11,8 @@ type alias InternalOptions =
     , extract : Bool
     , fileRemovalFixesEnabled : Bool
     , explainFixFailure : Bool
+    , ignoredDirs : List String
+    , ignoredFiles : List String
     , ignoreProblematicDependencies : Bool
     , suppressCheckAfterTests : Bool
     , watch : Bool
@@ -34,8 +36,17 @@ type alias InternalOptions =
     , unsuppress : Bool
     , unsuppressRules : List String
     , rules : List String
+
+    -- TODO Custom type
+    , ruleType : String
     , directoriesToAnalyze : List String
     , subCommandPossible : Bool
+    , configPath : String
+    , elmJsonPath : String
+    , compilerPath : Maybe String
+    , elmFormatPath : Maybe String
+    , namespace : Maybe String
+    , githubAuth : Maybe String
     , -- TODO Remove field
       appBinary : Maybe String
     , unknownFlag : Maybe String
@@ -51,6 +62,8 @@ initialOptions =
     , extract = False
     , fileRemovalFixesEnabled = False
     , explainFixFailure = False
+    , ignoredDirs = []
+    , ignoredFiles = []
     , ignoreProblematicDependencies = False
     , suppressCheckAfterTests = False
     , watch = False
@@ -70,7 +83,14 @@ initialOptions =
     , unsuppress = False
     , unsuppressRules = []
     , rules = []
+    , ruleType = "module"
     , subCommandPossible = True
+    , configPath = "elm.json"
+    , elmJsonPath = "elm.json"
+    , compilerPath = Nothing
+    , elmFormatPath = Nothing
+    , namespace = Nothing
+    , githubAuth = Nothing
     , directoriesToAnalyze = []
     , appBinary = Nothing
     , unknownFlag = Nothing
