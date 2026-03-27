@@ -5,7 +5,8 @@ import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Task
-import Wrapper.Flags as Flags
+import Wrapper.Options
+import Wrapper.Options.Parser as OptionsParser
 
 
 main : Cli.Program ModelWrapper Msg
@@ -44,7 +45,7 @@ init env =
             )
 
         Ok { fs, os } ->
-            case Flags.parse env of
+            case OptionsParser.parse env of
                 Err error ->
                     ( Done
                     , Cmd.batch
