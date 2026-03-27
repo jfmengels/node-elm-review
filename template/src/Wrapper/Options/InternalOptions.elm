@@ -1,6 +1,8 @@
-module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+module Wrapper.Options.InternalOptions exposing (InternalOptions, ProblemData, initialOptions)
 
-import Wrapper.Color exposing (Colorize)
+import Dict exposing (Dict)
+import Wrapper.Color exposing (Color, Colorize)
+import Wrapper.Section exposing (Section)
 import Wrapper.Subcommand exposing (Subcommand)
 
 
@@ -48,7 +50,23 @@ type alias InternalOptions =
     , githubAuth : Maybe String
     , -- TODO Remove field
       appBinary : Maybe String
-    , problem : Maybe (Colorize -> { title : String, message : String })
+    , flagsNotToUseAnymore : Dict String Display
+    , problem : Maybe (ProblemData -> { title : String, message : String })
+    }
+
+
+type alias Display =
+    { sections : List Section
+    , color : Color
+    , description : Colorize -> List String
+    , initDescription : Maybe (Colorize -> List String)
+    , newPackageDescription : Maybe (Colorize -> List String)
+    }
+
+
+type alias ProblemData =
+    { c : Colorize
+    , subcommand : Maybe Subcommand
     }
 
 
@@ -92,5 +110,6 @@ initialOptions =
     , githubAuth = Nothing
     , directoriesToAnalyze = []
     , appBinary = Nothing
+    , flagsNotToUseAnymore = Dict.empty
     , problem = Nothing
     }

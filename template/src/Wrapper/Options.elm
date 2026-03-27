@@ -1,7 +1,6 @@
 module Wrapper.Options exposing
     ( Options
     , Flag, Argument(..), Display
-    , Section(..)
     )
 
 {-|
@@ -13,6 +12,7 @@ module Wrapper.Options exposing
 
 import Wrapper.Color exposing (Color, Colorize)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
+import Wrapper.Section exposing (Section)
 import Wrapper.Subcommand exposing (Subcommand)
 
 
@@ -50,14 +50,3 @@ type alias Display =
     , initDescription : Maybe (Colorize -> List String)
     , newPackageDescription : Maybe (Colorize -> List String)
     }
-
-
-type Section
-    = Regular
-    | Suppress
-    | Fix
-    | Init
-    | NewRule
-    | NewPackage
-    | SuppressSubcommand
-    | PrepareOffline

@@ -3,9 +3,9 @@ module Wrapper.Options.Parser exposing (OptionsParseResult(..), parse)
 import Dict exposing (Dict)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Wrapper.Color as Color exposing (Color(..), Colorize)
-import Wrapper.Options exposing (Argument(..), Flag, Options, Section(..))
+import Wrapper.Options exposing (Argument(..), Display, Flag, Options)
 import Wrapper.Options.Flags as Flags
-import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+import Wrapper.Options.InternalOptions exposing (InternalOptions, ProblemData, initialOptions)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
@@ -34,7 +34,12 @@ toOptions env options =
     else
         case options.problem of
             Just problem ->
-                ParseError (problem (Color.toAnsi colorSupport))
+                ParseError
+                    (problem
+                        { c = Color.toAnsi colorSupport
+                        , subcommand = options.subcommand
+                        }
+                    )
 
             Nothing ->
                 case options.appBinary of
@@ -95,18 +100,31 @@ parseHelp args options =
                                                 (markProblem (unexpectedValueForFlag flagName extraValue) options)
 
                                 ArgumentPresent { apply } ->
-                                    case nextValue equalValue rest of
-                                        Just ( value, restOfArgs ) ->
-                                            case apply value options of
-                                                Err () ->
-                                                    parseHelp restOfArgs
-                                                        (markProblem (problemForFlag flagName) options)
-
-                                                Ok newOptions ->
-                                                    parseHelp restOfArgs newOptions
+                                    case Dict.get flagName options.flagsNotToUseAnymore of
+                                        Just display ->
+                                            parseHelp rest
+                                                (markProblem (flagMayNotBeUsedMultipleTimes flag display) options)
 
                                         Nothing ->
-                                            markProblem (missingValueForFlag flagName) options
+                                            case nextValue equalValue rest of
+                                                Just ( value, restOfArgs ) ->
+                                                    case apply value options of
+                                                        Err () ->
+                                                            parseHelp restOfArgs
+                                                                (markProblem (problemForFlag flagName) options)
+
+                                                        Ok newOptions ->
+                                                            parseHelp restOfArgs
+                                                                (case flag.display of
+                                                                    Just display ->
+                                                                        { newOptions | flagsNotToUseAnymore = Dict.insert flag.name display newOptions.flagsNotToUseAnymore }
+
+                                                                    Nothing ->
+                                                                        newOptions
+                                                                )
+
+                                                Nothing ->
+                                                    markProblem (missingValueForFlag flagName) options
 
                 ShorthandFlags [] ->
                     parseHelp rest (markProblem (\_ -> Debug.todo "Plain - used alone") options)
@@ -208,7 +226,7 @@ parseSubcommand arg =
             Nothing
 
 
-markProblem : (Colorize -> { title : String, message : String }) -> InternalOptions -> InternalOptions
+markProblem : (ProblemData -> { title : String, message : String }) -> InternalOptions -> InternalOptions
 markProblem problem internalOptions =
     case internalOptions.problem of
         Just _ ->
@@ -218,8 +236,8 @@ markProblem problem internalOptions =
             { internalOptions | problem = Just problem }
 
 
-unknownFlagMessage : String -> Colorize -> { title : String, message : String }
-unknownFlagMessage flagName c =
+unknownFlagMessage : String -> ProblemData -> { title : String, message : String }
+unknownFlagMessage flagName { c } =
     let
         hint : String
         hint =
@@ -243,16 +261,27 @@ suggestions flagName c =
         |> String.join "\n"
 
 
-missingValueForFlag : String -> Colorize -> { title : String, message : String }
+missingValueForFlag : String -> ProblemData -> { title : String, message : String }
 missingValueForFlag flagName c =
     Debug.todo "missingValueForFlag"
 
 
-unexpectedValueForFlag : String -> String -> Colorize -> { title : String, message : String }
+unexpectedValueForFlag : String -> String -> ProblemData -> { title : String, message : String }
 unexpectedValueForFlag flagName extraValue c =
     Debug.todo "unexpectedValueForFlag"
 
 
-problemForFlag : String -> Colorize -> { title : String, message : String }
+problemForFlag : String -> ProblemData -> { title : String, message : String }
 problemForFlag flagName c =
     Debug.todo "missingValueForFlag"
+
+
+flagMayNotBeUsedMultipleTimes : Flag -> Display -> ProblemData -> { title : String, message : String }
+flagMayNotBeUsedMultipleTimes flag display { c, subcommand } =
+    { title = "FLAG USED SEVERAL TIMES"
+    , message = "The " ++ c RedBright ("--" ++ flag.name) ++ """ flag may not be used several times. I need a single value for this flag but I got several, and I don't know which one to choose.
+
+In case it helps, here is the documentation for this flag:
+
+""" ++ Flags.buildFlag c subcommand flag display
+    }

@@ -1,10 +1,11 @@
-module Wrapper.Options.Flags exposing (buildFlagArgs, buildFlags, flags, flagsByName, flagsNotToDuplicate)
+module Wrapper.Options.Flags exposing (buildFlag, buildFlagArgs, buildFlags, flags, flagsByName, flagsNotToDuplicate)
 
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Wrapper.Color exposing (Color(..), Colorize)
-import Wrapper.Options exposing (Argument(..), Display, Flag, Section(..))
+import Wrapper.Options exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
+import Wrapper.Section as Section
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
@@ -40,7 +41,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular, Suppress ]
+                , sections = [ Section.Regular, Section.Suppress ]
                 , description =
                     \c ->
                         [ "Include " ++ c Orange "suppressed" ++ " errors in the error report for all rules."
@@ -61,7 +62,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Suppress ]
+                , sections = [ Section.Suppress ]
                 , description =
                     \c ->
                         [ "Include " ++ c Orange "suppressed" ++ " errors in the error report for the listed rules."
@@ -83,7 +84,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \_ ->
                         [ "Run with a subsection of the rules in the configuration."
@@ -99,7 +100,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \c ->
                         [ "Re-run " ++ c GreenBright "elm-review" ++ " automatically when your project or configuration"
@@ -121,7 +122,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \c ->
                         [ "Enable extracting data from the project for the rules that have a"
@@ -145,7 +146,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular, PrepareOffline ]
+                , sections = [ Section.Regular, Section.PrepareOffline ]
                 , description =
                     \_ ->
                         [ "Specify the path to the elm.json file of the project. By default,"
@@ -167,7 +168,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular, Init, PrepareOffline ]
+                , sections = [ Section.Regular, Section.Init, Section.PrepareOffline ]
                 , description =
                     \_ ->
                         [ "Use the review configuration in the specified directory instead of the"
@@ -196,7 +197,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular, Init, NewPackage, PrepareOffline ]
+                , sections = [ Section.Regular, Section.Init, Section.NewPackage, Section.PrepareOffline ]
                 , description =
                     \c ->
                         [ "Specify the path to the " ++ c MagentaBright "elm" ++ " compiler."
@@ -239,7 +240,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ NewRule, NewPackage ]
+                , sections = [ Section.NewRule, Section.NewPackage ]
                 , description =
                     \_ ->
                         [ "Whether the starting rule should be a module rule or a project rule."
@@ -258,7 +259,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \c ->
                         [ "Print the version of the " ++ c GreenBright "elm-review" ++ " CLI."
@@ -278,7 +279,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \c ->
                         [ "Add helpful pieces of information for debugging purposes."
@@ -295,7 +296,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \_ ->
                         [ "Print out how much time it took for rules and phases of the process to"
@@ -316,7 +317,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description = \_ -> [ "Disable colors in the output." ]
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
@@ -329,7 +330,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \_ ->
                         [ "Hide the details from error reports for a more compact view."
@@ -349,7 +350,7 @@ flags =
       , display =
             Just
                 { color = BlueBright
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description =
                     \c ->
                         [ c GreenBright "elm-review" ++ " will present fixes for the errors that offer an automatic"
@@ -368,7 +369,7 @@ flags =
       , display =
             Just
                 { color = BlueBright
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description =
                     \c ->
                         [ c GreenBright "elm-review" ++ " will present a single fix containing the application of all"
@@ -387,7 +388,7 @@ flags =
       , display =
             Just
                 { color = BlueBright
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description =
                     \c ->
                         [ "Same as " ++ c BlueBright "--fix-all" ++ " but fixes are applied without a prompt."
@@ -417,7 +418,7 @@ flags =
       , display =
             Just
                 { color = BlueBright
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description = \_ -> [ "Limit the number of fixes applied in a single batch to N." ]
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
@@ -429,7 +430,7 @@ flags =
       , display =
             Just
                 { color = BlueBright
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description = \_ -> [ "Allow files to be removed by automatic fixes." ]
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
@@ -441,7 +442,7 @@ flags =
       , display =
             Just
                 { color = BlueBright
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description = \_ -> [ "Get more information about fixes that failed to apply." ]
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
@@ -459,7 +460,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Fix ]
+                , sections = [ Section.Fix ]
                 , description = \c -> [ "Specify the path to " ++ c MagentaBright "elm-format" ++ "." ]
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
@@ -486,7 +487,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \c ->
                         [ "Prevent making network calls. You might need to run"
@@ -531,7 +532,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description =
                     \_ ->
                         [ "Ignore the reports of all rules for the specified directories."
@@ -552,7 +553,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ Regular ]
+                , sections = [ Section.Regular ]
                 , description = \_ -> [ "Ignore the reports of all rules for the specified files." ]
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
@@ -564,7 +565,7 @@ flags =
       , display =
             Just
                 { color = Cyan
-                , sections = [ SuppressSubcommand ]
+                , sections = [ Section.SuppressSubcommand ]
                 , description =
                     \c ->
                         [ "Checks whether there are uncommitted suppression files. They may get"
@@ -634,7 +635,7 @@ reportFlag =
     , display =
         Just
             { color = Cyan
-            , sections = [ Regular ]
+            , sections = [ Section.Regular ]
             , description =
                 \c ->
                     [ "Error reports will be in JSON format. " ++ c Magenta "json" ++ " prints a single JSON object"
@@ -676,7 +677,7 @@ templateFlag =
     , display =
         Just
             { color = Cyan
-            , sections = [ Regular, Init ]
+            , sections = [ Section.Regular, Section.Init ]
             , description =
                 \c ->
                     [ "Use the review configuration from a GitHub repository. You can use this"
@@ -705,7 +706,7 @@ templateFlag =
     }
 
 
-buildFlags : Colorize -> Section -> Maybe Subcommand -> String
+buildFlags : Colorize -> Section.Section -> Maybe Subcommand -> String
 buildFlags c section maybeSubcommand =
     List.filterMap
         (\flag ->
