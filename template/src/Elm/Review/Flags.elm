@@ -91,11 +91,11 @@ applyArg arg flags =
         [ "--extract" ] ->
             Ok { flags | enableExtract = True }
 
-        [ "--unsuppress", ruleNames ] ->
-            Ok { flags | unsuppressMode = UnsuppressMode.UnsuppressRules (Set.fromList (String.split "," ruleNames)) }
-
         [ "--unsuppress" ] ->
             Ok { flags | unsuppressMode = UnsuppressMode.UnsuppressAll }
+
+        [ "--unsuppress-rules", ruleNames ] ->
+            Ok { flags | unsuppressMode = UnsuppressMode.UnsuppressRules (Set.fromList (String.split "," ruleNames)) }
 
         [ "--no-details" ] ->
             Ok { flags | detailsMode = Reporter.WithoutDetails }
@@ -115,11 +115,11 @@ applyArg arg flags =
         [ "--rules", ruleNames ] ->
             Ok { flags | rulesFilter = Just (Set.fromList (String.split "," ruleNames)) }
 
-        [ "--ignore-dirs", ruleNames ] ->
-            Ok { flags | ignoredDirs = String.split "," ruleNames }
+        [ "--ignore-dirs", dirs ] ->
+            Ok { flags | ignoredDirs = String.split "," dirs }
 
-        [ "--ignore-files", ruleNames ] ->
-            Ok { flags | ignoredFiles = String.split "," ruleNames }
+        [ "--ignore-files", files ] ->
+            Ok { flags | ignoredFiles = String.split "," files }
 
         [ "--suppress" ] ->
             Ok { flags | suppress = True }
