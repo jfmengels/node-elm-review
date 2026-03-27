@@ -3,6 +3,8 @@ module WrapperMain exposing (main)
 import Cli exposing (Env)
 import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
+import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
+import Task
 import Wrapper.Flags as Flags
 
 
@@ -27,7 +29,7 @@ type alias Model =
 
 
 type Msg
-    = Noop
+    = ReviewProcessEnded (Result ProcessError Process.Completed)
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -53,10 +55,14 @@ init env =
 
                 Ok flags ->
                     ( Running { env = env, fs = fs }
-                    , Cmd.batch
-                        [ Cli.println env.stdout ("Got app binary " ++ flags.appBinary)
-                        , Cli.exit 0
-                        ]
+                    , Process.run os
+                        flags.appBinary
+                        { defaultSpawnOptions
+                            | args = []
+                            , stdout = Process.InheritStdout
+                            , stderr = Process.InheritStderr
+                        }
+                        |> Task.attempt ReviewProcessEnded
                     )
 
 
@@ -87,5 +93,30 @@ updateWrapper msg wrapper =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update Noop model =
-    ( model, Cmd.none )
+update (ReviewProcessEnded result) model =
+    case result of
+        Ok completed ->
+            ( model
+            , Cli.exit completed.exitCode
+            )
+
+        Err err ->
+            ( model
+            , Cmd.batch
+                [ Cli.println model.env.stdout ("error: " ++ processErrorToString err)
+                , Cli.exit 1
+                ]
+            )
+
+
+processErrorToString : ProcessError -> String
+processErrorToString err =
+    case err of
+        Process.PermissionDenied ->
+            "PermissionDenied"
+
+        Process.CaptureLimitExceeded stream ->
+            "CaptureLimitExceeded(" ++ stream ++ ")"
+
+        Process.ProcessError message ->
+            message
