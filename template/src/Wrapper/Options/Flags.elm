@@ -327,12 +327,12 @@ flags =
       }
     , { name = "color"
       , alias = Nothing
-      , argument = ArgumentAbsent (\options -> { options | color = True })
+      , argument = ArgumentAbsent (\options -> { options | color = Just True })
       , display = Nothing
       }
     , { name = "no-color"
       , alias = Nothing
-      , argument = ArgumentAbsent (\options -> { options | color = False })
+      , argument = ArgumentAbsent (\options -> { options | color = Just False })
       , display =
             Just
                 (\_ ->

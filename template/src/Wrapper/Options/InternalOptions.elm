@@ -22,9 +22,7 @@ type alias InternalOptions =
     , forTests : Bool
     , offline : Bool
     , reportOnOneLine : Bool
-
-    -- TODO Better type for color
-    , color : Bool
+    , color : Maybe Bool
     , details : Bool
 
     -- TODO Custom type
@@ -73,7 +71,7 @@ initialOptions =
     , forTests = False
     , offline = False
     , reportOnOneLine = False
-    , color = True
+    , color = Nothing
     , details = True
     , report = "human"
     , version = False
