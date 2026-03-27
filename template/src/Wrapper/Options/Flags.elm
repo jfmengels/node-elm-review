@@ -1,6 +1,7 @@
-module Wrapper.Flags exposing (Flag, flags)
+module Wrapper.Options.Flags exposing (flags)
 
 import Dict exposing (Dict)
+import Wrapper.Options as Flags exposing (Color(..), Flag)
 
 
 flags : List Flag
@@ -648,41 +649,7 @@ templateFlag =
     }
 
 
-type alias Flag =
-    { name : String
-    , alias : Maybe String
-    , argument : Maybe Argument
-    , display : Maybe ((Color -> String -> String) -> Display)
-    }
-
-
-type alias Argument =
-    { argName : String
-    , mayBeUsedSeveralTimes : Bool
-    , usesEquals : Bool
-    }
-
-
-type alias Display =
-    { sections : List String
-    , color : Color
-    , description : List String
-    , initDescription : Maybe (List String)
-    , newPackageDescription : Maybe (List String)
-    }
-
-
-type Color
-    = Cyan
-    | Orange
-    | Yellow
-    | Magenta
-    | GreenBright
-    | BlueBright
-    | MagentaBright
-
-
-colorize : Bool -> Color -> String -> String
+colorize : Bool -> Flags.Color -> String -> String
 colorize colorsAreSupported =
     if colorsAreSupported then
         \color str -> "\u{001B}[" ++ toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
@@ -708,7 +675,7 @@ supportsColor { env, args } =
                 True
 
 
-toRGB : Color -> String
+toRGB : Flags.Color -> String
 toRGB color =
     case color of
         Cyan ->

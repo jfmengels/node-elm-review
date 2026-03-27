@@ -1,9 +1,9 @@
-module FlagsTest exposing (all)
+module OptionsParserTest exposing (all)
 
 import Dict
 import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
-import Wrapper.Flags
+import Wrapper.Options.Parser as OptionsParser
 
 
 all : Test
@@ -14,7 +14,7 @@ all =
                 { env = Dict.empty
                 , args = [ "--app", "binaryLocation" ]
                 }
-                    |> Wrapper.Flags.parse
+                    |> OptionsParser.parse
                     |> Expect.equal
                         (Ok
                             { subCommand = Nothing

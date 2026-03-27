@@ -1,15 +1,7 @@
-module Wrapper.Flags exposing (Flags, parse)
+module Wrapper.Options.Parser exposing (parse)
 
 import Dict exposing (Dict)
-
-
-type alias Flags =
-    { subCommand : Maybe SubCommand
-    , help : Bool
-    , directoriesToAnalyze : List String
-    , -- TODO Remove field
-      appBinary : String
-    }
+import Wrapper.Options exposing (Options, SubCommand(..))
 
 
 type alias TmpFlags =
@@ -23,14 +15,6 @@ type alias TmpFlags =
     }
 
 
-type SubCommand
-    = Init
-    | NewPackage
-    | NewRule
-    | Suppress
-    | PrepareOffline
-
-
 default : TmpFlags
 default =
     { subCommand = Nothing
@@ -42,7 +26,7 @@ default =
     }
 
 
-parse : { env | args : List String, env : Dict String String } -> Result { title : String, message : String } Flags
+parse : { env | args : List String, env : Dict String String } -> Result { title : String, message : String } Options
 parse { args, env } =
     let
         flags : TmpFlags
