@@ -1,8 +1,9 @@
-module Wrapper.Options.Flags exposing (flags)
+module Wrapper.Options.Flags exposing (buildFlagArgs, flags, flagsByAlias, flagsByName, flagsNotToDuplicate)
 
 import Dict exposing (Dict)
 import Set exposing (Set)
-import Wrapper.Options as Flags exposing (Argument(..), Color(..), Flag)
+import Wrapper.Color exposing (Color(..))
+import Wrapper.Options exposing (Argument(..), Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 
 
@@ -744,52 +745,20 @@ templateFlag =
     }
 
 
-colorize : Bool -> Flags.Color -> String -> String
-colorize colorsAreSupported =
-    if colorsAreSupported then
-        \color str -> "\u{001B}[" ++ toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
+buildFlagArgs : Flag -> String
+buildFlagArgs flag =
+    case flag.argument of
+        ArgumentAbsent _ ->
+            ""
 
-    else
-        \_ str -> str
+        ArgumentPresent { argName, usesEquals } ->
+            let
+                delimiter : String
+                delimiter =
+                    if usesEquals then
+                        "="
 
-
-supportsColor : { env | args : List String, env : Dict String String } -> Bool
-supportsColor { env, args } =
-    case Dict.get "FORCE_COLOR" env of
-        Just "1" ->
-            True
-
-        Just _ ->
-            False
-
-        Nothing ->
-            if Dict.member "NO_COLOR" env then
-                False
-
-            else
-                True
-
-
-toRGB : Flags.Color -> String
-toRGB color =
-    case color of
-        Cyan ->
-            "38;2;51;187;200"
-
-        Orange ->
-            "38;2;255;165;0"
-
-        Yellow ->
-            "38;2;232;195;56"
-
-        Magenta ->
-            "35"
-
-        GreenBright ->
-            "92"
-
-        BlueBright ->
-            "94"
-
-        MagentaBright ->
-            "95"
+                    else
+                        " "
+            in
+            delimiter ++ argName ++ ""

@@ -46,7 +46,7 @@ init env =
 
         Ok { fs, os } ->
             case OptionsParser.parse env of
-                Err error ->
+                OptionsParser.ParseError error ->
                     ( Done
                     , Cmd.batch
                         [ -- TODO Make pretty error message
@@ -55,7 +55,7 @@ init env =
                         ]
                     )
 
-                Ok flags ->
+                OptionsParser.ParseSuccess flags ->
                     ( Running { env = env, fs = fs }
                     , Process.run os
                         flags.appBinary
