@@ -1,7 +1,8 @@
-module Wrapper.Options.InternalOptions exposing (InternalOptions, ProblemData, initialOptions)
+module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 
 import Dict exposing (Dict)
 import Wrapper.Color exposing (Color, Colorize)
+import Wrapper.Problem exposing (Problem, ProblemSimple)
 import Wrapper.ReportMode as ReportMode exposing (ReportMode)
 import Wrapper.Section exposing (Section)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -50,7 +51,7 @@ type alias InternalOptions =
     , -- TODO Remove field
       appBinary : Maybe String
     , flagsNotToUseAnymore : Dict String Display
-    , problem : Maybe (ProblemData -> { title : String, message : String })
+    , problem : Maybe (Maybe Subcommand -> ProblemSimple)
     }
 
 
@@ -60,12 +61,6 @@ type alias Display =
     , description : Colorize -> List String
     , initDescription : Maybe (Colorize -> List String)
     , newPackageDescription : Maybe (Colorize -> List String)
-    }
-
-
-type alias ProblemData =
-    { c : Colorize
-    , subcommand : Maybe Subcommand
     }
 
 

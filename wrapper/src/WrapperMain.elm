@@ -8,6 +8,7 @@ import Task
 import Wrapper.Help as Help
 import Wrapper.Options
 import Wrapper.Options.Parser as OptionsParser
+import Wrapper.Problem as Problem
 
 
 main : Cli.Program ModelWrapper Msg
@@ -47,11 +48,10 @@ init env =
 
         Ok { fs, os } ->
             case OptionsParser.parse env of
-                OptionsParser.ParseError error ->
+                OptionsParser.ParseError formatOptions error ->
                     ( Done
                     , Cmd.batch
-                        [ -- TODO Make pretty error message
-                          Cli.println env.stderr (error.title ++ ": " ++ error.message)
+                        [ Cli.println env.stderr (Problem.format formatOptions error)
                         , Cli.exit 1
                         ]
                     )

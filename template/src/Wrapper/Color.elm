@@ -2,6 +2,7 @@ module Wrapper.Color exposing
     ( Color(..)
     , Colorize
     , Support
+    , noColors
     , supportsColor
     , toAnsi
     )
@@ -11,6 +12,7 @@ import Dict exposing (Dict)
 
 type Color
     = Yellow
+    | Green
     | Magenta
     | Cyan
     | RedBright
@@ -48,6 +50,11 @@ supportsColor env forcedColorThroughOptions =
                 Maybe.withDefault True forcedColorThroughOptions
 
 
+noColors : Support
+noColors =
+    ColorSupport False
+
+
 toAnsi : Support -> Color -> String -> String
 toAnsi (ColorSupport supportsColor_) =
     if supportsColor_ then
@@ -62,6 +69,9 @@ toAnsiColor color =
     case color of
         Yellow ->
             "33"
+
+        Green ->
+            "38;2;0;128;0"
 
         Magenta ->
             "35"

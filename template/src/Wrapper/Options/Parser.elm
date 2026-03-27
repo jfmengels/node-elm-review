@@ -5,7 +5,8 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (Argument(..), Display, Flag, Options)
 import Wrapper.Options.Flags as Flags
-import Wrapper.Options.InternalOptions exposing (InternalOptions, ProblemData, initialOptions)
+import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
@@ -18,7 +19,7 @@ parse { args, env } =
 type OptionsParseResult
     = ParseSuccess Options
     | ShowHelp Colorize (Maybe Subcommand)
-    | ParseError { title : String, message : String }
+    | ParseError (Problem.FormatOptions {}) Problem
 
 
 toOptions : Dict String String -> InternalOptions -> OptionsParseResult
@@ -35,19 +36,25 @@ toOptions env options =
         case options.problem of
             Just problem ->
                 ParseError
-                    (problem
-                        { c = c
-                        , subcommand = options.subcommand
-                        }
-                    )
+                    { c = c
+                    , report = options.report
+                    , debug = options.debug
+                    }
+                    (Problem.from (problem options.subcommand))
 
             Nothing ->
                 case options.appBinary of
                     Nothing ->
                         ParseError
-                            { title = "MISSING BINARY APP"
-                            , message = "This is temporarily needed"
+                            { c = c
+                            , report = options.report
+                            , debug = options.debug
                             }
+                            (Problem.from
+                                { title = "MISSING BINARY APP"
+                                , message = always "This is temporarily needed"
+                                }
+                            )
 
                     Just appBinary ->
                         ParseSuccess
@@ -226,7 +233,7 @@ parseSubcommand arg =
             Nothing
 
 
-markProblem : (ProblemData -> { title : String, message : String }) -> InternalOptions -> InternalOptions
+markProblem : (Maybe Subcommand -> ProblemSimple) -> InternalOptions -> InternalOptions
 markProblem problem internalOptions =
     case internalOptions.problem of
         Just _ ->
@@ -236,11 +243,11 @@ markProblem problem internalOptions =
             { internalOptions | problem = Just problem }
 
 
-unknownFlagMessage : String -> ProblemData -> { title : String, message : String }
-unknownFlagMessage flagName { c } =
+unknownFlagMessage : String -> a -> ProblemSimple
+unknownFlagMessage flagName _ =
     let
-        hint : String
-        hint =
+        hint : Colorize -> String
+        hint c =
             if flagName == "suppress" then
                 "There is a " ++ c Orange "suppress" ++ " subcommand available, did you mean that? Or do you want one of these instead?"
 
@@ -248,7 +255,7 @@ unknownFlagMessage flagName { c } =
                 "Maybe you want one of these instead?"
     in
     { title = "UNKNOWN FLAG"
-    , message = "I did not recognize this flag:\n\n    " ++ c RedBright ("--" ++ flagName) ++ "\n\n" ++ hint ++ "\n\n" ++ suggestions flagName c
+    , message = \c -> "I did not recognize this flag:\n\n    " ++ c RedBright ("--" ++ flagName) ++ "\n\n" ++ hint c ++ "\n\n" ++ suggestions flagName c
     }
 
 
@@ -261,25 +268,25 @@ suggestions flagName c =
         |> String.join "\n"
 
 
-missingValueForFlag : String -> ProblemData -> { title : String, message : String }
-missingValueForFlag flagName c =
+missingValueForFlag : String -> a -> ProblemSimple
+missingValueForFlag flagName _ =
     Debug.todo "missingValueForFlag"
 
 
-unexpectedValueForFlag : String -> String -> ProblemData -> { title : String, message : String }
-unexpectedValueForFlag flagName extraValue c =
+unexpectedValueForFlag : String -> String -> a -> ProblemSimple
+unexpectedValueForFlag flagName extraValue _ =
     Debug.todo "unexpectedValueForFlag"
 
 
-problemForFlag : String -> ProblemData -> { title : String, message : String }
+problemForFlag : String -> a -> ProblemSimple
 problemForFlag flagName c =
     Debug.todo "missingValueForFlag"
 
 
-flagMayNotBeUsedMultipleTimes : Flag -> Display -> ProblemData -> { title : String, message : String }
-flagMayNotBeUsedMultipleTimes flag display { c, subcommand } =
+flagMayNotBeUsedMultipleTimes : Flag -> Display -> Maybe Subcommand -> ProblemSimple
+flagMayNotBeUsedMultipleTimes flag display subcommand =
     { title = "FLAG USED SEVERAL TIMES"
-    , message = "The " ++ c RedBright ("--" ++ flag.name) ++ """ flag may not be used several times. I need a single value for this flag but I got several, and I don't know which one to choose.
+    , message = \c -> "The " ++ c RedBright ("--" ++ flag.name) ++ """ flag may not be used several times. I need a single value for this flag but I got several, and I don't know which one to choose.
 
 In case it helps, here is the documentation for this flag:
 

@@ -3,8 +3,10 @@ module OptionsParserTest exposing (all)
 import Dict
 import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
+import Wrapper.Color as Color
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
+import Wrapper.Problem as Problem
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
@@ -87,8 +89,12 @@ expectEqual expected received =
         ShowHelp _ subcommand ->
             Expect.fail ("Unexpected showing of help with subcommand " ++ Debug.toString subcommand)
 
-        ParseError { title, message } ->
-            Expect.fail ("Unexpected parsing failure:\n\n" ++ title ++ "\n\n" ++ message)
+        ParseError _ problem ->
+            let
+                { title, message } =
+                    Problem.unwrapFOR_TESTS problem
+            in
+            Expect.fail ("Unexpected parsing failure:\n\n" ++ title ++ "\n\n" ++ message (Color.toAnsi Color.noColors))
 
 
 expectHelp : Maybe Subcommand -> OptionsParseResult -> Expectation
@@ -100,5 +106,9 @@ expectHelp expectedSubcommand received =
         ParseSuccess _ ->
             Expect.fail "Unexpected parse success without help"
 
-        ParseError { title, message } ->
-            Expect.fail ("Unexpected parsing failure:\n\n" ++ title ++ "\n\n" ++ message)
+        ParseError _ problem ->
+            let
+                { title, message } =
+                    Problem.unwrapFOR_TESTS problem
+            in
+            Expect.fail ("Unexpected parsing failure:\n\n" ++ title ++ "\n\n" ++ message (Color.toAnsi Color.noColors))
