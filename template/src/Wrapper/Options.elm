@@ -13,11 +13,11 @@ module Wrapper.Options exposing
 
 import Wrapper.Color exposing (Color, Colorize)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
-import Wrapper.SubCommand exposing (SubCommand)
+import Wrapper.Subcommand exposing (Subcommand)
 
 
 type alias Options =
-    { subCommand : Maybe SubCommand
+    { subcommand : Maybe Subcommand
     , help : Bool
     , directoriesToAnalyze : List String
     , -- TODO Remove field

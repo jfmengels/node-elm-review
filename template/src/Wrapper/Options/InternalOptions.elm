@@ -1,11 +1,11 @@
 module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 
 import Wrapper.Color exposing (Colorize)
-import Wrapper.SubCommand exposing (SubCommand)
+import Wrapper.Subcommand exposing (Subcommand)
 
 
 type alias InternalOptions =
-    { subCommand : Maybe SubCommand
+    { subcommand : Maybe Subcommand
     , help : Bool
     , debug : Bool
     , showBenchmark : Bool
@@ -39,7 +39,7 @@ type alias InternalOptions =
     -- TODO Custom type
     , ruleType : String
     , directoriesToAnalyze : List String
-    , subCommandPossible : Bool
+    , subcommandPossible : Bool
     , configPath : String
     , elmJsonPath : String
     , compilerPath : Maybe String
@@ -54,7 +54,7 @@ type alias InternalOptions =
 
 initialOptions : InternalOptions
 initialOptions =
-    { subCommand = Nothing
+    { subcommand = Nothing
     , help = False
     , debug = False
     , showBenchmark = False
@@ -83,7 +83,7 @@ initialOptions =
     , unsuppressRules = []
     , rules = []
     , ruleType = "module"
-    , subCommandPossible = True
+    , subcommandPossible = True
     , configPath = "elm.json"
     , elmJsonPath = "elm.json"
     , compilerPath = Nothing

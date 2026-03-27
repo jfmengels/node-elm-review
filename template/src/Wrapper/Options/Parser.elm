@@ -3,10 +3,10 @@ module Wrapper.Options.Parser exposing (OptionsParseResult(..), parse)
 import Dict exposing (Dict)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Wrapper.Color as Color exposing (Color(..), Colorize)
-import Wrapper.Options exposing (Argument(..), Flag, Options)
+import Wrapper.Options exposing (Argument(..), Flag, Options, Section(..))
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
-import Wrapper.SubCommand as SubCommand exposing (SubCommand)
+import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
 parse : { env | args : List String, env : Dict String String } -> OptionsParseResult
@@ -17,7 +17,6 @@ parse { args, env } =
 
 type OptionsParseResult
     = ParseSuccess Options
-      -- | Help Section
     | ParseError { title : String, message : String }
 
 
@@ -42,7 +41,7 @@ toOptions env options =
 
                 Just appBinary ->
                     ParseSuccess
-                        { subCommand = options.subCommand
+                        { subcommand = options.subcommand
                         , help = options.help
                         , directoriesToAnalyze = options.directoriesToAnalyze
                         , appBinary = appBinary
@@ -58,19 +57,19 @@ parseHelp args options =
         arg :: rest ->
             case parseFlagAndEqual arg of
                 NotFlag () ->
-                    case checkIfIsSubCommand options arg of
-                        Just subCommand ->
+                    case checkIfIsSubcommand options arg of
+                        Just subcommand ->
                             parseHelp rest
                                 { options
-                                    | subCommand = Just subCommand
-                                    , subCommandPossible = False
+                                    | subcommand = Just subcommand
+                                    , subcommandPossible = False
                                 }
 
                         Nothing ->
                             parseHelp rest
                                 { options
                                     | directoriesToAnalyze = arg :: options.directoriesToAnalyze
-                                    , subCommandPossible = False
+                                    , subcommandPossible = False
                                 }
 
                 FlagArg { flagName, equalValue } ->
@@ -150,32 +149,32 @@ notFlag =
     NotFlag ()
 
 
-checkIfIsSubCommand : InternalOptions -> String -> Maybe SubCommand
-checkIfIsSubCommand options arg =
-    if options.subCommandPossible then
-        parseSubCommand arg
+checkIfIsSubcommand : InternalOptions -> String -> Maybe Subcommand
+checkIfIsSubcommand options arg =
+    if options.subcommandPossible then
+        parseSubcommand arg
 
     else
         Nothing
 
 
-parseSubCommand : String -> Maybe SubCommand
-parseSubCommand arg =
+parseSubcommand : String -> Maybe Subcommand
+parseSubcommand arg =
     case arg of
         "init" ->
-            Just SubCommand.Init
+            Just Subcommand.Init
 
         "new-package" ->
-            Just SubCommand.NewPackage
+            Just Subcommand.NewPackage
 
         "new-rule" ->
-            Just SubCommand.NewRule
+            Just Subcommand.NewRule
 
         "suppress" ->
-            Just SubCommand.Suppress
+            Just Subcommand.Suppress
 
         "prepare-offline" ->
-            Just SubCommand.PrepareOffline
+            Just Subcommand.PrepareOffline
 
         _ ->
             Nothing
