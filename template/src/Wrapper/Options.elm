@@ -1,15 +1,19 @@
 module Wrapper.Options exposing
-    ( Options, SubCommand(..)
+    ( Options
     , Flag, Argument(..), Display
     , Color(..)
     )
 
 {-|
 
-@docs Options, SubCommand
+@docs Options
 @docs Flag, Argument, Display
+@docs Color
 
 -}
+
+import Wrapper.Options.InternalOptions exposing (InternalOptions)
+import Wrapper.SubCommand exposing (SubCommand)
 
 
 type alias Options =
@@ -19,14 +23,6 @@ type alias Options =
     , -- TODO Remove field
       appBinary : String
     }
-
-
-type SubCommand
-    = Init
-    | NewPackage
-    | NewRule
-    | Suppress
-    | PrepareOffline
 
 
 type alias Flag =
