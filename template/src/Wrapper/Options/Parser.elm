@@ -2,21 +2,11 @@ module Wrapper.Options.Parser exposing (parse)
 
 import Dict exposing (Dict)
 import Wrapper.Options exposing (Options, SubCommand(..))
+import Wrapper.Options.InternalOptions exposing (InternalOptions)
 
 
-type alias TmpFlags =
-    { subCommand : Maybe SubCommand
-    , help : Bool
-    , directoriesToAnalyze : List String
-    , subCommandPossible : Bool
-    , -- TODO Remove field
-      appBinary : Maybe String
-    , unknownFlag : Maybe String
-    }
-
-
-default : TmpFlags
-default =
+initialOptions : InternalOptions
+initialOptions =
     { subCommand = Nothing
     , help = False
     , subCommandPossible = True
@@ -28,17 +18,18 @@ default =
 
 parse : { env | args : List String, env : Dict String String } -> Result { title : String, message : String } Options
 parse { args, env } =
-    let
-        flags : TmpFlags
-        flags =
-            parseHelp args default
-    in
-    case checkForUnknownArg flags of
+    parseHelp args initialOptions
+        |> toOptions
+
+
+toOptions : InternalOptions -> Result { title : String, message : String } Options
+toOptions options =
+    case checkForUnknownArg options of
         Just error ->
             Err error
 
         Nothing ->
-            case flags.appBinary of
+            case options.appBinary of
                 Nothing ->
                     Err
                         { title = "MISSING BINARY APP"
@@ -47,52 +38,52 @@ parse { args, env } =
 
                 Just appBinary ->
                     Ok
-                        { subCommand = flags.subCommand
-                        , help = flags.help
-                        , directoriesToAnalyze = flags.directoriesToAnalyze
+                        { subCommand = options.subCommand
+                        , help = options.help
+                        , directoriesToAnalyze = options.directoriesToAnalyze
                         , appBinary = appBinary
                         }
 
 
-parseHelp : List String -> TmpFlags -> TmpFlags
-parseHelp args flags =
+parseHelp : List String -> InternalOptions -> InternalOptions
+parseHelp args options =
     case args of
         [] ->
-            flags
+            options
 
         arg :: rest ->
             case arg of
                 "--help" ->
-                    parseHelp rest { flags | help = True }
+                    parseHelp rest { options | help = True }
 
                 "--app" ->
-                    parseHelp (List.drop 1 rest) { flags | appBinary = List.head rest }
+                    parseHelp (List.drop 1 rest) { options | appBinary = List.head rest }
 
                 _ ->
-                    -- TODO Support concatenated flags like -hv
+                    -- TODO Support concatenated options like -hv
                     if String.startsWith "--" arg then
-                        Debug.todo "flags"
+                        Debug.todo "options"
 
                     else
-                        case checkIfIsSubCommand flags arg of
+                        case checkIfIsSubCommand options arg of
                             Just subCommand ->
                                 parseHelp rest
-                                    { flags
+                                    { options
                                         | subCommand = Just subCommand
                                         , subCommandPossible = False
                                     }
 
                             Nothing ->
                                 parseHelp rest
-                                    { flags
-                                        | directoriesToAnalyze = arg :: flags.directoriesToAnalyze
+                                    { options
+                                        | directoriesToAnalyze = arg :: options.directoriesToAnalyze
                                         , subCommandPossible = False
                                     }
 
 
-checkIfIsSubCommand : TmpFlags -> String -> Maybe SubCommand
-checkIfIsSubCommand flags arg =
-    if flags.subCommandPossible then
+checkIfIsSubCommand : InternalOptions -> String -> Maybe SubCommand
+checkIfIsSubCommand options arg =
+    if options.subCommandPossible then
         parseSubCommand arg
 
     else
@@ -121,11 +112,11 @@ parseSubCommand arg =
             Nothing
 
 
-checkForUnknownArg : TmpFlags -> Maybe { title : String, message : String }
-checkForUnknownArg flags =
-    case flags.unknownFlag of
+checkForUnknownArg : InternalOptions -> Maybe { title : String, message : String }
+checkForUnknownArg options =
+    case options.unknownFlag of
         Just unknown ->
-            if flags.help then
+            if options.help then
                 Nothing
 
             else
