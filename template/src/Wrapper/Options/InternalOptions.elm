@@ -1,6 +1,6 @@
-module Wrapper.Options.InternalOptions exposing (InternalOptions)
+module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 
-import Wrapper.Options exposing (SubCommand)
+import Wrapper.SubCommand exposing (SubCommand)
 
 
 type alias InternalOptions =
@@ -11,4 +11,15 @@ type alias InternalOptions =
     , -- TODO Remove field
       appBinary : Maybe String
     , unknownFlag : Maybe String
+    }
+
+
+initialOptions : InternalOptions
+initialOptions =
+    { subCommand = Nothing
+    , help = False
+    , directoriesToAnalyze = []
+    , subCommandPossible = True
+    , appBinary = Nothing
+    , unknownFlag = Nothing
     }

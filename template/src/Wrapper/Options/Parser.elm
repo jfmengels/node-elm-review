@@ -1,19 +1,9 @@
 module Wrapper.Options.Parser exposing (parse)
 
 import Dict exposing (Dict)
-import Wrapper.Options exposing (Options, SubCommand(..))
-import Wrapper.Options.InternalOptions exposing (InternalOptions)
-
-
-initialOptions : InternalOptions
-initialOptions =
-    { subCommand = Nothing
-    , help = False
-    , subCommandPossible = True
-    , directoriesToAnalyze = []
-    , appBinary = Nothing
-    , unknownFlag = Nothing
-    }
+import Wrapper.Options exposing (Options)
+import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+import Wrapper.SubCommand as SubCommand exposing (SubCommand)
 
 
 parse : { env | args : List String, env : Dict String String } -> Result { title : String, message : String } Options
@@ -94,19 +84,19 @@ parseSubCommand : String -> Maybe SubCommand
 parseSubCommand arg =
     case arg of
         "init" ->
-            Just Init
+            Just SubCommand.Init
 
         "new-package" ->
-            Just NewPackage
+            Just SubCommand.NewPackage
 
         "new-rule" ->
-            Just NewRule
+            Just SubCommand.NewRule
 
         "suppress" ->
-            Just Suppress
+            Just SubCommand.Suppress
 
         "prepare-offline" ->
-            Just PrepareOffline
+            Just SubCommand.PrepareOffline
 
         _ ->
             Nothing
