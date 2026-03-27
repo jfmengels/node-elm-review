@@ -1,8 +1,48 @@
 module Wrapper.Options.Flags exposing (flags)
 
 import Dict exposing (Dict)
+import Set exposing (Set)
 import Wrapper.Options as Flags exposing (Argument(..), Color(..), Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
+
+
+flagsByName : Dict String Flag
+flagsByName =
+    List.foldl (\flag dict -> Dict.insert flag.name flag dict) Dict.empty flags
+
+
+flagsByAlias : Dict String Flag
+flagsByAlias =
+    List.foldl
+        (\flag dict ->
+            case flag.alias of
+                Just alias ->
+                    Dict.insert alias flag dict
+
+                Nothing ->
+                    dict
+        )
+        Dict.empty
+        flags
+
+
+flagsNotToDuplicate : Set String
+flagsNotToDuplicate =
+    List.foldl
+        (\flag set ->
+            case flag.argument of
+                ArgumentPresent { mayBeUsedSeveralTimes } ->
+                    if mayBeUsedSeveralTimes then
+                        set
+
+                    else
+                        Set.insert flag.name set
+
+                ArgumentAbsent _ ->
+                    set
+        )
+        Set.empty
+        flags
 
 
 flags : List Flag
