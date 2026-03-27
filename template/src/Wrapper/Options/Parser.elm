@@ -24,13 +24,13 @@ type OptionsParseResult
 toOptions : Dict String String -> InternalOptions -> OptionsParseResult
 toOptions env options =
     let
-        supportsColor_ : Bool
-        supportsColor_ =
+        colorSupport : Color.Support
+        colorSupport =
             Color.supportsColor env options.color
     in
     case options.problem of
         Just problem ->
-            ParseError (problem (Color.toAnsi supportsColor_))
+            ParseError (problem (Color.toAnsi colorSupport))
 
         Nothing ->
             case options.appBinary of
