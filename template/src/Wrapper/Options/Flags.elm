@@ -615,6 +615,17 @@ flags =
                     }
                 )
       }
+    , { name = "app"
+      , alias = Nothing
+      , argument =
+            ArgumentPresent
+                { argName = "<path-to-app>"
+                , mayBeUsedSeveralTimes = False
+                , usesEquals = False
+                , apply = \arg options -> Ok { options | appBinary = Just arg }
+                }
+      , display = Nothing
+      }
     ]
 
 
