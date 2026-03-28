@@ -1,14 +1,14 @@
-import type {Chalk} from 'chalk';
+import type {Chalk} from "chalk";
 
 export type Section =
-  | 'regular'
-  | 'suppress'
-  | 'fix'
-  | 'init'
-  | 'new-rule'
-  | 'new-package'
-  | 'suppress-subcommand'
-  | 'prepare-offline';
+  | "regular"
+  | "suppress"
+  | "fix"
+  | "init"
+  | "new-rule"
+  | "new-package"
+  | "suppress-subcommand"
+  | "prepare-offline";
 
 export type Flag = BaseFlag & SingleOrMulti & Display;
 

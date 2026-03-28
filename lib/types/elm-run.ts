@@ -1,4 +1,4 @@
-import type {Path} from '../../lib/types/path';
+import type {Path} from "../../lib/types/path";
 
 export type ElmRunOptions = {
   cwd: Path;
@@ -11,5 +11,5 @@ export type ElmRunOptions = {
 
 export interface ElmRunProcessOptions {
   env: NodeJS.ProcessEnv;
-  stdio: ('ignore' | 'inherit' | 'pipe')[];
+  stdio: ("ignore" | "inherit" | "pipe")[];
 }

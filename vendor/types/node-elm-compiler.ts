@@ -1,7 +1,7 @@
-import type {ChildProcess, SpawnOptions} from 'node:child_process';
-import type {ReportMode} from '../../lib/types/options';
-import type {Path} from '../../lib/types/path';
-import type {Source} from '../../lib/types/content';
+import type {ChildProcess, SpawnOptions} from "node:child_process";
+import type {ReportMode} from "../../lib/types/options";
+import type {Path} from "../../lib/types/path";
+import type {Source} from "../../lib/types/content";
 
 export type CompileOptions = {
   spawn?: Spawner;
@@ -21,7 +21,7 @@ export type CompileOptions = {
 
 export interface ProcessOptions {
   env: NodeJS.ProcessEnv;
-  stdio: ('ignore' | 'inherit' | 'pipe')[];
+  stdio: ("ignore" | "inherit" | "pipe")[];
 }
 
 export type Spawner = (

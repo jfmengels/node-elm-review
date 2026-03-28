@@ -1,9 +1,9 @@
 ---
 name: New rule idea
 about: Propose a new rule idea
-title: ''
-labels: ''
-assignees: ''
+title: ""
+labels: ""
+assignees: ""
 ---
 
 <!-- This template may feel a bit too structured, so feel free to change the sections if they do not fit your style. I think that these questions are useful to think about though!

@@ -32,7 +32,7 @@ module.exports = {
   // ],
 
   // Indicates which provider should be used to instrument code for coverage
-  coverageProvider: 'v8',
+  coverageProvider: "v8",
 
   // A list of reporter names that Jest uses when writing coverage reports
   // coverageReporters: [
@@ -86,8 +86,8 @@ module.exports = {
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   modulePathIgnorePatterns: [
-    '<rootDir>/test/temporary/',
-    '<rootDir>/test/run-snapshots/'
+    "<rootDir>/test/temporary/",
+    "<rootDir>/test/run-snapshots/"
   ],
 
   // Activates notifications for test results
@@ -192,8 +192,8 @@ module.exports = {
 
   // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
   watchPathIgnorePatterns: [
-    'snapshots/',
-    'project-with-suppressed-errors/review/suppressed/'
+    "snapshots/",
+    "project-with-suppressed-errors/review/suppressed/"
   ],
 
   // Whether to use watchman for file crawling

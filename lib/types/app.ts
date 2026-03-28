@@ -7,18 +7,18 @@ import type {
   NonElmFiles,
   Readme,
   Source
-} from './content.ts';
-import type {ElmModule, ElmApp} from './elm-js.js';
-import type {ErrorMessageInfo} from './error-message.ts';
-import type {Flags} from './flags.ts';
-import type {Path} from './path.ts';
-import type {SendPort, SubscribePort} from './promisify-port.ts';
-import type {ReportedError} from './report.ts';
-import type {FilesProposedByCurrentFix} from './state.ts';
-import type {StyledMessage} from './styled-message.ts';
-import type {SuppressedErrorsFile} from './suppressed.ts';
+} from "./content.ts";
+import type {ElmModule, ElmApp} from "./elm-js.js";
+import type {ErrorMessageInfo} from "./error-message.ts";
+import type {Flags} from "./flags.ts";
+import type {Path} from "./path.ts";
+import type {SendPort, SubscribePort} from "./promisify-port.ts";
+import type {ReportedError} from "./report.ts";
+import type {FilesProposedByCurrentFix} from "./state.ts";
+import type {StyledMessage} from "./styled-message.ts";
+import type {SuppressedErrorsFile} from "./suppressed.ts";
 
-export type ReviewModule = ElmModule<Ports, Flags, ['Elm', 'Review', 'Main']>;
+export type ReviewModule = ElmModule<Ports, Flags, ["Elm", "Review", "Main"]>;
 export type ReviewApp = ElmApp<Ports>;
 
 export type Ports = {

@@ -8,30 +8,30 @@
  */
 
 /* eslint n/no-process-exit: "off" -- WIP */
-import * as fsp from 'node:fs/promises';
-import * as path from 'node:path';
-import * as process from 'node:process';
-import {fileURLToPath} from 'node:url';
-import {glob} from 'tinyglobby';
-import {$, cd} from 'zx';
+import * as fsp from "node:fs/promises";
+import * as path from "node:path";
+import * as process from "node:process";
+import {fileURLToPath} from "node:url";
+import {glob} from "tinyglobby";
+import {$, cd} from "zx";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 $.quiet = true;
-$.stdio = 'pipe';
-$.preferLocal = [path.join(__dirname, '../.node_modules/.bin/')];
+$.stdio = "pipe";
+$.preferLocal = [path.join(__dirname, "../.node_modules/.bin/")];
 
-const BIN = 'elm-review';
-const TMP = path.join(__dirname, 'temporary');
-const ELM_HOME = path.join(TMP, 'elm-home');
-const SNAPSHOTS = path.join(__dirname, 'run-snapshots');
+const BIN = "elm-review";
+const TMP = path.join(__dirname, "temporary");
+const ELM_HOME = path.join(TMP, "elm-home");
+const SNAPSHOTS = path.join(__dirname, "run-snapshots");
 /** @type {string | undefined} */
 const SUBCOMMAND = process.argv[2];
 
 const nodeVersionOutput = await $`node --version`;
 const nodeVersion = nodeVersionOutput.stdout.toString().slice(1).trim();
-const nvmrc = await fsp.readFile('../.nvmrc');
+const nvmrc = await fsp.readFile("../.nvmrc");
 const expectedVersion = nvmrc.toString().trim();
 
 if (nodeVersion !== expectedVersion) {
@@ -47,14 +47,14 @@ if (nodeVersion !== expectedVersion) {
  * @returns {string}
  */
 const replaceScript = (data) => {
-  const localPath = path.join(__dirname, '..');
-  return data.replace(new RegExp(localPath, 'g'), '<local-path>');
+  const localPath = path.join(__dirname, "..");
+  return data.replace(new RegExp(localPath, "g"), "<local-path>");
 };
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
 const AUTH = AUTH_GITHUB === undefined ? [] : [`--github-auth=${AUTH_GITHUB}`];
 
-const TEST_ARGS = ['--no-color', ...AUTH, '--FOR-TESTS'];
+const TEST_ARGS = ["--no-color", ...AUTH, "--FOR-TESTS"];
 
 const TEST_ARGS_REGEX = /--no-color --github-auth=[\w:]+ /;
 
@@ -71,7 +71,7 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
   const fullArgs = [...TEST_ARGS, ...args];
 
   const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
-  const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
+  const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, "");
 
   process.stdout.write(`- ${title}: \u001B[34m ${censoredCommand}\u001B[0m`);
   try {
@@ -92,8 +92,8 @@ const runCommandAndCompareToSnapshot = async (title, args, file, input) => {
     console.log(`  \u001B[92mOK\u001B[0m`);
   } else {
     const [snapshot, actual] = await Promise.all([
-      fsp.readFile(snapshotPath, 'utf8'),
-      fsp.readFile(actualPath, 'utf8')
+      fsp.readFile(snapshotPath, "utf8"),
+      fsp.readFile(actualPath, "utf8")
     ]);
 
     console.error(
@@ -121,7 +121,7 @@ const runAndRecord = async (title, args, file, input) => {
   const fullArgs = [...TEST_ARGS, ...args];
 
   const cmd = $({halt: true, input})`${BIN} ${fullArgs}`.nothrow();
-  const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, '');
+  const censoredCommand = cmd.cmd.replace(TEST_ARGS_REGEX, "");
 
   console.log(
     `\u001B[33m- ${title}\u001B[0m: \u001B[34m ${censoredCommand}\u001B[0m`
@@ -144,12 +144,12 @@ const createTestSuiteWithDifferentReportFormats = async (title, args, file) => {
   await createTest(title, args, `${file}.txt`);
   await createTest(
     `${title} (JSON)`,
-    [...args, '--report=json'],
+    [...args, "--report=json"],
     `${file}-json.txt`
   );
   await createTest(
     `${title} (Newline delimited JSON)`,
-    [...args, '--report=ndjson'],
+    [...args, "--report=ndjson"],
     `${file}-ndjson.txt`
   );
 };
@@ -164,15 +164,15 @@ const createTestSuiteForHumanAndJson = async (title, args, file) => {
   await createTest(title, args, `${file}.txt`);
   await createTest(
     `${title} (JSON)`,
-    [...args, '--report=json'],
+    [...args, "--report=json"],
     `${file}-json.txt`
   );
 };
 
 const initElmProject = async () => {
-  await $({input: 'Y'})`elm init`;
+  await $({input: "Y"})`elm init`;
   await fsp.writeFile(
-    'src/Main.elm',
+    "src/Main.elm",
     'module A exposing (..)\nimport Html exposing (text)\nmain = text "Hello!"\n'
   );
 };
@@ -183,7 +183,7 @@ const initElmProject = async () => {
  */
 const checkFolderContents = async (folder) => {
   if (SUBCOMMAND === undefined) {
-    process.stdout.write('  Checking generated files are the same');
+    process.stdout.write("  Checking generated files are the same");
 
     const snapshotFolder = path.join(SNAPSHOTS, folder);
     const actualFolder = path.join(TMP, folder);
@@ -216,8 +216,8 @@ const createAndGoIntoFolder = async (folder) => {
 };
 
 const cleanUp = async () => {
-  const elmStuffs = await glob(path.join(__dirname, '/*/elm-stuff'), {
-    ignore: path.join(__dirname, 'project-with-files-in-elm-stuff/'),
+  const elmStuffs = await glob(path.join(__dirname, "/*/elm-stuff"), {
+    ignore: path.join(__dirname, "project-with-files-in-elm-stuff/"),
     onlyDirectories: true,
     expandDirectories: false
   });
@@ -235,13 +235,13 @@ await cleanUp();
 await fsp.mkdir(TMP, {recursive: true});
 
 const createTest = await (async () => {
-  if (SUBCOMMAND === 'record') {
+  if (SUBCOMMAND === "record") {
     await fsp.rm(SNAPSHOTS, {recursive: true, force: true});
     await fsp.mkdir(SNAPSHOTS, {recursive: true});
     return runAndRecord;
   }
 
-  console.log('\u001B[33m-- Testing runs\u001B[0m');
+  console.log("\u001B[33m-- Testing runs\u001B[0m");
   return runCommandAndCompareToSnapshot;
 })();
 
@@ -252,26 +252,26 @@ await $`npm install -g ${PACKAGE_PATH}`;
 
 // Init
 
-const INIT_PROJECT_NAME = 'init-project';
+const INIT_PROJECT_NAME = "init-project";
 
 await createAndGoIntoFolder(INIT_PROJECT_NAME);
 
 await initElmProject();
-await createTest('Init a new configuration', ['init'], 'init.txt', 'Y');
+await createTest("Init a new configuration", ["init"], "init.txt", "Y");
 
 await checkFolderContents(INIT_PROJECT_NAME);
 
 // Init with template
 
-const INIT_TEMPLATE_PROJECT_NAME = 'init-template-project';
+const INIT_TEMPLATE_PROJECT_NAME = "init-template-project";
 
 await createAndGoIntoFolder(INIT_TEMPLATE_PROJECT_NAME);
 
 await initElmProject();
 await createTest(
-  'Init a new configuration using a template',
-  ['init', '--template', 'jfmengels/elm-review-unused/example'],
-  'init-template.txt'
+  "Init a new configuration using a template",
+  ["init", "--template", "jfmengels/elm-review-unused/example"],
+  "init-template.txt"
 );
 
 await checkFolderContents(INIT_TEMPLATE_PROJECT_NAME);
@@ -280,28 +280,28 @@ await checkFolderContents(INIT_TEMPLATE_PROJECT_NAME);
 
 const projectPath =
   SUBCOMMAND === undefined
-    ? path.join(TMP, 'project to fix')
-    : path.join(SNAPSHOTS, 'project to fix');
+    ? path.join(TMP, "project to fix")
+    : path.join(SNAPSHOTS, "project to fix");
 await fsp.rm(projectPath, {recursive: true, force: true});
 
 // @ts-expect-error(TS2339): CI runs on a newer Node.js.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- ^
-await fsp.cp(path.join(__dirname, 'project-with-errors'), projectPath, {
+await fsp.cp(path.join(__dirname, "project-with-errors"), projectPath, {
   recursive: true
 });
 cd(projectPath);
 
 await createTest(
-  'Running with --fix-all-without-prompt',
-  ['--fix-all-without-prompt'],
-  'fix-all.txt'
+  "Running with --fix-all-without-prompt",
+  ["--fix-all-without-prompt"],
+  "fix-all.txt"
 );
 
 if (SUBCOMMAND === undefined) {
   const filesToCheck = [
-    'src/Main.elm',
-    'src/Folder/Used.elm',
-    'src/Folder/Unused.elm'
+    "src/Main.elm",
+    "src/Folder/Used.elm",
+    "src/Folder/Unused.elm"
   ];
 
   /**
@@ -309,8 +309,8 @@ if (SUBCOMMAND === undefined) {
    * @returns {Promise<void>}
    */
   const processFile = async (file) => {
-    const actualFile = path.join(TMP, 'project to fix', file);
-    const snapshotFile = path.join(SNAPSHOTS, 'project to fix', file);
+    const actualFile = path.join(TMP, "project to fix", file);
+    const snapshotFile = path.join(SNAPSHOTS, "project to fix", file);
 
     const diff = await $`diff ${actualFile} ${snapshotFile}`.nothrow();
 
@@ -332,26 +332,26 @@ if (SUBCOMMAND === undefined) {
 
 // Suppress
 
-cd(path.join(__dirname, 'project-with-suppressed-errors'));
+cd(path.join(__dirname, "project-with-suppressed-errors"));
 await createTestSuiteForHumanAndJson(
-  'Running with only suppressed errors should not report any errors',
+  "Running with only suppressed errors should not report any errors",
   [],
-  'suppressed-errors-pass'
+  "suppressed-errors-pass"
 );
 
-await fsp.copyFile('fixed-elm.json', 'elm.json');
+await fsp.copyFile("fixed-elm.json", "elm.json");
 await createTest(
-  'Fixing all errors for an entire rule should remove the suppression file',
+  "Fixing all errors for an entire rule should remove the suppression file",
   [],
-  'suppressed-errors-after-fixed-errors-for-rule.txt'
+  "suppressed-errors-after-fixed-errors-for-rule.txt"
 );
 
 try {
-  await fsp.access('./review/suppressed/NoUnused.Dependencies.json');
+  await fsp.access("./review/suppressed/NoUnused.Dependencies.json");
 
   // That should've thrown: thus the file still exists!?
   console.error(
-    'Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted'
+    "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Dependencies.json to have been deleted"
   );
   process.exit(1);
 } catch {
@@ -360,29 +360,29 @@ try {
 
 await $`git checkout HEAD elm.json review/suppressed/`;
 
-await fsp.rm('src/OtherFile.elm');
+await fsp.rm("src/OtherFile.elm");
 await createTest(
-  'Fixing all errors for an entire rule should update the suppression file',
+  "Fixing all errors for an entire rule should update the suppression file",
   [],
-  'suppressed-errors-after-fixed-errors-for-file.txt'
+  "suppressed-errors-after-fixed-errors-for-file.txt"
 );
 
 const diff =
   await $`diff review/suppressed/NoUnused.Variables.json expected-NoUnused.Variables.json`.nothrow();
 if (diff.exitCode !== 0) {
   console.error(
-    'Expected project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json to have been updated'
+    "Expected project-with-suppressed-errors/review/suppressed/NoUnused.Variables.json to have been updated"
   );
   process.exit(1);
 }
 
 await $`git checkout HEAD src/OtherFile.elm review/suppressed/`;
 
-await fsp.copyFile('with-errors-OtherFile.elm', 'src/OtherFile.elm');
+await fsp.copyFile("with-errors-OtherFile.elm", "src/OtherFile.elm");
 await createTestSuiteForHumanAndJson(
-  'Introducing new errors should show all related errors',
+  "Introducing new errors should show all related errors",
   [],
-  'suppressed-errors-introducing-new-errors'
+  "suppressed-errors-introducing-new-errors"
 );
 await $`git checkout HEAD src/OtherFile.elm`;
 
@@ -390,22 +390,22 @@ cd(__dirname);
 
 // New-package
 
-cd(SUBCOMMAND === 'record' ? SNAPSHOTS : TMP);
+cd(SUBCOMMAND === "record" ? SNAPSHOTS : TMP);
 
-const NEW_PACKAGE_NAME = 'elm-review-something';
+const NEW_PACKAGE_NAME = "elm-review-something";
 const NEW_PACKAGE_NAME_FOR_NEW_RULE = `${NEW_PACKAGE_NAME}-for-new-rule`;
 
 await createTest(
-  'Creating a new package',
+  "Creating a new package",
   [
-    'new-package',
-    '--prefill',
+    "new-package",
+    "--prefill",
     `some-author,${NEW_PACKAGE_NAME},BSD-3-Clause`,
-    'No.Doing.Foo',
-    '--rule-type',
-    'module'
+    "No.Doing.Foo",
+    "--rule-type",
+    "module"
   ],
-  'new-package.txt'
+  "new-package.txt"
 );
 
 await checkFolderContents(NEW_PACKAGE_NAME);
@@ -420,53 +420,53 @@ await fsp.cp(NEW_PACKAGE_NAME, NEW_PACKAGE_NAME_FOR_NEW_RULE, {
 cd(NEW_PACKAGE_NAME_FOR_NEW_RULE);
 
 await createTest(
-  'Creating a new rule',
-  ['new-rule', 'SomeModuleRule', '--rule-type', 'module'],
-  'new-module-rule.txt'
+  "Creating a new rule",
+  ["new-rule", "SomeModuleRule", "--rule-type", "module"],
+  "new-module-rule.txt"
 );
 await createTest(
-  'Creating a new rule',
-  ['new-rule', 'SomeProjectRule', '--rule-type', 'project'],
-  'new-project-rule.txt'
+  "Creating a new rule",
+  ["new-rule", "SomeProjectRule", "--rule-type", "project"],
+  "new-project-rule.txt"
 );
 
 await checkFolderContents(NEW_PACKAGE_NAME_FOR_NEW_RULE);
 
-cd(path.join(__dirname, 'project-with-errors'));
+cd(path.join(__dirname, "project-with-errors"));
 
 await createTest(
-  'Filter rules',
-  ['--rules', 'NoUnused.Variables'],
-  'filter-rules.txt'
+  "Filter rules",
+  ["--rules", "NoUnused.Variables"],
+  "filter-rules.txt"
 );
 
 await createTest(
-  'Filter rules with comma-separated list',
-  ['--rules', 'NoUnused.Variables,NoUnused.Exports'],
-  'filter-rules-comma.txt'
+  "Filter rules with comma-separated list",
+  ["--rules", "NoUnused.Variables,NoUnused.Exports"],
+  "filter-rules-comma.txt"
 );
 await createTest(
-  'Filter rules with multiple --rules calls',
-  ['--rules', 'NoUnused.Variables', '--rules', 'NoUnused.Exports'],
-  'filter-rules-multiple-calls.txt'
+  "Filter rules with multiple --rules calls",
+  ["--rules", "NoUnused.Variables", "--rules", "NoUnused.Exports"],
+  "filter-rules-multiple-calls.txt"
 );
 
 await createTestSuiteWithDifferentReportFormats(
-  'Filter unknown rule',
-  ['--rules', 'NoUnused.Unknown'],
-  'filter-unknown-rule'
+  "Filter unknown rule",
+  ["--rules", "NoUnused.Unknown"],
+  "filter-unknown-rule"
 );
 
 await createTest(
-  'Ignore errors on directories',
-  ['--ignore-dirs', 'src/Folder/'],
-  'ignore-dirs.txt'
+  "Ignore errors on directories",
+  ["--ignore-dirs", "src/Folder/"],
+  "ignore-dirs.txt"
 );
 
 await createTest(
-  'Ignore errors on files',
-  ['--ignore-files', 'src/Folder/Unused.elm'],
-  'ignore-files.txt'
+  "Ignore errors on files",
+  ["--ignore-files", "src/Folder/Unused.elm"],
+  "ignore-files.txt"
 );
 
 // Review with remote configuration
@@ -476,78 +476,78 @@ if (!REMOTE && !SUBCOMMAND && !CI && !AUTH_GITHUB) {
 }
 
 await createTest(
-  'Running using remote GitHub configuration',
-  ['--template', 'jfmengels/elm-review-unused/example'],
-  'remote-configuration.txt'
+  "Running using remote GitHub configuration",
+  ["--template", "jfmengels/elm-review-unused/example"],
+  "remote-configuration.txt"
 );
 await createTest(
-  'Running using remote GitHub configuration (no errors)',
+  "Running using remote GitHub configuration (no errors)",
   [
-    '--template',
-    'jfmengels/node-elm-review/test/config-that-triggers-no-errors'
+    "--template",
+    "jfmengels/node-elm-review/test/config-that-triggers-no-errors"
   ],
-  'remote-configuration-no-errors.txt'
+  "remote-configuration-no-errors.txt"
 );
 await createTest(
-  'Running using remote GitHub configuration without a path to the config',
-  ['--template', 'jfmengels/test-node-elm-review'],
-  'remote-configuration-no-path.txt'
+  "Running using remote GitHub configuration without a path to the config",
+  ["--template", "jfmengels/test-node-elm-review"],
+  "remote-configuration-no-path.txt"
 );
 
 await createTest(
-  'Using unknown remote GitHub configuration',
-  ['--template', 'jfmengels/unknown-repo-123'],
-  'remote-configuration-unknown.txt'
+  "Using unknown remote GitHub configuration",
+  ["--template", "jfmengels/unknown-repo-123"],
+  "remote-configuration-unknown.txt"
 );
 await createTest(
-  'Using unknown remote GitHub configuration with a branch',
-  ['--template', 'jfmengels/unknown-repo-123#some-branch'],
-  'remote-configuration-unknown-with-branch.txt'
+  "Using unknown remote GitHub configuration with a branch",
+  ["--template", "jfmengels/unknown-repo-123#some-branch"],
+  "remote-configuration-unknown-with-branch.txt"
 );
 await createTest(
-  'Using remote GitHub configuration with a non-existing branch and commit',
-  ['--template', 'jfmengels/elm-review-unused/example#unknown-branch'],
-  'remote-configuration-with-unknown-branch.txt'
+  "Using remote GitHub configuration with a non-existing branch and commit",
+  ["--template", "jfmengels/elm-review-unused/example#unknown-branch"],
+  "remote-configuration-with-unknown-branch.txt"
 );
 await createTest(
-  'Using remote GitHub configuration with existing repo but that does not contain template folder',
-  ['--template', 'jfmengels/node-elm-review'],
-  'remote-configuration-with-absent-folder.txt'
+  "Using remote GitHub configuration with existing repo but that does not contain template folder",
+  ["--template", "jfmengels/node-elm-review"],
+  "remote-configuration-with-absent-folder.txt"
 );
 await createTest(
-  'Using a remote configuration with a missing direct elm-review dependency',
-  ['--template', 'jfmengels/node-elm-review/test/config-without-elm-review'],
-  'remote-without-elm-review.txt'
+  "Using a remote configuration with a missing direct elm-review dependency",
+  ["--template", "jfmengels/node-elm-review/test/config-without-elm-review"],
+  "remote-without-elm-review.txt"
 );
 await createTest(
-  'Using a remote configuration with an outdated elm-review',
+  "Using a remote configuration with an outdated elm-review",
   [
-    '--template',
-    'jfmengels/node-elm-review/test/config-for-outdated-elm-review-version'
+    "--template",
+    "jfmengels/node-elm-review/test/config-for-outdated-elm-review-version"
   ],
-  'remote-with-outdated-elm-review-version.txt'
+  "remote-with-outdated-elm-review-version.txt"
 );
 await createTest(
-  'Using a remote configuration with an salvageable (outdated but compatible) elm-review',
+  "Using a remote configuration with an salvageable (outdated but compatible) elm-review",
   [
-    '--template',
-    'jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version'
+    "--template",
+    "jfmengels/node-elm-review/test/config-for-salvageable-elm-review-version"
   ],
-  'remote-with-outdated-but-salvageable-elm-review-version.txt'
+  "remote-with-outdated-but-salvageable-elm-review-version.txt"
 );
 await createTest(
-  'Using a remote configuration with unparsable elm.json',
-  ['--template', 'jfmengels/node-elm-review/test/config-unparsable-elmjson'],
-  'remote-configuration-with-unparsable-elmjson.txt'
+  "Using a remote configuration with unparsable elm.json",
+  ["--template", "jfmengels/node-elm-review/test/config-unparsable-elmjson"],
+  "remote-configuration-with-unparsable-elmjson.txt"
 );
 await createTest(
-  'Using both --config and --template',
+  "Using both --config and --template",
   [
-    '--config',
-    '../config-that-triggers-no-errors',
-    '--template=jfmengels/test-node-elm-review'
+    "--config",
+    "../config-that-triggers-no-errors",
+    "--template=jfmengels/test-node-elm-review"
   ],
-  'remote-configuration-with-config-flag.txt'
+  "remote-configuration-with-config-flag.txt"
 );
 
 await fsp.rm(TMP, {recursive: true, force: true});

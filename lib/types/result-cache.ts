@@ -1,5 +1,5 @@
-import type {Replacer} from './json.ts';
-import type {Path} from './path.ts';
+import type {Replacer} from "./json.ts";
+import type {Path} from "./path.ts";
 
 declare global {
   // eslint-disable-next-line no-var -- See discussion at typescript-eslint/typescript-eslint#7941.

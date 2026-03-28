@@ -52,7 +52,7 @@ jobs:
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: lts/*
-          cache: 'npm'
+          cache: "npm"
 
       # Re-use node_modules between runs until package-lock.json changes.
       - name: Cache node_modules
@@ -127,7 +127,7 @@ jobs:
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: lts/*
-          cache: 'npm'
+          cache: "npm"
 
       # Re-use node_modules between runs until package-lock.json changes.
       - name: Cache node_modules

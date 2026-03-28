@@ -1,5 +1,5 @@
-import type {AppHash} from './build.ts';
-import type {Path} from './path.ts';
+import type {AppHash} from "./build.ts";
+import type {Path} from "./path.ts";
 
 export type OptionsBase = {
   debug: boolean;
@@ -72,9 +72,9 @@ export type ReviewOptions = Options & {
   readmePath: Path;
 };
 
-export type DetailsMode = 'without-details' | 'with-details';
+export type DetailsMode = "without-details" | "with-details";
 
-export type ReportMode = 'json' | 'ndjson' | 'human' | null;
+export type ReportMode = "json" | "ndjson" | "human" | null;
 
 export type NewPackagePrefilledAnswers = {
   authorName: string | undefined;
@@ -82,7 +82,7 @@ export type NewPackagePrefilledAnswers = {
   license: string | undefined;
 };
 
-export type RuleType = 'module' | 'project';
+export type RuleType = "module" | "project";
 
 export type Template = {
   repoName: string;
@@ -91,8 +91,8 @@ export type Template = {
 };
 
 export type Subcommand =
-  | 'init'
-  | 'new-package'
-  | 'new-rule'
-  | 'suppress'
-  | 'prepare-offline';
+  | "init"
+  | "new-package"
+  | "new-rule"
+  | "suppress"
+  | "prepare-offline";

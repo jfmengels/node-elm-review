@@ -1,5 +1,5 @@
-import type {StyledMessagePart} from './styled-message.ts';
-import type {SuppressedErrorsFile} from './suppressed.ts';
+import type {StyledMessagePart} from "./styled-message.ts";
+import type {SuppressedErrorsFile} from "./suppressed.ts";
 
 export type ReportedError = StyledMessagePart & {
   errors: object[];
