@@ -1,5 +1,5 @@
-import type {MessagePort} from 'node:worker_threads';
-import type {Result} from './result.js';
+import type {MessagePort} from "node:worker_threads";
+import type {Result} from "./result.js";
 
 export type WorkerData = {
   sharedLock: SharedArrayBuffer;

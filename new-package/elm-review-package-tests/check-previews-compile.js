@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const path = require('node:path');
-const {execSync} = require('node:child_process');
+const path = require("node:path");
+const {execSync} = require("node:child_process");
 // @ts-ignore - Generated file.
-const packageDependencies = require('../elm.json').dependencies;
-const Ansi = require('./helpers/ansi');
-const {findPreviewConfigurations} = require('./helpers/find-configurations');
+const packageDependencies = require("../elm.json").dependencies;
+const Ansi = require("./helpers/ansi");
+const {findPreviewConfigurations} = require("./helpers/find-configurations");
 
 const root = path.dirname(__dirname);
 
@@ -28,9 +28,9 @@ function checkThatExampleCompiles(exampleConfiguration) {
 
   try {
     execSync(`npx elm-review --config ${exampleConfiguration} --report=json`, {
-      encoding: 'utf8',
-      stdio: 'pipe',
-      cwd: path.resolve(__dirname, '..')
+      encoding: "utf8",
+      stdio: "pipe",
+      cwd: path.resolve(__dirname, "..")
     }).toString();
     success(exampleConfiguration);
   } catch (error) {
@@ -39,9 +39,9 @@ function checkThatExampleCompiles(exampleConfiguration) {
       // We don't care whether there were any reported errors.
       // If the root type is not "error", then the configuration compiled
       // successfully, which is all we care about in this test.
-      if (output.type !== 'review-errors') {
+      if (output.type !== "review-errors") {
         console.log(
-          `${Ansi.red('✖')} ${Ansi.yellow(
+          `${Ansi.red("✖")} ${Ansi.yellow(
             `${path.relative(root, exampleConfiguration)}/`
           )} does not compile.`
         );
@@ -71,7 +71,7 @@ and make the necessary changes to make it compile.`
  * @returns {void}
  */
 function success(config) {
-  console.log(`${Ansi.green('✔')} ${path.relative(root, config)}/ compiles`);
+  console.log(`${Ansi.green("✔")} ${path.relative(root, config)}/ compiles`);
 }
 
 /**
@@ -99,7 +99,7 @@ function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
 
   const remainingKeys = Object.keys(previewDependencies);
   if (remainingKeys.length > 0) {
-    const extraneousDependencies = remainingKeys.join(', ');
+    const extraneousDependencies = remainingKeys.join(", ");
 
     console.error(
       `There are extraneous dependencies in the ${exampleConfiguration}/ configuration: ${extraneousDependencies}`
@@ -116,7 +116,7 @@ function checkDepsAreCompatible(exampleConfiguration, previewDependencies) {
  * @returns {void}
  */
 function checkConstraint(exampleConfiguration, depName, constraint, version) {
-  const [minVersion] = constraint.split(' <= v < ').map(splitVersion);
+  const [minVersion] = constraint.split(" <= v < ").map(splitVersion);
   const previewVersion = splitVersion(version);
   const isValid =
     previewVersion[0] === minVersion[0] &&
@@ -136,5 +136,5 @@ function checkConstraint(exampleConfiguration, depName, constraint, version) {
  * @returns {number[]}
  */
 function splitVersion(version) {
-  return version.split('.').map((n) => Number.parseInt(n, 10));
+  return version.split(".").map((n) => Number.parseInt(n, 10));
 }

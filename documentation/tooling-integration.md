@@ -174,10 +174,10 @@ Other fix kinds may appear in the future. If anything unknown or unsupported app
 ```ts
 type FixKind =
   | {
-      kind: 'remove';
+      kind: "remove";
     }
   | {
-      kind: 'edit';
+      kind: "edit";
       edits: Array<Edit>;
     };
 ```

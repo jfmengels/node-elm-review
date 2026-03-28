@@ -1,4 +1,4 @@
-export type ElmModule<P, F, Entrypoints extends string[] = ['Main']> = {
+export type ElmModule<P, F, Entrypoints extends string[] = ["Main"]> = {
   Elm: NestedEntrypoints<Entrypoints, P, F>;
 };
 

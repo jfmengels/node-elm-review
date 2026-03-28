@@ -1,5 +1,5 @@
-import type {VersionRange, VersionString} from './version.ts';
-import type {Path} from './path.ts';
+import type {VersionRange, VersionString} from "./version.ts";
+import type {Path} from "./path.ts";
 
 export type File = {
   path: Path;
@@ -31,11 +31,11 @@ export type ElmJsonData = {
 export type ElmJson = ApplicationElmJson | PackageElmJson;
 
 export type ApplicationElmJson = {
-  type: 'application';
-  'elm-version': VersionString;
-  'source-directories': Path[];
+  type: "application";
+  "elm-version": VersionString;
+  "source-directories": Path[];
   dependencies: ApplicationDependencies;
-  'test-dependencies': ApplicationDependencies;
+  "test-dependencies": ApplicationDependencies;
 };
 
 export type ApplicationDependencies = {
@@ -49,15 +49,15 @@ export type PackageDependencyList = Record<PackageName, VersionRange>;
 export type PackageName = `${string}/${string}`;
 
 export type PackageElmJson = {
-  type: 'package';
+  type: "package";
   name: PackageName;
   summary: string;
   license: string;
   version: VersionString;
-  'exposed-modules': string[] | Record<string, string[]>;
-  'elm-version': VersionRange;
+  "exposed-modules": string[] | Record<string, string[]>;
+  "elm-version": VersionRange;
   dependencies: PackageDependencyList;
-  'test-dependencies': PackageDependencyList;
+  "test-dependencies": PackageDependencyList;
 };
 
 export type SourceDirectories = Path[];

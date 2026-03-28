@@ -1,1 +1,1 @@
-export type FixMode = 'fix' | 'fixAll' | 'dontfix';
+export type FixMode = "fix" | "fixAll" | "dontfix";

@@ -3,12 +3,12 @@
  * @import {Options} from './types/cli';
  */
 
-const path = require('node:path');
-const {toMatchFile} = require('jest-file-snapshot');
+const path = require("node:path");
+const {toMatchFile} = require("jest-file-snapshot");
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
-const {$} = require('zx');
+const {$} = require("zx");
 
-const cli = path.resolve(__dirname, '../../bin/elm-review');
+const cli = path.resolve(__dirname, "../../bin/elm-review");
 expect.extend({toMatchFile});
 
 /**
@@ -17,7 +17,7 @@ expect.extend({toMatchFile});
  * @returns {Promise<string>}
  */
 async function run(args, options) {
-  const output = await internalExec(['--FOR-TESTS', ...args], options);
+  const output = await internalExec(["--FOR-TESTS", ...args], options);
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
@@ -30,7 +30,7 @@ async function run(args, options) {
  * @returns {Promise<unknown>}
  */
 async function runAndExpectError(args, options) {
-  const output = await internalExec(['--FOR-TESTS', ...args], options);
+  const output = await internalExec(["--FOR-TESTS", ...args], options);
   if (output.exitCode !== 0) {
     return output.stdout; // Should this be stderr?
   }
@@ -67,7 +67,7 @@ async function internalExec(args, options = {}) {
       ...process.env,
       // Overriding `FORCE_COLOR` because Jest forcefully adds it as well,
       // which otherwise enables colors when we don't want it.
-      FORCE_COLOR: options.colors ? '1' : '0'
+      FORCE_COLOR: options.colors ? "1" : "0"
     },
     quiet: true
   })`${cli} ${reportMode(options)} ${colors(options)} ${args}`.nothrow();
@@ -80,7 +80,7 @@ async function internalExec(args, options = {}) {
  */
 function cwdFromOptions(options) {
   if (options.project) {
-    return path.resolve(__dirname, '..', options.project);
+    return path.resolve(__dirname, "..", options.project);
   }
 
   return options.cwd;
@@ -107,7 +107,7 @@ function colors(options) {
     return [];
   }
 
-  return ['--no-color'];
+  return ["--no-color"];
 }
 
 module.exports = {

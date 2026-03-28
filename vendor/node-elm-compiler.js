@@ -1,12 +1,12 @@
-'use strict';
+"use strict";
 
 /**
  * @import {ChildProcess} from 'node:child_process'
  * @import {CompileOptions, ProcessOptions, Sources, Spawner} from './types/node-elm-compiler'
  */
 
-var spawn = require('cross-spawn');
-var elmBinaryName = 'elm';
+var spawn = require("cross-spawn");
+var elmBinaryName = "elm";
 
 /** @satisfies {Partial<CompileOptions>} */
 var defaultOptions = {
@@ -28,7 +28,7 @@ var defaultOptions = {
  * @returns {string[]}
  */
 function prepareSources(sources) {
-  return typeof sources === 'string' ? [sources] : sources;
+  return typeof sources === "string" ? [sources] : sources;
 }
 
 /**
@@ -49,7 +49,7 @@ function prepareProcessArgs(sources, options) {
   var preparedSources = prepareSources(sources);
   var compilerArgs = compilerArgsFromOptions(options);
 
-  return ['make'].concat(
+  return ["make"].concat(
     preparedSources ? preparedSources.concat(compilerArgs) : compilerArgs
   );
 }
@@ -59,9 +59,9 @@ function prepareProcessArgs(sources, options) {
  * @returns {ProcessOptions}
  */
 function prepareProcessOpts(options) {
-  var env = Object.assign({LANG: 'en_US.UTF-8'}, process.env);
+  var env = Object.assign({LANG: "en_US.UTF-8"}, process.env);
   return Object.assign(
-    {env: env, stdio: 'inherit', cwd: options.cwd},
+    {env: env, stdio: "inherit", cwd: options.cwd},
     options.processOpts
   );
 }
@@ -73,11 +73,11 @@ function prepareProcessOpts(options) {
  * @returns {ChildProcess}
  */
 function runCompiler(sources, options, pathToElm) {
-  if (typeof options.spawn !== 'function') {
+  if (typeof options.spawn !== "function") {
     throw (
-      'options.spawn was a(n) ' +
+      "options.spawn was a(n) " +
       typeof options.spawn +
-      ' instead of a function.'
+      " instead of a function."
     );
   }
 
@@ -85,7 +85,7 @@ function runCompiler(sources, options, pathToElm) {
   var processOpts = prepareProcessOpts(options);
 
   if (options.verbose) {
-    console.log(['Running', pathToElm].concat(processArgs).join(' '));
+    console.log(["Running", pathToElm].concat(processArgs).join(" "));
   }
 
   return options.spawn(
@@ -101,14 +101,14 @@ function runCompiler(sources, options, pathToElm) {
  * @param {string} pathToElm
  */
 function compilerErrorToString(err, pathToElm) {
-  if (typeof err === 'object' && typeof err.code === 'string') {
+  if (typeof err === "object" && typeof err.code === "string") {
     switch (err.code) {
-      case 'ENOENT':
+      case "ENOENT":
         return (
           'Could not find Elm compiler "' + pathToElm + '". Is it installed?'
         );
 
-      case 'EACCES':
+      case "EACCES":
         return (
           'Elm compiler "' +
           pathToElm +
@@ -120,11 +120,11 @@ function compilerErrorToString(err, pathToElm) {
           'Error attempting to run Elm compiler "' + pathToElm + '":\n' + err
         );
     }
-  } else if (typeof err === 'object' && typeof err.message === 'string') {
+  } else if (typeof err === "object" && typeof err.message === "string") {
     return JSON.stringify(err.message);
   } else {
     return (
-      'Exception thrown when attempting to run Elm compiler ' +
+      "Exception thrown when attempting to run Elm compiler " +
       JSON.stringify(pathToElm)
     );
   }
@@ -141,7 +141,7 @@ function compile(sources, options) {
 
   try {
     return runCompiler(sources, optionsWithDefaults, pathToElm).on(
-      'error',
+      "error",
       function (err) {
         throw err;
       }
@@ -173,33 +173,33 @@ function compilerArgsFromOptions(options) {
     Object.entries(options).map(function ([opt, value]) {
       if (value) {
         switch (opt) {
-          case 'spawn':
+          case "spawn":
             return [];
-          case 'cwd':
+          case "cwd":
             return [];
-          case 'pathToElm':
+          case "pathToElm":
             return [];
-          case 'help':
-            return ['--help'];
-          case 'output':
-            return ['--output', value];
-          case 'report':
-            return ['--report', value];
-          case 'debug':
-            return ['--debug'];
-          case 'verbose':
+          case "help":
+            return ["--help"];
+          case "output":
+            return ["--output", value];
+          case "report":
+            return ["--report", value];
+          case "debug":
+            return ["--debug"];
+          case "verbose":
             return [];
-          case 'processOpts':
+          case "processOpts":
             return [];
-          case 'docs':
-            return ['--docs', value];
-          case 'optimize':
-            return ['--optimize'];
-          case 'runtimeOptions':
-            return ['+RTS', ...value, '-RTS'];
+          case "docs":
+            return ["--docs", value];
+          case "optimize":
+            return ["--optimize"];
+          case "runtimeOptions":
+            return ["+RTS", ...value, "-RTS"];
           default:
             throw new Error(
-              'node-elm-compiler was given an unrecognized Elm compiler option: ' +
+              "node-elm-compiler was given an unrecognized Elm compiler option: " +
                 opt
             );
         }
