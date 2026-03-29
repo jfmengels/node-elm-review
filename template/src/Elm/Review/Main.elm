@@ -649,7 +649,7 @@ update msg model =
 
 This will ignore the problematic dependencies, and can GIVE YOU INCORRECT RESULTS! This is a temporary measure.
 
-If I am mistaken about the nature of problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
+If I am mistaken about the nature of the problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
 
 """
                                     ++ Decode.errorToString decodeError
