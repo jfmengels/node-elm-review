@@ -71,7 +71,7 @@ You can customize the review command with the following flags:
     --compiler <path-to-elm>
         Specify the path to the elm compiler.
 
-    --version
+    --version, -v
         Print the version of the elm-review CLI.
 
     --debug
