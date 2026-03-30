@@ -11,15 +11,17 @@ module Wrapper.Build exposing
 
 -}
 
+import Elm.Project
 import Fs exposing (FileSystem, FsError)
+import Json.Decode as Decode
 import Task exposing (Task)
-import Wrapper.Color exposing (Color(..))
+import Wrapper.Color exposing (Color(..), Colorize)
 import Wrapper.Options as Options exposing (Options)
 import Wrapper.Problem as Problem exposing (Problem)
 
 
 type Msg
-    = ReceivedReviewElmJson (Result Problem String)
+    = ReceivedReviewElmJson (Result Problem Elm.Project.ApplicationInfo)
 
 
 update : Msg -> Result Problem ()
@@ -45,15 +47,21 @@ buildLocalProject fs options reviewFolder =
         |> Task.attempt ReceivedReviewElmJson
 
 
-readReviewElmJson : FileSystem -> String -> Task Problem String
+readReviewElmJson : FileSystem -> String -> Task Problem Elm.Project.ApplicationInfo
 readReviewElmJson fs reviewFolder =
     let
-        elmJsonPath : String
-        elmJsonPath =
+        pathToElmJson : String
+        pathToElmJson =
             -- TODO Use path functions
             String.join "/" [ reviewFolder, "elm.json" ]
     in
-    Fs.readTextFile fs elmJsonPath
+    fetchElmJson fs reviewFolder pathToElmJson
+        |> Task.andThen (parseElmJson pathToElmJson >> resultToTask)
+
+
+fetchElmJson : FileSystem -> String -> String -> Task Problem String
+fetchElmJson fs reviewFolder pathToElmJson =
+    Fs.readTextFile fs pathToElmJson
         |> Task.mapError
             (\error ->
                 case error of
@@ -66,19 +74,65 @@ readReviewElmJson fs reviewFolder =
 I can help set you up with an initial configuration if you run """ ++ c Magenta "elm-review init" ++ "."
                         }
                             |> Problem.from
-                            |> Problem.withPath elmJsonPath
+                            |> Problem.withPath pathToElmJson
 
                     Fs.PermissionDenied ->
                         { title = "PERMISSION DENIED"
                         , message =
                             \c ->
-                                "I tried reading " ++ c Yellow elmJsonPath ++ """ but couldn't because of the file's read permissions.
+                                "I tried reading " ++ c Yellow pathToElmJson ++ """ but couldn't because of the file's read permissions.
 
 Try changing the permissions of the file and/or its parents directories."""
                         }
                             |> Problem.from
-                            |> Problem.withPath elmJsonPath
+                            |> Problem.withPath pathToElmJson
 
                     Fs.IoError string ->
                         Debug.todo ("Unknown error: " ++ string)
             )
+
+
+parseElmJson : String -> String -> Result Problem Elm.Project.ApplicationInfo
+parseElmJson pathToElmJson rawElmJson =
+    case Decode.decodeString Elm.Project.decoder rawElmJson of
+        Err error ->
+            { title = "COULD NOT READ ELM.JSON"
+            , message = decodingErrorMessage pathToElmJson error
+            }
+                |> Problem.from
+                |> Problem.withPath pathToElmJson
+                |> Err
+
+        Ok (Elm.Project.Package _) ->
+            { title = "REVIEW CONFIG IS NOT AN APPLICATION"
+            , message =
+                \c ->
+                    "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
+
+I think it is likely that you are pointing to an incorrect configuration file. Please check the path to your configuration again."""
+            }
+                |> Problem.from
+                |> Problem.withPath pathToElmJson
+                |> Err
+
+        Ok (Elm.Project.Application elmJson) ->
+            Ok elmJson
+
+
+decodingErrorMessage : String -> Decode.Error -> Colorize -> String
+decodingErrorMessage pathToElmJson error c =
+    "I tried reading " ++ c Yellow pathToElmJson ++ """ but encountered an error while reading it. Please check that it is valid JSON that the Elm compiler would be happy with.
+
+Here is the error I encountered:
+
+""" ++ Decode.errorToString error
+
+
+resultToTask : Result x a -> Task x a
+resultToTask result =
+    case result of
+        Ok value ->
+            Task.succeed value
+
+        Err err ->
+            Task.fail err
