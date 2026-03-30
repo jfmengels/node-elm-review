@@ -6,6 +6,7 @@ import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Task
+import Wrapper.Build as Build
 import Wrapper.Help as Help
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser
@@ -34,7 +35,8 @@ type alias Model =
 
 
 type Msg
-    = ReviewProcessEnded (Result ProcessError Process.Completed)
+    = BuildMsg Build.Msg
+    | ReviewProcessEnded (Result ProcessError Process.Completed)
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -115,20 +117,32 @@ updateWrapper msg wrapper =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update (ReviewProcessEnded result) model =
-    case result of
-        Ok completed ->
-            ( model
-            , Cli.exit completed.exitCode
-            )
+update msg model =
+    case msg of
+        BuildMsg buildMsg ->
+            case Build.update buildMsg of
+                Ok () ->
+                    ( model, Cmd.none )
 
-        Err err ->
-            ( model
-            , Cmd.batch
-                [ Cli.println model.env.stdout ("error: " ++ processErrorToString err)
-                , Cli.exit 1
-                ]
-            )
+                Err problem ->
+                    ( model
+                    , exitWithProblem model.env model.options problem
+                    )
+
+        ReviewProcessEnded result ->
+            case result of
+                Ok completed ->
+                    ( model
+                    , Cli.exit completed.exitCode
+                    )
+
+                Err err ->
+                    ( model
+                    , Cmd.batch
+                        [ Cli.println model.env.stdout ("error: " ++ processErrorToString err)
+                        , Cli.exit 1
+                        ]
+                    )
 
 
 exitWithProblem : Env -> Problem.FormatOptions options -> Problem.Problem -> Cmd msg
