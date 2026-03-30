@@ -5,7 +5,7 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Set
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
-import Wrapper.Options exposing (HelpOptions, Options)
+import Wrapper.Options as Options exposing (HelpOptions, Options)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
@@ -75,6 +75,15 @@ toOptions env options =
                                 , debug = options.debug
                                 , forTests = options.forTests
                                 , c = c
+                                , reviewProject =
+                                    case options.remoteTemplate of
+                                        Just remoteTemplate ->
+                                            Options.Remote remoteTemplate
+
+                                        Nothing ->
+                                            options.configPath
+                                                |> Maybe.withDefault "review"
+                                                |> Options.Local
                                 , appBinary = appBinary
                                 }
 
