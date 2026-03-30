@@ -9,6 +9,7 @@
         "direct": {
             "elm/core": "1.0.5",
             "elm/json": "1.1.4",
+            "elm/project-metadata-utils": "1.0.2",
             "elm/regex": "1.0.0",
             "elm-run/cli": "1.0.0",
             "elm-run/fs": "1.0.0",
@@ -16,6 +17,7 @@
         },
         "indirect": {
             "elm/bytes": "1.0.8",
+            "elm/parser": "1.1.0",
             "elm-run/capabilities": "1.0.0",
             "elm-run/log": "1.0.0",
             "elm-run/stdio": "1.0.0"
