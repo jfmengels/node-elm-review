@@ -11,8 +11,9 @@ import Dict exposing (Dict)
 
 
 type Color
-    = Yellow
+    = Red
     | Green
+    | Yellow
     | Magenta
     | Cyan
     | RedBright
@@ -97,11 +98,14 @@ toAnsi (ColorSupport supportsColor_) =
 toAnsiColor : Color -> String
 toAnsiColor color =
     case color of
-        Yellow ->
-            "33"
+        Red ->
+            "31"
 
         Green ->
             "32"
+
+        Yellow ->
+            "33"
 
         Magenta ->
             "35"

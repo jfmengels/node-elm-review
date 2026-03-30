@@ -17,7 +17,8 @@ import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
-import Wrapper.Options as Options exposing (Options)
+import Wrapper.MinVersion as MinVersion
+import Wrapper.Options as Options exposing (Options, ReviewProject)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 
 
@@ -36,20 +37,20 @@ build : FileSystem -> Options -> Cmd Msg
 build fs options =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildLocalProject fs options reviewFolder
+            buildLocalProject fs options.reviewProject reviewFolder
 
         Options.Remote remoteTemplate ->
             Debug.todo "Build remote template"
 
 
-buildLocalProject : FileSystem -> Options -> String -> Cmd Msg
-buildLocalProject fs options reviewFolder =
-    readReviewElmJson fs reviewFolder
+buildLocalProject : FileSystem -> ReviewProject -> String -> Cmd Msg
+buildLocalProject fs reviewProject reviewFolder =
+    readReviewElmJson fs reviewProject reviewFolder
         |> Task.attempt ReceivedReviewElmJson
 
 
-readReviewElmJson : FileSystem -> String -> Task Problem Elm.Project.ApplicationInfo
-readReviewElmJson fs reviewFolder =
+readReviewElmJson : FileSystem -> ReviewProject -> String -> Task Problem Elm.Project.ApplicationInfo
+readReviewElmJson fs reviewProject reviewFolder =
     let
         pathToElmJson : String
         pathToElmJson =
@@ -59,7 +60,7 @@ readReviewElmJson fs reviewFolder =
     fetchElmJson fs reviewFolder pathToElmJson
         |> Task.andThen
             (\rawElmJson ->
-                parseElmJson pathToElmJson rawElmJson
+                parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson
                     |> Result.mapError (Problem.from >> Problem.withPath pathToElmJson)
                     |> resultToTask
             )
@@ -98,8 +99,8 @@ Try changing the permissions of the file and/or its parents directories."""
             )
 
 
-parseElmJson : String -> String -> Result ProblemSimple Elm.Project.ApplicationInfo
-parseElmJson pathToElmJson rawElmJson =
+parseElmJson : ReviewProject -> String -> String -> String -> Result ProblemSimple Elm.Project.ApplicationInfo
+parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson =
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
             Err
@@ -118,14 +119,19 @@ I think it is likely that you are pointing to an incorrect configuration file. P
                 }
 
         Ok (Elm.Project.Application application) ->
-            validateElmReviewVersion application
+            validateElmReviewVersion reviewProject reviewFolder application
 
 
-validateElmReviewVersion : Elm.Project.ApplicationInfo -> Result ProblemSimple Elm.Project.ApplicationInfo
-validateElmReviewVersion application =
+validateElmReviewVersion : ReviewProject -> String -> Elm.Project.ApplicationInfo -> Result ProblemSimple Elm.Project.ApplicationInfo
+validateElmReviewVersion reviewProject reviewFolder application =
     case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
-        Just version ->
-            Ok application
+        Just ( _, version ) ->
+            case MinVersion.validate reviewProject reviewFolder version of
+                Just problem ->
+                    Err problem
+
+                Nothing ->
+                    Ok application
 
         Nothing ->
             Err
