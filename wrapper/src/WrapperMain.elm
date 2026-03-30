@@ -30,6 +30,7 @@ type ModelWrapper
 type alias Model =
     { env : Env
     , fs : FileSystem
+    , os : ProcessCapability
     , options : Options
     }
 
@@ -77,6 +78,7 @@ init env =
                     ( Running
                         { env = env
                         , fs = fs
+                        , os = os
                         , options = options
                         }
                     , Process.run os
