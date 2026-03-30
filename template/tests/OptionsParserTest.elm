@@ -26,6 +26,7 @@ all =
                         , c = c
                         , debug = False
                         , report = ReportMode.HumanReadable
+                        , reviewProject = Options.Local "review"
                         , directoriesToAnalyze = []
                         , appBinary = "binaryLocation"
                         }
@@ -41,6 +42,7 @@ all =
                         , c = c
                         , debug = False
                         , report = ReportMode.HumanReadable
+                        , reviewProject = Options.Local "review"
                         , directoriesToAnalyze = []
                         , appBinary = "binaryLocation"
                         }
@@ -56,6 +58,7 @@ all =
                         , c = c
                         , debug = False
                         , report = ReportMode.HumanReadable
+                        , reviewProject = Options.Local "review"
                         , directoriesToAnalyze = [ "other", "unknown" ]
                         , appBinary = "binaryLocation"
                         }
