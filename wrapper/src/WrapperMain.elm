@@ -7,7 +7,7 @@ import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Task
 import Wrapper.Help as Help
-import Wrapper.Options
+import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser
 import Wrapper.Problem as Problem
 
@@ -29,6 +29,7 @@ type ModelWrapper
 type alias Model =
     { env : Env
     , fs : FileSystem
+    , options : Options
     }
 
 
@@ -70,10 +71,14 @@ init env =
                         ]
                     )
 
-                OptionsParser.ParseSuccess flags ->
-                    ( Running { env = env, fs = fs }
+                OptionsParser.ParseSuccess options ->
+                    ( Running
+                        { env = env
+                        , fs = fs
+                        , options = options
+                        }
                     , Process.run os
-                        flags.appBinary
+                        options.appBinary
                         { defaultSpawnOptions
                             | args = []
                             , stdout = Process.InheritStdout
