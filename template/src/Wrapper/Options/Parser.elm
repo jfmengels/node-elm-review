@@ -19,7 +19,8 @@ parse { args, env } =
 
 
 type OptionsParseResult
-    = ParseSuccess Options
+    = NeedElmJsonPath { formatOptions : Problem.FormatOptions {}, toOptions : { elmJsonPath : String } -> Options }
+    | ParseSuccess Options
     | ShowVersion
     | ShowHelp HelpOptions
     | ParseError (Problem.FormatOptions {}) Problem
@@ -68,24 +69,41 @@ toOptions env options =
                                 )
 
                         Just appBinary ->
-                            ParseSuccess
-                                { subcommand = options.subcommand
-                                , directoriesToAnalyze = options.directoriesToAnalyze
-                                , report = options.report
-                                , debug = options.debug
-                                , forTests = options.forTests
-                                , c = c
-                                , reviewProject =
-                                    case options.remoteTemplate of
-                                        Just remoteTemplate ->
-                                            Options.Remote remoteTemplate
+                            case options.elmJsonPath of
+                                Nothing ->
+                                    NeedElmJsonPath
+                                        { formatOptions =
+                                            { report = options.report
+                                            , debug = options.debug
+                                            , c = c
+                                            }
+                                        , toOptions = \{ elmJsonPath } -> toOptionsWithElmJsonPath c options appBinary elmJsonPath
+                                        }
 
-                                        Nothing ->
-                                            options.configPath
-                                                |> Maybe.withDefault "review"
-                                                |> Options.Local
-                                , appBinary = appBinary
-                                }
+                                Just elmJsonPath ->
+                                    ParseSuccess (toOptionsWithElmJsonPath c options appBinary elmJsonPath)
+
+
+toOptionsWithElmJsonPath : Colorize -> InternalOptions -> String -> String -> Options
+toOptionsWithElmJsonPath c options appBinary elmJsonPath =
+    { subcommand = options.subcommand
+    , elmJsonPath = elmJsonPath
+    , directoriesToAnalyze = options.directoriesToAnalyze
+    , report = options.report
+    , debug = options.debug
+    , forTests = options.forTests
+    , c = c
+    , reviewProject =
+        case options.remoteTemplate of
+            Just remoteTemplate ->
+                Options.Remote remoteTemplate
+
+            Nothing ->
+                options.configPath
+                    |> Maybe.withDefault "review"
+                    |> Options.Local
+    , appBinary = appBinary
+    }
 
 
 parseHelp : List String -> InternalOptions -> InternalOptions

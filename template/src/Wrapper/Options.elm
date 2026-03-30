@@ -23,6 +23,7 @@ type alias Options =
     { subcommand : Maybe Subcommand
     , directoriesToAnalyze : List String
     , report : ReportMode
+    , elmJsonPath : String
     , debug : Bool
     , forTests : Bool
     , c : Colorize
