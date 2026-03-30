@@ -10,7 +10,7 @@ import Wrapper.Build as Build
 import Wrapper.Help as Help
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser
-import Wrapper.Problem as Problem
+import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
 
 
 main : Cli.Program ModelWrapper Msg
@@ -24,7 +24,17 @@ main =
 
 type ModelWrapper
     = Done
+    | Loading LoadingModel
     | Running Model
+
+
+type alias LoadingModel =
+    { env : Env
+    , fs : FileSystem
+    , os : ProcessCapability
+    , formatOptions : FormatOptions {}
+    , toOptions : { elmJsonPath : String } -> Options
+    }
 
 
 type alias Model =
@@ -37,6 +47,7 @@ type alias Model =
 
 type Msg
     = BuildMsg Build.Msg
+    | FoundNearestElmJson (Result Problem String)
     | ReviewProcessEnded (Result ProcessError Process.Completed)
 
 
@@ -74,6 +85,18 @@ init env =
                         ]
                     )
 
+                OptionsParser.NeedElmJsonPath { formatOptions, toOptions } ->
+                    ( Loading
+                        { env = env
+                        , fs = fs
+                        , os = os
+                        , formatOptions = formatOptions
+                        , toOptions = toOptions
+                        }
+                    , findNearestElmJson
+                        |> Task.attempt FoundNearestElmJson
+                    )
+
                 OptionsParser.ParseSuccess options ->
                     ( Running
                         { env = env
@@ -106,6 +129,32 @@ updateWrapper msg wrapper =
     case wrapper of
         Done ->
             ( wrapper, Cmd.none )
+
+        Loading loading ->
+            case msg of
+                FoundNearestElmJson (Ok elmJsonPath) ->
+                    let
+                        options : Options
+                        options =
+                            loading.toOptions { elmJsonPath = elmJsonPath }
+                    in
+                    ( Running
+                        { env = loading.env
+                        , fs = loading.fs
+                        , os = loading.os
+                        , options = options
+                        }
+                    , Build.build loading.fs options
+                        |> Cmd.map BuildMsg
+                    )
+
+                FoundNearestElmJson (Err problem) ->
+                    ( Done
+                    , exitWithProblem loading.env loading.formatOptions problem
+                    )
+
+                _ ->
+                    ( wrapper, Cmd.none )
 
         Running model ->
             update msg model

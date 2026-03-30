@@ -22,6 +22,7 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Nothing
+                        , elmJsonPath = "elm.json"
                         , forTests = False
                         , c = c
                         , debug = False
@@ -38,6 +39,7 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Just Subcommand.Init
+                        , elmJsonPath = "elm.json"
                         , forTests = False
                         , c = c
                         , debug = False
@@ -54,6 +56,7 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Nothing
+                        , elmJsonPath = "elm.json"
                         , forTests = False
                         , c = c
                         , debug = False
@@ -113,6 +116,9 @@ expectEqual expected received =
         ParseSuccess result ->
             Expect.equal expected (replaceColorize result)
 
+        NeedElmJsonPath { toOptions } ->
+            Expect.equal expected (toOptions { elmJsonPath = "elm.json" })
+
         ShowVersion ->
             Expect.fail "Unexpected showing of version"
 
@@ -137,6 +143,9 @@ expectHelp expectedSubcommand received =
             Expect.fail "Unexpected showing of version"
 
         ParseSuccess _ ->
+            Expect.fail "Unexpected parse success without help"
+
+        NeedElmJsonPath _ ->
             Expect.fail "Unexpected parse success without help"
 
         ParseError _ problem ->
