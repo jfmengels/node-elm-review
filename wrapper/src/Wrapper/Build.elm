@@ -1,14 +1,32 @@
-module Wrapper.Build exposing (..)
+module Wrapper.Build exposing
+    ( build
+    , Msg, update
+    )
+
+{-|
+
+@docs build
+
+@docs Msg, update
+
+-}
 
 import Fs exposing (FileSystem, FsError)
-import Task
+import Task exposing (Task)
 import Wrapper.Color exposing (Color(..))
 import Wrapper.Options as Options exposing (Options)
 import Wrapper.Problem as Problem exposing (Problem)
 
 
 type Msg
-    = ReceivedElmJson (Result Problem String)
+    = ReceivedReviewElmJson (Result Problem String)
+
+
+update : Msg -> Result Problem ()
+update msg =
+    case msg of
+        ReceivedReviewElmJson result ->
+            Result.map (\_ -> ()) result
 
 
 build : FileSystem -> Options -> Cmd Msg
@@ -23,6 +41,12 @@ build fs options =
 
 buildLocalProject : FileSystem -> Options -> String -> Cmd Msg
 buildLocalProject fs options reviewFolder =
+    readReviewElmJson fs reviewFolder
+        |> Task.attempt ReceivedReviewElmJson
+
+
+readReviewElmJson : FileSystem -> String -> Task Problem String
+readReviewElmJson fs reviewFolder =
     let
         elmJsonPath : String
         elmJsonPath =
@@ -37,7 +61,7 @@ buildLocalProject fs options reviewFolder =
                         { title = "INCORRECT CONFIGURATION"
                         , message =
                             \c ->
-                                "I could not find a review configuration. I was expecting to find an " ++ c Yellow "elm.json" ++ " file and a " ++ c Cyan "ReviewConfig.elm" ++ " file in " ++ c Cyan (reviewFolder ++ "/") ++ """
+                                "I could not find a review configuration. I was expecting to find an " ++ c Yellow "elm.json" ++ " file and a " ++ c Cyan "ReviewConfig.elm" ++ " file in " ++ c Cyan (reviewFolder ++ "/") ++ """.
 
 I can help set you up with an initial configuration if you run """ ++ c Magenta "elm-review init" ++ "."
                         }
@@ -58,4 +82,3 @@ Try changing the permissions of the file and/or its parents directories."""
                     Fs.IoError string ->
                         Debug.todo ("Unknown error: " ++ string)
             )
-        |> Task.attempt ReceivedElmJson
