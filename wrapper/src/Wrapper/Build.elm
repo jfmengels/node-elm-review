@@ -11,13 +11,14 @@ module Wrapper.Build exposing
 
 -}
 
+import Elm.Package
 import Elm.Project
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
 import Wrapper.Options as Options exposing (Options)
-import Wrapper.Problem as Problem exposing (Problem)
+import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 
 
 type Msg
@@ -56,7 +57,12 @@ readReviewElmJson fs reviewFolder =
             String.join "/" [ reviewFolder, "elm.json" ]
     in
     fetchElmJson fs reviewFolder pathToElmJson
-        |> Task.andThen (parseElmJson pathToElmJson >> resultToTask)
+        |> Task.andThen
+            (\rawElmJson ->
+                parseElmJson pathToElmJson rawElmJson
+                    |> Result.mapError (Problem.from >> Problem.withPath pathToElmJson)
+                    |> resultToTask
+            )
 
 
 fetchElmJson : FileSystem -> String -> String -> Task Problem String
@@ -92,31 +98,44 @@ Try changing the permissions of the file and/or its parents directories."""
             )
 
 
-parseElmJson : String -> String -> Result Problem Elm.Project.ApplicationInfo
+parseElmJson : String -> String -> Result ProblemSimple Elm.Project.ApplicationInfo
 parseElmJson pathToElmJson rawElmJson =
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
-            { title = "COULD NOT READ ELM.JSON"
-            , message = decodingErrorMessage pathToElmJson error
-            }
-                |> Problem.from
-                |> Problem.withPath pathToElmJson
-                |> Err
+            Err
+                { title = "COULD NOT READ ELM.JSON"
+                , message = decodingErrorMessage pathToElmJson error
+                }
 
         Ok (Elm.Project.Package _) ->
-            { title = "REVIEW CONFIG IS NOT AN APPLICATION"
-            , message =
-                \c ->
-                    "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
+            Err
+                { title = "REVIEW CONFIG IS NOT AN APPLICATION"
+                , message =
+                    \c ->
+                        "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
 
 I think it is likely that you are pointing to an incorrect configuration file. Please check the path to your configuration again."""
-            }
-                |> Problem.from
-                |> Problem.withPath pathToElmJson
-                |> Err
+                }
 
-        Ok (Elm.Project.Application elmJson) ->
-            Ok elmJson
+        Ok (Elm.Project.Application application) ->
+            validateElmReviewVersion application
+
+
+validateElmReviewVersion : Elm.Project.ApplicationInfo -> Result ProblemSimple Elm.Project.ApplicationInfo
+validateElmReviewVersion application =
+    case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
+        Just version ->
+            Ok application
+
+        Nothing ->
+            Err
+                { title = "MISSING ELM-REVIEW DEPENDENCY"
+                , message =
+                    \c ->
+                        "The template's configuration does not include " ++ c GreenBright "jfmengels/elm-review" ++ """ in its direct dependencies.
+
+Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."""
+                }
 
 
 decodingErrorMessage : String -> Decode.Error -> Colorize -> String
@@ -136,3 +155,21 @@ resultToTask result =
 
         Err err ->
             Task.fail err
+
+
+{-| Find the first element that satisfies a predicate and return
+Just that element. If none match, return Nothing.
+find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
+-}
+find : (a -> Bool) -> List a -> Maybe a
+find predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+
+            else
+                find predicate rest
