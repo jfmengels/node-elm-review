@@ -1,4 +1,4 @@
-module Wrapper.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unwrapFOR_TESTS, withPath)
+module Wrapper.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
 
 import Json.Encode as Encode
 import Wrapper.Color exposing (Color(..), Colorize)
@@ -86,3 +86,21 @@ formatJson c (Problem { title, message, path }) =
     ]
         |> List.filterMap identity
         |> Encode.object
+
+
+unexpectedError : String -> Problem
+unexpectedError message =
+    { title = "UNEXPECTED ERROR"
+    , message = \c -> """I ran into an unexpected error. Please open an issue at the following link:
+  https://github.com/jfmengels/node-elm-review/issues/new
+
+Please include this error message and as much detail as you can provide. Running
+with """ ++ c Yellow "--debug" ++ """ might give additional information. If you can, please provide a
+setup that makes it easy to reproduce the error. That will make it much easier
+to fix the issue.
+
+Below is the error that was encountered.
+--------------------------------------------------------------------------------
+""" ++ message
+    }
+        |> from

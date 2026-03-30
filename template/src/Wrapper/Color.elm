@@ -18,6 +18,7 @@ type Color
     | Cyan
     | RedBright
     | GreenBright
+    | YellowBright
     | BlueBright
     | MagentaBright
     | Orange
@@ -118,6 +119,9 @@ toAnsiColor color =
 
         GreenBright ->
             "92"
+
+        YellowBright ->
+            "93"
 
         BlueBright ->
             "94"
