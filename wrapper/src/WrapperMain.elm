@@ -1,12 +1,15 @@
 module WrapperMain exposing (main)
 
+import Array exposing (Array)
 import Cli exposing (Env)
+import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
-import Fs exposing (FileSystem)
+import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
-import Task
+import Task exposing (Task)
 import Wrapper.Build as Build
+import Wrapper.Color exposing (Color(..))
 import Wrapper.Help as Help
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser
@@ -47,7 +50,7 @@ type alias Model =
 
 type Msg
     = BuildMsg Build.Msg
-    | FoundNearestElmJson (Result Problem String)
+    | FoundNearestElmJson (Result FsError String)
     | ReviewProcessEnded (Result ProcessError Process.Completed)
 
 
@@ -93,7 +96,14 @@ init env =
                         , formatOptions = formatOptions
                         , toOptions = toOptions
                         }
-                    , findNearestElmJson
+                    , getCwd fs env.env
+                        |> Task.andThen
+                            (\cwd ->
+                                -- TODO Use `\` for Windows Support?
+                                String.split "/" cwd
+                                    |> Array.fromList
+                                    |> findNearestElmJson fs
+                            )
                         |> Task.attempt FoundNearestElmJson
                     )
 
@@ -148,9 +158,24 @@ updateWrapper msg wrapper =
                         |> Cmd.map BuildMsg
                     )
 
-                FoundNearestElmJson (Err problem) ->
+                FoundNearestElmJson (Err (Fs.NotFound _)) ->
                     ( Done
-                    , exitWithProblem loading.env loading.formatOptions problem
+                    , { title = "COULD NOT FIND ELM.JSON"
+                      , message =
+                            \c ->
+                                "I was expecting to find an " ++ c YellowBright "elm.json" ++ """ file in the current directory or one of its parents, but I did not find one.
+
+If you wish to run elm-review from outside your project,
+try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
+                      }
+                        |> Problem.from
+                        |> exitWithProblem loading.env loading.formatOptions
+                    )
+
+                FoundNearestElmJson (Err error) ->
+                    ( Done
+                    , Problem.unexpectedError (fsErrorToString error)
+                        |> exitWithProblem loading.env loading.formatOptions
                     )
 
                 _ ->
@@ -192,6 +217,40 @@ update msg model =
                         ]
                     )
 
+        FoundNearestElmJson _ ->
+            ( model, Cmd.none )
+
+
+findNearestElmJson : FileSystem -> Array String -> Task Fs.FsError String
+findNearestElmJson fs pathSegments =
+    if Array.isEmpty pathSegments then
+        Task.fail (Fs.NotFound "")
+
+    else
+        let
+            path : String
+            path =
+                Array.push "elm.json" pathSegments |> Array.toList |> String.join "/"
+        in
+        Fs.stat fs path
+            |> Task.map (\_ -> path)
+            |> Task.onError
+                (\_ ->
+                    findNearestElmJson fs (Array.slice 0 -1 pathSegments)
+                )
+
+
+getCwd : FileSystem -> Dict String String -> Task Fs.FsError String
+getCwd fs env =
+    -- TODO Replace this by the following when fixed.
+    -- Fs.toSandboxRel fs path "."
+    case Dict.get "PWD" env of
+        Just path ->
+            Task.succeed path
+
+        Nothing ->
+            Task.fail (Fs.NotFound ".")
+
 
 runReviewProcess : ProcessCapability -> String -> Cmd Msg
 runReviewProcess os appBinary =
@@ -224,3 +283,34 @@ processErrorToString err =
 
         Process.ProcessError message ->
             message
+
+
+fsErrorToString : FsError -> String
+fsErrorToString fsError =
+    case fsError of
+        Fs.NotFound path ->
+            "File not found: " ++ path
+
+        Fs.PermissionDenied ->
+            "Permission denied"
+
+        Fs.IoError msg ->
+            "Unknown error: " ++ msg
+
+
+{-| Find the first element that satisfies a predicate and return
+Just that element. If none match, return Nothing.
+find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
+-}
+find : (a -> Bool) -> List a -> Maybe a
+find predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+
+            else
+                find predicate rest
