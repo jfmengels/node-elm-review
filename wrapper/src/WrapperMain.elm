@@ -81,7 +81,8 @@ init env =
                         , os = os
                         , options = options
                         }
-                    , runReviewProcess os options.appBinary
+                    , Build.build fs options
+                        |> Cmd.map BuildMsg
                     )
 
 
@@ -117,7 +118,10 @@ update msg model =
         BuildMsg buildMsg ->
             case Build.update buildMsg of
                 Ok () ->
-                    ( model, Cmd.none )
+                    ( model
+                      -- TODO Get appBinary from build
+                    , runReviewProcess model.os model.options.appBinary
+                    )
 
                 Err problem ->
                     ( model
