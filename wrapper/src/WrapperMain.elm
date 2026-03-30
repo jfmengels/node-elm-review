@@ -81,14 +81,7 @@ init env =
                         , os = os
                         , options = options
                         }
-                    , Process.run os
-                        options.appBinary
-                        { defaultSpawnOptions
-                            | args = []
-                            , stdout = Process.InheritStdout
-                            , stderr = Process.InheritStderr
-                        }
-                        |> Task.attempt ReviewProcessEnded
+                    , runReviewProcess os options.appBinary
                     )
 
 
@@ -145,6 +138,18 @@ update msg model =
                         , Cli.exit 1
                         ]
                     )
+
+
+runReviewProcess : ProcessCapability -> String -> Cmd Msg
+runReviewProcess os appBinary =
+    Process.run os
+        appBinary
+        { defaultSpawnOptions
+            | args = []
+            , stdout = Process.InheritStdout
+            , stderr = Process.InheritStderr
+        }
+        |> Task.attempt ReviewProcessEnded
 
 
 exitWithProblem : Env -> Problem.FormatOptions options -> Problem.Problem -> Cmd msg
