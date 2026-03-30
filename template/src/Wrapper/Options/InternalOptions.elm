@@ -45,7 +45,7 @@ type alias InternalOptions =
     , subcommandPossible : Bool
     , configPath : Maybe String
     , remoteTemplate : Maybe RemoteTemplate
-    , elmJsonPath : String
+    , elmJsonPath : Maybe String
     , compilerPath : Maybe String
     , elmFormatPath : Maybe String
     , prefill : Maybe String
@@ -92,7 +92,7 @@ initialOptions =
     , subcommandPossible = True
     , configPath = Nothing
     , remoteTemplate = Nothing
-    , elmJsonPath = "elm.json"
+    , elmJsonPath = Nothing
     , compilerPath = Nothing
     , elmFormatPath = Nothing
     , prefill = Nothing

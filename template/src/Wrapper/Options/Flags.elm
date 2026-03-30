@@ -132,7 +132,7 @@ flags =
                 { argName = "<path-to-elm.json>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | elmJsonPath = arg }
+                , apply = \arg options -> Ok { options | elmJsonPath = Just arg }
                 }
       , display =
             Just
