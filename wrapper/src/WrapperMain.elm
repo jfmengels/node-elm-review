@@ -49,7 +49,7 @@ type alias Model =
 
 
 type Msg
-    = BuildMsg Build.Msg
+    = BuildCompleted (Result Problem Build.BuildData)
     | FoundNearestElmJson (Result FsError String)
     | ReviewProcessEnded (Result ProcessError Process.Completed)
 
@@ -115,7 +115,7 @@ init env =
                         , options = options
                         }
                     , Build.build fs options
-                        |> Cmd.map BuildMsg
+                        |> Task.attempt BuildCompleted
                     )
 
 
@@ -155,7 +155,7 @@ updateWrapper msg wrapper =
                         , options = options
                         }
                     , Build.build loading.fs options
-                        |> Cmd.map BuildMsg
+                        |> Task.attempt BuildCompleted
                     )
 
                 FoundNearestElmJson (Err (Fs.NotFound _)) ->
@@ -189,12 +189,11 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        BuildMsg buildMsg ->
-            case Build.update buildMsg of
-                Ok () ->
+        BuildCompleted result ->
+            case result of
+                Ok { reviewAppPath } ->
                     ( model
-                      -- TODO Get appBinary from build
-                    , runReviewProcess model.os model.options.appBinary
+                    , runReviewProcess model.os reviewAppPath
                     )
 
                 Err problem ->

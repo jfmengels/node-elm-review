@@ -1,13 +1,8 @@
-module Wrapper.Build exposing
-    ( build
-    , Msg, update
-    )
+module Wrapper.Build exposing (build, BuildData)
 
 {-|
 
-@docs build
-
-@docs Msg, update
+@docs build, BuildData
 
 -}
 
@@ -25,11 +20,7 @@ import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.ProjectPaths as ProjectPaths
 
 
-type Msg
-    = ReceivedReviewElmJson (Result Problem BuildResult)
-
-
-type alias BuildResult =
+type alias BuildData =
     { reviewAppPath : Path
     , pathToElmJson : Path
     , reviewElmJson : Elm.Project.ApplicationInfo
@@ -37,14 +28,7 @@ type alias BuildResult =
     }
 
 
-update : Msg -> Result Problem ()
-update msg =
-    case msg of
-        ReceivedReviewElmJson result ->
-            Result.map (\_ -> ()) result
-
-
-build : FileSystem -> Options -> Cmd Msg
+build : FileSystem -> Options -> Task Problem BuildData
 build fs options =
     case options.reviewProject of
         Options.Local reviewFolder ->
@@ -54,7 +38,7 @@ build fs options =
             Debug.todo "Build remote template"
 
 
-buildLocalProject : FileSystem -> Options -> String -> Cmd Msg
+buildLocalProject : FileSystem -> Options -> String -> Task Problem BuildData
 buildLocalProject fs options reviewFolder =
     let
         pathToElmJson : String
@@ -88,7 +72,6 @@ buildLocalProject fs options reviewFolder =
                                     )
                         )
             )
-        |> Task.attempt ReceivedReviewElmJson
 
 
 readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }

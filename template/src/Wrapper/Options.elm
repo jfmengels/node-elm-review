@@ -29,8 +29,6 @@ type alias Options =
     , forTests : Bool
     , color : Color.Support
     , reviewProject : ReviewProject
-    , -- TODO Remove field
-      appBinary : String
     }
 
 

@@ -512,16 +512,6 @@ flags =
                 , newPackageDescription = Nothing
                 }
       }
-    , { name = "app"
-      , argument =
-            ArgumentPresent
-                { argName = "<path-to-app>"
-                , mayBeUsedSeveralTimes = False
-                , usesEquals = False
-                , apply = \arg options -> Ok { options | appBinary = Just arg }
-                }
-      , display = Nothing
-      }
     ]
 
 
