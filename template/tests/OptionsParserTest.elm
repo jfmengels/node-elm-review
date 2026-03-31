@@ -1,6 +1,7 @@
 module OptionsParserTest exposing (all)
 
 import Dict
+import Elm.Review.ReportMode as ReportMode
 import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
 import Wrapper.Color as Color exposing (Colorize)
@@ -8,7 +9,6 @@ import Wrapper.Options as Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
 import Wrapper.Problem as Problem
 import Wrapper.ProjectPaths as ProjectPaths
-import Wrapper.ReportMode as ReportMode
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 

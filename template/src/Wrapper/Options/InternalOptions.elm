@@ -1,10 +1,10 @@
 module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 
+import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
 import Wrapper.Color exposing (Color, Colorize)
 import Wrapper.Problem exposing (Problem, ProblemSimple)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
-import Wrapper.ReportMode as ReportMode exposing (ReportMode)
 import Wrapper.Section exposing (Section)
 import Wrapper.Subcommand exposing (Subcommand)
 
