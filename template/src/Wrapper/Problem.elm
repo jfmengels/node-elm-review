@@ -1,7 +1,7 @@
 module Wrapper.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
 
 import Json.Encode as Encode
-import Wrapper.Color exposing (Color(..), Colorize)
+import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Path exposing (Path)
 import Wrapper.ReportMode as ReportMode exposing (ReportMode)
 
@@ -47,14 +47,19 @@ unwrapFOR_TESTS (Problem problem) =
 
 type alias FormatOptions a =
     { a
-        | c : Colorize
+        | color : Color.Support
         , report : ReportMode
         , debug : Bool
     }
 
 
 format : FormatOptions a -> Problem -> String
-format { c, report, debug } problem =
+format { color, report, debug } problem =
+    let
+        c : Colorize
+        c =
+            Color.toAnsi color
+    in
     case report of
         ReportMode.HumanReadable ->
             formatHuman c problem

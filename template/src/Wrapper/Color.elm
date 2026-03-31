@@ -1,11 +1,16 @@
 module Wrapper.Color exposing
     ( Color(..)
-    , Colorize
-    , Support
-    , noColors
-    , supportsColor
-    , toAnsi
+    , Colorize, toAnsi
+    , Support, supportsColor, noColors, colors_FOR_TESTS
     )
+
+{-|
+
+@docs Color
+@docs Colorize, toAnsi
+@docs Support, supportsColor, noColors, colors_FOR_TESTS
+
+-}
 
 import Dict exposing (Dict)
 
@@ -85,6 +90,11 @@ findMap list =
 noColors : Support
 noColors =
     ColorSupport False
+
+
+colors_FOR_TESTS : Support
+colors_FOR_TESTS =
+    ColorSupport True
 
 
 toAnsi : Support -> Color -> String -> String

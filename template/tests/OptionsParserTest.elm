@@ -25,7 +25,7 @@ all =
                         , projectRoot = "."
                         , elmJsonPath = "elm.json"
                         , forTests = False
-                        , c = c
+                        , color = Color.colors_FOR_TESTS
                         , debug = False
                         , report = ReportMode.HumanReadable
                         , reviewProject = Options.Local "review"
@@ -43,7 +43,7 @@ all =
                         , projectRoot = "."
                         , elmJsonPath = "elm.json"
                         , forTests = False
-                        , c = c
+                        , color = Color.colors_FOR_TESTS
                         , debug = False
                         , report = ReportMode.HumanReadable
                         , reviewProject = Options.Local "review"
@@ -61,7 +61,7 @@ all =
                         , projectRoot = "."
                         , elmJsonPath = "elm.json"
                         , forTests = False
-                        , c = c
+                        , color = Color.colors_FOR_TESTS
                         , debug = False
                         , report = ReportMode.HumanReadable
                         , reviewProject = Options.Local "review"
@@ -117,7 +117,7 @@ expectEqual : Options -> OptionsParseResult -> Expectation
 expectEqual expected received =
     case received of
         ParseSuccess result ->
-            Expect.equal expected (replaceColorize result)
+            Expect.equal expected result
 
         NeedElmJsonPath { toOptions } ->
             Expect.equal expected (toOptions { elmJsonPath = "elm.json" })
@@ -157,15 +157,3 @@ expectHelp expectedSubcommand received =
                     Problem.unwrapFOR_TESTS problem
             in
             Expect.fail ("Unexpected parsing failure:\n\n" ++ title ++ "\n\n" ++ message (Color.toAnsi Color.noColors))
-
-
-replaceColorize : Options -> Options
-replaceColorize options =
-    { options | c = c }
-
-
-{-| Fake colorize function
--}
-c : Colorize
-c _ str =
-    str
