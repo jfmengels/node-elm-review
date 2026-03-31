@@ -8,14 +8,16 @@ module Wrapper.Build exposing (build, BuildData)
 
 import Elm.Package
 import Elm.Project
+import Elm.Version
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
+import Set exposing (Set)
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
 import Wrapper.Hash as Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (Options, ReviewProject)
-import Wrapper.Path exposing (Path)
+import Wrapper.Path as Path exposing (Path)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.ProjectPaths as ProjectPaths
 
@@ -87,7 +89,70 @@ buildLocalProjectBuild fs reviewFolder buildFolder buildData =
 
 createTemplateProject : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task x ()
 createTemplateProject fs reviewFolder buildFolder reviewElmJson =
+    let
+        astCodecSrc : Path
+        astCodecSrc =
+            -- TODO Use path relative to this binary
+            "~/dev/node-elm-review/ast-codec/src"
+
+        dependencies : List ( Elm.Package.Name, Elm.Version.Version )
+        dependencies =
+            reviewElmJson.depsDirect
+                ++ reviewElmJson.depsIndirect
+                |> addReviewAppDependencies
+
+        elmJson : Elm.Project.ApplicationInfo
+        elmJson =
+            { reviewElmJson
+                | dirs =
+                    "src"
+                        :: Path.join2 reviewFolder astCodecSrc
+                        :: List.map (\dir -> Path.join2 reviewFolder dir) reviewElmJson.dirs
+                , depsDirect = dependencies
+                , depsIndirect = []
+                , testDepsDirect = []
+                , testDepsIndirect = []
+            }
+    in
     Task.succeed ()
+
+
+addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
+addReviewAppDependencies initialDependencies =
+    -- TODO Use a real solver algorithm
+    let
+        alreadyPresent : Set String
+        alreadyPresent =
+            Set.fromList (List.map (\( name, _ ) -> Elm.Package.toString name) initialDependencies)
+    in
+    List.foldl
+        (\( pkgName, pkgVersion ) deps ->
+            if Set.member pkgName alreadyPresent then
+                deps
+
+            else
+                case ( Elm.Package.fromString pkgName, Elm.Version.fromString pkgVersion ) of
+                    ( Just name, Just version ) ->
+                        ( name, version ) :: deps
+
+                    _ ->
+                        Debug.todo "Report error"
+        )
+        initialDependencies
+        [ ( "elm/json", "1.1.4" )
+        , ( "elm/regex", "1.0.0" )
+        , ( "elm/parser", "1.1.0" )
+        , ( "stil4m/elm-syntax", "7.3.9" )
+        , ( "elm/project-metadata-utils", "1.0.2" )
+        , ( "elm-run/cli", "1.0.0" )
+        , ( "elm-run/fs", "1.0.0" )
+        , ( "elm-run/worker", "1.0.0" )
+        , ( "elm-run/capabilities", "1.0.0" )
+        , ( "elm-run/log", "1.0.0" )
+        , ( "elm-run/stdio", "1.0.0" )
+        , ( "rtfeldman/elm-hex", "1.0.0" )
+        , ( "stil4m/structured-writer", "1.0.3" )
+        ]
 
 
 readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
