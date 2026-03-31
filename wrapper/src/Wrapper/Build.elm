@@ -55,14 +55,14 @@ buildLocalProject fs options reviewFolder =
     in
     readReviewElmJson fs options.reviewProject reviewFolder pathToElmJson
         |> Task.andThen
-            (\application ->
+            (\{ raw, application } ->
                 cachedBuild options reviewFolder pathToElmJson application.dirs
                     |> Task.map (\appHash -> application)
             )
         |> Task.attempt ReceivedReviewElmJson
 
 
-readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem Elm.Project.ApplicationInfo
+readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
 readReviewElmJson fs reviewProject reviewFolder pathToElmJson =
     fetchElmJson fs reviewFolder pathToElmJson
         |> Task.andThen
@@ -106,7 +106,7 @@ Try changing the permissions of the file and/or its parents directories."""
             )
 
 
-parseElmJson : ReviewProject -> String -> String -> String -> Result ProblemSimple Elm.Project.ApplicationInfo
+parseElmJson : ReviewProject -> String -> String -> String -> Result ProblemSimple { raw : String, application : Elm.Project.ApplicationInfo }
 parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson =
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
@@ -126,22 +126,22 @@ I think it is likely that you are pointing to an incorrect configuration file. P
                 }
 
         Ok (Elm.Project.Application application) ->
-            validateElmReviewVersion reviewProject reviewFolder application
-
-
-validateElmReviewVersion : ReviewProject -> String -> Elm.Project.ApplicationInfo -> Result ProblemSimple Elm.Project.ApplicationInfo
-validateElmReviewVersion reviewProject reviewFolder application =
-    case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
-        Just ( _, version ) ->
-            case MinVersion.validate reviewProject reviewFolder version of
+            case validateElmReviewVersion reviewProject reviewFolder application of
                 Just problem ->
                     Err problem
 
                 Nothing ->
-                    Ok application
+                    Ok { raw = rawElmJson, application = application }
+
+
+validateElmReviewVersion : ReviewProject -> String -> Elm.Project.ApplicationInfo -> Maybe ProblemSimple
+validateElmReviewVersion reviewProject reviewFolder application =
+    case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
+        Just ( _, version ) ->
+            MinVersion.validate reviewProject reviewFolder version
 
         Nothing ->
-            Err
+            Just
                 { title = "MISSING ELM-REVIEW DEPENDENCY"
                 , message =
                     \c ->
