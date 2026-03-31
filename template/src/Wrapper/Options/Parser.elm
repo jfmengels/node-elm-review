@@ -115,7 +115,7 @@ toOptionsWithElmJsonPath color options appBinary elmJsonPath =
                         Options.Local config
 
                     Nothing ->
-                        Options.Local (Path.join projectRoot "review")
+                        Options.Local (Path.join2 projectRoot "review")
     , appBinary = appBinary
     }
 

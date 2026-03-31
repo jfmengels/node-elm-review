@@ -1,12 +1,12 @@
 module Wrapper.Path exposing
     ( Path
-    , dirname, join
+    , dirname, join2
     )
 
 {-| Utilities to work with paths.
 
 @docs Path
-@docs dirname, join
+@docs dirname, join2
 
 -}
 
@@ -28,8 +28,8 @@ dirname path =
             String.join "/" (List.reverse rest)
 
 
-join : Path -> Path -> Path
-join a b =
+join2 : Path -> Path -> Path
+join2 a b =
     if a == "." then
         b
 
