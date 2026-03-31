@@ -115,7 +115,7 @@ init env =
                         , os = os
                         , options = options
                         }
-                    , Build.build fs options
+                    , Build.build fs os options
                         |> Task.attempt BuildCompleted
                     )
 
@@ -155,7 +155,7 @@ updateWrapper msg wrapper =
                         , os = loading.os
                         , options = options
                         }
-                    , Build.build loading.fs options
+                    , Build.build loading.fs loading.os options
                         |> Task.attempt BuildCompleted
                     )
 

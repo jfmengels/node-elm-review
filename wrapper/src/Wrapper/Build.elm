@@ -12,9 +12,11 @@ import Elm.Version
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Os exposing (ProcessCapability)
 import Set exposing (Set)
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
+import Wrapper.CopyDirectory exposing (copyDirectory)
 import Wrapper.Hash as Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (Options, ReviewProject)
@@ -31,18 +33,18 @@ type alias BuildData =
     }
 
 
-build : FileSystem -> Options -> Task Problem BuildData
-build fs options =
+build : FileSystem -> ProcessCapability -> Options -> Task Problem BuildData
+build fs os options =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildLocalProject fs options reviewFolder
+            buildLocalProject fs os options reviewFolder
 
         Options.Remote remoteTemplate ->
             Debug.todo "Build remote template"
 
 
-buildLocalProject : FileSystem -> Options -> String -> Task Problem BuildData
-buildLocalProject fs options reviewFolder =
+buildLocalProject : FileSystem -> ProcessCapability -> Options -> String -> Task Problem BuildData
+buildLocalProject fs os options reviewFolder =
     let
         pathToElmJson : String
         pathToElmJson =
@@ -74,6 +76,7 @@ buildLocalProject fs options reviewFolder =
                                     (\_ ->
                                         buildLocalProjectBuild
                                             fs
+                                            os
                                             reviewFolder
                                             (ProjectPaths.buildFolder options.projectPaths "review-project")
                                             buildData
@@ -83,10 +86,18 @@ buildLocalProject fs options reviewFolder =
             )
 
 
-buildLocalProjectBuild : FileSystem -> Path -> Path -> BuildData -> Task Problem ()
-buildLocalProjectBuild fs reviewFolder buildFolder buildData =
+buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> BuildData -> Task Problem ()
+buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
     Fs.createDirectory fs (Path.join2 buildFolder "src")
         |> Task.mapError fsErrorToProblem
+        |> Task.andThen
+            (\() ->
+                copyDirectory os
+                    { -- TODO Use path relative to this binary
+                      from = "~/dev/node-elm-review/template/src"
+                    , to = Path.join2 buildFolder "src"
+                    }
+            )
         |> Task.andThen
             (\() ->
                 createTemplateProject fs reviewFolder buildFolder buildData.reviewElmJson
