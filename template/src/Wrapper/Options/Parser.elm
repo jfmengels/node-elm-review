@@ -10,6 +10,7 @@ import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.Path as Path exposing (Path)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
+import Wrapper.ProjectPaths as ProjectPaths
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
@@ -97,8 +98,11 @@ toOptionsWithElmJsonPath color options appBinary elmJsonPath =
             Path.dirname elmJsonPath
     in
     { subcommand = options.subcommand
-    , projectRoot = projectRoot
-    , elmJsonPath = elmJsonPath
+    , projectPaths =
+        ProjectPaths.from
+            { projectRoot = projectRoot
+            , namespace = Maybe.withDefault "cli" options.namespace
+            }
     , directoriesToAnalyze = options.directoriesToAnalyze
     , report = options.report
     , debug = options.debug

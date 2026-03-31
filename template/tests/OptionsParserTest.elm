@@ -7,6 +7,7 @@ import Wrapper.Color as Color exposing (Colorize)
 import Wrapper.Options as Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
 import Wrapper.Problem as Problem
+import Wrapper.ProjectPaths as ProjectPaths
 import Wrapper.ReportMode as ReportMode
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
@@ -22,8 +23,11 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Nothing
-                        , projectRoot = "."
-                        , elmJsonPath = "elm.json"
+                        , projectPaths =
+                            ProjectPaths.from
+                                { projectRoot = "."
+                                , namespace = "cli"
+                                }
                         , forTests = False
                         , color = Color.colors_FOR_TESTS
                         , debug = False
@@ -40,8 +44,11 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Just Subcommand.Init
-                        , projectRoot = "."
-                        , elmJsonPath = "elm.json"
+                        , projectPaths =
+                            ProjectPaths.from
+                                { projectRoot = "."
+                                , namespace = "cli"
+                                }
                         , forTests = False
                         , color = Color.colors_FOR_TESTS
                         , debug = False
@@ -58,8 +65,11 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Nothing
-                        , projectRoot = "."
-                        , elmJsonPath = "elm.json"
+                        , projectPaths =
+                            ProjectPaths.from
+                                { projectRoot = "."
+                                , namespace = "cli"
+                                }
                         , forTests = False
                         , color = Color.colors_FOR_TESTS
                         , debug = False

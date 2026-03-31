@@ -1,12 +1,12 @@
 module Wrapper.Path exposing
     ( Path
-    , dirname, join2
+    , dirname, join, join2
     )
 
 {-| Utilities to work with paths.
 
 @docs Path
-@docs dirname, join2
+@docs dirname, join, join2
 
 -}
 
@@ -39,3 +39,8 @@ join2 a b =
     else
         (String.split "/" a ++ String.split "/" b)
             |> String.join "/"
+
+
+join : List Path -> Path
+join list =
+    List.foldr join2 "." list

@@ -1,4 +1,4 @@
-module Wrapper.Hash exposing (Hash, fromString)
+module Wrapper.Hash exposing (Hash, fromString, toString)
 
 
 type Hash
@@ -8,3 +8,8 @@ type Hash
 fromString : String -> Hash
 fromString =
     Hash
+
+
+toString : Hash -> String
+toString (Hash hash) =
+    hash
