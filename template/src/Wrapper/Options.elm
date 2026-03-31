@@ -26,6 +26,7 @@ type alias Options =
     , report : ReportMode
     , projectPaths : ProjectPaths
     , debug : Bool
+    , forceBuild : Bool
     , forTests : Bool
     , color : Color.Support
     , reviewProject : ReviewProject

@@ -71,20 +71,34 @@ buildLocalProject fs os options reviewFolder =
                                     , appHash = appHash
                                     }
                             in
-                            Fs.stat fs reviewAppPath
-                                |> Task.map (\_ -> buildData)
-                                |> Task.onError
-                                    (\_ ->
-                                        buildLocalProjectBuild
-                                            fs
-                                            os
-                                            reviewFolder
-                                            (ProjectPaths.buildFolder options.projectPaths "review-project")
-                                            buildData
-                                            |> Task.map (\() -> buildData)
+                            reuseExistingReviewApp fs options.forceBuild reviewAppPath
+                                |> Task.andThen
+                                    (\exists ->
+                                        if exists then
+                                            Task.succeed ()
+
+                                        else
+                                            buildLocalProjectBuild
+                                                fs
+                                                os
+                                                reviewFolder
+                                                (ProjectPaths.buildFolder options.projectPaths "review-project")
+                                                buildData
                                     )
+                                |> Task.map (\() -> buildData)
                         )
             )
+
+
+reuseExistingReviewApp : FileSystem -> Bool -> String -> Task x Bool
+reuseExistingReviewApp fs forceBuild reviewAppPath =
+    if forceBuild then
+        Task.succeed False
+
+    else
+        Fs.stat fs reviewAppPath
+            |> Task.map (\_ -> True)
+            |> Task.onError (\_ -> Task.succeed False)
 
 
 buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> BuildData -> Task Problem ()

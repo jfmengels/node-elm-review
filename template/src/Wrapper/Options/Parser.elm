@@ -91,6 +91,7 @@ toOptionsWithElmJsonPath color options elmJsonPath =
             }
     , directoriesToAnalyze = options.directoriesToAnalyze
     , report = options.report
+    , forceBuild = options.forceBuild
     , debug = options.debug
     , forTests = options.forTests
     , color = color
