@@ -61,37 +61,23 @@ toOptions env options =
                         (Problem.from (problem options.subcommand))
 
                 Nothing ->
-                    case options.appBinary of
+                    case options.elmJsonPath of
                         Nothing ->
-                            ParseError
-                                { color = color
-                                , report = options.report
-                                , debug = options.debug
-                                }
-                                (Problem.from
-                                    { title = "MISSING BINARY APP"
-                                    , message = always "This is temporarily needed"
+                            NeedElmJsonPath
+                                { formatOptions =
+                                    { report = options.report
+                                    , debug = options.debug
+                                    , color = color
                                     }
-                                )
+                                , toOptions = \{ elmJsonPath } -> toOptionsWithElmJsonPath color options elmJsonPath
+                                }
 
-                        Just appBinary ->
-                            case options.elmJsonPath of
-                                Nothing ->
-                                    NeedElmJsonPath
-                                        { formatOptions =
-                                            { report = options.report
-                                            , debug = options.debug
-                                            , color = color
-                                            }
-                                        , toOptions = \{ elmJsonPath } -> toOptionsWithElmJsonPath color options appBinary elmJsonPath
-                                        }
-
-                                Just elmJsonPath ->
-                                    ParseSuccess (toOptionsWithElmJsonPath color options appBinary elmJsonPath)
+                        Just elmJsonPath ->
+                            ParseSuccess (toOptionsWithElmJsonPath color options elmJsonPath)
 
 
-toOptionsWithElmJsonPath : Color.Support -> InternalOptions -> String -> String -> Options
-toOptionsWithElmJsonPath color options appBinary elmJsonPath =
+toOptionsWithElmJsonPath : Color.Support -> InternalOptions -> String -> Options
+toOptionsWithElmJsonPath color options elmJsonPath =
     let
         projectRoot : Path
         projectRoot =
@@ -120,7 +106,6 @@ toOptionsWithElmJsonPath color options appBinary elmJsonPath =
 
                     Nothing ->
                         Options.Local (Path.join2 projectRoot "review")
-    , appBinary = appBinary
     }
 
 

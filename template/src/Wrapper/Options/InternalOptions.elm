@@ -51,8 +51,6 @@ type alias InternalOptions =
     , prefill : Maybe String
     , namespace : Maybe String
     , githubAuth : Maybe String
-    , -- TODO Remove field
-      appBinary : Maybe String
     , flagsNotToUseAnymore : Set String
     , problem : Maybe (Maybe Subcommand -> ProblemSimple)
     }
@@ -99,7 +97,6 @@ initialOptions =
     , namespace = Nothing
     , githubAuth = Nothing
     , directoriesToAnalyze = []
-    , appBinary = Nothing
     , flagsNotToUseAnymore = Set.empty
     , problem = Nothing
     }

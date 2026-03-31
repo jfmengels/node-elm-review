@@ -15,10 +15,10 @@ import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 all : Test
 all =
     describe "Wrapper.Flags.parse"
-        [ test "Parse --app" <|
+        [ test "Parse empty arguments" <|
             \() ->
                 { env = Dict.empty
-                , args = [ "--app", "binaryLocation" ]
+                , args = []
                 }
                     |> OptionsParser.parse
                     |> expectEqual
@@ -34,12 +34,11 @@ all =
                         , report = ReportMode.HumanReadable
                         , reviewProject = Options.Local "review"
                         , directoriesToAnalyze = []
-                        , appBinary = "binaryLocation"
                         }
         , test "Parse subcommand init" <|
             \() ->
                 { env = Dict.empty
-                , args = [ "init", "--app", "binaryLocation" ]
+                , args = [ "init" ]
                 }
                     |> OptionsParser.parse
                     |> expectEqual
@@ -55,12 +54,11 @@ all =
                         , report = ReportMode.HumanReadable
                         , reviewProject = Options.Local "review"
                         , directoriesToAnalyze = []
-                        , appBinary = "binaryLocation"
                         }
         , test "Consider unknown args as directories to analyze" <|
             \() ->
                 { env = Dict.empty
-                , args = [ "unknown", "--app", "binaryLocation", "other" ]
+                , args = [ "unknown", "other" ]
                 }
                     |> OptionsParser.parse
                     |> expectEqual
@@ -76,7 +74,6 @@ all =
                         , report = ReportMode.HumanReadable
                         , reviewProject = Options.Local "review"
                         , directoriesToAnalyze = [ "other", "unknown" ]
-                        , appBinary = "binaryLocation"
                         }
         , test "Enter help mode if --help is used" <|
             \() ->
