@@ -13,7 +13,7 @@ module Wrapper.Options exposing
 
 -}
 
-import Wrapper.Color exposing (Colorize)
+import Wrapper.Color as Color exposing (Colorize)
 import Wrapper.Path exposing (Path)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.ReportMode exposing (ReportMode)
@@ -28,7 +28,7 @@ type alias Options =
     , elmJsonPath : Path
     , debug : Bool
     , forTests : Bool
-    , c : Colorize
+    , color : Color.Support
     , reviewProject : ReviewProject
     , -- TODO Remove field
       appBinary : String

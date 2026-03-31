@@ -34,9 +34,13 @@ toOptions env options =
 
     else
         let
+            color : Color.Support
+            color =
+                Color.supportsColor env options.color
+
             c : Colorize
             c =
-                Color.toAnsi (Color.supportsColor env options.color)
+                Color.toAnsi color
         in
         if options.help then
             ShowHelp
@@ -49,7 +53,7 @@ toOptions env options =
             case options.problem of
                 Just problem ->
                     ParseError
-                        { c = c
+                        { color = color
                         , report = options.report
                         , debug = options.debug
                         }
@@ -59,7 +63,7 @@ toOptions env options =
                     case options.appBinary of
                         Nothing ->
                             ParseError
-                                { c = c
+                                { color = color
                                 , report = options.report
                                 , debug = options.debug
                                 }
@@ -76,17 +80,17 @@ toOptions env options =
                                         { formatOptions =
                                             { report = options.report
                                             , debug = options.debug
-                                            , c = c
+                                            , color = color
                                             }
-                                        , toOptions = \{ elmJsonPath } -> toOptionsWithElmJsonPath c options appBinary elmJsonPath
+                                        , toOptions = \{ elmJsonPath } -> toOptionsWithElmJsonPath color options appBinary elmJsonPath
                                         }
 
                                 Just elmJsonPath ->
-                                    ParseSuccess (toOptionsWithElmJsonPath c options appBinary elmJsonPath)
+                                    ParseSuccess (toOptionsWithElmJsonPath color options appBinary elmJsonPath)
 
 
-toOptionsWithElmJsonPath : Colorize -> InternalOptions -> String -> String -> Options
-toOptionsWithElmJsonPath c options appBinary elmJsonPath =
+toOptionsWithElmJsonPath : Color.Support -> InternalOptions -> String -> String -> Options
+toOptionsWithElmJsonPath color options appBinary elmJsonPath =
     let
         projectRoot : Path
         projectRoot =
@@ -99,7 +103,7 @@ toOptionsWithElmJsonPath c options appBinary elmJsonPath =
     , report = options.report
     , debug = options.debug
     , forTests = options.forTests
-    , c = c
+    , color = color
     , reviewProject =
         case options.remoteTemplate of
             Just remoteTemplate ->
