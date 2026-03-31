@@ -13,6 +13,7 @@ import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Os exposing (ProcessCapability)
+import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Set exposing (Set)
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
@@ -88,7 +89,9 @@ buildLocalProject fs os options reviewFolder =
 
 buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> BuildData -> Task Problem ()
 buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
-    Fs.createDirectory fs (Path.join2 buildFolder "src")
+    Task.map2 (\_ _ -> ())
+        (Fs.createDirectory fs (Path.join2 buildFolder "src"))
+        (Fs.createDirectory fs (Path.dirname buildData.reviewAppPath))
         |> Task.mapError fsErrorToProblem
         |> Task.andThen
             (\() ->
@@ -97,15 +100,27 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
                       from = "~/dev/node-elm-review/template/src"
                     , to = Path.join2 buildFolder "src"
                     }
+                    |> Task.mapError processingErrorToProblem
             )
-        |> Task.andThen
-            (\() ->
-                createTemplateProject fs reviewFolder buildFolder buildData.reviewElmJson
-            )
+        |> Task.andThen (\() -> createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson)
+        |> Task.andThen (\() -> compileProjectUsingElmRun os buildFolder buildData.reviewAppPath)
 
 
-createTemplateProject : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
-createTemplateProject fs reviewFolder buildFolder reviewElmJson =
+processErrorToString : ProcessError -> String
+processErrorToString err =
+    case err of
+        Process.PermissionDenied ->
+            "PermissionDenied"
+
+        Process.CaptureLimitExceeded stream ->
+            "CaptureLimitExceeded(" ++ stream ++ ")"
+
+        Process.ProcessError message ->
+            message
+
+
+createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
+createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
     let
         astCodecSrc : Path
         astCodecSrc =
@@ -142,6 +157,11 @@ createTemplateProject fs reviewFolder buildFolder reviewElmJson =
 fsErrorToProblem : FsError -> Problem
 fsErrorToProblem error =
     Problem.unexpectedError (fsErrorToString error)
+
+
+processingErrorToProblem : ProcessError -> Problem
+processingErrorToProblem error =
+    Problem.unexpectedError (processErrorToString error)
 
 
 fsErrorToString : FsError -> String
@@ -290,6 +310,26 @@ This is either retrieved from a cache or computed.
 cachedBuild : Options -> Path -> Path -> List Path -> Task x Hash.Hash
 cachedBuild options userSrc reviewElmJsonPath sourceDirectories =
     Task.succeed (Hash.fromString "9")
+
+
+compileProjectUsingElmRun : ProcessCapability -> Path -> String -> Task Problem ()
+compileProjectUsingElmRun os buildFolder reviewAppPath =
+    Process.run os
+        -- TODO Get run from somewhere
+        "run"
+        { defaultSpawnOptions
+            | args =
+                [ "make"
+                , "--trust-always"
+                , "-o"
+                , reviewAppPath
+                , Path.join2 buildFolder "src/Elm/Review/Main.elm"
+                ]
+            , stdout = Process.InheritStdout
+            , stderr = Process.InheritStderr
+        }
+        |> Task.map (\_ -> ())
+        |> Task.mapError processingErrorToProblem
 
 
 decodingErrorMessage : String -> Decode.Error -> Colorize -> String
