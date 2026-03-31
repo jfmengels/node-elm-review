@@ -56,22 +56,38 @@ buildLocalProject fs options reviewFolder =
                                 reviewAppPath : Path
                                 reviewAppPath =
                                     ProjectPaths.reviewApp options.projectPaths appHash
+
+                                buildData : BuildData
+                                buildData =
+                                    { reviewAppPath = reviewAppPath
+                                    , pathToElmJson = pathToElmJson
+                                    , reviewElmJson = application
+                                    , appHash = appHash
+                                    }
                             in
                             Fs.stat fs reviewAppPath
-                                |> Task.map
+                                |> Task.map (\_ -> buildData)
+                                |> Task.onError
                                     (\_ ->
-                                        { reviewAppPath = reviewAppPath
-                                        , pathToElmJson = pathToElmJson
-                                        , reviewElmJson = application
-                                        , appHash = appHash
-                                        }
-                                    )
-                                |> Task.mapError
-                                    (\_ ->
-                                        Debug.todo "Need to build app"
+                                        buildLocalProjectBuild
+                                            fs
+                                            reviewFolder
+                                            (ProjectPaths.buildFolder options.projectPaths "review-project")
+                                            buildData
+                                            |> Task.map (\() -> buildData)
                                     )
                         )
             )
+
+
+buildLocalProjectBuild : FileSystem -> Path -> Path -> BuildData -> Task Problem ()
+buildLocalProjectBuild fs reviewFolder buildFolder buildData =
+    createTemplateProject fs reviewFolder buildFolder buildData.reviewElmJson
+
+
+createTemplateProject : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task x ()
+createTemplateProject fs reviewFolder buildFolder reviewElmJson =
+    Task.succeed ()
 
 
 readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }

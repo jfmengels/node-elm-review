@@ -1,12 +1,12 @@
 module Wrapper.ProjectPaths exposing
     ( ProjectPaths, from
-    , reviewApp
+    , reviewApp, buildFolder
     )
 
 {-|
 
 @docs ProjectPaths, from
-@docs reviewApp
+@docs reviewApp, buildFolder
 
 -}
 
@@ -33,6 +33,15 @@ reviewApp projectPaths hash =
         [ elmStuff projectPaths
         , "review-applications"
         , Hash.toString hash
+        ]
+
+
+buildFolder : ProjectPaths -> Path -> Path
+buildFolder projectPaths subFolder =
+    Path.join
+        [ elmStuff projectPaths
+        , "build-project"
+        , subFolder
         ]
 
 
