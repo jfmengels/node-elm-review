@@ -97,8 +97,8 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
             (\() ->
                 copyDirectory os
                     { -- TODO Use path relative to this binary
-                      from = "~/dev/node-elm-review/template/src"
-                    , to = Path.join2 buildFolder "src"
+                      from = "/Users/m1/dev/node-elm-review/template/src"
+                    , to = buildFolder
                     }
                     |> Task.mapError processingErrorToProblem
             )
@@ -125,7 +125,7 @@ createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
         astCodecSrc : Path
         astCodecSrc =
             -- TODO Use path relative to this binary
-            "~/dev/node-elm-review/ast-codec/src"
+            "/Users/m1/dev/node-elm-review/ast-codec/src"
 
         dependencies : List ( Elm.Package.Name, Elm.Version.Version )
         dependencies =
