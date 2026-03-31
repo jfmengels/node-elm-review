@@ -249,7 +249,7 @@ This is either retrieved from a cache or computed.
 -}
 cachedBuild : Options -> Path -> Path -> List Path -> Task x Hash.Hash
 cachedBuild options userSrc reviewElmJsonPath sourceDirectories =
-    Task.succeed (Hash.fromString "85fcade2635e85610d45dfac40cfc203")
+    Task.succeed (Hash.fromString "9")
 
 
 decodingErrorMessage : String -> Decode.Error -> Colorize -> String
