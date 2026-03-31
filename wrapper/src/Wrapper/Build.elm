@@ -17,15 +17,24 @@ import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
-import Wrapper.Hash as Hash
+import Wrapper.Hash as Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (Options, ReviewProject)
 import Wrapper.Path exposing (Path)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
+import Wrapper.ProjectPaths as ProjectPaths
 
 
 type Msg
-    = ReceivedReviewElmJson (Result Problem Elm.Project.ApplicationInfo)
+    = ReceivedReviewElmJson (Result Problem BuildResult)
+
+
+type alias BuildResult =
+    { reviewAppPath : Path
+    , pathToElmJson : Path
+    , reviewElmJson : Elm.Project.ApplicationInfo
+    , appHash : Hash
+    }
 
 
 update : Msg -> Result Problem ()
@@ -57,7 +66,27 @@ buildLocalProject fs options reviewFolder =
         |> Task.andThen
             (\{ raw, application } ->
                 cachedBuild options reviewFolder pathToElmJson application.dirs
-                    |> Task.map (\appHash -> application)
+                    |> Task.andThen
+                        (\appHash ->
+                            let
+                                reviewAppPath : Path
+                                reviewAppPath =
+                                    ProjectPaths.reviewApp options.projectPaths appHash
+                            in
+                            Fs.stat fs reviewAppPath
+                                |> Task.map
+                                    (\_ ->
+                                        { reviewAppPath = reviewAppPath
+                                        , pathToElmJson = pathToElmJson
+                                        , reviewElmJson = application
+                                        , appHash = appHash
+                                        }
+                                    )
+                                |> Task.mapError
+                                    (\_ ->
+                                        Debug.todo "Need to build app"
+                                    )
+                        )
             )
         |> Task.attempt ReceivedReviewElmJson
 
