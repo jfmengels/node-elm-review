@@ -60,7 +60,8 @@ init env =
         Err msg ->
             ( Done
             , Cmd.batch
-                [ Cli.println env.stderr (env.programName ++ ": " ++ msg)
+                [ -- TODO Make pretty error
+                  Cli.println env.stderr (env.programName ++ ": " ++ msg)
                 , Cli.exit 1
                 ]
             )
