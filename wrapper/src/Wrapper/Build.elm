@@ -85,7 +85,12 @@ buildLocalProject fs options reviewFolder =
 
 buildLocalProjectBuild : FileSystem -> Path -> Path -> BuildData -> Task Problem ()
 buildLocalProjectBuild fs reviewFolder buildFolder buildData =
-    createTemplateProject fs reviewFolder buildFolder buildData.reviewElmJson
+    Fs.createDirectory fs (Path.join2 buildFolder "src")
+        |> Task.mapError fsErrorToProblem
+        |> Task.andThen
+            (\() ->
+                createTemplateProject fs reviewFolder buildFolder buildData.reviewElmJson
+            )
 
 
 createTemplateProject : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
