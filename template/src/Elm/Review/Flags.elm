@@ -1,8 +1,9 @@
-module Elm.Review.Flags exposing (FixMode(..), Flags, ReportMode(..), parse)
+module Elm.Review.Flags exposing (FixMode(..), Flags, parse)
 
 import Cli exposing (Env)
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
+import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Set exposing (Set)
@@ -34,12 +35,6 @@ type FixMode
     = Mode_DontFix
     | Mode_Fix Bool
     | Mode_FixAll Bool
-
-
-type ReportMode
-    = HumanReadable
-    | Json
-    | NDJson
 
 
 parse : Env -> Result String Flags
@@ -101,13 +96,13 @@ applyArg arg flags =
             Ok { flags | detailsMode = Reporter.WithoutDetails }
 
         [ "--report", "human" ] ->
-            Ok { flags | reportMode = HumanReadable }
+            Ok { flags | reportMode = ReportMode.HumanReadable }
 
         [ "--report", "json" ] ->
-            Ok { flags | reportMode = Json }
+            Ok { flags | reportMode = ReportMode.Json }
 
         [ "--report", "ndjson" ] ->
-            Ok { flags | reportMode = NDJson }
+            Ok { flags | reportMode = ReportMode.NDJson }
 
         [ "--ignore-problematic-dependencies" ] ->
             Ok { flags | ignoreProblematicDependencies = True }
@@ -147,7 +142,7 @@ default =
     , enableExtract = False
     , fixExplanation = FixExplanation.Succinct
     , unsuppressMode = UnsuppressMode.UnsuppressNone
-    , reportMode = HumanReadable
+    , reportMode = ReportMode.HumanReadable
     , detailsMode = Reporter.WithDetails
     , ignoreProblematicDependencies = False
     , rulesFilter = Nothing

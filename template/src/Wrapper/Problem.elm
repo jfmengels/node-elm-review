@@ -1,9 +1,9 @@
 module Wrapper.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
 
+import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
 import Json.Encode as Encode
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Path exposing (Path)
-import Wrapper.ReportMode as ReportMode exposing (ReportMode)
 
 
 type Problem
@@ -65,17 +65,25 @@ format { color, report, debug } problem =
             formatHuman c problem
 
         ReportMode.Json ->
-            let
-                indent : Int
-                indent =
-                    if debug then
-                        2
+            formatJson c problem debug
 
-                    else
-                        0
-            in
-            formatJson c problem
-                |> Encode.encode indent
+        ReportMode.NDJson ->
+            formatJson c problem debug
+
+
+formatJson : Colorize -> Problem -> Bool -> String
+formatJson c problem debug =
+    let
+        indent : Int
+        indent =
+            if debug then
+                2
+
+            else
+                0
+    in
+    formatJsonHelp c problem
+        |> Encode.encode indent
 
 
 formatHuman : Colorize -> Problem -> String
@@ -83,8 +91,8 @@ formatHuman c (Problem { title, message }) =
     c Green ("-- " ++ title ++ " " ++ String.repeat (76 - String.length title) "-") ++ "\n\n" ++ String.trim (message c) ++ "\n"
 
 
-formatJson : Colorize -> Problem -> Encode.Value
-formatJson c (Problem { title, message, path }) =
+formatJsonHelp : Colorize -> Problem -> Encode.Value
+formatJsonHelp c (Problem { title, message, path }) =
     [ Just ( "type", Encode.string "error" )
     , Just ( "title", Encode.string title )
     , Maybe.map (\p -> ( "path", Encode.string p )) path

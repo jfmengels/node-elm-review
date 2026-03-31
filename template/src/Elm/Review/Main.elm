@@ -11,8 +11,9 @@ import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
 import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
-import Elm.Review.Flags as Flags exposing (FixMode(..), Flags, ReportMode(..))
+import Elm.Review.Flags as Flags exposing (FixMode(..), Flags)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
+import Elm.Review.ReportMode exposing (ReportMode(..))
 import Elm.Review.Reporter as Reporter
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
