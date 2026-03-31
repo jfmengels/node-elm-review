@@ -1,8 +1,8 @@
-module Elm.Review.Flags exposing (FixMode(..), Flags, parse)
+module Elm.Review.Flags exposing (Flags, parse)
 
 import Cli exposing (Env)
 import Elm.Review.CliCommunication as CliCommunication
-import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
+import Elm.Review.FixOptions as FixOptions
 import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -10,9 +10,10 @@ import Set exposing (Set)
 
 
 type alias Flags =
-    { fixMode : FixMode
+    { fixMode : FixOptions.Mode
+    , fileRemovalFixesEnabled : Bool
     , fixLimit : Maybe Int
-    , fixExplanation : FixExplanation
+    , fixExplanation : FixOptions.Explanation
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
@@ -29,12 +30,6 @@ type alias Flags =
     , debug : Bool
     , namespace : String
     }
-
-
-type FixMode
-    = Mode_DontFix
-    | Mode_Fix Bool
-    | Mode_FixAll Bool
 
 
 parse : Env -> Result String Flags
@@ -61,16 +56,13 @@ applyArg : String -> Flags -> Result String Flags
 applyArg arg flags =
     case String.split "=" arg of
         [ "--fix" ] ->
-            Ok { flags | fixMode = Mode_Fix False }
-
-        [ "--fix-remove-files" ] ->
-            Ok { flags | fixMode = Mode_Fix True }
+            Ok { flags | fixMode = FixOptions.Fix }
 
         [ "--fix-all" ] ->
-            Ok { flags | fixMode = Mode_FixAll False }
+            Ok { flags | fixMode = FixOptions.FixAll }
 
-        [ "--fix-all-remove-files" ] ->
-            Ok { flags | fixMode = Mode_FixAll True }
+        [ "--allow-remove-files" ] ->
+            Ok { flags | fileRemovalFixesEnabled = True }
 
         [ "--fix-limit", n ] ->
             case String.toInt n of
@@ -81,7 +73,7 @@ applyArg arg flags =
                     Err ("Couldn't parse fix limit `" ++ n ++ "`")
 
         [ "--explain-fix-failure" ] ->
-            Ok { flags | fixExplanation = FixExplanation.Detailed }
+            Ok { flags | fixExplanation = FixOptions.Detailed }
 
         [ "--extract" ] ->
             Ok { flags | enableExtract = True }
@@ -137,10 +129,11 @@ applyArg arg flags =
 
 default : Flags
 default =
-    { fixMode = Mode_DontFix
+    { fixMode = FixOptions.DontFix
+    , fileRemovalFixesEnabled = False
     , fixLimit = Nothing
     , enableExtract = False
-    , fixExplanation = FixExplanation.Succinct
+    , fixExplanation = FixOptions.Succinct
     , unsuppressMode = UnsuppressMode.UnsuppressNone
     , reportMode = ReportMode.HumanReadable
     , detailsMode = Reporter.WithDetails

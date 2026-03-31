@@ -10,8 +10,8 @@ import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
-import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
-import Elm.Review.Flags as Flags exposing (FixMode(..), Flags)
+import Elm.Review.FixOptions as FixOptions
+import Elm.Review.Flags as Flags exposing (Flags)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.ReportMode exposing (ReportMode(..))
 import Elm.Review.Reporter as Reporter
@@ -167,9 +167,7 @@ type alias Model =
     , rules : List Rule
     , fixAllRules : List Rule
     , isInitialRun : Bool
-    , fixMode : FixMode
-    , fixLimit : Maybe Int
-    , fixExplanation : FixExplanation
+    , fixExplanation : FixOptions.Explanation
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
     , detailsMode : Reporter.DetailsMode
@@ -183,6 +181,9 @@ type alias Model =
     , ignoreProblematicDependencies : Bool
 
     -- FIX
+    , fixMode : FixOptions.Mode
+    , fixLimit : Maybe Int
+    , fileRemovalFixesEnabled : Bool
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : AwaitingConfirmation
 
@@ -200,46 +201,6 @@ type AwaitingConfirmation
     = NotAwaiting
     | AwaitingError Rule.ReviewError
     | AwaitingFixAll
-
-
-toReviewOptionsFixMode : Bool -> Model -> ReviewOptions.FixMode
-toReviewOptionsFixMode fixesAllowed model =
-    if not fixesAllowed then
-        ReviewOptions.fixedDisabled
-
-    else
-        case model.fixMode of
-            Mode_DontFix ->
-                ReviewOptions.fixedDisabled
-
-            Mode_Fix _ ->
-                case model.fixLimit of
-                    Just fixLimit ->
-                        ReviewOptions.fixesEnabledWithLimit fixLimit
-
-                    Nothing ->
-                        ReviewOptions.fixesEnabledWithLimit 1
-
-            Mode_FixAll _ ->
-                case model.fixLimit of
-                    Just fixLimit ->
-                        ReviewOptions.fixesEnabledWithLimit fixLimit
-
-                    Nothing ->
-                        ReviewOptions.fixesEnabledWithoutLimits
-
-
-isFileRemovalFixesEnabled : FixMode -> Bool
-isFileRemovalFixesEnabled fixMode =
-    case fixMode of
-        Mode_DontFix ->
-            False
-
-        Mode_Fix fileRemovalFixesEnabled ->
-            fileRemovalFixesEnabled
-
-        Mode_FixAll fileRemovalFixesEnabled ->
-            fileRemovalFixesEnabled
 
 
 type ModelWrapper
@@ -323,12 +284,7 @@ initValid env fs flags rulesFromConfig =
             , runEnvironment = runEnvironment
             , store = store
             , rules = rules
-            , fixAllRules = rules
             , isInitialRun = True
-            , fixAllResultProject = Project.new
-            , fixMode = flags.fixMode
-            , fixLimit = flags.fixLimit
-            , fixExplanation = flags.fixExplanation
             , enableExtract = flags.enableExtract
             , unsuppressMode = flags.unsuppressMode
             , detailsMode = flags.detailsMode
@@ -340,6 +296,12 @@ initValid env fs flags rulesFromConfig =
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
             , errorAwaitingConfirmation = NotAwaiting
+            , fixAllRules = rules
+            , fixAllResultProject = Project.new
+            , fixMode = flags.fixMode
+            , fileRemovalFixesEnabled = flags.fileRemovalFixesEnabled && flags.fixMode /= FixOptions.DontFix
+            , fixLimit = flags.fixLimit
+            , fixExplanation = flags.fixExplanation
             , fixAllErrors = Dict.empty
             , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
             , extracts = Dict.empty
@@ -971,8 +933,8 @@ runReview { fixesAllowed } initialProject model =
                     (ReviewOptions.defaults
                         |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
                         |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
-                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
-                        |> ReviewOptions.withFileRemovalFixes (isFileRemovalFixesEnabled model.fixMode)
+                        |> ReviewOptions.withFixes (FixOptions.fixModeToReviewOptions fixesAllowed model)
+                        |> ReviewOptions.withFileRemovalFixes model.fileRemovalFixesEnabled
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions suppressedErrors
                     )
@@ -987,7 +949,7 @@ runReview { fixesAllowed } initialProject model =
                 |> SuppressedErrors.apply model.unsuppressMode suppressedErrors
                 |> CliCommunication.timerEnd model.communicationKey "apply-suppressions"
         , rules =
-            if model.isInitialRun || model.fixMode == Mode_DontFix then
+            if model.isInitialRun || model.fixMode == FixOptions.DontFix then
                 rules
 
             else
@@ -995,7 +957,7 @@ runReview { fixesAllowed } initialProject model =
         , isInitialRun = False
         , fixAllRules = rules
         , store =
-            if model.fixMode == Mode_DontFix then
+            if model.fixMode == FixOptions.DontFix then
                 Store.setProject project model.store
 
             else
@@ -1010,17 +972,17 @@ runReview { fixesAllowed } initialProject model =
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
     case model.fixMode of
-        Mode_DontFix ->
+        FixOptions.DontFix ->
             model
                 |> CliCommunication.timerStart model.communicationKey "process-errors"
                 |> makeReport (Store.suppressedErrors model.store)
                 |> CliCommunication.timerEnd model.communicationKey "process-errors"
 
-        Mode_Fix fileRemovalFixesEnabled ->
-            applyFixesAfterReview model True fileRemovalFixesEnabled
+        FixOptions.Fix ->
+            applyFixesAfterReview model True model.fileRemovalFixesEnabled
 
-        Mode_FixAll fileRemovalFixesEnabled ->
-            applyFixesAfterReview model False fileRemovalFixesEnabled
+        FixOptions.FixAll ->
+            applyFixesAfterReview model False model.fileRemovalFixesEnabled
 
 
 makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
@@ -1068,7 +1030,7 @@ makeReport previousSuppressedErrors model =
                     , detailsMode = newModel.detailsMode
                     , fixExplanation = newModel.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , mode = fixModeToReportFixMode model.fixMode
+                    , mode = fixModeToReportFixMode model.fixMode model.fileRemovalFixesEnabled
                     }
                     filesWithError
                     |> Text.toAnsi model.supportsColor
@@ -1158,16 +1120,16 @@ printNDJson env lines =
         |> Cli.println env.stdout
 
 
-fixModeToReportFixMode : FixMode -> Reporter.Mode
-fixModeToReportFixMode fixMode =
+fixModeToReportFixMode : FixOptions.Mode -> Bool -> Reporter.Mode
+fixModeToReportFixMode fixMode fileRemovalFixesEnabled =
     case fixMode of
-        Mode_DontFix ->
+        FixOptions.DontFix ->
             Reporter.Reviewing
 
-        Mode_Fix fileRemovalFixesEnabled ->
+        FixOptions.Fix ->
             Reporter.Fixing fileRemovalFixesEnabled
 
-        Mode_FixAll fileRemovalFixesEnabled ->
+        FixOptions.FixAll ->
             Reporter.Fixing fileRemovalFixesEnabled
 
 
@@ -1177,7 +1139,7 @@ encodeErrorByFile :
     }
     -> Dict String String
     -> Reporter.DetailsMode
-    -> FixExplanation
+    -> FixOptions.Explanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> Encode.Value
 encodeErrorByFile suppressedErrorsData links detailsMode explainFixFailure file =
@@ -1205,7 +1167,7 @@ encodeErrorsForNDJson :
     }
     -> Dict String String
     -> Reporter.DetailsMode
-    -> FixExplanation
+    -> FixOptions.Explanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> List Encode.Value
 encodeErrorsForNDJson suppressedErrorsData links detailsMode explainFixFailure file =
@@ -1251,7 +1213,7 @@ encodeError :
     -> Maybe ( String, Encode.Value )
     -> Dict String String
     -> Reporter.DetailsMode
-    -> FixExplanation
+    -> FixOptions.Explanation
     -> Reporter.Source
     -> Rule.ReviewError
     -> Encode.Value
@@ -1294,7 +1256,7 @@ encodeConfigurationError detailsMode pathField error =
            , ( "message", Encode.string error.message )
            , ( "details", Encode.list Encode.string error.details )
            , ( "region", encodeRange Range.empty )
-           , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixExplanation.Succinct (Reporter.Source Array.empty) error) )
+           , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixOptions.Succinct (Reporter.Source Array.empty) error) )
            ]
         |> Encode.object
 
@@ -1556,13 +1518,13 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
             , ( "clearFixLine"
               , Encode.bool
                     (case model.fixMode of
-                        Mode_DontFix ->
+                        FixOptions.DontFix ->
                             False
 
-                        Mode_Fix _ ->
+                        FixOptions.Fix ->
                             False
 
-                        Mode_FixAll _ ->
+                        FixOptions.FixAll ->
                             True
                     )
               )

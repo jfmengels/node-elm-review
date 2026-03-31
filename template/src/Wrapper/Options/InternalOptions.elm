@@ -15,8 +15,6 @@ type alias InternalOptions =
     , debug : Bool
     , showBenchmark : Bool
     , extract : Bool
-    , fileRemovalFixesEnabled : Bool
-    , explainFixFailure : Bool
     , ignoredDirs : List String
     , ignoredFiles : List String
     , ignoreProblematicDependencies : Bool
@@ -35,6 +33,8 @@ type alias InternalOptions =
     , fixAll : Bool
     , fixAllWithoutPrompt : Bool
     , fixLimit : Maybe Int
+    , fileRemovalFixesEnabled : Bool
+    , explainFixFailure : Bool
     , unsuppress : Bool
     , unsuppressRules : List String
     , rules : List String
@@ -63,8 +63,6 @@ initialOptions =
     , debug = False
     , showBenchmark = False
     , extract = False
-    , fileRemovalFixesEnabled = False
-    , explainFixFailure = False
     , ignoredDirs = []
     , ignoredFiles = []
     , ignoreProblematicDependencies = False
@@ -83,6 +81,8 @@ initialOptions =
     , fixAll = False
     , fixAllWithoutPrompt = False
     , fixLimit = Nothing
+    , fileRemovalFixesEnabled = False
+    , explainFixFailure = False
     , unsuppress = False
     , unsuppressRules = []
     , rules = []

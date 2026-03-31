@@ -1,7 +1,7 @@
 module FormatFixProposalTest exposing (suite)
 
 import Array
-import Elm.Review.FixExplanation as FixExplanation
+import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import FormatTester exposing (expect)
 import Review.Project as Project
@@ -85,7 +85,7 @@ some =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     True
                     file
                     error
@@ -185,7 +185,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     True
                     file
                     error
@@ -284,7 +284,7 @@ a =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     True
                     file
                     error
@@ -367,7 +367,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     True
                     file
                     error
@@ -448,7 +448,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     True
                     file
                     error
@@ -553,7 +553,7 @@ b =
                 in
                 Reporter.formatSingleFixProposal
                     Reporter.WithDetails
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     True
                     file
                     error

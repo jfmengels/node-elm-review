@@ -1,7 +1,7 @@
 module ReporterTest exposing (multipleErrorsIncludingGlobalErrorTest, suite)
 
 import Array
-import Elm.Review.FixExplanation as FixExplanation exposing (FixExplanation)
+import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Reporter as Reporter
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.UnsuppressMode as UnsuppressMode
@@ -49,7 +49,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -79,7 +79,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = True
                     }
@@ -121,7 +121,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -187,7 +187,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -253,7 +253,7 @@ a =
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -346,7 +346,7 @@ b = foo <| Debug.log "other debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -478,7 +478,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -611,7 +611,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -678,7 +678,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Fixing False
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -755,7 +755,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Detailed
+                        , fixExplanation = FixOptions.Detailed
                         , mode = Reporter.Fixing False
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -845,7 +845,7 @@ a = Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -876,7 +876,7 @@ I found [1 error](#FF0000) in [1 file](#E8C338)."""
         , test "should show a failing fix that has collisions in edit ranges (succinct)" <|
             \() ->
                 expectFixFailure
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     (FixProblem.HasCollisionsInEditRanges
                         { filePath = "src/FileA.elm"
                         , edits =
@@ -901,7 +901,7 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
         , test "should show a failing fix that has collisions in edit ranges (detailed)" <|
             \() ->
                 expectFixFailure
-                    FixExplanation.Detailed
+                    FixOptions.Detailed
                     (FixProblem.HasCollisionsInEditRanges
                         { filePath = "src/FileA.elm"
                         , edits =
@@ -938,7 +938,7 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
         , test "should show a failing fix that has negative ranges (succinct)" <|
             \() ->
                 expectFixFailure
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     (FixProblem.EditWithNegativeRange
                         { filePath = "src/FileA.elm"
                         , edit = Edit.removeRange { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }
@@ -960,7 +960,7 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
         , test "should show a failing fix that has negative ranges (detailed)" <|
             \() ->
                 expectFixFailure
-                    FixExplanation.Detailed
+                    FixOptions.Detailed
                     (FixProblem.EditWithNegativeRange
                         { filePath = "src/FileA.elm"
                         , edit = Edit.removeRange { start = { row = 2, column = 10 }, end = { row = 2, column = 4 } }
@@ -988,7 +988,7 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
         , test "should show a failing fix that has import cycles (succinct)" <|
             \() ->
                 expectFixFailure
-                    FixExplanation.Succinct
+                    FixOptions.Succinct
                     (FixProblem.CreatesImportCycle [ "Module1", "Module2", "Module3" ])
                     { withoutColors = """I failed to apply the automatic fix because it resulted in an import cycle.
 
@@ -1006,7 +1006,7 @@ Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-
         , test "should show a failing fix that has import cycles (detailed)" <|
             \() ->
                 expectFixFailure
-                    FixExplanation.Detailed
+                    FixOptions.Detailed
                     (FixProblem.CreatesImportCycle [ "Module1", "Module2", "Module3" ])
                     { withoutColors = """I failed to apply the automatic fix because it resulted in an import cycle.
 
@@ -1040,7 +1040,7 @@ Please try to provide a SSCCE (https://sscce.org/) and as much information as po
         ]
 
 
-expectFixFailure : FixExplanation -> FixProblem -> { withoutColors : String, withColors : String } -> Expectation
+expectFixFailure : FixOptions.Explanation -> FixProblem -> { withoutColors : String, withColors : String } -> Expectation
 expectFixFailure fixExplanation fixProblem { withoutColors, withColors } =
     let
         expectedWithoutColorsPrefix : String
@@ -1153,7 +1153,7 @@ globalErrorTest =
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -1224,7 +1224,7 @@ a = Debug.log "debug" 1"""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = 0
                     , detailsMode = Reporter.WithoutDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -1292,7 +1292,7 @@ suppressedTests =
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
                     , detailsMode = Reporter.WithDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -1318,7 +1318,7 @@ There is still [1 suppressed error](#FFA500) to address."""
                     , unsuppressMode = UnsuppressMode.UnsuppressNone
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
                     , detailsMode = Reporter.WithDetails
-                    , fixExplanation = FixExplanation.Succinct
+                    , fixExplanation = FixOptions.Succinct
                     , mode = Reporter.Reviewing
                     , errorsHaveBeenFixedPreviously = False
                     }
@@ -1360,7 +1360,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1450,7 +1450,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1574,7 +1574,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1698,7 +1698,7 @@ a = Debug.log "debug" 1"""
                         -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1805,7 +1805,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1860,7 +1860,7 @@ a = "🔧" ++ 1"""
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
@@ -1917,7 +1917,7 @@ a = "🔧" ++ "🔧
                         , unsuppressMode = UnsuppressMode.UnsuppressNone
                         , originalNumberOfSuppressedErrors = 0
                         , detailsMode = Reporter.WithDetails
-                        , fixExplanation = FixExplanation.Succinct
+                        , fixExplanation = FixOptions.Succinct
                         , mode = Reporter.Reviewing
                         , errorsHaveBeenFixedPreviously = False
                         }
