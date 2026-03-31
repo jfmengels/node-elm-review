@@ -30,7 +30,7 @@ dirname path =
 
 join2 : Path -> Path -> Path
 join2 a b =
-    if a == "." then
+    if a == "." || String.startsWith "/" b || String.startsWith "~" b then
         b
 
     else if b == "." then
