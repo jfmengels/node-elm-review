@@ -17,8 +17,10 @@ import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
+import Wrapper.Hash as Hash
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (Options, ReviewProject)
+import Wrapper.Path exposing (Path)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 
 
@@ -37,26 +39,31 @@ build : FileSystem -> Options -> Cmd Msg
 build fs options =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildLocalProject fs options.reviewProject reviewFolder
+            buildLocalProject fs options reviewFolder
 
         Options.Remote remoteTemplate ->
             Debug.todo "Build remote template"
 
 
-buildLocalProject : FileSystem -> ReviewProject -> String -> Cmd Msg
-buildLocalProject fs reviewProject reviewFolder =
-    readReviewElmJson fs reviewProject reviewFolder
-        |> Task.attempt ReceivedReviewElmJson
-
-
-readReviewElmJson : FileSystem -> ReviewProject -> String -> Task Problem Elm.Project.ApplicationInfo
-readReviewElmJson fs reviewProject reviewFolder =
+buildLocalProject : FileSystem -> Options -> String -> Cmd Msg
+buildLocalProject fs options reviewFolder =
     let
         pathToElmJson : String
         pathToElmJson =
             -- TODO Use path functions
             String.join "/" [ reviewFolder, "elm.json" ]
     in
+    readReviewElmJson fs options.reviewProject reviewFolder pathToElmJson
+        |> Task.andThen
+            (\application ->
+                cachedBuild options reviewFolder pathToElmJson application.dirs
+                    |> Task.map (\appHash -> application)
+            )
+        |> Task.attempt ReceivedReviewElmJson
+
+
+readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem Elm.Project.ApplicationInfo
+readReviewElmJson fs reviewProject reviewFolder pathToElmJson =
     fetchElmJson fs reviewFolder pathToElmJson
         |> Task.andThen
             (\rawElmJson ->
@@ -142,6 +149,14 @@ validateElmReviewVersion reviewProject reviewFolder application =
 
 Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."""
                 }
+
+
+{-| Get the hash associated to the current review application.
+This is either retrieved from a cache or computed.
+-}
+cachedBuild : Options -> Path -> Path -> List Path -> Task x Hash.Hash
+cachedBuild options userSrc reviewElmJsonPath sourceDirectories =
+    Task.succeed (Hash.fromString "some-hash")
 
 
 decodingErrorMessage : String -> Decode.Error -> Colorize -> String
