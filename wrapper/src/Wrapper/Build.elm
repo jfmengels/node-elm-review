@@ -11,6 +11,7 @@ import Elm.Project
 import Elm.Version
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Set exposing (Set)
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
@@ -87,7 +88,7 @@ buildLocalProjectBuild fs reviewFolder buildFolder buildData =
     createTemplateProject fs reviewFolder buildFolder buildData.reviewElmJson
 
 
-createTemplateProject : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task x ()
+createTemplateProject : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
 createTemplateProject fs reviewFolder buildFolder reviewElmJson =
     let
         astCodecSrc : Path
@@ -114,7 +115,30 @@ createTemplateProject fs reviewFolder buildFolder reviewElmJson =
                 , testDepsIndirect = []
             }
     in
-    Task.succeed ()
+    Fs.writeTextFile
+        fs
+        (Path.join2 buildFolder "elm.json")
+        (Elm.Project.encode (Elm.Project.Application elmJson) |> Encode.encode 2)
+        |> Task.map (always ())
+        |> Task.mapError fsErrorToProblem
+
+
+fsErrorToProblem : FsError -> Problem
+fsErrorToProblem error =
+    Problem.unexpectedError (fsErrorToString error)
+
+
+fsErrorToString : FsError -> String
+fsErrorToString fsError =
+    case fsError of
+        Fs.NotFound path ->
+            "File not found: " ++ path
+
+        Fs.PermissionDenied ->
+            "Permission denied"
+
+        Fs.IoError msg ->
+            "Unknown error: " ++ msg
 
 
 addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
