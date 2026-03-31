@@ -28,6 +28,7 @@ all =
                                 { projectRoot = "."
                                 , namespace = "cli"
                                 }
+                        , forceBuild = False
                         , forTests = False
                         , color = Color.colors_FOR_TESTS
                         , debug = False
@@ -48,6 +49,7 @@ all =
                                 { projectRoot = "."
                                 , namespace = "cli"
                                 }
+                        , forceBuild = False
                         , forTests = False
                         , color = Color.colors_FOR_TESTS
                         , debug = False
@@ -68,6 +70,7 @@ all =
                                 { projectRoot = "."
                                 , namespace = "cli"
                                 }
+                        , forceBuild = False
                         , forTests = False
                         , color = Color.colors_FOR_TESTS
                         , debug = False
