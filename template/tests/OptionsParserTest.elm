@@ -22,6 +22,7 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Nothing
+                        , projectRoot = "."
                         , elmJsonPath = "elm.json"
                         , forTests = False
                         , c = c
@@ -39,6 +40,7 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Just Subcommand.Init
+                        , projectRoot = "."
                         , elmJsonPath = "elm.json"
                         , forTests = False
                         , c = c
@@ -56,6 +58,7 @@ all =
                     |> OptionsParser.parse
                     |> expectEqual
                         { subcommand = Nothing
+                        , projectRoot = "."
                         , elmJsonPath = "elm.json"
                         , forTests = False
                         , c = c

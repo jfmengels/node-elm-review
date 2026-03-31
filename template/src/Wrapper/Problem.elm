@@ -2,6 +2,7 @@ module Wrapper.Problem exposing (FormatOptions, Problem, ProblemSimple, format, 
 
 import Json.Encode as Encode
 import Wrapper.Color exposing (Color(..), Colorize)
+import Wrapper.Path exposing (Path)
 import Wrapper.ReportMode as ReportMode exposing (ReportMode)
 
 
@@ -9,7 +10,7 @@ type Problem
     = Problem
         { title : String
         , message : Colorize -> String
-        , path : Maybe String
+        , path : Maybe Path
         }
 
 
@@ -28,7 +29,7 @@ from { title, message } =
         }
 
 
-withPath : String -> Problem -> Problem
+withPath : Path -> Problem -> Problem
 withPath path (Problem problem) =
     Problem
         { title = problem.title
