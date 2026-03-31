@@ -14,6 +14,7 @@ module Wrapper.Options exposing
 -}
 
 import Wrapper.Color exposing (Colorize)
+import Wrapper.Path exposing (Path)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.ReportMode exposing (ReportMode)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -23,7 +24,8 @@ type alias Options =
     { subcommand : Maybe Subcommand
     , directoriesToAnalyze : List String
     , report : ReportMode
-    , elmJsonPath : String
+    , projectRoot : Path
+    , elmJsonPath : Path
     , debug : Bool
     , forTests : Bool
     , c : Colorize

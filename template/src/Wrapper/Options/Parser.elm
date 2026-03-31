@@ -8,6 +8,7 @@ import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options as Options exposing (HelpOptions, Options)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+import Wrapper.Path as Path exposing (Path)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
@@ -86,7 +87,13 @@ toOptions env options =
 
 toOptionsWithElmJsonPath : Colorize -> InternalOptions -> String -> String -> Options
 toOptionsWithElmJsonPath c options appBinary elmJsonPath =
+    let
+        projectRoot : Path
+        projectRoot =
+            Path.dirname elmJsonPath
+    in
     { subcommand = options.subcommand
+    , projectRoot = projectRoot
     , elmJsonPath = elmJsonPath
     , directoriesToAnalyze = options.directoriesToAnalyze
     , report = options.report
@@ -99,9 +106,12 @@ toOptionsWithElmJsonPath c options appBinary elmJsonPath =
                 Options.Remote remoteTemplate
 
             Nothing ->
-                options.configPath
-                    |> Maybe.withDefault "review"
-                    |> Options.Local
+                case options.configPath of
+                    Just config ->
+                        Options.Local config
+
+                    Nothing ->
+                        Options.Local (Path.join projectRoot "review")
     , appBinary = appBinary
     }
 
