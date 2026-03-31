@@ -166,8 +166,8 @@ type FixMode
 
 
 toReviewOptionsFixMode : Bool -> Model -> ReviewOptions.FixMode
-toReviewOptionsFixMode fixAllAllowed model =
-    if not fixAllAllowed then
+toReviewOptionsFixMode fixesAllowed model =
+    if not fixesAllowed then
         ReviewOptions.fixedDisabled
 
     else
