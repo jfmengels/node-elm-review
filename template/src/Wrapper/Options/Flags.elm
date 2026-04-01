@@ -356,7 +356,12 @@ flags =
                     \arg options ->
                         case String.toInt arg of
                             Just n ->
-                                Ok { options | fixLimit = Just n }
+                                if n < 1 then
+                                    -- TODO Make custom error
+                                    Err Nothing
+
+                                else
+                                    Ok { options | fixLimit = Just n }
 
                             Nothing ->
                                 Err Nothing
