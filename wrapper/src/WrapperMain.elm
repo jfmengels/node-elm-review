@@ -255,9 +255,20 @@ getCwd fs env =
 
 runReviewProcess : Model -> String -> Cmd Msg
 runReviewProcess { os, options } appBinary =
+    let
+        ( cmd, args ) =
+            if options.debug then
+                -- TODO Get host-cli from somewhere?
+                ( "host-cli"
+                , "-v" :: "--trust" :: appBinary :: options.reviewAppFlags
+                )
+
+            else
+                ( appBinary, options.reviewAppFlags )
+    in
     Process.run os
-        appBinary
-        { args = options.reviewAppFlags
+        cmd
+        { args = args
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
         , env = Nothing
         , stdin = Process.InheritStdin
