@@ -1,10 +1,10 @@
 module Elm.Review.Store exposing
     ( Model, init
     , Msg, update, UpdateInput
-    , isReady
     , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
     , ruleLinks
+    , Readiness(..), checkReadiness
     )
 
 {-|
@@ -81,9 +81,22 @@ init { fs, suppress, runEnvironment, directoriesToAnalyze } =
     )
 
 
-isReady : Model -> Bool
-isReady (Model { pendingTaskCount }) =
-    pendingTaskCount == 0
+type Readiness
+    = Ready
+    | Failure (List Path)
+    | NotReady
+
+
+checkReadiness : Model -> Readiness
+checkReadiness (Model { pendingTaskCount, directoriesWithoutFiles }) =
+    if pendingTaskCount /= 0 then
+        NotReady
+
+    else if List.isEmpty directoriesWithoutFiles then
+        Ready
+
+    else
+        Failure directoriesWithoutFiles
 
 
 type Msg
