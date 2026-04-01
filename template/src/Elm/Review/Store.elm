@@ -88,7 +88,7 @@ type Msg
     = ReceivedElmJson (List Path) String (Result Fs.FsError String)
     | ReceivedReadme String (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
-    | ReceivedElmFileList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
+    | ReceivedElmFileList String (Result Fs.FsError (List String))
     | ReceivedElmFile String (Result Fs.FsError String)
     | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
@@ -263,7 +263,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         ReceivedElmFileList directory result ->
             case result of
-                Ok ( files, _ ) ->
+                Ok files ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
@@ -443,6 +443,7 @@ fetchSuppressionFiles fs directory =
 fetchElmFiles : FileSystem -> String -> Cmd Msg
 fetchElmFiles fs directory =
     Fs.walkTree fs directory (Just "*.elm") Fs.Any
+        |> Task.map Tuple.first
         |> Task.attempt (ReceivedElmFileList directory)
 
 
