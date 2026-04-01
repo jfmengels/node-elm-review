@@ -509,42 +509,56 @@ update msg model =
 
 startReviewIfNoPendingTasks : ( Model, Cmd msg ) -> ( Model, Cmd msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
-    if model.isInitialRun && Store.isReady model.store then
-        if model.suppress then
-            let
-                newModel : Model
-                newModel =
-                    { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = False } (Store.project model.store)
-            in
-            ( newModel
-            , Cmd.batch
-                [ -- TODO Replace by file writes
-                  newModel.reviewErrors
-                    |> SuppressedErrors.fromReviewErrors
-                    |> SuppressedErrors.encode []
-                    |> suppressionsResponse
+    if model.isInitialRun then
+        case Store.checkReadiness model.store of
+            Store.Ready ->
+                if model.suppress then
+                    let
+                        newModel : Model
+                        newModel =
+                            { model | fixAllErrors = Dict.empty }
+                                |> runReview { fixesAllowed = False } (Store.project model.store)
+                    in
+                    ( newModel
+                    , Cmd.batch
+                        [ -- TODO Replace by file writes
+                          newModel.reviewErrors
+                            |> SuppressedErrors.fromReviewErrors
+                            |> SuppressedErrors.encode []
+                            |> suppressionsResponse
 
-                -- TODO Don't print in JSON report mode
-                , Cli.println model.env.stdout
-                    ("I created suppressions files in "
-                        ++ Color.toAnsi model.supportsColor Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment)
+                        -- TODO Don't print in JSON report mode
+                        , Cli.println model.env.stdout
+                            ("I created suppressions files in "
+                                ++ Color.toAnsi model.supportsColor Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment)
+                            )
+                        , Cli.exit 0
+                        ]
                     )
-                , Cli.exit 0
-                ]
-            )
 
-        else
-            let
-                ( modelWithReviewResults, newCmd ) =
-                    { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = True } (Store.project model.store)
-                        |> reportOrFix
-            in
-            -- TODO Update suppressions
-            ( modelWithReviewResults
-            , Cmd.batch [ cmd, newCmd ]
-            )
+                else
+                    let
+                        ( modelWithReviewResults, newCmd ) =
+                            { model | fixAllErrors = Dict.empty }
+                                |> runReview { fixesAllowed = True } (Store.project model.store)
+                                |> reportOrFix
+                    in
+                    -- TODO Update suppressions
+                    ( modelWithReviewResults
+                    , Cmd.batch [ cmd, newCmd ]
+                    )
+
+            Store.NotReady ->
+                unchanged
+
+            Store.Failure files ->
+                -- TODO Write problem
+                ( model
+                , Cmd.batch
+                    [ Cli.println model.env.stderr ("Could not find files " ++ String.join "," files)
+                    , Cli.exit 1
+                    ]
+                )
 
     else
         unchanged
