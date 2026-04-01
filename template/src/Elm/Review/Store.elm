@@ -91,6 +91,7 @@ type Msg
     | ReceivedReadme String (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
     | ReceivedElmFileList String (Result Fs.FsError (List String))
+    | ReceivedElmFileListFromCliArgs String (Result Fs.FsError (List String))
     | ReceivedElmFile String (Result Fs.FsError String)
     | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
@@ -131,18 +132,33 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
-                        sourceDirectories : List String
-                        sourceDirectories =
+                        fetchSources : List (Cmd Msg)
+                        fetchSources =
                             if List.isEmpty directoriesToAnalyze then
                                 case elmJson of
                                     Elm.Project.Application application ->
-                                        "test" :: application.dirs
+                                        List.map (fetchElmFiles fs) ("test" :: application.dirs)
 
                                     Elm.Project.Package _ ->
-                                        [ "src", "test" ]
+                                        List.map (fetchElmFiles fs) [ "src", "test" ]
 
                             else
-                                directoriesToAnalyze
+                                List.map
+                                    (\fileOrDir ->
+                                        -- TODO Use version of Fs.stat that does follow symlinks
+                                        Fs.stat fs fileOrDir
+                                            |> Task.andThen
+                                                (\{ isDirectory } ->
+                                                    if isDirectory then
+                                                        Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
+                                                            |> Task.map Tuple.first
+
+                                                    else
+                                                        Task.succeed [ fileOrDir ]
+                                                )
+                                            |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
+                                    )
+                                    directoriesToAnalyze
 
                         addDeps : List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
                         addDeps deps initial =
@@ -168,8 +184,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
 
                         tasks : List (Cmd Msg)
                         tasks =
-                            List.map (fetchElmFiles fs) sourceDirectories
-                                |> addDependencies
+                            addDependencies fetchSources
                     in
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length tasks - 1)
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
@@ -274,6 +289,25 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                 { fs = fs
                 , stderr = stderr
                 , onNotFound = decrementTaskCount
+                }
+                directory
+                result
+                model
+
+        ReceivedElmFileListFromCliArgs directory result ->
+            receivedElmFileList
+                { fs = fs
+                , stderr = stderr
+                , onNotFound =
+                    \() ->
+                        ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                          , project = model.project
+                          , suppressedErrors = model.suppressedErrors
+                          , ruleLinks = model.ruleLinks
+                          , directoriesWithoutFiles = directory :: model.directoriesWithoutFiles
+                          }
+                        , Cmd.none
+                        )
                 }
                 directory
                 result
