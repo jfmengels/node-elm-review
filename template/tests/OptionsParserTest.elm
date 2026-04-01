@@ -35,7 +35,7 @@ all =
                 , args = [ "unknown", "other" ]
                 }
                     |> OptionsParser.parse
-                    |> expectEqual { emptyOptions | directoriesToAnalyze = [ "other", "unknown" ] }
+                    |> expectEqual { emptyOptions | reviewAppFlags = [ "--dirs-to-analyze=other,unknown" ] }
         , test "Enter help mode if --help is used" <|
             \() ->
                 { env = Dict.empty
@@ -95,7 +95,6 @@ emptyOptions =
     , debug = False
     , report = ReportMode.HumanReadable
     , reviewProject = Options.Local "review"
-    , directoriesToAnalyze = []
     , reviewAppFlags = []
     }
 

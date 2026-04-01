@@ -89,7 +89,6 @@ toOptionsWithElmJsonPath color options elmJsonPath =
             { projectRoot = projectRoot
             , namespace = Maybe.withDefault "cli" options.namespace
             }
-    , directoriesToAnalyze = options.directoriesToAnalyze
     , report = options.report
     , forceBuild = options.forceBuild
     , debug = options.debug
@@ -109,7 +108,12 @@ toOptionsWithElmJsonPath color options elmJsonPath =
                         Options.Local (Path.join2 projectRoot "review")
     , reviewAppFlags =
         filterMap
-            [ if List.isEmpty options.ignoredFiles then
+            [ if List.isEmpty options.directoriesToAnalyze then
+                Nothing
+
+              else
+                Just ("--dirs-to-analyze=" ++ uniqueList options.directoriesToAnalyze)
+            , if List.isEmpty options.ignoredFiles then
                 Nothing
 
               else

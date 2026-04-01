@@ -29,6 +29,7 @@ type alias Flags =
     , supportsColor : Bool
     , debug : Bool
     , namespace : String
+    , directoriesToAnalyze : List String
     }
 
 
@@ -123,6 +124,9 @@ applyArg arg flags =
         [ "--namespace", namespace ] ->
             Ok { flags | namespace = namespace }
 
+        [ "--dirs-to-analyze", dirs ] ->
+            Ok { flags | directoriesToAnalyze = String.split "," dirs }
+
         _ ->
             Err ("Unknown flag `" ++ arg ++ "`")
 
@@ -148,4 +152,5 @@ default =
     , supportsColor = True
     , debug = False
     , namespace = "cli"
+    , directoriesToAnalyze = []
     }
