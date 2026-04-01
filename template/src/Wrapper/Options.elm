@@ -30,6 +30,7 @@ type alias Options =
     , forTests : Bool
     , color : Color.Support
     , reviewProject : ReviewProject
+    , reviewAppFlags : List String
     }
 
 

@@ -34,7 +34,7 @@ flagsByName =
 flags : List Flag
 flags =
     [ { name = "unsuppress"
-      , argument = ArgumentAbsent (\options -> { options | unsuppress = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = Cyan
@@ -53,7 +53,7 @@ flags =
                 { argName = "<rule1,rule2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | unsuppressRules = options.unsuppressRules ++ String.split "," arg }
+                , apply = \_ arg options -> Ok { options | unsuppressRules = options.unsuppressRules ++ String.split "," arg }
                 }
       , display =
             Just
@@ -74,7 +74,7 @@ flags =
                 { argName = "<rule1,rule2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | rules = options.rules ++ String.split "," arg }
+                , apply = \_ arg options -> Ok { options | rules = options.rules ++ String.split "," arg }
                 }
       , display =
             Just
@@ -90,7 +90,7 @@ flags =
                 }
       }
     , { name = "watch"
-      , argument = ArgumentAbsent (\options -> { options | watch = True, watchConfig = True })
+      , argument = ArgumentAbsent (\flagName options -> addToReviewAppFlags flagName { options | watchConfig = True })
       , display =
             Just
                 { color = Cyan
@@ -106,11 +106,11 @@ flags =
                 }
       }
     , { name = "watch-code"
-      , argument = ArgumentAbsent (\options -> { options | watch = True })
+      , argument = ArgumentAbsent (\_ options -> addToReviewAppFlags "watch" options)
       , display = Nothing
       }
     , { name = "extract"
-      , argument = ArgumentAbsent (\options -> { options | extract = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = Cyan
@@ -132,7 +132,7 @@ flags =
                 { argName = "<path-to-elm.json>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | elmJsonPath = Just arg }
+                , apply = \_ arg options -> Ok { options | elmJsonPath = Just arg }
                 }
       , display =
             Just
@@ -155,7 +155,7 @@ flags =
                 { argName = "<path-to-elm>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | compilerPath = Just arg }
+                , apply = \_ arg options -> Ok { options | compilerPath = Just arg }
                 }
       , display =
             Just
@@ -192,7 +192,7 @@ flags =
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
                 , apply =
-                    \arg options ->
+                    \_ arg options ->
                         if arg == "module" || arg == "project" then
                             Ok { options | compilerPath = Just arg }
 
@@ -216,7 +216,7 @@ flags =
                 }
       }
     , { name = "version"
-      , argument = ArgumentAbsent (\options -> { options | version = True })
+      , argument = ArgumentAbsent (\_ options -> { options | version = True })
       , display =
             Just
                 { color = Cyan
@@ -230,11 +230,11 @@ flags =
                 }
       }
     , { name = "help"
-      , argument = ArgumentAbsent (\options -> { options | help = True })
+      , argument = ArgumentAbsent (\_ options -> { options | help = True })
       , display = Nothing
       }
     , { name = "debug"
-      , argument = ArgumentAbsent (\options -> { options | debug = True })
+      , argument = ArgumentAbsent (\flagName options -> addToReviewAppFlags flagName { options | debug = True })
       , display =
             Just
                 { color = Cyan
@@ -250,7 +250,7 @@ flags =
                 }
       }
     , { name = "benchmark-info"
-      , argument = ArgumentAbsent (\options -> { options | showBenchmark = True })
+      , argument = ArgumentAbsent (\_ options -> { options | showBenchmark = True })
       , display =
             Just
                 { color = Cyan
@@ -265,11 +265,11 @@ flags =
                 }
       }
     , { name = "color"
-      , argument = ArgumentAbsent (\options -> { options | color = Just True })
+      , argument = ArgumentAbsent (\_ options -> { options | color = Just True })
       , display = Nothing
       }
     , { name = "no-color"
-      , argument = ArgumentAbsent (\options -> { options | color = Just False })
+      , argument = ArgumentAbsent (\_ options -> { options | color = Just False })
       , display =
             Just
                 { color = Cyan
@@ -281,7 +281,7 @@ flags =
       }
     , reportFlag
     , { name = "no-details"
-      , argument = ArgumentAbsent (\options -> { options | details = False })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = Cyan
@@ -295,7 +295,7 @@ flags =
                 }
       }
     , { name = "fix"
-      , argument = ArgumentAbsent (\options -> { options | fix = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = BlueBright
@@ -313,7 +313,7 @@ flags =
                 }
       }
     , { name = "fix-all"
-      , argument = ArgumentAbsent (\options -> { options | fixAll = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = BlueBright
@@ -331,7 +331,7 @@ flags =
                 }
       }
     , { name = "fix-all-without-prompt"
-      , argument = ArgumentAbsent (\options -> { options | fixAllWithoutPrompt = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = BlueBright
@@ -353,7 +353,7 @@ flags =
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = True
                 , apply =
-                    \arg options ->
+                    \flag arg options ->
                         case String.toInt arg of
                             Just n ->
                                 if n < 1 then
@@ -361,7 +361,7 @@ flags =
                                     Err Nothing
 
                                 else
-                                    Ok { options | fixLimit = Just n }
+                                    addToReviewAppFlagsWithArg flag arg options
 
                             Nothing ->
                                 Err Nothing
@@ -376,7 +376,7 @@ flags =
                 }
       }
     , { name = "allow-remove-files"
-      , argument = ArgumentAbsent (\options -> { options | fileRemovalFixesEnabled = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = BlueBright
@@ -387,7 +387,7 @@ flags =
                 }
       }
     , { name = "explain-fix-failure"
-      , argument = ArgumentAbsent (\options -> { options | explainFixFailure = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = BlueBright
@@ -403,7 +403,7 @@ flags =
                 { argName = "<path-to-elm-format>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | elmFormatPath = Just arg }
+                , apply = \_ arg options -> Ok { options | elmFormatPath = Just arg }
                 }
       , display =
             Just
@@ -415,19 +415,19 @@ flags =
                 }
       }
     , { name = "ignore-problematic-dependencies"
-      , argument = ArgumentAbsent (\options -> { options | ignoreProblematicDependencies = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display = Nothing
       }
     , { name = "FOR-TESTS"
-      , argument = ArgumentAbsent (\options -> { options | forTests = True })
+      , argument = ArgumentAbsent (\_ options -> { options | forTests = True })
       , display = Nothing
       }
     , { name = "force-build"
-      , argument = ArgumentAbsent (\options -> { options | forceBuild = True })
+      , argument = ArgumentAbsent (\_ options -> { options | forceBuild = True })
       , display = Nothing
       }
     , { name = "offline"
-      , argument = ArgumentAbsent (\options -> { options | offline = True })
+      , argument = ArgumentAbsent (\_ options -> { options | offline = True })
       , display =
             Just
                 { color = Cyan
@@ -448,7 +448,7 @@ flags =
                 { argName = "<namespace>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | namespace = Just arg }
+                , apply = \flagName arg options -> addToReviewAppFlagsWithArg flagName arg { options | namespace = Just arg }
                 }
       , display = Nothing
       }
@@ -458,7 +458,7 @@ flags =
                 { argName = "[author name[, package name[, license]]]"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | prefill = Just arg }
+                , apply = \_ arg options -> Ok { options | prefill = Just arg }
                 }
       , display = Nothing
       }
@@ -468,7 +468,7 @@ flags =
                 { argName = "<dir1,dir2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | ignoredDirs = options.ignoredDirs ++ String.split "," arg }
+                , apply = \_ arg options -> Ok { options | ignoredDirs = options.ignoredDirs ++ String.split "," arg }
                 }
       , display =
             Just
@@ -488,7 +488,7 @@ flags =
                 { argName = "<file1,file2,...>"
                 , mayBeUsedSeveralTimes = True
                 , usesEquals = False
-                , apply = \arg options -> Ok { options | ignoredFiles = options.ignoredFiles ++ String.split "," arg }
+                , apply = \_ arg options -> Ok { options | ignoredFiles = options.ignoredFiles ++ String.split "," arg }
                 }
       , display =
             Just
@@ -500,7 +500,7 @@ flags =
                 }
       }
     , { name = "check-after-tests"
-      , argument = ArgumentAbsent (\options -> { options | suppressCheckAfterTests = True })
+      , argument = ArgumentAbsent (\_ options -> { options | suppressCheckAfterTests = True })
       , display =
             Just
                 { color = Cyan
@@ -520,6 +520,16 @@ flags =
     ]
 
 
+addToReviewAppFlags : String -> InternalOptions -> InternalOptions
+addToReviewAppFlags flagName options =
+    { options | reviewAppFlags = ("--" ++ flagName) :: options.reviewAppFlags }
+
+
+addToReviewAppFlagsWithArg : String -> String -> InternalOptions -> Result x InternalOptions
+addToReviewAppFlagsWithArg flagName arg options =
+    Ok { options | reviewAppFlags = ("--" ++ flagName ++ "=" ++ arg) :: options.reviewAppFlags }
+
+
 gitHubAuthFlag : Flag
 gitHubAuthFlag =
     { name = "github-auth"
@@ -528,7 +538,7 @@ gitHubAuthFlag =
             { argName = "<github-api-token>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
-            , apply = \arg options -> Ok { options | githubAuth = Just arg }
+            , apply = \_ arg options -> Ok { options | githubAuth = Just arg }
             }
     , display =
         Just
@@ -574,16 +584,16 @@ reportFlag =
     }
 
 
-applyReport : String -> InternalOptions -> Result (Maybe a) InternalOptions
-applyReport arg options =
+applyReport : String -> String -> InternalOptions -> Result (Maybe a) InternalOptions
+applyReport flagName arg options =
     if arg == "human" then
-        Ok { options | report = ReportMode.HumanReadable }
+        addToReviewAppFlagsWithArg flagName arg { options | report = ReportMode.HumanReadable }
 
     else if arg == "json" then
-        Ok { options | report = ReportMode.Json }
+        addToReviewAppFlagsWithArg flagName arg { options | report = ReportMode.Json }
 
     else if arg == "ndjson" then
-        Ok { options | report = ReportMode.Json, reportOnOneLine = True }
+        addToReviewAppFlagsWithArg flagName arg { options | report = ReportMode.NDJson }
 
     else
         Err Nothing
@@ -598,7 +608,7 @@ configFlag =
             , mayBeUsedSeveralTimes = False
             , usesEquals = False
             , apply =
-                \arg options ->
+                \_ arg options ->
                     case options.remoteTemplate of
                         Nothing ->
                             Ok { options | configPath = Just arg }
@@ -636,7 +646,7 @@ templateFlag =
             , mayBeUsedSeveralTimes = False
             , usesEquals = False
             , apply =
-                \arg options ->
+                \_ arg options ->
                     case options.configPath of
                         Nothing ->
                             case RemoteTemplate.fromString arg of

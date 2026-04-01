@@ -6,7 +6,7 @@ import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
+import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
 import Wrapper.Build as Build
 import Wrapper.Color exposing (Color(..))
@@ -194,7 +194,7 @@ update msg model =
             case result of
                 Ok { reviewAppPath } ->
                     ( model
-                    , runReviewProcess model.os reviewAppPath
+                    , runReviewProcess model.os model.options.reviewAppFlags reviewAppPath
                     )
 
                 Err problem ->
@@ -252,14 +252,16 @@ getCwd fs env =
             Task.fail (Fs.NotFound ".")
 
 
-runReviewProcess : ProcessCapability -> String -> Cmd Msg
-runReviewProcess os appBinary =
+runReviewProcess : ProcessCapability -> List String -> String -> Cmd Msg
+runReviewProcess os reviewAppFlags appBinary =
     Process.run os
         appBinary
-        { defaultSpawnOptions
-            | args = []
-            , stdout = Process.InheritStdout
-            , stderr = Process.InheritStderr
+        { args = reviewAppFlags
+        , cwd = Nothing
+        , env = Nothing
+        , stdin = Process.InheritStdin
+        , stdout = Process.InheritStdout
+        , stderr = Process.InheritStderr
         }
         |> Task.attempt ReviewProcessEnded
 

@@ -107,7 +107,65 @@ toOptionsWithElmJsonPath color options elmJsonPath =
 
                     Nothing ->
                         Options.Local (Path.join2 projectRoot "review")
+    , reviewAppFlags =
+        filterMap
+            [ if List.isEmpty options.ignoredFiles then
+                Nothing
+
+              else
+                Just ("--ignore-files=" ++ uniqueList options.ignoredFiles)
+            , if List.isEmpty options.ignoredDirs then
+                Nothing
+
+              else
+                Just ("--ignore-dirs=" ++ uniqueList options.ignoredDirs)
+            , if List.isEmpty options.rules then
+                Nothing
+
+              else
+                Just ("--rules=" ++ uniqueList options.rules)
+            , if List.isEmpty options.unsuppressRules then
+                Nothing
+
+              else
+                Just ("--unsuppress-rules=" ++ uniqueList options.unsuppressRules)
+            , case options.subcommand of
+                Just Subcommand.Suppress ->
+                    Just "--suppress"
+
+                _ ->
+                    Nothing
+            , if Color.doesSupportColor color then
+                Nothing
+
+              else
+                Just "--no-color"
+            ]
+            options.reviewAppFlags
     }
+
+
+filterMap : List (Maybe a) -> List a -> List a
+filterMap list initial =
+    List.foldl
+        (\maybe acc ->
+            case maybe of
+                Nothing ->
+                    acc
+
+                Just v ->
+                    v :: acc
+        )
+        initial
+        list
+
+
+uniqueList : List String -> String
+uniqueList list =
+    list
+        |> Set.fromList
+        |> Set.toList
+        |> String.join ","
 
 
 parseHelp : List String -> InternalOptions -> InternalOptions
@@ -145,7 +203,7 @@ parseHelp args options =
                                 ArgumentAbsent apply ->
                                     case equalValue of
                                         Nothing ->
-                                            parseHelp rest (apply options)
+                                            parseHelp rest (apply flagName options)
 
                                         Just extraValue ->
                                             parseHelp rest
@@ -159,7 +217,7 @@ parseHelp args options =
                                     else
                                         case nextValue equalValue rest of
                                             Just ( value, restOfArgs ) ->
-                                                case apply value options of
+                                                case apply flagName value options of
                                                     Err (Just problem) ->
                                                         parseHelp restOfArgs
                                                             (markProblem (\_ -> problem) options)
@@ -174,7 +232,7 @@ parseHelp args options =
                                                                 newOptions
 
                                                              else
-                                                                { newOptions | flagsNotToUseAnymore = Set.insert flag.name newOptions.flagsNotToUseAnymore }
+                                                                { newOptions | flagsNotToUseAnymore = Set.insert flagName newOptions.flagsNotToUseAnymore }
                                                             )
 
                                             Nothing ->
