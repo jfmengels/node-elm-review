@@ -33,6 +33,7 @@ import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
 import Task exposing (Task)
 import Worker.Capabilities exposing (Console)
+import Wrapper.Path exposing (Path)
 
 
 type Model
@@ -51,14 +52,14 @@ type alias PendingTaskCount =
     Int
 
 
-init : { fs : FileSystem, suppress : Bool, runEnvironment : RunEnvironment } -> ( Model, Cmd Msg )
-init { fs, suppress, runEnvironment } =
+init : { fs : FileSystem, suppress : Bool, runEnvironment : RunEnvironment, directoriesToAnalyze : List Path } -> ( Model, Cmd Msg )
+init { fs, suppress, runEnvironment, directoriesToAnalyze } =
     let
         tasks : List (Cmd Msg)
         tasks =
             List.filterMap
                 identity
-                [ Just (fetchElmJson fs)
+                [ Just (fetchElmJson fs directoriesToAnalyze)
                 , Just (fetchReadme fs)
                 , if suppress then
                     Nothing
@@ -84,7 +85,7 @@ isReady (Model { pendingTaskCount }) =
 
 
 type Msg
-    = ReceivedElmJson String (Result Fs.FsError String)
+    = ReceivedElmJson (List Path) String (Result Fs.FsError String)
     | ReceivedReadme String (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
     | ReceivedElmFileList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
@@ -123,18 +124,22 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
             )
     in
     case msg of
-        ReceivedElmJson path (Ok rawElmJson) ->
+        ReceivedElmJson directoriesToAnalyze path (Ok rawElmJson) ->
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
                         sourceDirectories : List String
                         sourceDirectories =
-                            case elmJson of
-                                Elm.Project.Application application ->
-                                    "test" :: application.dirs
+                            if List.isEmpty directoriesToAnalyze then
+                                case elmJson of
+                                    Elm.Project.Application application ->
+                                        "test" :: application.dirs
 
-                                Elm.Project.Package _ ->
-                                    [ "src", "test" ]
+                                    Elm.Project.Package _ ->
+                                        [ "src", "test" ]
+
+                            else
+                                directoriesToAnalyze
 
                         addDeps : List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
                         addDeps deps initial =
@@ -174,7 +179,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                 Err _ ->
                     decrementTaskCount ()
 
-        ReceivedElmJson _ (Err err) ->
+        ReceivedElmJson _ _ (Err err) ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , project = model.project
               , suppressedErrors = model.suppressedErrors
@@ -419,9 +424,9 @@ fetchElmFile fs filePath =
         |> Task.attempt (ReceivedElmFile filePath)
 
 
-fetchElmJson : FileSystem -> Cmd Msg
-fetchElmJson fs =
-    readTextFile fs ReceivedElmJson "elm.json"
+fetchElmJson : FileSystem -> List Path -> Cmd Msg
+fetchElmJson fs directoriesToAnalyze =
+    readTextFile fs (ReceivedElmJson directoriesToAnalyze) "elm.json"
 
 
 fetchReadme : FileSystem -> Cmd Msg
