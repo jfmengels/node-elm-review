@@ -22,7 +22,6 @@ import Wrapper.Subcommand exposing (Subcommand)
 
 type alias Options =
     { subcommand : Maybe Subcommand
-    , directoriesToAnalyze : List String
     , report : ReportMode
     , projectPaths : ProjectPaths
     , debug : Bool
