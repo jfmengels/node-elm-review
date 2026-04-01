@@ -96,6 +96,7 @@ emptyOptions =
     , report = ReportMode.HumanReadable
     , reviewProject = Options.Local "review"
     , directoriesToAnalyze = []
+    , reviewAppFlags = []
     }
 
 

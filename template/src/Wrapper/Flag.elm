@@ -24,12 +24,12 @@ type alias Flag =
 
 
 type Argument
-    = ArgumentAbsent (InternalOptions -> InternalOptions)
+    = ArgumentAbsent (String -> InternalOptions -> InternalOptions)
     | ArgumentPresent
         { argName : String
         , mayBeUsedSeveralTimes : Bool
         , usesEquals : Bool
-        , apply : String -> InternalOptions -> Result (Maybe ProblemSimple) InternalOptions
+        , apply : String -> String -> InternalOptions -> Result (Maybe ProblemSimple) InternalOptions
         }
 
 

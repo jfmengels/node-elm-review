@@ -2,6 +2,7 @@ module Wrapper.Color exposing
     ( Color(..)
     , Colorize, toAnsi
     , Support, supportsColor, noColors, colors_FOR_TESTS
+    , doesSupportColor
     )
 
 {-|
@@ -9,6 +10,7 @@ module Wrapper.Color exposing
 @docs Color
 @docs Colorize, toAnsi
 @docs Support, supportsColor, noColors, colors_FOR_TESTS
+@docs doesSupportColor
 
 -}
 
@@ -85,6 +87,11 @@ findMap list =
 
                 just ->
                     just
+
+
+doesSupportColor : Support -> Bool
+doesSupportColor (ColorSupport supportsColor_) =
+    supportsColor_
 
 
 noColors : Support

@@ -14,30 +14,19 @@ type alias InternalOptions =
     , help : Bool
     , debug : Bool
     , showBenchmark : Bool
-    , extract : Bool
     , ignoredDirs : List String
     , ignoredFiles : List String
-    , ignoreProblematicDependencies : Bool
     , suppressCheckAfterTests : Bool
-    , watch : Bool
     , watchConfig : Bool
     , forceBuild : Bool
     , forTests : Bool
     , offline : Bool
-    , reportOnOneLine : Bool
     , color : Maybe Bool
-    , details : Bool
     , report : ReportMode
     , version : Bool
-    , fix : Bool
-    , fixAll : Bool
-    , fixAllWithoutPrompt : Bool
-    , fixLimit : Maybe Int
-    , fileRemovalFixesEnabled : Bool
-    , explainFixFailure : Bool
-    , unsuppress : Bool
     , unsuppressRules : List String
     , rules : List String
+    , reviewAppFlags : List String
 
     -- TODO Custom type
     , ruleType : String
@@ -62,30 +51,19 @@ initialOptions =
     , help = False
     , debug = False
     , showBenchmark = False
-    , extract = False
     , ignoredDirs = []
     , ignoredFiles = []
-    , ignoreProblematicDependencies = False
     , suppressCheckAfterTests = False
-    , watch = False
     , watchConfig = False
     , forceBuild = False
     , forTests = False
     , offline = False
-    , reportOnOneLine = False
     , color = Nothing
-    , details = True
     , report = ReportMode.HumanReadable
     , version = False
-    , fix = False
-    , fixAll = False
-    , fixAllWithoutPrompt = False
-    , fixLimit = Nothing
-    , fileRemovalFixesEnabled = False
-    , explainFixFailure = False
-    , unsuppress = False
     , unsuppressRules = []
     , rules = []
+    , reviewAppFlags = []
     , ruleType = "module"
     , subcommandPossible = True
     , configPath = Nothing
