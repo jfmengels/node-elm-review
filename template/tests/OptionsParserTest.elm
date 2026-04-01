@@ -21,63 +21,21 @@ all =
                 , args = []
                 }
                     |> OptionsParser.parse
-                    |> expectEqual
-                        { subcommand = Nothing
-                        , projectPaths =
-                            ProjectPaths.from
-                                { projectRoot = "."
-                                , namespace = "cli"
-                                }
-                        , forceBuild = False
-                        , forTests = False
-                        , color = Color.colors_FOR_TESTS
-                        , debug = False
-                        , report = ReportMode.HumanReadable
-                        , reviewProject = Options.Local "review"
-                        , directoriesToAnalyze = []
-                        }
+                    |> expectEqual emptyOptions
         , test "Parse subcommand init" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "init" ]
                 }
                     |> OptionsParser.parse
-                    |> expectEqual
-                        { subcommand = Just Subcommand.Init
-                        , projectPaths =
-                            ProjectPaths.from
-                                { projectRoot = "."
-                                , namespace = "cli"
-                                }
-                        , forceBuild = False
-                        , forTests = False
-                        , color = Color.colors_FOR_TESTS
-                        , debug = False
-                        , report = ReportMode.HumanReadable
-                        , reviewProject = Options.Local "review"
-                        , directoriesToAnalyze = []
-                        }
+                    |> expectEqual { emptyOptions | subcommand = Just Subcommand.Init }
         , test "Consider unknown args as directories to analyze" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "unknown", "other" ]
                 }
                     |> OptionsParser.parse
-                    |> expectEqual
-                        { subcommand = Nothing
-                        , projectPaths =
-                            ProjectPaths.from
-                                { projectRoot = "."
-                                , namespace = "cli"
-                                }
-                        , forceBuild = False
-                        , forTests = False
-                        , color = Color.colors_FOR_TESTS
-                        , debug = False
-                        , report = ReportMode.HumanReadable
-                        , reviewProject = Options.Local "review"
-                        , directoriesToAnalyze = [ "other", "unknown" ]
-                        }
+                    |> expectEqual { emptyOptions | directoriesToAnalyze = [ "other", "unknown" ] }
         , test "Enter help mode if --help is used" <|
             \() ->
                 { env = Dict.empty
@@ -121,6 +79,24 @@ all =
                     |> OptionsParser.parse
                     |> Expect.equal ShowVersion
         ]
+
+
+emptyOptions : Options
+emptyOptions =
+    { subcommand = Nothing
+    , projectPaths =
+        ProjectPaths.from
+            { projectRoot = "."
+            , namespace = "cli"
+            }
+    , forceBuild = False
+    , forTests = False
+    , color = Color.colors_FOR_TESTS
+    , debug = False
+    , report = ReportMode.HumanReadable
+    , reviewProject = Options.Local "review"
+    , directoriesToAnalyze = []
+    }
 
 
 expectEqual : Options -> OptionsParseResult -> Expectation
