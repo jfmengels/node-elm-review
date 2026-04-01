@@ -273,6 +273,7 @@ initValid env fs flags rulesFromConfig =
                 { fs = fs
                 , suppress = flags.suppress
                 , runEnvironment = runEnvironment
+                , directoriesToAnalyze = flags.directoriesToAnalyze
                 }
 
         model : Model
