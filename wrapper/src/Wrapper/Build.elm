@@ -18,7 +18,8 @@ import Set exposing (Set)
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..), Colorize)
 import Wrapper.CopyDirectory exposing (copyDirectory)
-import Wrapper.Hash as Hash exposing (Hash)
+import Wrapper.FolderHash as FolderHash
+import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (Options, ReviewProject)
 import Wrapper.Path as Path exposing (Path)
@@ -55,7 +56,8 @@ buildLocalProject fs os options reviewFolder =
     readReviewElmJson fs options.reviewProject reviewFolder pathToElmJson
         |> Task.andThen
             (\{ raw, application } ->
-                cachedBuild options reviewFolder pathToElmJson application.dirs
+                FolderHash.hashSourceDirectories fs reviewFolder application.dirs
+                    |> Task.mapError fsErrorToProblem
                     |> Task.andThen
                         (\appHash ->
                             let
@@ -224,6 +226,7 @@ addReviewAppDependencies initialDependencies =
         , ( "elm-run/capabilities", "1.0.0" )
         , ( "elm-run/log", "1.0.0" )
         , ( "elm-run/stdio", "1.0.0" )
+        , ( "robinheghan/fnv1a", "1.0.0" )
         , ( "rtfeldman/elm-hex", "1.0.0" )
         , ( "stil4m/structured-writer", "1.0.3" )
         ]
@@ -316,14 +319,6 @@ validateElmReviewVersion reviewProject reviewFolder application =
 
 Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."""
                 }
-
-
-{-| Get the hash associated to the current review application.
-This is either retrieved from a cache or computed.
--}
-cachedBuild : Options -> Path -> Path -> List Path -> Task x Hash.Hash
-cachedBuild options userSrc reviewElmJsonPath sourceDirectories =
-    Task.succeed (Hash.fromString "9")
 
 
 compileProjectUsingElmRun : ProcessCapability -> Path -> String -> Task Problem ()
