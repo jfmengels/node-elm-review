@@ -14,6 +14,7 @@ import Wrapper.Help as Help
 import Wrapper.Options exposing (Options)
 import Wrapper.Options.Parser as OptionsParser
 import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
+import Wrapper.ProjectPaths as ProjectPaths
 
 
 main : Cli.Program ModelWrapper Msg
@@ -194,7 +195,7 @@ update msg model =
             case result of
                 Ok { reviewAppPath } ->
                     ( model
-                    , runReviewProcess model.os model.options.reviewAppFlags reviewAppPath
+                    , runReviewProcess model reviewAppPath
                     )
 
                 Err problem ->
@@ -252,12 +253,12 @@ getCwd fs env =
             Task.fail (Fs.NotFound ".")
 
 
-runReviewProcess : ProcessCapability -> List String -> String -> Cmd Msg
-runReviewProcess os reviewAppFlags appBinary =
+runReviewProcess : Model -> String -> Cmd Msg
+runReviewProcess { os, options } appBinary =
     Process.run os
         appBinary
-        { args = reviewAppFlags
-        , cwd = Nothing
+        { args = options.reviewAppFlags
+        , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
         , env = Nothing
         , stdin = Process.InheritStdin
         , stdout = Process.InheritStdout

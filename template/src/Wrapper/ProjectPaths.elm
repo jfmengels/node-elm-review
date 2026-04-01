@@ -1,12 +1,12 @@
 module Wrapper.ProjectPaths exposing
     ( ProjectPaths, from
-    , reviewApp, buildFolder
+    , projectRoot, reviewApp, buildFolder
     )
 
 {-|
 
 @docs ProjectPaths, from
-@docs reviewApp, buildFolder
+@docs projectRoot, reviewApp, buildFolder
 
 -}
 
@@ -25,6 +25,11 @@ type ProjectPaths
 from : { projectRoot : Path, namespace : String } -> ProjectPaths
 from =
     ProjectPaths
+
+
+projectRoot : ProjectPaths -> Path
+projectRoot (ProjectPaths paths) =
+    paths.projectRoot
 
 
 reviewApp : ProjectPaths -> Hash -> Path
@@ -46,13 +51,13 @@ buildFolder projectPaths subFolder =
 
 
 elmStuff : ProjectPaths -> Path
-elmStuff (ProjectPaths { projectRoot, namespace }) =
+elmStuff (ProjectPaths paths) =
     Path.join
-        [ projectRoot
+        [ paths.projectRoot
         , "elm-stuff"
         , "generated-code"
         , "jfmengels"
         , "elm-review"
-        , namespace
+        , paths.namespace
         , CliVersion.version
         ]
