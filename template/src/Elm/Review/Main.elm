@@ -32,19 +32,8 @@ import Review.Options as ReviewOptions
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
+import ReviewConfig exposing (config)
 import Set exposing (Set)
-
-
-config : List Rule
-config =
-    [ Rule.configurationError "RuleName"
-        { message = "Some config error"
-        , details =
-            [ "I was expecting functionName to be a valid Elm function name."
-            , "When that is not the case, I am not able to function as expected."
-            ]
-        }
-    ]
 
 
 
