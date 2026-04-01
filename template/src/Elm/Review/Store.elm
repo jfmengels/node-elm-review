@@ -45,6 +45,7 @@ type alias ModelData =
     , project : Project
     , suppressedErrors : SuppressedErrors
     , ruleLinks : Dict String String
+    , directoriesWithoutFiles : List String
     }
 
 
@@ -74,6 +75,7 @@ init { fs, suppress, runEnvironment, directoriesToAnalyze } =
         , project = Project.new
         , suppressedErrors = SuppressedErrors.empty
         , ruleLinks = Dict.empty
+        , directoriesWithoutFiles = []
         }
     , Cmd.batch tasks
     )
@@ -119,6 +121,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
+              , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
             , Cmd.none
             )
@@ -172,6 +175,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , Cmd.batch tasks
                     )
@@ -184,6 +188,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
+              , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
             , Cmd.batch
                 [ Cli.println stderr ("elm.json - " ++ errorToString err)
@@ -198,6 +203,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                       , project = Project.addReadme { path = path, content = content } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , Cmd.none
                     )
@@ -218,6 +224,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                               , project = Project.addDependency dependency model.project
                               , suppressedErrors = model.suppressedErrors
                               , ruleLinks = model.ruleLinks
+                              , directoriesWithoutFiles = model.directoriesWithoutFiles
                               }
                             , Cmd.none
                             )
@@ -231,6 +238,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                                   , project = model.project
                                   , suppressedErrors = model.suppressedErrors
                                   , ruleLinks = model.ruleLinks
+                                  , directoriesWithoutFiles = model.directoriesWithoutFiles
                                   }
                                 , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                                     abortWithDetails
@@ -278,6 +286,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = Project.addModule { path = path, source = source } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , Cmd.none
                     )
@@ -287,6 +296,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , -- TODO Exit?
                       Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
@@ -299,6 +309,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , List.map
                         (\filePath ->
@@ -329,6 +340,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = SuppressedErrors.addFromFile ruleName contents model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , Cmd.none
                     )
@@ -338,6 +350,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
+                      , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                       -- TODO Exit?
                     , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
@@ -348,6 +361,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = links
+              , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
             , Cmd.none
             )
@@ -366,6 +380,7 @@ receivedElmFileList { fs, stderr, onNotFound } directory result model =
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
+              , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
             , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
                 |> Cmd.batch
@@ -379,6 +394,7 @@ receivedElmFileList { fs, stderr, onNotFound } directory result model =
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
+              , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
               -- TODO Exit?
             , Cli.println stderr (directory ++ " - " ++ errorToString err)
@@ -402,6 +418,7 @@ setProject newProject (Model model) =
         , project = newProject
         , suppressedErrors = model.suppressedErrors
         , ruleLinks = model.ruleLinks
+        , directoriesWithoutFiles = model.directoriesWithoutFiles
         }
 
 
@@ -412,6 +429,7 @@ updateProject updateFn (Model model) =
         , project = updateFn model.project
         , suppressedErrors = model.suppressedErrors
         , ruleLinks = model.ruleLinks
+        , directoriesWithoutFiles = model.directoriesWithoutFiles
         }
 
 
@@ -427,6 +445,7 @@ setSuppressedErrors newSuppressedErrors (Model model) =
         , project = model.project
         , suppressedErrors = newSuppressedErrors
         , ruleLinks = model.ruleLinks
+        , directoriesWithoutFiles = model.directoriesWithoutFiles
         }
 
 
