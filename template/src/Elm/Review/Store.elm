@@ -262,29 +262,14 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     decrementTaskCount ()
 
         ReceivedElmFileList directory result ->
-            case result of
-                Ok files ->
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
-                      , project = model.project
-                      , suppressedErrors = model.suppressedErrors
-                      , ruleLinks = model.ruleLinks
-                      }
-                    , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
-                        |> Cmd.batch
-                    )
-
-                Err (Fs.NotFound _) ->
-                    decrementTaskCount ()
-
-                Err err ->
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                      , project = model.project
-                      , suppressedErrors = model.suppressedErrors
-                      , ruleLinks = model.ruleLinks
-                      }
-                      -- TODO Exit?
-                    , Cli.println stderr (directory ++ " - " ++ errorToString err)
-                    )
+            receivedElmFileList
+                { fs = fs
+                , stderr = stderr
+                , onNotFound = decrementTaskCount
+                }
+                directory
+                result
+                model
 
         ReceivedElmFile path result ->
             case result of
@@ -365,6 +350,38 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , ruleLinks = links
               }
             , Cmd.none
+            )
+
+
+receivedElmFileList :
+    { fs : FileSystem, stderr : Console, onNotFound : () -> ( ModelData, Cmd Msg ) }
+    -> Path
+    -> Result FsError (List Path)
+    -> ModelData
+    -> ( ModelData, Cmd Msg )
+receivedElmFileList { fs, stderr, onNotFound } directory result model =
+    case result of
+        Ok files ->
+            ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
+              , project = model.project
+              , suppressedErrors = model.suppressedErrors
+              , ruleLinks = model.ruleLinks
+              }
+            , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
+                |> Cmd.batch
+            )
+
+        Err (Fs.NotFound _) ->
+            onNotFound ()
+
+        Err err ->
+            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , project = model.project
+              , suppressedErrors = model.suppressedErrors
+              , ruleLinks = model.ruleLinks
+              }
+              -- TODO Exit?
+            , Cli.println stderr (directory ++ " - " ++ errorToString err)
             )
 
 
