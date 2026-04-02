@@ -5,7 +5,7 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Set
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
-import Wrapper.Options as Options exposing (HelpOptions, Options)
+import Wrapper.Options as Options exposing (HelpOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.Path as Path exposing (Path)
@@ -21,8 +21,8 @@ parse { args, env } =
 
 
 type OptionsParseResult
-    = NeedElmJsonPath { formatOptions : Problem.FormatOptions {}, toOptions : { elmJsonPath : String } -> Options }
-    | ParseSuccess Options
+    = NeedElmJsonPath { formatOptions : Problem.FormatOptions {}, toOptions : { elmJsonPath : String } -> ReviewOptions }
+    | ParseSuccess ReviewOptions
     | ShowVersion
     | ShowHelp HelpOptions
     | ParseError (Problem.FormatOptions {}) Problem
@@ -76,7 +76,7 @@ toOptions env options =
                             ParseSuccess (toOptionsWithElmJsonPath color options elmJsonPath)
 
 
-toOptionsWithElmJsonPath : Color.Support -> InternalOptions -> String -> Options
+toOptionsWithElmJsonPath : Color.Support -> InternalOptions -> String -> ReviewOptions
 toOptionsWithElmJsonPath color options elmJsonPath =
     let
         projectRoot : Path

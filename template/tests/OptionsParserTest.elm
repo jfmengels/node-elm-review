@@ -5,7 +5,7 @@ import Elm.Review.ReportMode as ReportMode
 import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
 import Wrapper.Color as Color exposing (Colorize)
-import Wrapper.Options as Options exposing (Options)
+import Wrapper.Options as Options exposing (ReviewOptions)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
 import Wrapper.Problem as Problem
 import Wrapper.ProjectPaths as ProjectPaths
@@ -81,7 +81,7 @@ all =
         ]
 
 
-emptyOptions : Options
+emptyOptions : ReviewOptions
 emptyOptions =
     { subcommand = Nothing
     , projectPaths =
@@ -99,7 +99,7 @@ emptyOptions =
     }
 
 
-expectEqual : Options -> OptionsParseResult -> Expectation
+expectEqual : ReviewOptions -> OptionsParseResult -> Expectation
 expectEqual expected received =
     case received of
         ParseSuccess result ->

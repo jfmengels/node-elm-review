@@ -21,7 +21,7 @@ import Wrapper.CopyDirectory exposing (copyDirectory)
 import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
-import Wrapper.Options as Options exposing (Options, ReviewProject)
+import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
 import Wrapper.Path as Path exposing (Path)
 import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.ProjectPaths as ProjectPaths
@@ -35,7 +35,7 @@ type alias BuildData =
     }
 
 
-build : FileSystem -> ProcessCapability -> Options -> Task Problem BuildData
+build : FileSystem -> ProcessCapability -> ReviewOptions -> Task Problem BuildData
 build fs os options =
     case options.reviewProject of
         Options.Local reviewFolder ->
@@ -45,7 +45,7 @@ build fs os options =
             Debug.todo "Build remote template"
 
 
-buildLocalProject : FileSystem -> ProcessCapability -> Options -> String -> Task Problem BuildData
+buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> String -> Task Problem BuildData
 buildLocalProject fs os options reviewFolder =
     let
         pathToElmJson : String
