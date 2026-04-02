@@ -22,7 +22,7 @@ parse { args, env } =
 
 type OptionsParseResult
     = NeedElmJsonPath { formatOptions : Problem.FormatOptions {}, toOptions : { elmJsonPath : Path } -> OptionsParseResult }
-    | ParseSuccess ReviewOptions
+    | Review ReviewOptions
     | ShowVersion
     | ShowHelp HelpOptions
     | ParseError (Problem.FormatOptions {}) Problem
@@ -73,7 +73,7 @@ toOptions env options =
                                 }
 
                         Just elmJsonPath ->
-                            ParseSuccess (toReviewOptions color options elmJsonPath)
+                            Review (toReviewOptions color options elmJsonPath)
 
 
 toReviewOptions : Color.Support -> InternalOptions -> String -> ReviewOptions
