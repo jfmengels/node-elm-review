@@ -14,7 +14,7 @@ module Wrapper.Options exposing
 -}
 
 import Elm.Review.ReportMode exposing (ReportMode)
-import Wrapper.Color as Color exposing (Colorize)
+import Wrapper.Color as Color
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -40,5 +40,5 @@ type ReviewProject
 type alias HelpOptions =
     { subcommand : Maybe Subcommand
     , forTests : Bool
-    , c : Colorize
+    , color : Color.Support
     }

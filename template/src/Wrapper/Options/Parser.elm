@@ -38,16 +38,12 @@ toOptions env options =
             color : Color.Support
             color =
                 Color.supportsColor env options.color
-
-            c : Colorize
-            c =
-                Color.toAnsi color
         in
         if options.help then
             ShowHelp
                 { subcommand = options.subcommand
                 , forTests = options.forTests
-                , c = c
+                , color = color
                 }
 
         else
