@@ -11,7 +11,7 @@ import Task exposing (Task)
 import Wrapper.Build as Build
 import Wrapper.Color exposing (Color(..))
 import Wrapper.Help as Help
-import Wrapper.Options exposing (Options)
+import Wrapper.Options exposing (ReviewOptions)
 import Wrapper.Options.Parser as OptionsParser
 import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
 import Wrapper.ProjectPaths as ProjectPaths
@@ -37,7 +37,7 @@ type alias LoadingModel =
     , fs : FileSystem
     , os : ProcessCapability
     , formatOptions : FormatOptions {}
-    , toOptions : { elmJsonPath : String } -> Options
+    , toOptions : { elmJsonPath : String } -> ReviewOptions
     }
 
 
@@ -45,7 +45,7 @@ type alias Model =
     { env : Env
     , fs : FileSystem
     , os : ProcessCapability
-    , options : Options
+    , options : ReviewOptions
     }
 
 
@@ -146,7 +146,7 @@ updateWrapper msg wrapper =
             case msg of
                 FoundNearestElmJson (Ok elmJsonPath) ->
                     let
-                        options : Options
+                        options : ReviewOptions
                         options =
                             loading.toOptions { elmJsonPath = elmJsonPath }
                     in

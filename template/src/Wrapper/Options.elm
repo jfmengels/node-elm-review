@@ -1,12 +1,12 @@
 module Wrapper.Options exposing
-    ( Options
+    ( ReviewOptions
     , ReviewProject(..)
     , HelpOptions
     )
 
 {-|
 
-@docs Options
+@docs ReviewOptions
 @docs ReviewProject
 
 @docs HelpOptions
@@ -20,7 +20,7 @@ import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
 
 
-type alias Options =
+type alias ReviewOptions =
     { subcommand : Maybe Subcommand
     , report : ReportMode
     , projectPaths : ProjectPaths
