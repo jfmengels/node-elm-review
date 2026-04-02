@@ -410,7 +410,7 @@ suggestions flagName c =
 missingValueForFlag : Flag -> Maybe Subcommand -> ProblemSimple
 missingValueForFlag flag subcommand =
     { title = "MISSING FLAG ARGUMENT"
-    , message = \c -> "The " ++ c (Flag.color flag) ("--" ++ flag.name) ++ """ flag needs more information.
+    , message = \c -> "The " ++ formatFlag c flag ++ """ flag needs more information.
 
 Here is the documentation for this flag:
 
@@ -421,7 +421,7 @@ Here is the documentation for this flag:
 unexpectedValueForFlag : Flag -> String -> Maybe Subcommand -> ProblemSimple
 unexpectedValueForFlag flag extraValue subcommand =
     { title = "UNEXPECTED FLAG VALUE"
-    , message = \c -> "You assigned the value " ++ c RedBright extraValue ++ " to " ++ c (Flag.color flag) ("--" ++ flag.name) ++ """, but this flag does not expected a value.
+    , message = \c -> "You assigned the value " ++ c RedBright extraValue ++ " to " ++ formatFlag c flag ++ """, but this flag does not expected a value.
 
 In case it helps, here is the documentation for this flag:
 
@@ -458,3 +458,8 @@ In case it helps, here is the documentation for this flag:
 
 """ ++ Flags.buildFlag c subcommand flag
     }
+
+
+formatFlag : Colorize -> Flag -> String
+formatFlag c flag =
+    c (Flag.color flag) ("--" ++ flag.name)
