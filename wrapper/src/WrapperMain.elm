@@ -37,7 +37,7 @@ type alias LoadingModel =
     , fs : FileSystem
     , os : ProcessCapability
     , formatOptions : FormatOptions {}
-    , toOptions : { elmJsonPath : String } -> ReviewOptions
+    , toOptions : { elmJsonPath : String } -> OptionsParser.OptionsParseResult
     }
 
 
@@ -68,11 +68,11 @@ init env =
             )
 
         Ok capabilities ->
-            handleCliArgsParseResult capabilities env (OptionsParser.parse env)
+            handleCliArgsParseResult env capabilities (OptionsParser.parse env)
 
 
-handleCliArgsParseResult : { capabilities | fs : FileSystem, os : ProcessCapability } -> Env -> OptionsParser.OptionsParseResult -> ( ModelWrapper, Cmd Msg )
-handleCliArgsParseResult { fs, os } env result =
+handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( ModelWrapper, Cmd Msg )
+handleCliArgsParseResult env { fs, os } result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
             ( Done
@@ -150,20 +150,10 @@ updateWrapper msg wrapper =
         Loading loading ->
             case msg of
                 FoundNearestElmJson (Ok elmJsonPath) ->
-                    let
-                        options : ReviewOptions
-                        options =
-                            loading.toOptions { elmJsonPath = elmJsonPath }
-                    in
-                    ( Running
-                        { env = loading.env
-                        , fs = loading.fs
-                        , os = loading.os
-                        , options = options
-                        }
-                    , Build.build loading.fs loading.os options
-                        |> Task.attempt BuildCompleted
-                    )
+                    handleCliArgsParseResult
+                        loading.env
+                        loading
+                        (loading.toOptions { elmJsonPath = elmJsonPath })
 
                 FoundNearestElmJson (Err (Fs.NotFound _)) ->
                     ( Done
