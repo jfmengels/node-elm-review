@@ -1,7 +1,7 @@
 module Wrapper.Help exposing (show)
 
 import Wrapper.Anonymize as Anonymize
-import Wrapper.Color exposing (Color(..), Colorize)
+import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (HelpOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Section as Section
@@ -10,28 +10,33 @@ import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 show : HelpOptions -> String
 show options =
+    let
+        c : Color -> String -> String
+        c =
+            Color.toAnsi options.color
+    in
     case options.subcommand of
         Nothing ->
-            reviewHelp options
+            reviewHelp options c
 
         Just Subcommand.Init ->
-            initHelp options.c
+            initHelp c
 
         Just Subcommand.NewPackage ->
-            newPackageHelp options.c
+            newPackageHelp c
 
         Just Subcommand.NewRule ->
-            newRuleHelp options.c
+            newRuleHelp c
 
         Just Subcommand.Suppress ->
-            suppressHelp options.c
+            suppressHelp c
 
         Just Subcommand.PrepareOffline ->
-            prepareOfflineHelp options.c
+            prepareOfflineHelp c
 
 
-reviewHelp : HelpOptions -> String
-reviewHelp ({ c } as options) =
+reviewHelp : HelpOptions -> Colorize -> String
+reviewHelp options c =
     let
         version : String
         version =
