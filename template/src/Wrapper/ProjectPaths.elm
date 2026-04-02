@@ -11,8 +11,8 @@ module Wrapper.ProjectPaths exposing
 -}
 
 import Elm.Review.CliVersion as CliVersion
+import ElmReview.Path as Path exposing (Path)
 import Wrapper.Hash as Hash exposing (Hash)
-import Wrapper.Path as Path exposing (Path)
 
 
 type ProjectPaths

@@ -27,13 +27,13 @@ import Elm.Project
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
+import ElmReview.Path exposing (Path)
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
 import Task exposing (Task)
 import Worker.Capabilities exposing (Console)
-import Wrapper.Path exposing (Path)
 
 
 type Model

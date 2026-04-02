@@ -1,4 +1,4 @@
-module Wrapper.Path exposing
+module ElmReview.Path exposing
     ( Path
     , dirname, join, join2
     )
