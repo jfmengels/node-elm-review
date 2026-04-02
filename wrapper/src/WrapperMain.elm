@@ -67,58 +67,63 @@ init env =
                 ]
             )
 
-        Ok { fs, os } ->
-            case OptionsParser.parse env of
-                OptionsParser.ParseError formatOptions problem ->
-                    ( Done
-                    , exitWithProblem env formatOptions problem
-                    )
+        Ok capabilities ->
+            handleCliArgsParseResult capabilities env (OptionsParser.parse env)
 
-                OptionsParser.ShowHelp options ->
-                    ( Done
-                    , Cmd.batch
-                        [ Cli.println env.stdout (Help.show options)
-                        , Cli.exit 0
-                        ]
-                    )
 
-                OptionsParser.ShowVersion ->
-                    ( Done
-                    , Cmd.batch
-                        [ Cli.println env.stdout CliVersion.version
-                        , Cli.exit 0
-                        ]
-                    )
+handleCliArgsParseResult : { capabilities | fs : FileSystem, os : ProcessCapability } -> Env -> OptionsParser.OptionsParseResult -> ( ModelWrapper, Cmd Msg )
+handleCliArgsParseResult { fs, os } env result =
+    case result of
+        OptionsParser.ParseError formatOptions problem ->
+            ( Done
+            , exitWithProblem env formatOptions problem
+            )
 
-                OptionsParser.NeedElmJsonPath { formatOptions, toOptions } ->
-                    ( Loading
-                        { env = env
-                        , fs = fs
-                        , os = os
-                        , formatOptions = formatOptions
-                        , toOptions = toOptions
-                        }
-                    , getCwd fs env.env
-                        |> Task.andThen
-                            (\cwd ->
-                                -- TODO Use `\` for Windows Support?
-                                String.split "/" cwd
-                                    |> Array.fromList
-                                    |> findNearestElmJson fs
-                            )
-                        |> Task.attempt FoundNearestElmJson
-                    )
+        OptionsParser.ShowHelp options ->
+            ( Done
+            , Cmd.batch
+                [ Cli.println env.stdout (Help.show options)
+                , Cli.exit 0
+                ]
+            )
 
-                OptionsParser.ParseSuccess options ->
-                    ( Running
-                        { env = env
-                        , fs = fs
-                        , os = os
-                        , options = options
-                        }
-                    , Build.build fs os options
-                        |> Task.attempt BuildCompleted
+        OptionsParser.ShowVersion ->
+            ( Done
+            , Cmd.batch
+                [ Cli.println env.stdout CliVersion.version
+                , Cli.exit 0
+                ]
+            )
+
+        OptionsParser.NeedElmJsonPath { formatOptions, toOptions } ->
+            ( Loading
+                { env = env
+                , fs = fs
+                , os = os
+                , formatOptions = formatOptions
+                , toOptions = toOptions
+                }
+            , getCwd fs env.env
+                |> Task.andThen
+                    (\cwd ->
+                        -- TODO Use `\` for Windows Support?
+                        String.split "/" cwd
+                            |> Array.fromList
+                            |> findNearestElmJson fs
                     )
+                |> Task.attempt FoundNearestElmJson
+            )
+
+        OptionsParser.ParseSuccess options ->
+            ( Running
+                { env = env
+                , fs = fs
+                , os = os
+                , options = options
+                }
+            , Build.build fs os options
+                |> Task.attempt BuildCompleted
+            )
 
 
 requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
