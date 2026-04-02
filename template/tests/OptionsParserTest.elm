@@ -90,7 +90,6 @@ emptyOptions =
             , namespace = "cli"
             }
     , forceBuild = False
-    , forTests = False
     , color = Color.colors_FOR_TESTS
     , debug = False
     , report = ReportMode.HumanReadable

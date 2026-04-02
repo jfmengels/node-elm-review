@@ -92,7 +92,6 @@ toOptionsWithElmJsonPath color options elmJsonPath =
     , report = options.report
     , forceBuild = options.forceBuild
     , debug = options.debug
-    , forTests = options.forTests
     , color = color
     , reviewProject =
         case options.remoteTemplate of

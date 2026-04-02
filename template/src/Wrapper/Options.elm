@@ -26,7 +26,6 @@ type alias ReviewOptions =
     , projectPaths : ProjectPaths
     , debug : Bool
     , forceBuild : Bool
-    , forTests : Bool
     , color : Color.Support
     , reviewProject : ReviewProject
     , reviewAppFlags : List String
