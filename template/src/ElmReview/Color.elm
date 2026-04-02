@@ -104,7 +104,7 @@ colors_FOR_TESTS =
     ColorSupport True
 
 
-toAnsi : Support -> Color -> String -> String
+toAnsi : Support -> Colorize
 toAnsi (ColorSupport supportsColor_) =
     if supportsColor_ then
         \color str -> "\u{001B}[" ++ toAnsiColor color ++ "m" ++ str ++ "\u{001B}[39m"
