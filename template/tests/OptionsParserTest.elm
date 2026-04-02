@@ -21,21 +21,21 @@ all =
                 , args = []
                 }
                     |> OptionsParser.parse
-                    |> expectEqual emptyOptions
+                    |> expectReview emptyOptions
         , test "Parse subcommand init" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "init" ]
                 }
                     |> OptionsParser.parse
-                    |> expectEqual { emptyOptions | subcommand = Just Subcommand.Init }
+                    |> expectReview { emptyOptions | subcommand = Just Subcommand.Init }
         , test "Consider unknown args as directories to analyze" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "unknown", "other" ]
                 }
                     |> OptionsParser.parse
-                    |> expectEqual { emptyOptions | reviewAppFlags = [ "--dirs-to-analyze=other,unknown" ] }
+                    |> expectReview { emptyOptions | reviewAppFlags = [ "--dirs-to-analyze=other,unknown" ] }
         , test "Enter help mode if --help is used" <|
             \() ->
                 { env = Dict.empty
@@ -98,14 +98,14 @@ emptyOptions =
     }
 
 
-expectEqual : ReviewOptions -> OptionsParseResult -> Expectation
-expectEqual expected received =
+expectReview : ReviewOptions -> OptionsParseResult -> Expectation
+expectReview expected received =
     case received of
-        ParseSuccess result ->
+        Review result ->
             Expect.equal expected result
 
         NeedElmJsonPath { toOptions } ->
-            expectEqual expected (toOptions { elmJsonPath = "elm.json" })
+            expectReview expected (toOptions { elmJsonPath = "elm.json" })
 
         ShowVersion ->
             Expect.fail "Unexpected showing of version"
@@ -130,7 +130,7 @@ expectHelp expectedSubcommand received =
         ShowVersion ->
             Expect.fail "Unexpected showing of version"
 
-        ParseSuccess _ ->
+        Review _ ->
             Expect.fail "Unexpected parse success without help"
 
         NeedElmJsonPath _ ->

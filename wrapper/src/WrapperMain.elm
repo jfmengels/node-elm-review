@@ -114,7 +114,7 @@ handleCliArgsParseResult env { fs, os } result =
                 |> Task.attempt FoundNearestElmJson
             )
 
-        OptionsParser.ParseSuccess options ->
+        OptionsParser.Review options ->
             ( Running
                 { env = env
                 , fs = fs
