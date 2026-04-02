@@ -113,6 +113,9 @@ expectReview expected received =
         ShowHelp { subcommand } ->
             Expect.fail ("Unexpected showing of help with subcommand " ++ Debug.toString subcommand)
 
+        Init options ->
+            Expect.fail ("Unexpected parsing of init subcommand " ++ Debug.toString options)
+
         ParseError _ problem ->
             let
                 { title, message } =
@@ -132,6 +135,9 @@ expectHelp expectedSubcommand received =
 
         Review _ ->
             Expect.fail "Unexpected parse success without help"
+
+        Init options ->
+            Expect.fail ("Unexpected parsing of init subcommand " ++ Debug.toString options)
 
         NeedElmJsonPath _ ->
             Expect.fail "Unexpected parse success without help"

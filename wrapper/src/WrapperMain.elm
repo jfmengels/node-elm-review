@@ -9,6 +9,7 @@ import Os exposing (ProcessCapability)
 import Task exposing (Task)
 import Wrapper.Color exposing (Color(..))
 import Wrapper.Help as Help
+import Wrapper.Init as Init
 import Wrapper.Options.Parser as OptionsParser
 import Wrapper.Path exposing (Path)
 import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
@@ -28,6 +29,7 @@ type Model
     = Done
     | Loading LoadingModel
     | Review Review.Model
+    | Init Init.Model
 
 
 type alias LoadingModel =
@@ -42,6 +44,7 @@ type alias LoadingModel =
 type Msg
     = FoundNearestElmJson (Result FsError String)
     | ReviewMsg Review.Msg
+    | InitMsg Init.Msg
 
 
 init : Env -> ( Model, Cmd Msg )
@@ -114,6 +117,17 @@ handleCliArgsParseResult env { fs, os } result =
             in
             ( Review review, Cmd.map ReviewMsg cmd )
 
+        OptionsParser.Init options ->
+            let
+                ( initModel, cmd ) =
+                    Init.init env
+                        { fs = fs
+                        , os = os
+                        }
+                        options
+            in
+            ( Init initModel, Cmd.map InitMsg cmd )
+
 
 requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
 requireCapabilities env =
@@ -147,6 +161,17 @@ update msg model =
                     ( model
                     , Review.update reviewMsg reviewModel
                         |> Cmd.map ReviewMsg
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        InitMsg initMsg ->
+            case model of
+                Init initModel ->
+                    ( model
+                    , Init.update initMsg initModel
+                        |> Cmd.map InitMsg
                     )
 
                 _ ->

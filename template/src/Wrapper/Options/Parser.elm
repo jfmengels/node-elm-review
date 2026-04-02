@@ -5,7 +5,7 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Set
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
-import Wrapper.Options as Options exposing (HelpOptions, ReviewOptions)
+import Wrapper.Options as Options exposing (HelpOptions, InitOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.Path as Path exposing (Path)
@@ -25,6 +25,7 @@ type OptionsParseResult
     | Review ReviewOptions
     | ShowVersion
     | ShowHelp HelpOptions
+    | Init InitOptions
     | ParseError (Problem.FormatOptions {}) Problem
 
 
@@ -69,16 +70,33 @@ toOptions env options =
                                 }
 
                         Just elmJsonPath ->
-                            Review (toReviewOptions color options elmJsonPath)
+                            let
+                                projectRoot : Path
+                                projectRoot =
+                                    Path.dirname elmJsonPath
+                            in
+                            case options.subcommand of
+                                Nothing ->
+                                    Review (toReviewOptions color options projectRoot)
+
+                                Just Subcommand.Suppress ->
+                                    Review (toReviewOptions color options projectRoot)
+
+                                Just Subcommand.Init ->
+                                    Init (toInitOptions color options projectRoot)
+
+                                Just Subcommand.NewRule ->
+                                    Debug.todo "new-rule not implemented yet"
+
+                                Just Subcommand.NewPackage ->
+                                    Debug.todo "new-package not implemented yet"
+
+                                Just Subcommand.PrepareOffline ->
+                                    Debug.todo "prepare-offline not implemented yet"
 
 
-toReviewOptions : Color.Support -> InternalOptions -> String -> ReviewOptions
-toReviewOptions color options elmJsonPath =
-    let
-        projectRoot : Path
-        projectRoot =
-            Path.dirname elmJsonPath
-    in
+toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
+toReviewOptions color options projectRoot =
     { subcommand = options.subcommand
     , projectPaths =
         ProjectPaths.from
@@ -141,6 +159,16 @@ toReviewOptions color options elmJsonPath =
                 Just "--no-color"
             ]
             options.reviewAppFlags
+    }
+
+
+toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions
+toInitOptions color options projectRoot =
+    { configPath = Path.join2 projectRoot "review"
+    , template = options.remoteTemplate
+    , forTests = options.forTests
+    , debug = options.debug
+    , color = color
     }
 
 

@@ -2,6 +2,7 @@ module Wrapper.Options exposing
     ( ReviewOptions
     , ReviewProject(..)
     , HelpOptions
+    , InitOptions
     )
 
 {-|
@@ -11,10 +12,13 @@ module Wrapper.Options exposing
 
 @docs HelpOptions
 
+@docs InitOptions
+
 -}
 
 import Elm.Review.ReportMode exposing (ReportMode)
 import Wrapper.Color as Color
+import Wrapper.Path exposing (Path)
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -33,12 +37,21 @@ type alias ReviewOptions =
 
 
 type ReviewProject
-    = Local String
+    = Local Path
     | Remote RemoteTemplate
 
 
 type alias HelpOptions =
     { subcommand : Maybe Subcommand
     , forTests : Bool
+    , color : Color.Support
+    }
+
+
+type alias InitOptions =
+    { configPath : Path
+    , template : Maybe RemoteTemplate
+    , forTests : Bool
+    , debug : Bool
     , color : Color.Support
     }
