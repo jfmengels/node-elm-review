@@ -1,9 +1,9 @@
-module Wrapper.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
+module ElmReview.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
 
 import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
+import ElmReview.Color as Color exposing (Color(..), Colorize)
+import ElmReview.Path exposing (Path)
 import Json.Encode as Encode
-import Wrapper.Color as Color exposing (Color(..), Colorize)
-import Wrapper.Path exposing (Path)
 
 
 type Problem

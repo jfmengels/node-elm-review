@@ -1,7 +1,7 @@
 module Wrapper.Help exposing (show)
 
 import Elm.Review.CliVersion as CliVersion
-import Wrapper.Color as Color exposing (Color(..), Colorize)
+import ElmReview.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (HelpOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Section as Section

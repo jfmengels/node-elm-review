@@ -10,9 +10,9 @@ module Wrapper.Flag exposing
 
 -}
 
-import Wrapper.Color as Color exposing (Color, Colorize)
+import ElmReview.Color as Color exposing (Color, Colorize)
+import ElmReview.Problem exposing (ProblemSimple)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
-import Wrapper.Problem exposing (ProblemSimple)
 import Wrapper.Section exposing (Section)
 
 

@@ -1,9 +1,9 @@
 module Wrapper.FolderHash exposing (hashSourceDirectories)
 
+import ElmReview.Path as Path exposing (Path)
 import Fs exposing (FileSystem)
 import Task exposing (Task)
 import Wrapper.Hash as Hash exposing (Hash)
-import Wrapper.Path as Path exposing (Path)
 
 
 hashSourceDirectories : FileSystem -> Path -> List Path -> Task x Hash

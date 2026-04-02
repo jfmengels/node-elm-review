@@ -4,15 +4,15 @@ import Array exposing (Array)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
+import ElmReview.Color exposing (Color(..))
+import ElmReview.Path exposing (Path)
+import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Task exposing (Task)
-import Wrapper.Color exposing (Color(..))
 import Wrapper.Help as Help
 import Wrapper.Init as Init
 import Wrapper.Options.Parser as OptionsParser
-import Wrapper.Path exposing (Path)
-import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
 import Wrapper.Review as Review
 
 

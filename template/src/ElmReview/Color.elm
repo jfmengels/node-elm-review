@@ -1,4 +1,4 @@
-module Wrapper.Color exposing
+module ElmReview.Color exposing
     ( Color(..)
     , Colorize, toAnsi
     , Support, supportsColor, noColors, colors_FOR_TESTS

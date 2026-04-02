@@ -2,14 +2,14 @@ module Wrapper.Options.Parser exposing (OptionsParseResult(..), parse)
 
 import Dict exposing (Dict)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
+import ElmReview.Color as Color exposing (Color(..), Colorize)
+import ElmReview.Path as Path exposing (Path)
+import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import Set
-import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options as Options exposing (HelpOptions, InitOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
-import Wrapper.Path as Path exposing (Path)
-import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.ProjectPaths as ProjectPaths
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 

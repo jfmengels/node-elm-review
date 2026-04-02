@@ -9,6 +9,9 @@ module Wrapper.Build exposing (build, BuildData)
 import Elm.Package
 import Elm.Project
 import Elm.Version
+import ElmReview.Color exposing (Color(..), Colorize)
+import ElmReview.Path as Path exposing (Path)
+import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -16,14 +19,11 @@ import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Set exposing (Set)
 import Task exposing (Task)
-import Wrapper.Color exposing (Color(..), Colorize)
 import Wrapper.CopyDirectory exposing (copyDirectory)
 import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
-import Wrapper.Path as Path exposing (Path)
-import Wrapper.Problem as Problem exposing (Problem, ProblemSimple)
 import Wrapper.ProjectPaths as ProjectPaths
 
 

@@ -1,10 +1,10 @@
 module Wrapper.MinVersion exposing (validate)
 
 import Elm.Version
-import Wrapper.Color exposing (Color(..), Colorize)
+import ElmReview.Color exposing (Color(..), Colorize)
+import ElmReview.Problem exposing (ProblemSimple)
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
 import Wrapper.PathHelpers as PathHelpers
-import Wrapper.Problem exposing (ProblemSimple)
 
 
 minimalVersion : { major : Int, minor : Int }
