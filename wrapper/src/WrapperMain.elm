@@ -13,6 +13,7 @@ import Wrapper.Color exposing (Color(..))
 import Wrapper.Help as Help
 import Wrapper.Options exposing (ReviewOptions)
 import Wrapper.Options.Parser as OptionsParser
+import Wrapper.Path exposing (Path)
 import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
 import Wrapper.ProjectPaths as ProjectPaths
 
@@ -149,31 +150,8 @@ updateWrapper msg wrapper =
 
         Loading loading ->
             case msg of
-                FoundNearestElmJson (Ok elmJsonPath) ->
-                    handleCliArgsParseResult
-                        loading.env
-                        loading
-                        (loading.toOptions { elmJsonPath = elmJsonPath })
-
-                FoundNearestElmJson (Err (Fs.NotFound _)) ->
-                    ( Done
-                    , { title = "COULD NOT FIND ELM.JSON"
-                      , message =
-                            \c ->
-                                "I was expecting to find an " ++ c YellowBright "elm.json" ++ """ file in the current directory or one of its parents, but I did not find one.
-
-If you wish to run elm-review from outside your project,
-try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
-                      }
-                        |> Problem.from
-                        |> exitWithProblem loading.env loading.formatOptions
-                    )
-
-                FoundNearestElmJson (Err error) ->
-                    ( Done
-                    , Problem.unexpectedError (fsErrorToString error)
-                        |> exitWithProblem loading.env loading.formatOptions
-                    )
+                FoundNearestElmJson result ->
+                    foundNearestElmJson loading result
 
                 _ ->
                     ( wrapper, Cmd.none )
@@ -181,6 +159,36 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
         Running model ->
             update msg model
                 |> Tuple.mapFirst Running
+
+
+foundNearestElmJson : LoadingModel -> Result FsError Path -> ( ModelWrapper, Cmd Msg )
+foundNearestElmJson loading result =
+    case result of
+        Ok elmJsonPath ->
+            handleCliArgsParseResult
+                loading.env
+                loading
+                (loading.toOptions { elmJsonPath = elmJsonPath })
+
+        Err (Fs.NotFound _) ->
+            ( Done
+            , { title = "COULD NOT FIND ELM.JSON"
+              , message =
+                    \c ->
+                        "I was expecting to find an " ++ c YellowBright "elm.json" ++ """ file in the current directory or one of its parents, but I did not find one.
+
+If you wish to run elm-review from outside your project,
+try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
+              }
+                |> Problem.from
+                |> exitWithProblem loading.env loading.formatOptions
+            )
+
+        Err error ->
+            ( Done
+            , Problem.unexpectedError (fsErrorToString error)
+                |> exitWithProblem loading.env loading.formatOptions
+            )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
