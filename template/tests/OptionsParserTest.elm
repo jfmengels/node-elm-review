@@ -105,7 +105,7 @@ expectEqual expected received =
             Expect.equal expected result
 
         NeedElmJsonPath { toOptions } ->
-            Expect.equal expected (toOptions { elmJsonPath = "elm.json" })
+            expectEqual expected (toOptions { elmJsonPath = "elm.json" })
 
         ShowVersion ->
             Expect.fail "Unexpected showing of version"

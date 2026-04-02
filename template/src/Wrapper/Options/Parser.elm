@@ -21,7 +21,7 @@ parse { args, env } =
 
 
 type OptionsParseResult
-    = NeedElmJsonPath { formatOptions : Problem.FormatOptions {}, toOptions : { elmJsonPath : String } -> ReviewOptions }
+    = NeedElmJsonPath { formatOptions : Problem.FormatOptions {}, toOptions : { elmJsonPath : Path } -> OptionsParseResult }
     | ParseSuccess ReviewOptions
     | ShowVersion
     | ShowHelp HelpOptions
@@ -69,15 +69,15 @@ toOptions env options =
                                     , debug = options.debug
                                     , color = color
                                     }
-                                , toOptions = \{ elmJsonPath } -> toOptionsWithElmJsonPath color options elmJsonPath
+                                , toOptions = \{ elmJsonPath } -> toOptions env { options | elmJsonPath = Just elmJsonPath }
                                 }
 
                         Just elmJsonPath ->
-                            ParseSuccess (toOptionsWithElmJsonPath color options elmJsonPath)
+                            ParseSuccess (toReviewOptions color options elmJsonPath)
 
 
-toOptionsWithElmJsonPath : Color.Support -> InternalOptions -> String -> ReviewOptions
-toOptionsWithElmJsonPath color options elmJsonPath =
+toReviewOptions : Color.Support -> InternalOptions -> String -> ReviewOptions
+toReviewOptions color options elmJsonPath =
     let
         projectRoot : Path
         projectRoot =
