@@ -13,7 +13,7 @@ module Wrapper.Init exposing
 import Capabilities exposing (Console, Stdin)
 import Cli
 import ElmReview.Color as Color exposing (Color(..), Colorize)
-import ElmReview.Path exposing (Path)
+import ElmReview.Path as Path exposing (Path)
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Stdin exposing (StdinError)
@@ -63,7 +63,7 @@ update msg (Model model) =
         UserPressedKey stdin (Ok key) ->
             case Prompt.interpretKey key of
                 Prompt.Yes ->
-                    installFiles model.stdout
+                    installFiles model.options model.stdout
 
                 Prompt.No ->
                     Cli.exit 0
@@ -101,12 +101,69 @@ prompt model =
 
         Nothing ->
             -- If there is no stdin, assume the answer is yes.
-            installFiles model.stdout
+            installFiles model.options model.stdout
 
 
-installFiles : Console -> Cmd msg
-installFiles stdout =
+installFiles : InitOptions -> Console -> Cmd msg
+installFiles options stdout =
     Cmd.batch
-        [ Cli.println stdout "Installing"
+        [ Cli.println stdout (successMessage options)
         , Cli.exit 0
         ]
+
+
+successMessage : InitOptions -> String
+successMessage options =
+    let
+        c : Colorize
+        c =
+            Color.toAnsi options.color
+
+        path : Path
+        path =
+            -- TODO Anonymize?
+            options.configPath
+
+        reviewConfigPath : Path
+        reviewConfigPath =
+            Path.join2 path "src/ReviewConfig.elm"
+
+        ( message, recommendation ) =
+            case options.template of
+                Nothing ->
+                    ( regularInitMessage c reviewConfigPath, "" )
+
+                Just _ ->
+                    ( templateInitMessage c reviewConfigPath, templateRecommendation c )
+    in
+    -- TODO Support underline under following URLS
+    "All done! I have created a review project at " ++ c Green path ++ """ for you.
+
+""" ++ message ++ """
+
+I recommend you take a look at the following documents:
+  - How to configure """ ++ c Cyan "elm-review" ++ """: https://github.com/jfmengels/elm-review/#Configuration
+  - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule
+""" ++ recommendation
+
+
+regularInitMessage : Colorize -> Path -> String
+regularInitMessage c reviewConfigPath =
+    "You can now define your review configuration by editing " ++ c Green reviewConfigPath ++ "."
+
+
+templateInitMessage : Colorize -> Path -> String
+templateInitMessage c reviewConfigPath =
+    """You chose to use someone's review configuration which can be great to get started
+but don't forget to review the configuration to make sure it fits your needs,
+both by removing rules you disagree with and by finding new rules to aid you.
+You can do so by editing """ ++ c Green reviewConfigPath ++ "."
+
+
+templateRecommendation : Colorize -> String
+templateRecommendation c =
+    """
+By starting out with this configuration, you may end up with too many errors to handle at once.
+I recommend you use a mix of the following approaches:
+  - Enable rules one by one by commenting them out at first
+  - Use """ ++ c Orange "elm-review suppress" ++ " to suppress existing errors but prevent future ones (see " ++ c Orange "elm-review suppress --help" ++ ")."
