@@ -6,31 +6,28 @@ import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
-import Wrapper.Build as Build
 import Wrapper.Color exposing (Color(..))
 import Wrapper.Help as Help
-import Wrapper.Options exposing (ReviewOptions)
 import Wrapper.Options.Parser as OptionsParser
 import Wrapper.Path exposing (Path)
 import Wrapper.Problem as Problem exposing (FormatOptions, Problem)
-import Wrapper.ProjectPaths as ProjectPaths
+import Wrapper.Review as Review
 
 
-main : Cli.Program ModelWrapper Msg
+main : Cli.Program Model Msg
 main =
     Cli.program
         { init = init
-        , update = updateWrapper
+        , update = update
         , subscriptions = \_ -> Sub.none
         }
 
 
-type ModelWrapper
+type Model
     = Done
     | Loading LoadingModel
-    | Running Model
+    | Review Review.Model
 
 
 type alias LoadingModel =
@@ -38,25 +35,16 @@ type alias LoadingModel =
     , fs : FileSystem
     , os : ProcessCapability
     , formatOptions : FormatOptions {}
-    , toOptions : { elmJsonPath : String } -> OptionsParser.OptionsParseResult
-    }
-
-
-type alias Model =
-    { env : Env
-    , fs : FileSystem
-    , os : ProcessCapability
-    , options : ReviewOptions
+    , toOptions : { elmJsonPath : Path } -> OptionsParser.OptionsParseResult
     }
 
 
 type Msg
-    = BuildCompleted (Result Problem Build.BuildData)
-    | FoundNearestElmJson (Result FsError String)
-    | ReviewProcessEnded (Result ProcessError Process.Completed)
+    = FoundNearestElmJson (Result FsError String)
+    | ReviewMsg Review.Msg
 
 
-init : Env -> ( ModelWrapper, Cmd Msg )
+init : Env -> ( Model, Cmd Msg )
 init env =
     case requireCapabilities env of
         Err msg ->
@@ -72,7 +60,7 @@ init env =
             handleCliArgsParseResult env capabilities (OptionsParser.parse env)
 
 
-handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( ModelWrapper, Cmd Msg )
+handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( Model, Cmd Msg )
 handleCliArgsParseResult env { fs, os } result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
@@ -116,15 +104,15 @@ handleCliArgsParseResult env { fs, os } result =
             )
 
         OptionsParser.Review options ->
-            ( Running
-                { env = env
-                , fs = fs
-                , os = os
-                , options = options
-                }
-            , Build.build fs os options
-                |> Task.attempt BuildCompleted
-            )
+            let
+                ( review, cmd ) =
+                    Review.init env
+                        { fs = fs
+                        , os = os
+                        }
+                        options
+            in
+            ( Review review, Cmd.map ReviewMsg cmd )
 
 
 requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
@@ -142,26 +130,30 @@ requireCapabilities env =
                     Ok { fs = fs, os = os }
 
 
-updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
-updateWrapper msg wrapper =
-    case wrapper of
-        Done ->
-            ( wrapper, Cmd.none )
-
-        Loading loading ->
-            case msg of
-                FoundNearestElmJson result ->
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        FoundNearestElmJson result ->
+            case model of
+                Loading loading ->
                     foundNearestElmJson loading result
 
                 _ ->
-                    ( wrapper, Cmd.none )
+                    ( model, Cmd.none )
 
-        Running model ->
-            update msg model
-                |> Tuple.mapFirst Running
+        ReviewMsg reviewMsg ->
+            case model of
+                Review reviewModel ->
+                    ( model
+                    , Review.update reviewMsg reviewModel
+                        |> Cmd.map ReviewMsg
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
-foundNearestElmJson : LoadingModel -> Result FsError Path -> ( ModelWrapper, Cmd Msg )
+foundNearestElmJson : LoadingModel -> Result FsError Path -> ( Model, Cmd Msg )
 foundNearestElmJson loading result =
     case result of
         Ok elmJsonPath ->
@@ -189,40 +181,6 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
             , Problem.unexpectedError (fsErrorToString error)
                 |> exitWithProblem loading.env loading.formatOptions
             )
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        BuildCompleted result ->
-            case result of
-                Ok { reviewAppPath } ->
-                    ( model
-                    , runReviewProcess model reviewAppPath
-                    )
-
-                Err problem ->
-                    ( model
-                    , exitWithProblem model.env model.options problem
-                    )
-
-        ReviewProcessEnded result ->
-            case result of
-                Ok completed ->
-                    ( model
-                    , Cli.exit completed.exitCode
-                    )
-
-                Err err ->
-                    ( model
-                    , Cmd.batch
-                        [ Cli.println model.env.stdout ("error: " ++ processErrorToString err)
-                        , Cli.exit 1
-                        ]
-                    )
-
-        FoundNearestElmJson _ ->
-            ( model, Cmd.none )
 
 
 findNearestElmJson : FileSystem -> Array String -> Task Fs.FsError String
@@ -256,50 +214,12 @@ getCwd fs env =
             Task.fail (Fs.NotFound ".")
 
 
-runReviewProcess : Model -> String -> Cmd Msg
-runReviewProcess { os, options } appBinary =
-    let
-        ( cmd, args ) =
-            if options.debug then
-                -- TODO Get host-cli from somewhere?
-                ( "host-cli"
-                , "-v" :: "--trust" :: appBinary :: options.reviewAppFlags
-                )
-
-            else
-                ( appBinary, options.reviewAppFlags )
-    in
-    Process.run os
-        cmd
-        { args = args
-        , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
-        , env = Nothing
-        , stdin = Process.InheritStdin
-        , stdout = Process.InheritStdout
-        , stderr = Process.InheritStderr
-        }
-        |> Task.attempt ReviewProcessEnded
-
-
 exitWithProblem : Env -> Problem.FormatOptions options -> Problem.Problem -> Cmd msg
 exitWithProblem env formatOptions problem =
     Cmd.batch
         [ Cli.println env.stderr (Problem.format formatOptions problem)
         , Cli.exit 1
         ]
-
-
-processErrorToString : ProcessError -> String
-processErrorToString err =
-    case err of
-        Process.PermissionDenied ->
-            "PermissionDenied"
-
-        Process.CaptureLimitExceeded stream ->
-            "CaptureLimitExceeded(" ++ stream ++ ")"
-
-        Process.ProcessError message ->
-            message
 
 
 fsErrorToString : FsError -> String
