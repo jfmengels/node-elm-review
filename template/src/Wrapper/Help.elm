@@ -1,6 +1,6 @@
 module Wrapper.Help exposing (show)
 
-import Wrapper.Anonymize as Anonymize
+import Elm.Review.CliVersion as CliVersion
 import Wrapper.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (HelpOptions)
 import Wrapper.Options.Flags as Flags
@@ -40,7 +40,7 @@ reviewHelp options c =
     let
         version : String
         version =
-            Anonymize.version options
+            CliVersion.anonymizedVersion options
     in
     "You are using " ++ c GreenBright ("elm-review " ++ version) ++ """.
 
