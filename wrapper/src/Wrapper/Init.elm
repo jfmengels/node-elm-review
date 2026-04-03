@@ -14,6 +14,7 @@ import Capabilities exposing (Console, Stdin)
 import Cli
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
+import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Stdin exposing (StdinError)
@@ -38,6 +39,7 @@ type alias ModelData =
 
 type Msg
     = UserPressedKey Stdin (Result StdinError Stdin.Key)
+    | CreatedFiles (Result FsError ())
 
 
 init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> InitOptions -> ( Model, Cmd Msg )
@@ -63,7 +65,7 @@ update msg (Model model) =
         UserPressedKey stdin (Ok key) ->
             case Prompt.interpretKey key of
                 Prompt.Yes ->
-                    installFiles model.options model.stdout
+                    installFiles model.options
 
                 Prompt.No ->
                     Cli.exit 0
@@ -73,6 +75,15 @@ update msg (Model model) =
 
         UserPressedKey _ (Err err) ->
             Debug.todo ("Got error while awaiting key: " ++ Debug.toString err)
+
+        CreatedFiles (Ok ()) ->
+            Cmd.batch
+                [ Cli.println model.stdout (successMessage model.options)
+                , Cli.exit 0
+                ]
+
+        CreatedFiles (Err err) ->
+            Debug.todo ("Got error while creating files: " ++ FsExtra.errorToString err)
 
 
 prompt : ModelData -> Cmd Msg
@@ -101,15 +112,13 @@ prompt model =
 
         Nothing ->
             -- If there is no stdin, assume the answer is yes.
-            installFiles model.options model.stdout
+            installFiles model.options
 
 
-installFiles : InitOptions -> Console -> Cmd msg
-installFiles options stdout =
-    Cmd.batch
-        [ Cli.println stdout (successMessage options)
-        , Cli.exit 0
-        ]
+installFiles : InitOptions -> Cmd Msg
+installFiles options =
+    Task.succeed ()
+        |> Task.attempt CreatedFiles
 
 
 successMessage : InitOptions -> String
