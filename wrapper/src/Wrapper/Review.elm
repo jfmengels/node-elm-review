@@ -13,6 +13,7 @@ module Wrapper.Review exposing
 import Capabilities exposing (Console)
 import Cli exposing (Env)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
+import ElmRun.OsExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
@@ -72,7 +73,7 @@ update msg (Model model) =
 
                 Err err ->
                     Cmd.batch
-                        [ Cli.println model.stdout ("error: " ++ processErrorToString err)
+                        [ Cli.println model.stdout ("error: " ++ ElmRun.OsExtra.errorToString err)
                         , Cli.exit 1
                         ]
 
@@ -108,16 +109,3 @@ exitWithProblem stderr formatOptions problem =
         [ Cli.println stderr (Problem.format formatOptions problem)
         , Cli.exit 1
         ]
-
-
-processErrorToString : ProcessError -> String
-processErrorToString err =
-    case err of
-        Process.PermissionDenied ->
-            "PermissionDenied"
-
-        Process.CaptureLimitExceeded stream ->
-            "CaptureLimitExceeded(" ++ stream ++ ")"
-
-        Process.ProcessError message ->
-            message

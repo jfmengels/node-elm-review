@@ -28,6 +28,7 @@ import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import ElmReview.Path exposing (Path)
+import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
@@ -219,7 +220,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
               , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
             , Cmd.batch
-                [ Cli.println stderr ("elm.json - " ++ errorToString err)
+                [ Cli.println stderr ("elm.json - " ++ FsExtra.errorToString err)
                 , Cli.exit 1
                 ]
             )
@@ -346,7 +347,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                     , -- TODO Exit?
-                      Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
+                      Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ FsExtra.errorToString err)
                     )
 
         ReceivedSuppressedErrorsList directory result ->
@@ -400,7 +401,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
                       -- TODO Exit?
-                    , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ errorToString err)
+                    , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ FsExtra.errorToString err)
                     )
 
         ReceivedRuleLinks { links, fromCache } ->
@@ -444,7 +445,7 @@ receivedElmFileList { fs, stderr, onNotFound } directory result model =
               , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
               -- TODO Exit?
-            , Cli.println stderr (directory ++ " - " ++ errorToString err)
+            , Cli.println stderr (directory ++ " - " ++ FsExtra.errorToString err)
             )
 
 
@@ -635,16 +636,3 @@ readTextFile fs toMsg path =
 joinPaths : String -> String -> String
 joinPaths directory filePath =
     directory ++ String.dropLeft 1 filePath ++ ""
-
-
-errorToString : FsError -> String
-errorToString fsError =
-    case fsError of
-        NotFound path ->
-            "File not found: " ++ path
-
-        PermissionDenied ->
-            "Permission denied"
-
-        IoError msg ->
-            "Unknown error: " ++ msg

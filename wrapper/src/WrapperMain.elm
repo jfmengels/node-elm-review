@@ -7,6 +7,7 @@ import Elm.Review.CliVersion as CliVersion
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
+import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Task exposing (Task)
@@ -203,7 +204,7 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
 
         Err error ->
             ( Done
-            , Problem.unexpectedError (fsErrorToString error)
+            , Problem.unexpectedError (FsExtra.errorToString error)
                 |> exitWithProblem loading.env loading.formatOptions
             )
 
@@ -245,19 +246,6 @@ exitWithProblem env formatOptions problem =
         [ Cli.println env.stderr (Problem.format formatOptions problem)
         , Cli.exit 1
         ]
-
-
-fsErrorToString : FsError -> String
-fsErrorToString fsError =
-    case fsError of
-        Fs.NotFound path ->
-            "File not found: " ++ path
-
-        Fs.PermissionDenied ->
-            "Permission denied"
-
-        Fs.IoError msg ->
-            "Unknown error: " ++ msg
 
 
 {-| Find the first element that satisfies a predicate and return

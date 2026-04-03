@@ -12,6 +12,8 @@ import Elm.Version
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
+import ElmRun.FsExtra as FsExtra
+import ElmRun.OsExtra as OsExtra
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -122,19 +124,6 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
         |> Task.andThen (\() -> compileProjectUsingElmRun os buildFolder buildData.reviewAppPath)
 
 
-processErrorToString : ProcessError -> String
-processErrorToString err =
-    case err of
-        Process.PermissionDenied ->
-            "PermissionDenied"
-
-        Process.CaptureLimitExceeded stream ->
-            "CaptureLimitExceeded(" ++ stream ++ ")"
-
-        Process.ProcessError message ->
-            message
-
-
 createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
 createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
     let
@@ -142,6 +131,11 @@ createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
         astCodecSrc =
             -- TODO Use path relative to this binary
             "/Users/m1/dev/node-elm-review/ast-codec/src"
+
+        elmRunSrc : Path
+        elmRunSrc =
+            -- TODO Use path relative to this binary
+            "/Users/m1/dev/node-elm-review/elm-run/src"
 
         dependencies : List ( Elm.Package.Name, Elm.Version.Version )
         dependencies =
@@ -154,6 +148,7 @@ createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
             { reviewElmJson
                 | dirs =
                     "src"
+                        :: Path.join2 reviewFolder elmRunSrc
                         :: Path.join2 reviewFolder astCodecSrc
                         :: List.map (\dir -> Path.join2 reviewFolder dir) reviewElmJson.dirs
                 , depsDirect = dependencies
@@ -172,25 +167,12 @@ createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
 
 fsErrorToProblem : FsError -> Problem
 fsErrorToProblem error =
-    Problem.unexpectedError (fsErrorToString error)
+    Problem.unexpectedError (FsExtra.errorToString error)
 
 
 processingErrorToProblem : ProcessError -> Problem
 processingErrorToProblem error =
-    Problem.unexpectedError (processErrorToString error)
-
-
-fsErrorToString : FsError -> String
-fsErrorToString fsError =
-    case fsError of
-        Fs.NotFound path ->
-            "File not found: " ++ path
-
-        Fs.PermissionDenied ->
-            "Permission denied"
-
-        Fs.IoError msg ->
-            "Unknown error: " ++ msg
+    Problem.unexpectedError (OsExtra.errorToString error)
 
 
 addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
