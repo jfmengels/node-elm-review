@@ -21,7 +21,6 @@ import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
 import Set exposing (Set)
 import Task exposing (Task)
-import Wrapper.CopyDirectory exposing (copyDirectory)
 import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
@@ -113,7 +112,7 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
         |> Task.mapError fsErrorToProblem
         |> Task.andThen
             (\() ->
-                copyDirectory os
+                FsExtra.copyDirectory os
                     { -- TODO Use path relative to this binary
                       from = "/Users/m1/dev/node-elm-review/template/src"
                     , to = buildFolder
@@ -204,6 +203,7 @@ addReviewAppDependencies initialDependencies =
         , ( "elm/project-metadata-utils", "1.0.2" )
         , ( "elm-run/cli", "1.0.0" )
         , ( "elm-run/fs", "1.0.0" )
+        , ( "elm-run/os", "1.0.0" )
         , ( "elm-run/worker", "1.0.0" )
         , ( "elm-run/capabilities", "1.0.0" )
         , ( "elm-run/log", "1.0.0" )
