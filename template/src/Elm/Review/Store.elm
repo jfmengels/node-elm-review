@@ -20,6 +20,7 @@ module Elm.Review.Store exposing
 
 import Cli
 import Dict exposing (Dict)
+import Elm.Constraint
 import Elm.Docs
 import Elm.Module
 import Elm.Package
@@ -174,27 +175,20 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                                     )
                                     directoriesToAnalyze
 
-                        addDeps : List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
-                        addDeps deps initial =
-                            List.foldl
-                                (\( name, version ) acc ->
-                                    fetchDependency fs runEnvironment (Elm.Package.toString name) (Elm.Version.toString version) :: acc
-                                )
-                                initial
-                                deps
-
                         addDependencies : List (Cmd Msg) -> List (Cmd Msg)
                         addDependencies initial =
                             case elmJson of
                                 Elm.Project.Application application ->
                                     initial
-                                        |> addDeps application.depsDirect
-                                        |> addDeps application.depsIndirect
-                                        |> addDeps application.testDepsDirect
-                                        |> addDeps application.testDepsIndirect
+                                        |> addDepsFromVersion fs runEnvironment application.depsDirect
+                                        |> addDepsFromVersion fs runEnvironment application.depsIndirect
+                                        |> addDepsFromVersion fs runEnvironment application.testDepsDirect
+                                        |> addDepsFromVersion fs runEnvironment application.testDepsIndirect
 
-                                Elm.Project.Package _ ->
-                                    Debug.todo "Handle package deps"
+                                Elm.Project.Package package ->
+                                    initial
+                                        |> addDepsFromConstraint fs runEnvironment package.deps
+                                        |> addDepsFromConstraint fs runEnvironment package.testDeps
 
                         tasks : List (Cmd Msg)
                         tasks =
@@ -413,6 +407,31 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               }
             , Cmd.none
             )
+
+
+addDepsFromVersion : FileSystem -> RunEnvironment -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
+addDepsFromVersion fs runEnvironment deps initial =
+    List.foldl
+        (\( name, version ) acc ->
+            fetchDependency fs runEnvironment (Elm.Package.toString name) (Elm.Version.toString version) :: acc
+        )
+        initial
+        deps
+
+
+addDepsFromConstraint : FileSystem -> RunEnvironment -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (Cmd Msg) -> List (Cmd Msg)
+addDepsFromConstraint fs runEnvironment deps initial =
+    List.foldl
+        (\( name, constraint ) acc ->
+            case Elm.Constraint.toString constraint |> String.split " " |> List.head of
+                Just minVersion ->
+                    fetchDependency fs runEnvironment (Elm.Package.toString name) minVersion :: acc
+
+                Nothing ->
+                    acc
+        )
+        initial
+        deps
 
 
 receivedElmFileList :
