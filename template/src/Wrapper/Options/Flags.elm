@@ -16,9 +16,9 @@ module Wrapper.Options.Flags exposing
 -}
 
 import Dict exposing (Dict)
-import Elm.Review.ReportMode as ReportMode
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Problem exposing (ProblemSimple)
+import ElmReview.ReportMode as ReportMode
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 import Wrapper.RemoteTemplate as RemoteTemplate

@@ -1,8 +1,8 @@
 module ElmReview.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
 
-import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path exposing (Path)
+import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Json.Encode as Encode
 
 

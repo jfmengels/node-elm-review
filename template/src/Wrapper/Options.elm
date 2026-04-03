@@ -16,9 +16,9 @@ module Wrapper.Options exposing
 
 -}
 
-import Elm.Review.ReportMode exposing (ReportMode)
 import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
+import ElmReview.ReportMode exposing (ReportMode)
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
