@@ -55,7 +55,21 @@ init { stdout, stderr, stdin } { fs, os } options =
             , options = options
             }
     in
-    ( Model model, prompt model )
+    ( Model model
+    , case stdin of
+        Just stdin_ ->
+            case options.template of
+                Just _ ->
+                    -- Don't prompt when using template, the user likely knows what they are doing.
+                    installFiles model.options
+
+                Nothing ->
+                    prompt stdin_ model
+
+        Nothing ->
+            -- If there is no stdin, assume the prompt answer is yes.
+            installFiles model.options
+    )
 
 
 update : Msg -> Model -> Cmd Msg
@@ -86,8 +100,8 @@ update msg (Model model) =
             Debug.todo ("Got error while creating files: " ++ FsExtra.errorToString err)
 
 
-prompt : ModelData -> Cmd Msg
-prompt model =
+prompt : Stdin -> ModelData -> Cmd Msg
+prompt stdin model =
     let
         c : Colorize
         c =
@@ -103,16 +117,10 @@ prompt model =
             -- TODO Add colors for Y/n?
             "Would you like me to create " ++ c Yellow "elm.json" ++ " and " ++ c Yellow "src/ReviewConfig.elm" ++ " inside " ++ c Yellow path ++ "? › (Y/n)"
     in
-    case model.stdin of
-        Just stdin ->
-            Cmd.batch
-                [ Cli.println model.stdout promptText
-                , Stdin.readKey stdin |> Task.attempt (UserPressedKey stdin)
-                ]
-
-        Nothing ->
-            -- If there is no stdin, assume the answer is yes.
-            installFiles model.options
+    Cmd.batch
+        [ Cli.println model.stdout promptText
+        , Stdin.readKey stdin |> Task.attempt (UserPressedKey stdin)
+        ]
 
 
 installFiles : InitOptions -> Cmd Msg
