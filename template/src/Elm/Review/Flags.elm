@@ -2,9 +2,9 @@ module Elm.Review.Flags exposing (Flags, parse)
 
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixOptions as FixOptions
-import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
+import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
 
 

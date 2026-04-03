@@ -13,7 +13,6 @@ import Elm.Review.File
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Flags as Flags exposing (Flags)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
-import Elm.Review.ReportMode exposing (ReportMode(..))
 import Elm.Review.Reporter as Reporter
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
@@ -23,6 +22,7 @@ import Elm.Review.UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
+import ElmReview.ReportMode exposing (ReportMode(..))
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Json.Encode as Encode

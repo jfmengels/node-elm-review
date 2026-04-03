@@ -1,4 +1,4 @@
-module Elm.Review.ReportMode exposing (ReportMode(..))
+module ElmReview.ReportMode exposing (ReportMode(..))
 
 
 type ReportMode
