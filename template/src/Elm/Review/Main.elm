@@ -213,7 +213,7 @@ init env =
             )
 
         Ok fs ->
-            case Flags.parse env of
+            case Flags.parse env.args of
                 Err error ->
                     ( Done
                     , Cmd.batch

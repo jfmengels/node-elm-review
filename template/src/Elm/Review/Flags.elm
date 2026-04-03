@@ -1,6 +1,5 @@
 module Elm.Review.Flags exposing (Flags, parse)
 
-import Cli exposing (Env)
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.ReportMode as ReportMode exposing (ReportMode)
@@ -33,9 +32,9 @@ type alias Flags =
     }
 
 
-parse : Env -> Result String Flags
-parse env =
-    parseHelp env.args default
+parse : List String -> Result String Flags
+parse args =
+    parseHelp args default
 
 
 parseHelp : List String -> Flags -> Result String Flags
