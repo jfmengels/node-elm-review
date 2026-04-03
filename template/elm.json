@@ -3,6 +3,7 @@
     "source-directories": [
         "src/",
         "dev-src/",
+        "../elm-run/src",
         "../ast-codec/src"
     ],
     "elm-version": "0.19.1",
