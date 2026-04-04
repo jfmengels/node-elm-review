@@ -62,7 +62,7 @@ init { stdout, stderr, stdin } { fs, os } options =
     ( Model model
     , case stdin of
         Just stdin_ ->
-            case options.template of
+            case options.remoteTemplate of
                 Just _ ->
                     -- Don't prompt when using template, the user likely knows what they are doing.
                     installFiles fs os model.options.configPath
@@ -232,7 +232,7 @@ successMessage options =
             Path.join2 path "src/ReviewConfig.elm"
 
         ( message, recommendation ) =
-            case options.template of
+            case options.remoteTemplate of
                 Nothing ->
                     ( regularInitMessage c reviewConfigPath, "" )
 
