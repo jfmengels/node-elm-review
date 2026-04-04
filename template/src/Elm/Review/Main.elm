@@ -11,7 +11,7 @@ import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
 import Elm.Review.FixOptions as FixOptions
-import Elm.Review.Flags as Flags exposing (Flags)
+import Elm.Review.Options as Flags exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
@@ -226,7 +226,7 @@ init env =
                     initWithFlags env fs flags
 
 
-initWithFlags : Env -> FileSystem -> Flags -> ( ModelWrapper, Cmd Msg )
+initWithFlags : Env -> FileSystem -> Options -> ( ModelWrapper, Cmd Msg )
 initWithFlags env fs flags =
     case computeRulesToRun env flags of
         Err cmd ->
@@ -236,7 +236,7 @@ initWithFlags env fs flags =
             initValid env fs flags rules
 
 
-initValid : Env -> FileSystem -> Flags -> List Rule -> ( ModelWrapper, Cmd Msg )
+initValid : Env -> FileSystem -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
 initValid env fs flags rulesFromConfig =
     let
         rules : List Rule
@@ -307,7 +307,7 @@ initValid env fs flags rulesFromConfig =
     )
 
 
-computeRulesToRun : Env -> Flags -> Result (Cmd msg) (List Rule)
+computeRulesToRun : Env -> Options -> Result (Cmd msg) (List Rule)
 computeRulesToRun env flags =
     let
         rulesWithIds : List Rule
