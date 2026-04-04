@@ -1,4 +1,4 @@
-module Elm.Review.Flags exposing (Flags, parse)
+module Elm.Review.Options exposing (Options, parse)
 
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixOptions as FixOptions
@@ -8,7 +8,7 @@ import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
 
 
-type alias Flags =
+type alias Options =
     { fixMode : FixOptions.Mode
     , fileRemovalFixesEnabled : Bool
     , fixLimit : Maybe Int
@@ -32,12 +32,12 @@ type alias Flags =
     }
 
 
-parse : List String -> Result String Flags
+parse : List String -> Result String Options
 parse args =
     parseHelp args default
 
 
-parseHelp : List String -> Flags -> Result String Flags
+parseHelp : List String -> Options -> Result String Options
 parseHelp args flags =
     case args of
         [] ->
@@ -52,7 +52,7 @@ parseHelp args flags =
                     Err err
 
 
-applyArg : String -> Flags -> Result String Flags
+applyArg : String -> Options -> Result String Options
 applyArg arg flags =
     case String.split "=" arg of
         [ "--fix" ] ->
@@ -130,7 +130,7 @@ applyArg arg flags =
             Err ("Unknown flag `" ++ arg ++ "`")
 
 
-default : Flags
+default : Options
 default =
     { fixMode = FixOptions.DontFix
     , fileRemovalFixesEnabled = False
