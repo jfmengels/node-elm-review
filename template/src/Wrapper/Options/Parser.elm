@@ -86,13 +86,28 @@ toOptions env options =
                                     Init (toInitOptions color options projectRoot)
 
                                 Just Subcommand.NewRule ->
-                                    Debug.todo "new-rule not implemented yet"
+                                    Problem.notImplementedYet "new-rule subcommand"
+                                        |> ParseError
+                                            { color = color
+                                            , report = options.report
+                                            , debug = options.debug
+                                            }
 
                                 Just Subcommand.NewPackage ->
-                                    Debug.todo "new-package not implemented yet"
+                                    Problem.notImplementedYet "new-package subcommand"
+                                        |> ParseError
+                                            { color = color
+                                            , report = options.report
+                                            , debug = options.debug
+                                            }
 
                                 Just Subcommand.PrepareOffline ->
-                                    Debug.todo "prepare-offline not implemented yet"
+                                    Problem.notImplementedYet "prepare-offline subcommand"
+                                        |> ParseError
+                                            { color = color
+                                            , report = options.report
+                                            , debug = options.debug
+                                            }
 
 
 toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions

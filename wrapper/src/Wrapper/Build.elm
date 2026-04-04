@@ -43,7 +43,8 @@ build fs os options =
             buildLocalProject fs os options reviewFolder
 
         Options.Remote remoteTemplate ->
-            Debug.todo "Build remote template"
+            Problem.notImplementedYet "Building remote template"
+                |> Task.fail
 
 
 buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> String -> Task Problem BuildData
