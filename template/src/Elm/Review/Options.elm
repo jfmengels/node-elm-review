@@ -4,6 +4,7 @@ import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Reporter as Reporter
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
+import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
 
@@ -19,16 +20,17 @@ type alias Options =
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
     , rulesFilter : Maybe (Set String)
-    , ignoredDirs : List String
-    , ignoredFiles : List String
+    , ignoredDirs : List Path
+    , ignoredFiles : List Path
     , writeSuppressionFiles : Bool
     , logger : CliCommunication.Key
     , suppress : Bool
     , watch : Bool
     , supportsColor : Bool
     , debug : Bool
+    , reviewFolder : Path
     , namespace : String
-    , directoriesToAnalyze : List String
+    , directoriesToAnalyze : List Path
     }
 
 
@@ -123,6 +125,9 @@ applyArg arg flags =
         [ "--namespace", namespace ] ->
             Ok { flags | namespace = namespace }
 
+        [ "--review-folder", reviewFolder ] ->
+            Ok { flags | reviewFolder = reviewFolder }
+
         [ "--dirs-to-analyze", dirs ] ->
             Ok { flags | directoriesToAnalyze = String.split "," dirs }
 
@@ -151,5 +156,6 @@ default =
     , supportsColor = True
     , debug = False
     , namespace = "cli"
+    , reviewFolder = "review"
     , directoriesToAnalyze = []
     }

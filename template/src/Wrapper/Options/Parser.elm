@@ -112,11 +112,31 @@ toOptions env options =
 
 toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
 toReviewOptions color options projectRoot =
+    let
+        namespace : String
+        namespace =
+            Maybe.withDefault "cli" options.namespace
+
+        reviewFolder : Path
+        reviewFolder =
+            case options.remoteTemplate of
+                Just remoteTemplate ->
+                    Debug.todo "Compute location for remote template review folder"
+
+                Nothing ->
+                    case options.configPath of
+                        Just config ->
+                            -- TODO Make this path relative to the root
+                            config
+
+                        Nothing ->
+                            "review"
+    in
     { subcommand = options.subcommand
     , projectPaths =
         ProjectPaths.from
             { projectRoot = projectRoot
-            , namespace = Maybe.withDefault "cli" options.namespace
+            , namespace = namespace
             }
     , report = options.report
     , forceBuild = options.forceBuild
@@ -173,7 +193,10 @@ toReviewOptions color options projectRoot =
               else
                 Just "--no-color"
             ]
-            options.reviewAppFlags
+            (("--review-folder=" ++ reviewFolder)
+                :: ("--namespace=" ++ namespace)
+                :: options.reviewAppFlags
+            )
     }
 
 
