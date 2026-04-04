@@ -148,6 +148,7 @@ type alias Model =
     , supportsColor : Bool
     , runEnvironment : RunEnvironment
     , usesRemoteTemplate : Bool
+    , usesRulesFilter : Bool
     , debug : Bool
 
     --
@@ -200,6 +201,7 @@ type ModelWrapper
 
 type Msg
     = StoreMsg Store.Msg
+    | SuppressedErrorsMsg SuppressedErrors.Msg
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -272,6 +274,7 @@ initValid env fs flags rulesFromConfig =
             , supportsColor = flags.supportsColor
             , runEnvironment = runEnvironment
             , usesRemoteTemplate = flags.usesRemoteTemplate
+            , usesRulesFilter = flags.rulesFilter /= Nothing
             , store = store
             , rules = rules
             , isInitialRun = True
@@ -495,8 +498,13 @@ update msg model =
                 , Cmd.map StoreMsg cmd
                 )
 
+        SuppressedErrorsMsg suppressedErrorsMsg ->
+            ( model
+            , SuppressedErrors.update model.env.stdout suppressedErrorsMsg
+            )
 
-startReviewIfNoPendingTasks : ( Model, Cmd msg ) -> ( Model, Cmd msg )
+
+startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
     if model.isInitialRun then
         case Store.checkReadiness model.store of
@@ -510,11 +518,11 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     in
                     ( newModel
                     , Cmd.batch
-                        [ -- TODO Replace by file writes
-                          newModel.reviewErrors
+                        [ newModel.reviewErrors
                             |> SuppressedErrors.fromReviewErrors
-                            |> SuppressedErrors.encode []
-                            |> suppressionsResponse
+                            -- TODO Regroup options from Model into Options
+                            |> SuppressedErrors.write model.fs model []
+                            |> Cmd.map SuppressedErrorsMsg
 
                         -- TODO Don't print in JSON report mode
                         , Cli.println model.env.stdout
