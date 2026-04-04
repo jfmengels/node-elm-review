@@ -29,6 +29,7 @@ type alias Options =
     , supportsColor : Bool
     , debug : Bool
     , reviewFolder : Path
+    , usesRemoteTemplate : Bool
     , namespace : String
     , directoriesToAnalyze : List Path
     }
@@ -128,6 +129,9 @@ applyArg arg flags =
         [ "--review-folder", reviewFolder ] ->
             Ok { flags | reviewFolder = reviewFolder }
 
+        [ "--template" ] ->
+            Ok { flags | usesRemoteTemplate = True }
+
         [ "--dirs-to-analyze", dirs ] ->
             Ok { flags | directoriesToAnalyze = String.split "," dirs }
 
@@ -157,5 +161,6 @@ default =
     , debug = False
     , namespace = "cli"
     , reviewFolder = "review"
+    , usesRemoteTemplate = False
     , directoriesToAnalyze = []
     }
