@@ -50,7 +50,7 @@ type alias HelpOptions =
 
 type alias InitOptions =
     { configPath : Path
-    , template : Maybe RemoteTemplate
+    , remoteTemplate : Maybe RemoteTemplate
     , forTests : Bool
     , debug : Bool
     , color : Color.Support

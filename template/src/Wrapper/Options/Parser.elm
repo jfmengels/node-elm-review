@@ -180,7 +180,7 @@ toReviewOptions color options projectRoot =
 toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions
 toInitOptions color options projectRoot =
     { configPath = Path.join2 projectRoot "review"
-    , template = options.remoteTemplate
+    , remoteTemplate = options.remoteTemplate
     , forTests = options.forTests
     , debug = options.debug
     , color = color
