@@ -1,4 +1,23 @@
-module ElmReview.Problem exposing (FormatOptions, Problem, ProblemSimple, format, from, unexpectedError, unwrapFOR_TESTS, withPath)
+module ElmReview.Problem exposing
+    ( Problem, from, withPath
+    , ProblemSimple
+    , unexpectedError, notImplementedYet
+    , FormatOptions, format
+    , unwrapFOR_TESTS
+    )
+
+{-|
+
+@docs Problem, from, withPath
+@docs ProblemSimple
+
+@docs unexpectedError, notImplementedYet
+
+@docs FormatOptions, format
+
+@docs unwrap_FOR_TESTS
+
+-}
 
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path exposing (Path)
@@ -116,5 +135,13 @@ to fix the issue.
 Below is the error that was encountered.
 --------------------------------------------------------------------------------
 """ ++ message
+    }
+        |> from
+
+
+notImplementedYet : String -> Problem
+notImplementedYet featureDescription =
+    { title = "FEATURE IS NOT IMPLEMENTED YET"
+    , message = \_ -> featureDescription ++ " is not implemented yet."
     }
         |> from
