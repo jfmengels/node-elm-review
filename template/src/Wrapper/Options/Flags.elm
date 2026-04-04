@@ -646,12 +646,12 @@ templateFlag =
             , mayBeUsedSeveralTimes = False
             , usesEquals = False
             , apply =
-                \_ arg options ->
+                \flagName arg options ->
                     case options.configPath of
                         Nothing ->
                             case RemoteTemplate.fromString arg of
                                 Ok remoteTemplate ->
-                                    Ok { options | remoteTemplate = Just remoteTemplate }
+                                    Ok (addToReviewAppFlags flagName { options | remoteTemplate = Just remoteTemplate })
 
                                 Err () ->
                                     Err (Just (remoteTemplateError arg))

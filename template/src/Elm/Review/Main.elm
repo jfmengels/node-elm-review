@@ -147,6 +147,7 @@ type alias Model =
     , fs : FileSystem
     , supportsColor : Bool
     , runEnvironment : RunEnvironment
+    , usesRemoteTemplate : Bool
     , debug : Bool
 
     --
@@ -270,6 +271,7 @@ initValid env fs flags rulesFromConfig =
             , debug = flags.debug
             , supportsColor = flags.supportsColor
             , runEnvironment = runEnvironment
+            , usesRemoteTemplate = flags.usesRemoteTemplate
             , store = store
             , rules = rules
             , isInitialRun = True
