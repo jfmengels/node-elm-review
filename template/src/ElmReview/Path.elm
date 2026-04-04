@@ -37,8 +37,21 @@ join2 a b =
         a
 
     else
-        (String.split "/" a ++ String.split "/" b)
-            |> String.join "/"
+        let
+            prefixPath : String
+            prefixPath =
+                if String.startsWith "/" a then
+                    "/"
+
+                else
+                    ""
+
+            segments : List String
+            segments =
+                (String.split "/" a ++ String.split "/" b)
+                    |> List.filter (\s -> s /= "")
+        in
+        prefixPath ++ String.join "/" segments
 
 
 join : List Path -> Path
