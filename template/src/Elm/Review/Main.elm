@@ -18,7 +18,6 @@ import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
-import Elm.Review.UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
@@ -145,11 +144,8 @@ main =
 type alias Model =
     { env : Env
     , fs : FileSystem
-    , supportsColor : Bool
+    , options : Options
     , runEnvironment : RunEnvironment
-    , usesRemoteTemplate : Bool
-    , usesRulesFilter : Bool
-    , debug : Bool
 
     --
     , store : Store.Model
@@ -158,33 +154,18 @@ type alias Model =
     , rules : List Rule
     , fixAllRules : List Rule
     , isInitialRun : Bool
-    , fixExplanation : FixOptions.Explanation
-    , enableExtract : Bool
-    , unsuppressMode : UnsuppressMode
-    , detailsMode : Reporter.DetailsMode
-    , reportMode : ReportMode
     , reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
-    , suppress : Bool
-    , writeSuppressionFiles : Bool
     , errorsHaveBeenFixedPreviously : Bool
     , extracts : Dict String Encode.Value
-    , ignoreProblematicDependencies : Bool
 
     -- FIX
-    , fixMode : FixOptions.Mode
-    , fixLimit : Maybe Int
-    , fileRemovalFixesEnabled : Bool
     , refusedErrorFixes : RefusedErrorFixes
     , errorAwaitingConfirmation : AwaitingConfirmation
 
     -- FIX ALL
     , fixAllResultProject : Project
     , fixAllErrors : Dict String (List Rule.ReviewError)
-    , communicationKey : CliCommunication.Key
-
-    -- WATCH
-    , watch : Bool
     }
 
 
@@ -270,36 +251,20 @@ initValid env fs options rulesFromConfig =
         model =
             { env = env
             , fs = fs
-            , debug = options.debug
-            , supportsColor = options.supportsColor
+            , options = options
             , runEnvironment = runEnvironment
-            , usesRemoteTemplate = options.usesRemoteTemplate
-            , usesRulesFilter = options.rulesFilter /= Nothing
             , store = store
             , rules = rules
             , isInitialRun = True
-            , enableExtract = options.enableExtract
-            , unsuppressMode = options.unsuppressMode
-            , detailsMode = options.detailsMode
-            , reportMode = options.reportMode
             , reviewErrors = []
             , reviewErrorsAfterSuppression = []
-            , suppress = options.suppress
-            , writeSuppressionFiles = options.writeSuppressionFiles
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
             , errorAwaitingConfirmation = NotAwaiting
             , fixAllRules = rules
             , fixAllResultProject = Project.new
-            , fixMode = options.fixMode
-            , fileRemovalFixesEnabled = options.fileRemovalFixesEnabled
-            , fixLimit = options.fixLimit
-            , fixExplanation = options.fixExplanation
             , fixAllErrors = Dict.empty
-            , ignoreProblematicDependencies = options.ignoreProblematicDependencies
             , extracts = Dict.empty
-            , communicationKey = options.communicationKey
-            , watch = options.watch
             }
     in
     ( Running model
@@ -487,8 +452,8 @@ update msg model =
                         { fs = model.fs
                         , runEnvironment = model.runEnvironment
                         , stderr = model.env.stderr
-                        , ignoreProblematicDependencies = model.ignoreProblematicDependencies
-                        , abortWithDetails = abortWithDetails model.env model.supportsColor
+                        , ignoreProblematicDependencies = model.options.ignoreProblematicDependencies
+                        , abortWithDetails = abortWithDetails model.env model.options.supportsColor
                         }
                         storeMsg
                         model.store
@@ -509,7 +474,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
     if model.isInitialRun then
         case Store.checkReadiness model.store of
             Store.Ready ->
-                if model.suppress then
+                if model.options.suppress then
                     let
                         newModel : Model
                         newModel =
@@ -520,14 +485,13 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     , Cmd.batch
                         [ newModel.reviewErrors
                             |> SuppressedErrors.fromReviewErrors
-                            -- TODO Regroup options from Model into Options
-                            |> SuppressedErrors.write model.fs model []
+                            |> SuppressedErrors.write model.fs model.options []
                             |> Cmd.map SuppressedErrorsMsg
 
                         -- TODO Don't print in JSON report mode
                         , Cli.println model.env.stdout
                             ("I created suppressions files in "
-                                ++ Color.toAnsi model.supportsColor Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment)
+                                ++ Color.toAnsi model.options.supportsColor Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment)
                             )
                         , Cli.exit 0
                         ]
@@ -602,7 +566,7 @@ updateOld msg model =
                             )
 
                 Err err ->
-                    ( model, abort model.env model.supportsColor (Decode.errorToString err) )
+                    ( model, abort model.env model.options.supportsColor (Decode.errorToString err) )
 
         RemovedFile path ->
             ( { model | store = Store.updateProject (Project.removeFile path) model.store }, Cmd.none )
@@ -645,13 +609,13 @@ updateOld msg model =
                     ( model, Cmd.none )
 
         ReceivedDependencies json ->
-            case Decode.decodeValue (dependenciesDecoder model.ignoreProblematicDependencies) json of
+            case Decode.decodeValue (dependenciesDecoder model.options.ignoreProblematicDependencies) json of
                 Err decodeError ->
                     ( model
                     , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                         abortWithDetails
                             model.env
-                            model.supportsColor
+                            model.options.supportsColor
                             { title = "FOUND PROBLEMATIC DEPENDENCIES"
                             , message =
                                 """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
@@ -669,7 +633,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       else
                         abortWithDetails
                             model.env
-                            model.supportsColor
+                            model.options.supportsColor
                             { title = "PROBLEM READING DEPENDENCIES"
                             , message =
                                 "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
@@ -712,7 +676,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         makeReport previousSuppressErrors
                             { model
                                 | store = Store.setSuppressedErrors suppressedErrors model.store
-                                , reviewErrorsAfterSuppression = SuppressedErrors.apply model.unsuppressMode suppressedErrors model.reviewErrors
+                                , reviewErrorsAfterSuppression = SuppressedErrors.apply model.options.unsuppressMode suppressedErrors model.reviewErrors
                             }
 
         GotRequestToReview ->
@@ -735,7 +699,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
             )
 
         UserConfirmedFix confirmation ->
-            case Decode.decodeValue (confirmationDecoder model.ignoreProblematicDependencies) confirmation of
+            case Decode.decodeValue (confirmationDecoder model.options.ignoreProblematicDependencies) confirmation of
                 Ok (Accepted { rawFiles, dependencies }) ->
                     let
                         previousProject : Project
@@ -753,7 +717,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         -- we were not successful in preventing earlier.
                         ( model
                           -- TODO Improve abort message
-                        , abort model.env model.supportsColor <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
+                        , abort model.env model.options.supportsColor <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
                         )
                         -- TODO Handle these cases
                         --else if dependenciesHaveChanged then
@@ -813,7 +777,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 |> makeReport (Store.suppressedErrors model.store)
 
                 Err err ->
-                    ( model, abort model.env model.supportsColor (Decode.errorToString err) )
+                    ( model, abort model.env model.options.supportsColor (Decode.errorToString err) )
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
             ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
@@ -940,28 +904,28 @@ runReview { fixesAllowed } initialProject model =
 
         { errors, rules, project, extracts, fixedErrors } =
             initialProject
-                |> CliCommunication.timerStart model.communicationKey "run-review"
+                |> CliCommunication.timerStart model.options.communicationKey "run-review"
                 |> Rule.reviewV3
                     (ReviewOptions.defaults
-                        |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
-                        |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
-                        |> ReviewOptions.withFixes (FixOptions.fixModeToReviewOptions fixesAllowed model)
-                        |> ReviewOptions.withFileRemovalFixes model.fileRemovalFixesEnabled
+                        |> ReviewOptions.withDataExtraction (model.options.enableExtract && model.options.reportMode == Json)
+                        |> ReviewOptions.withLogger (Just (CliCommunication.send model.options.communicationKey))
+                        |> ReviewOptions.withFixes (FixOptions.fixModeToReviewOptions fixesAllowed model.options)
+                        |> ReviewOptions.withFileRemovalFixes model.options.fileRemovalFixesEnabled
                         |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
                         |> SuppressedErrors.addToReviewOptions suppressedErrors
                     )
                     model.rules
-                |> CliCommunication.timerEnd model.communicationKey "run-review"
+                |> CliCommunication.timerEnd model.options.communicationKey "run-review"
     in
     { model
         | reviewErrors = errors
         , reviewErrorsAfterSuppression =
             errors
-                |> CliCommunication.timerStart model.communicationKey "apply-suppressions"
-                |> SuppressedErrors.apply model.unsuppressMode suppressedErrors
-                |> CliCommunication.timerEnd model.communicationKey "apply-suppressions"
+                |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
+                |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
+                |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
         , rules =
-            if model.isInitialRun || model.fixMode == FixOptions.DontFix then
+            if model.isInitialRun || model.options.fixMode == FixOptions.DontFix then
                 rules
 
             else
@@ -969,7 +933,7 @@ runReview { fixesAllowed } initialProject model =
         , isInitialRun = False
         , fixAllRules = rules
         , store =
-            if model.fixMode == FixOptions.DontFix then
+            if model.options.fixMode == FixOptions.DontFix then
                 Store.setProject project model.store
 
             else
@@ -983,25 +947,25 @@ runReview { fixesAllowed } initialProject model =
 
 reportOrFix : Model -> ( Model, Cmd msg )
 reportOrFix model =
-    case model.fixMode of
+    case model.options.fixMode of
         FixOptions.DontFix ->
             model
-                |> CliCommunication.timerStart model.communicationKey "process-errors"
+                |> CliCommunication.timerStart model.options.communicationKey "process-errors"
                 |> makeReport (Store.suppressedErrors model.store)
-                |> CliCommunication.timerEnd model.communicationKey "process-errors"
+                |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReview model True model.fileRemovalFixesEnabled
+            applyFixesAfterReview model True model.options.fileRemovalFixesEnabled
 
         FixOptions.FixAll ->
-            applyFixesAfterReview model False model.fileRemovalFixesEnabled
+            applyFixesAfterReview model False model.options.fileRemovalFixesEnabled
 
 
 makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
 makeReport previousSuppressedErrors model =
     let
         ( newModel, suppressedErrorsForJson ) =
-            if List.isEmpty model.reviewErrorsAfterSuppression && model.writeSuppressionFiles then
+            if List.isEmpty model.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
                 let
                     suppressedErrors : SuppressedErrors
                     suppressedErrors =
@@ -1028,7 +992,7 @@ makeReport previousSuppressedErrors model =
     in
     ( newModel
     , Cmd.batch
-        [ case newModel.reportMode of
+        [ case newModel.options.reportMode of
             HumanReadable ->
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
@@ -1037,15 +1001,15 @@ makeReport previousSuppressedErrors model =
                 in
                 Reporter.formatReport
                     { suppressedErrors = newSuppressedErrors
-                    , unsuppressMode = newModel.unsuppressMode
+                    , unsuppressMode = newModel.options.unsuppressMode
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-                    , detailsMode = newModel.detailsMode
-                    , fixExplanation = newModel.fixExplanation
+                    , detailsMode = newModel.options.detailsMode
+                    , fixExplanation = newModel.options.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , mode = fixModeToReportFixMode model.fixMode model.fileRemovalFixesEnabled
+                    , mode = fixModeToReportFixMode model.options.fixMode model.options.fileRemovalFixesEnabled
                     }
                     filesWithError
-                    |> Text.toAnsi model.supportsColor
+                    |> Text.toAnsi model.options.supportsColor
                     |> Cli.println model.env.stdout
 
             Json ->
@@ -1062,14 +1026,14 @@ makeReport previousSuppressedErrors model =
                                 , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                                 }
                                 ruleLinks
-                                newModel.detailsMode
-                                newModel.fixExplanation
+                                newModel.options.detailsMode
+                                newModel.options.fixExplanation
                             )
                             errorsByFile
                 in
                 printJson
                     model.env
-                    model.debug
+                    model.options.debug
                     errors
                     (Encode.dict identity identity newModel.extracts)
 
@@ -1086,11 +1050,11 @@ makeReport previousSuppressedErrors model =
                             , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                             }
                             ruleLinks
-                            newModel.detailsMode
-                            newModel.fixExplanation
+                            newModel.options.detailsMode
+                            newModel.options.fixExplanation
                         )
                     |> printNDJson model.env
-        , if model.watch then
+        , if model.options.watch then
             Cmd.none
 
           else if List.isEmpty model.reviewErrorsAfterSuppression then
@@ -1394,8 +1358,8 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatSingleFixProposal
-                    model.detailsMode
-                    model.fixExplanation
+                    model.options.detailsMode
+                    model.options.fixExplanation
                     fileRemovalFixesEnabled
                     (pathAndSource (Store.project model.store) filePath)
                     (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
@@ -1529,7 +1493,7 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
             , ( "count", Encode.int numberOfFixedErrors )
             , ( "clearFixLine"
               , Encode.bool
-                    (case model.fixMode of
+                    (case model.options.fixMode of
                         FixOptions.DontFix ->
                             False
 

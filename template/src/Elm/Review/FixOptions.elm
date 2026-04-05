@@ -24,7 +24,7 @@ type Explanation
     | Detailed
 
 
-fixModeToReviewOptions : Bool -> { a | fixMode : Mode, fixLimit : Maybe Int } -> ReviewOptions.FixMode
+fixModeToReviewOptions : Bool -> { options | fixMode : Mode, fixLimit : Maybe Int } -> ReviewOptions.FixMode
 fixModeToReviewOptions fixesAllowed { fixMode, fixLimit } =
     if not fixesAllowed then
         ReviewOptions.fixedDisabled
