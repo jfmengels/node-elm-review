@@ -23,7 +23,7 @@ type alias Options =
     , ignoredDirs : List Path
     , ignoredFiles : List Path
     , writeSuppressionFiles : Bool
-    , logger : CliCommunication.Key
+    , communicationKey : CliCommunication.Key
     , suppress : Bool
     , watch : Bool
     , supportsColor : Bool
@@ -35,12 +35,66 @@ type alias Options =
     }
 
 
+type alias InternalOptions =
+    { fixMode : FixOptions.Mode
+    , fileRemovalFixesEnabled : Bool
+    , fixLimit : Maybe Int
+    , fixExplanation : FixOptions.Explanation
+    , enableExtract : Bool
+    , unsuppressMode : UnsuppressMode
+    , detailsMode : Reporter.DetailsMode
+    , reportMode : ReportMode
+    , ignoreProblematicDependencies : Bool
+    , rulesFilter : Maybe (Set String)
+    , ignoredDirs : List Path
+    , ignoredFiles : List Path
+    , writeSuppressionFiles : Bool
+    , communicationKey : CliCommunication.Key
+    , suppress : Bool
+    , watch : Bool
+    , supportsColor : Bool
+    , debug : Bool
+    , reviewFolder : Path
+    , usesRemoteTemplate : Bool
+    , namespace : String
+    , directoriesToAnalyze : List Path
+    }
+
+
+toOptions : InternalOptions -> Options
+toOptions options =
+    { fixMode = options.fixMode
+    , fileRemovalFixesEnabled = options.fileRemovalFixesEnabled && options.fixMode /= FixOptions.DontFix
+    , fixLimit = options.fixLimit
+    , fixExplanation = options.fixExplanation
+    , enableExtract = options.enableExtract
+    , unsuppressMode = options.unsuppressMode
+    , detailsMode = options.detailsMode
+    , reportMode = options.reportMode
+    , ignoreProblematicDependencies = options.ignoreProblematicDependencies
+    , rulesFilter = options.rulesFilter
+    , ignoredDirs = options.ignoredDirs
+    , ignoredFiles = options.ignoredFiles
+    , writeSuppressionFiles = options.writeSuppressionFiles
+    , communicationKey = options.communicationKey
+    , suppress = options.suppress
+    , watch = options.watch
+    , supportsColor = options.supportsColor
+    , debug = options.debug
+    , reviewFolder = options.reviewFolder
+    , usesRemoteTemplate = options.usesRemoteTemplate
+    , namespace = options.namespace
+    , directoriesToAnalyze = options.directoriesToAnalyze
+    }
+
+
 parse : List String -> Result String Options
 parse args =
     parseHelp args default
+        |> Result.map toOptions
 
 
-parseHelp : List String -> Options -> Result String Options
+parseHelp : List String -> InternalOptions -> Result String InternalOptions
 parseHelp args flags =
     case args of
         [] ->
@@ -55,7 +109,7 @@ parseHelp args flags =
                     Err err
 
 
-applyArg : String -> Options -> Result String Options
+applyArg : String -> InternalOptions -> Result String InternalOptions
 applyArg arg flags =
     case String.split "=" arg of
         [ "--fix" ] ->
@@ -139,7 +193,7 @@ applyArg arg flags =
             Err ("Unknown flag `" ++ arg ++ "`")
 
 
-default : Options
+default : InternalOptions
 default =
     { fixMode = FixOptions.DontFix
     , fileRemovalFixesEnabled = False
@@ -154,7 +208,7 @@ default =
     , ignoredDirs = []
     , ignoredFiles = []
     , writeSuppressionFiles = False
-    , logger = CliCommunication.dummy
+    , communicationKey = CliCommunication.dummy
     , suppress = False
     , watch = False
     , supportsColor = True

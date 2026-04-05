@@ -292,13 +292,13 @@ initValid env fs options rulesFromConfig =
             , fixAllRules = rules
             , fixAllResultProject = Project.new
             , fixMode = options.fixMode
-            , fileRemovalFixesEnabled = options.fileRemovalFixesEnabled && options.fixMode /= FixOptions.DontFix
+            , fileRemovalFixesEnabled = options.fileRemovalFixesEnabled
             , fixLimit = options.fixLimit
             , fixExplanation = options.fixExplanation
             , fixAllErrors = Dict.empty
             , ignoreProblematicDependencies = options.ignoreProblematicDependencies
             , extracts = Dict.empty
-            , communicationKey = options.logger
+            , communicationKey = options.communicationKey
             , watch = options.watch
             }
     in
