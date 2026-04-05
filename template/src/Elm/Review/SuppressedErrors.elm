@@ -253,7 +253,7 @@ encodeFileSuppression ( nbSuppressedErrors, path ) =
 -- WRITE
 
 
-write : FileSystem -> { options | usesRemoteTemplate : Bool, suppress : Bool, usesRulesFilter : Bool } -> List String -> SuppressedErrors -> Cmd Msg
+write : FileSystem -> { options | usesRemoteTemplate : Bool, suppress : Bool, rulesFilter : Maybe a } -> List String -> SuppressedErrors -> Cmd Msg
 write fs options ruleNames suppressedErrors =
     if options.usesRemoteTemplate && not options.suppress then
         Cmd.none
@@ -262,7 +262,7 @@ write fs options ruleNames suppressedErrors =
         let
             deleteAllRules : Bool
             deleteAllRules =
-                options.suppress && not options.usesRulesFilter
+                options.suppress && options.rulesFilter == Nothing
 
             suppressedErrorsFolder : Path
             suppressedErrorsFolder =
