@@ -14,6 +14,7 @@ import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
+import Elm.Review.ReporterOptions as ReporterOptions
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
@@ -27,7 +28,6 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
-import Review.Options as ReviewOptions
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
@@ -1001,7 +1001,7 @@ makeReport previousSuppressedErrors model =
                     , detailsMode = newModel.options.detailsMode
                     , fixExplanation = newModel.options.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , mode = fixModeToReportFixMode model.options.fixMode model.options.fileRemovalFixesEnabled
+                    , mode = newModel.options.reportFixMode
                     }
                     filesWithError
                     |> Text.toAnsi model.options.supportsColor
@@ -1091,25 +1091,12 @@ printNDJson env lines =
         |> Cli.println env.stdout
 
 
-fixModeToReportFixMode : FixOptions.Mode -> Bool -> Reporter.Mode
-fixModeToReportFixMode fixMode fileRemovalFixesEnabled =
-    case fixMode of
-        FixOptions.DontFix ->
-            Reporter.Reviewing
-
-        FixOptions.Fix ->
-            Reporter.Fixing fileRemovalFixesEnabled
-
-        FixOptions.FixAll ->
-            Reporter.Fixing fileRemovalFixesEnabled
-
-
 encodeErrorByFile :
     { suppressedErrors : SuppressedErrors
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     }
     -> Dict String String
-    -> Reporter.DetailsMode
+    -> ReporterOptions.DetailsMode
     -> FixOptions.Explanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> Encode.Value
@@ -1137,7 +1124,7 @@ encodeErrorsForNDJson :
     , reviewErrorsAfterSuppression : List Rule.ReviewError
     }
     -> Dict String String
-    -> Reporter.DetailsMode
+    -> ReporterOptions.DetailsMode
     -> FixOptions.Explanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> List Encode.Value
@@ -1154,7 +1141,7 @@ encodeErrorsForNDJson suppressedErrorsData links detailsMode explainFixFailure f
         file.errors
 
 
-encodeConfigurationErrors : Reporter.DetailsMode -> List Reporter.Error -> Encode.Value
+encodeConfigurationErrors : ReporterOptions.DetailsMode -> List Reporter.Error -> Encode.Value
 encodeConfigurationErrors detailsMode errors =
     Encode.object
         [ ( "path", Encode.null )
@@ -1162,7 +1149,7 @@ encodeConfigurationErrors detailsMode errors =
         ]
 
 
-encodeConfigurationErrorsForNDJson : Reporter.DetailsMode -> List Reporter.Error -> List Encode.Value
+encodeConfigurationErrorsForNDJson : ReporterOptions.DetailsMode -> List Reporter.Error -> List Encode.Value
 encodeConfigurationErrorsForNDJson detailsMode errors =
     List.map (encodeConfigurationError detailsMode [ ( "path", Encode.null ) ]) errors
 
@@ -1183,7 +1170,7 @@ encodeError :
     }
     -> Maybe ( String, Encode.Value )
     -> Dict String String
-    -> Reporter.DetailsMode
+    -> ReporterOptions.DetailsMode
     -> FixOptions.Explanation
     -> Reporter.Source
     -> Rule.ReviewError
@@ -1220,7 +1207,7 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } pathField links d
         |> Encode.object
 
 
-encodeConfigurationError : Reporter.DetailsMode -> List ( String, Encode.Value ) -> Reporter.Error -> Encode.Value
+encodeConfigurationError : ReporterOptions.DetailsMode -> List ( String, Encode.Value ) -> Reporter.Error -> Encode.Value
 encodeConfigurationError detailsMode pathField error =
     pathField
         ++ [ ( "rule", Encode.string error.ruleName )
