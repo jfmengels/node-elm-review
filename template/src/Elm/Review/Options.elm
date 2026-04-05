@@ -1,11 +1,13 @@
-module Elm.Review.Options exposing (Options, parse)
+module Elm.Review.Options exposing (Options, parse, toReviewOptions)
 
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixOptions as FixOptions
+import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
+import Review.Options
 import Set exposing (Set)
 
 
@@ -218,3 +220,13 @@ default =
     , usesRemoteTemplate = False
     , directoriesToAnalyze = []
     }
+
+
+toReviewOptions : Options -> { fixesAllowed : Bool } -> RefusedErrorFixes -> Review.Options.ReviewOptions
+toReviewOptions options { fixesAllowed } refusedErrorFixes =
+    Review.Options.defaults
+        |> Review.Options.withDataExtraction (options.enableExtract && options.reportMode == ReportMode.Json)
+        |> Review.Options.withLogger (Just (CliCommunication.send options.communicationKey))
+        |> Review.Options.withFixes (FixOptions.fixModeToReviewOptions fixesAllowed options)
+        |> Review.Options.withFileRemovalFixes options.fileRemovalFixesEnabled
+        |> Review.Options.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error refusedErrorFixes)

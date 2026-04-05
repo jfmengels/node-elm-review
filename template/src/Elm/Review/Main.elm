@@ -896,7 +896,7 @@ confirmationDecoder ignoreProblematicDependencies =
 
 
 runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
-runReview { fixesAllowed } initialProject model =
+runReview fixesAllowed initialProject model =
     let
         suppressedErrors : SuppressedErrors
         suppressedErrors =
@@ -906,12 +906,7 @@ runReview { fixesAllowed } initialProject model =
             initialProject
                 |> CliCommunication.timerStart model.options.communicationKey "run-review"
                 |> Rule.reviewV3
-                    (ReviewOptions.defaults
-                        |> ReviewOptions.withDataExtraction (model.options.enableExtract && model.options.reportMode == Json)
-                        |> ReviewOptions.withLogger (Just (CliCommunication.send model.options.communicationKey))
-                        |> ReviewOptions.withFixes (FixOptions.fixModeToReviewOptions fixesAllowed model.options)
-                        |> ReviewOptions.withFileRemovalFixes model.options.fileRemovalFixesEnabled
-                        |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
+                    (Options.toReviewOptions model.options fixesAllowed model.refusedErrorFixes
                         |> SuppressedErrors.addToReviewOptions suppressedErrors
                     )
                     model.rules
