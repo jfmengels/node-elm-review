@@ -1,6 +1,6 @@
 module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
-    , Mode(..), DetailsMode(..), formatReport, formatIndividualError
+    , formatReport, formatIndividualError
     , formatFixProposals
     , FileWithError, Range, compareRange, formatConfigurationErrors, formatSingleFixProposal
     )
@@ -15,7 +15,7 @@ module Elm.Review.Reporter exposing
 
 # Report
 
-@docs Mode, DetailsMode, formatReport, formatIndividualError
+@docs formatReport, formatIndividualError
 
 
 # Fix
@@ -27,6 +27,7 @@ module Elm.Review.Reporter exposing
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Elm.Review.FixOptions as FixOptions
+import Elm.Review.ReporterOptions exposing (DetailsMode(..), ReportFixMode(..))
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -118,18 +119,6 @@ type alias Range =
     }
 
 
-{-| Mode in which `elm-review` is running.
--}
-type Mode
-    = Reviewing
-    | Fixing Bool
-
-
-type DetailsMode
-    = WithDetails
-    | WithoutDetails
-
-
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
 formatReport :
@@ -139,7 +128,7 @@ formatReport :
     , detailsMode : DetailsMode
     , fixExplanation : FixOptions.Explanation
     , errorsHaveBeenFixedPreviously : Bool
-    , mode : Mode
+    , mode : ReportFixMode
     }
     -> List FileWithError
     -> List TextContent
@@ -487,7 +476,7 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
         |> List.map Text.toRecord
 
 
-formatReportForFileWithExtract : DetailsMode -> FixOptions.Explanation -> Mode -> FileWithError -> List Text
+formatReportForFileWithExtract : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> FileWithError -> List Text
 formatReportForFileWithExtract detailsMode fixExplanation mode file =
     file.errors
         |> List.sortWith compareErrorPositions
@@ -539,7 +528,7 @@ formatIndividualError detailsMode fixExplanation source error =
         |> Text.simplify
 
 
-formatErrorWithExtract : DetailsMode -> FixOptions.Explanation -> Mode -> Source -> Error -> List Text
+formatErrorWithExtract : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> Source -> Error -> List Text
 formatErrorWithExtract detailsMode fixExplanation mode source error =
     let
         codeExtract_ : List Text
@@ -590,7 +579,7 @@ formatErrorWithExtract detailsMode fixExplanation mode source error =
         ]
 
 
-formatErrorTitle : Mode -> Error -> List Text
+formatErrorTitle : ReportFixMode -> Error -> List Text
 formatErrorTitle mode error =
     formatErrorTitleSimple error
         |> addFixPrefix mode error
@@ -619,7 +608,7 @@ addSuppressedPrefix error previous =
         previous
 
 
-addFixPrefix : Mode -> Error -> List Text -> List Text
+addFixPrefix : ReportFixMode -> Error -> List Text -> List Text
 addFixPrefix mode error previous =
     case mode of
         Fixing fileRemovalFixesEnabled ->
@@ -1249,12 +1238,12 @@ fixableErrors files =
     List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
-formatReports : DetailsMode -> FixOptions.Explanation -> Mode -> List FileWithError -> List Text
+formatReports : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> List FileWithError -> List Text
 formatReports detailsMode fixExplanation mode files =
     formatReportsEndingWith [] detailsMode fixExplanation mode files
 
 
-formatReportsEndingWith : List (List Text) -> DetailsMode -> FixOptions.Explanation -> Mode -> List FileWithError -> List Text
+formatReportsEndingWith : List (List Text) -> DetailsMode -> FixOptions.Explanation -> ReportFixMode -> List FileWithError -> List Text
 formatReportsEndingWith soFarReverse detailsMode fixExplanation mode files =
     case files of
         [] ->

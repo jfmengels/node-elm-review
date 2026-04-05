@@ -3,6 +3,7 @@ module FormatFixProposalTest exposing (suite)
 import Array
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Reporter as Reporter exposing (Error, File)
+import Elm.Review.ReporterOptions as ReporterOptions
 import FormatTester exposing (expect)
 import Review.Project as Project
 import Test exposing (Test, describe, test)
@@ -84,7 +85,7 @@ some =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    Reporter.WithDetails
+                    ReporterOptions.WithDetails
                     FixOptions.Succinct
                     True
                     file
@@ -184,7 +185,7 @@ b =
 """
                 in
                 Reporter.formatSingleFixProposal
-                    Reporter.WithDetails
+                    ReporterOptions.WithDetails
                     FixOptions.Succinct
                     True
                     file
@@ -283,7 +284,7 @@ a =
 """
                 in
                 Reporter.formatSingleFixProposal
-                    Reporter.WithDetails
+                    ReporterOptions.WithDetails
                     FixOptions.Succinct
                     True
                     file
@@ -366,7 +367,7 @@ b =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    Reporter.WithDetails
+                    ReporterOptions.WithDetails
                     FixOptions.Succinct
                     True
                     file
@@ -447,7 +448,7 @@ b =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    Reporter.WithDetails
+                    ReporterOptions.WithDetails
                     FixOptions.Succinct
                     True
                     file
@@ -552,7 +553,7 @@ b =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    Reporter.WithDetails
+                    ReporterOptions.WithDetails
                     FixOptions.Succinct
                     True
                     file

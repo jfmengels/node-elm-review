@@ -3,7 +3,7 @@ module Elm.Review.Options exposing (Options, parse, toReviewOptions)
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
-import Elm.Review.Reporter as Reporter
+import Elm.Review.ReporterOptions as ReporterOptions
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
@@ -16,9 +16,10 @@ type alias Options =
     , fileRemovalFixesEnabled : Bool
     , fixLimit : Maybe Int
     , fixExplanation : FixOptions.Explanation
+    , reportFixMode : ReporterOptions.ReportFixMode
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
-    , detailsMode : Reporter.DetailsMode
+    , detailsMode : ReporterOptions.DetailsMode
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
     , rulesFilter : Maybe (Set String)
@@ -44,7 +45,7 @@ type alias InternalOptions =
     , fixExplanation : FixOptions.Explanation
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
-    , detailsMode : Reporter.DetailsMode
+    , detailsMode : ReporterOptions.DetailsMode
     , reportMode : ReportMode
     , ignoreProblematicDependencies : Bool
     , rulesFilter : Maybe (Set String)
@@ -65,10 +66,16 @@ type alias InternalOptions =
 
 toOptions : InternalOptions -> Options
 toOptions options =
+    let
+        fileRemovalFixesEnabled : Bool
+        fileRemovalFixesEnabled =
+            options.fileRemovalFixesEnabled && options.fixMode /= FixOptions.DontFix
+    in
     { fixMode = options.fixMode
-    , fileRemovalFixesEnabled = options.fileRemovalFixesEnabled && options.fixMode /= FixOptions.DontFix
+    , fileRemovalFixesEnabled = fileRemovalFixesEnabled
     , fixLimit = options.fixLimit
     , fixExplanation = options.fixExplanation
+    , reportFixMode = fixModeToReportFixMode options.fixMode fileRemovalFixesEnabled
     , enableExtract = options.enableExtract
     , unsuppressMode = options.unsuppressMode
     , detailsMode = options.detailsMode
@@ -88,6 +95,19 @@ toOptions options =
     , namespace = options.namespace
     , directoriesToAnalyze = options.directoriesToAnalyze
     }
+
+
+fixModeToReportFixMode : FixOptions.Mode -> Bool -> ReporterOptions.ReportFixMode
+fixModeToReportFixMode fixMode fileRemovalFixesEnabled =
+    case fixMode of
+        FixOptions.DontFix ->
+            ReporterOptions.Reviewing
+
+        FixOptions.Fix ->
+            ReporterOptions.Fixing fileRemovalFixesEnabled
+
+        FixOptions.FixAll ->
+            ReporterOptions.Fixing fileRemovalFixesEnabled
 
 
 parse : List String -> Result String Options
@@ -144,7 +164,7 @@ applyArg arg flags =
             Ok { flags | unsuppressMode = UnsuppressMode.UnsuppressRules (Set.fromList (String.split "," ruleNames)) }
 
         [ "--no-details" ] ->
-            Ok { flags | detailsMode = Reporter.WithoutDetails }
+            Ok { flags | detailsMode = ReporterOptions.WithoutDetails }
 
         [ "--report", "human" ] ->
             Ok { flags | reportMode = ReportMode.HumanReadable }
@@ -204,7 +224,7 @@ default =
     , fixExplanation = FixOptions.Succinct
     , unsuppressMode = UnsuppressMode.UnsuppressNone
     , reportMode = ReportMode.HumanReadable
-    , detailsMode = Reporter.WithDetails
+    , detailsMode = ReporterOptions.WithDetails
     , ignoreProblematicDependencies = False
     , rulesFilter = Nothing
     , ignoredDirs = []
