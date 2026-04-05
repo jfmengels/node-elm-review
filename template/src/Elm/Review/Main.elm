@@ -11,7 +11,7 @@ import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
 import Elm.Review.FixOptions as FixOptions
-import Elm.Review.Options as Flags exposing (Options)
+import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
@@ -216,7 +216,7 @@ init env =
             )
 
         Ok fs ->
-            case Flags.parse env.args of
+            case Options.parse env.args of
                 Err error ->
                     ( Done
                     , Cmd.batch
@@ -225,27 +225,27 @@ init env =
                         ]
                     )
 
-                Ok flags ->
-                    initWithFlags env fs flags
+                Ok options ->
+                    initWithOptions env fs options
 
 
-initWithFlags : Env -> FileSystem -> Options -> ( ModelWrapper, Cmd Msg )
-initWithFlags env fs flags =
-    case computeRulesToRun env flags of
+initWithOptions : Env -> FileSystem -> Options -> ( ModelWrapper, Cmd Msg )
+initWithOptions env fs options =
+    case computeRulesToRun env options of
         Err cmd ->
             ( Done, cmd )
 
         Ok rules ->
-            initValid env fs flags rules
+            initValid env fs options rules
 
 
 initValid : Env -> FileSystem -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
-initValid env fs flags rulesFromConfig =
+initValid env fs options rulesFromConfig =
     let
         rules : List Rule
         rules =
             List.map
-                (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
+                (Rule.ignoreErrorsForDirectories options.ignoredDirs >> Rule.ignoreErrorsForFiles options.ignoredFiles)
                 rulesFromConfig
 
         runEnvironment : RunEnvironment
@@ -254,52 +254,52 @@ initValid env fs flags rulesFromConfig =
               elmHomePath = "/Users/m1/.elm"
             , -- TODO Get from somewhere
               elmVersion = "0.19.1"
-            , reviewFolder = flags.reviewFolder
-            , namespace = flags.namespace
+            , reviewFolder = options.reviewFolder
+            , namespace = options.namespace
             }
 
         ( store, storeCmd ) =
             Store.init
                 { fs = fs
-                , suppress = flags.suppress
+                , suppress = options.suppress
                 , runEnvironment = runEnvironment
-                , directoriesToAnalyze = flags.directoriesToAnalyze
+                , directoriesToAnalyze = options.directoriesToAnalyze
                 }
 
         model : Model
         model =
             { env = env
             , fs = fs
-            , debug = flags.debug
-            , supportsColor = flags.supportsColor
+            , debug = options.debug
+            , supportsColor = options.supportsColor
             , runEnvironment = runEnvironment
-            , usesRemoteTemplate = flags.usesRemoteTemplate
-            , usesRulesFilter = flags.rulesFilter /= Nothing
+            , usesRemoteTemplate = options.usesRemoteTemplate
+            , usesRulesFilter = options.rulesFilter /= Nothing
             , store = store
             , rules = rules
             , isInitialRun = True
-            , enableExtract = flags.enableExtract
-            , unsuppressMode = flags.unsuppressMode
-            , detailsMode = flags.detailsMode
-            , reportMode = flags.reportMode
+            , enableExtract = options.enableExtract
+            , unsuppressMode = options.unsuppressMode
+            , detailsMode = options.detailsMode
+            , reportMode = options.reportMode
             , reviewErrors = []
             , reviewErrorsAfterSuppression = []
-            , suppress = flags.suppress
-            , writeSuppressionFiles = flags.writeSuppressionFiles
+            , suppress = options.suppress
+            , writeSuppressionFiles = options.writeSuppressionFiles
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
             , errorAwaitingConfirmation = NotAwaiting
             , fixAllRules = rules
             , fixAllResultProject = Project.new
-            , fixMode = flags.fixMode
-            , fileRemovalFixesEnabled = flags.fileRemovalFixesEnabled && flags.fixMode /= FixOptions.DontFix
-            , fixLimit = flags.fixLimit
-            , fixExplanation = flags.fixExplanation
+            , fixMode = options.fixMode
+            , fileRemovalFixesEnabled = options.fileRemovalFixesEnabled && options.fixMode /= FixOptions.DontFix
+            , fixLimit = options.fixLimit
+            , fixExplanation = options.fixExplanation
             , fixAllErrors = Dict.empty
-            , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+            , ignoreProblematicDependencies = options.ignoreProblematicDependencies
             , extracts = Dict.empty
-            , communicationKey = flags.logger
-            , watch = flags.watch
+            , communicationKey = options.logger
+            , watch = options.watch
             }
     in
     ( Running model
@@ -311,14 +311,14 @@ initValid env fs flags rulesFromConfig =
 
 
 computeRulesToRun : Env -> Options -> Result (Cmd msg) (List Rule)
-computeRulesToRun env flags =
+computeRulesToRun env options =
     let
         rulesWithIds : List Rule
         rulesWithIds =
             List.indexedMap Rule.withRuleId config
 
         ( rulesFromConfig, filterNames ) =
-            case flags.rulesFilter of
+            case options.rulesFilter of
                 Just rulesToEnable ->
                     let
                         ruleNames : Set String
@@ -337,7 +337,7 @@ computeRulesToRun env flags =
     if List.isEmpty config then
         abortWithDetails
             env
-            flags.supportsColor
+            options.supportsColor
             { title = "CONFIGURATION IS EMPTY"
             , message =
                 """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
@@ -351,7 +351,7 @@ I recommend you take a look at the following documents:
     else if not (List.isEmpty filterNames) then
         abortWithDetails
             env
-            flags.supportsColor
+            options.supportsColor
             (unknownRulesFilterMessage
                 { ruleNames =
                     List.map Rule.ruleName config
@@ -365,14 +365,14 @@ I recommend you take a look at the following documents:
     else
         case List.filterMap getConfigurationError config of
             (_ :: _) as configurationErrors ->
-                case flags.reportMode of
+                case options.reportMode of
                     HumanReadable ->
                         Cmd.batch
                             [ Reporter.formatConfigurationErrors
-                                { detailsMode = flags.detailsMode
+                                { detailsMode = options.detailsMode
                                 , configurationErrors = configurationErrors
                                 }
-                                |> Text.toAnsi flags.supportsColor
+                                |> Text.toAnsi options.supportsColor
                                 |> Cli.println env.stdout
                             , Cli.exit 1
                             ]
@@ -383,8 +383,8 @@ I recommend you take a look at the following documents:
                         Cmd.batch
                             [ printJson
                                 env
-                                flags.debug
-                                (encodeConfigurationErrors flags.detailsMode configurationErrors)
+                                options.debug
+                                (encodeConfigurationErrors options.detailsMode configurationErrors)
                                 (Encode.object [])
                             , Cli.exit 1
                             ]
@@ -392,14 +392,14 @@ I recommend you take a look at the following documents:
 
                     NDJson ->
                         Cmd.batch
-                            [ printNDJson env (encodeConfigurationErrorsForNDJson flags.detailsMode configurationErrors)
+                            [ printNDJson env (encodeConfigurationErrorsForNDJson options.detailsMode configurationErrors)
                             , Cli.exit 1
                             ]
                             |> Err
 
             [] ->
                 List.map
-                    (Rule.ignoreErrorsForDirectories flags.ignoredDirs >> Rule.ignoreErrorsForFiles flags.ignoredFiles)
+                    (Rule.ignoreErrorsForDirectories options.ignoredDirs >> Rule.ignoreErrorsForFiles options.ignoredFiles)
                     rulesFromConfig
                     |> Ok
 
