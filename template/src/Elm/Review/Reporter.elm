@@ -128,11 +128,11 @@ formatReport :
     , detailsMode : DetailsMode
     , fixExplanation : FixOptions.Explanation
     , errorsHaveBeenFixedPreviously : Bool
-    , mode : ReportFixMode
+    , reportFixMode : ReportFixMode
     }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, fixExplanation, errorsHaveBeenFixedPreviously, mode } files =
+formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, fixExplanation, errorsHaveBeenFixedPreviously, reportFixMode } files =
     let
         { numberOfFileErrors, numberOfGlobalErrors } =
             countErrors files
@@ -149,7 +149,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)
         in
-        [ formatReports detailsMode fixExplanation mode filesWithErrors
+        [ formatReports detailsMode fixExplanation reportFixMode filesWithErrors
             |> Just
         , if showUnsuppressedWarning unsuppressMode files then
             Just
@@ -169,7 +169,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
           else
             Nothing
-        , case mode of
+        , case reportFixMode of
             Fixing True ->
                 Nothing
 
@@ -192,7 +192,7 @@ using `elm-review --fix --allow-remove-files`."""
 
                 else
                     Nothing
-        , case mode of
+        , case reportFixMode of
             Reviewing ->
                 Nothing
 
@@ -477,14 +477,14 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
 
 
 formatReportForFileWithExtract : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> FileWithError -> List Text
-formatReportForFileWithExtract detailsMode fixExplanation mode file =
+formatReportForFileWithExtract detailsMode fixExplanation reportFixMode file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) (filePathToPosition file.path error.range) ]
-                    , formatErrorWithExtract detailsMode fixExplanation mode file.source error
+                    , formatErrorWithExtract detailsMode fixExplanation reportFixMode file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -529,7 +529,7 @@ formatIndividualError detailsMode fixExplanation source error =
 
 
 formatErrorWithExtract : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> Source -> Error -> List Text
-formatErrorWithExtract detailsMode fixExplanation mode source error =
+formatErrorWithExtract detailsMode fixExplanation reportFixMode source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -558,7 +558,7 @@ formatErrorWithExtract detailsMode fixExplanation mode source error =
 
         fixFailMessage : List Text
         fixFailMessage =
-            case mode of
+            case reportFixMode of
                 Fixing _ ->
                     case error.fixProblem of
                         Just problem ->
@@ -572,7 +572,7 @@ formatErrorWithExtract detailsMode fixExplanation mode source error =
                     []
     in
     List.concat
-        [ formatErrorTitle mode error
+        [ formatErrorTitle reportFixMode error
         , codeExtract_
         , details
         , fixFailMessage
@@ -580,9 +580,9 @@ formatErrorWithExtract detailsMode fixExplanation mode source error =
 
 
 formatErrorTitle : ReportFixMode -> Error -> List Text
-formatErrorTitle mode error =
+formatErrorTitle reportFixMode error =
     formatErrorTitleSimple error
-        |> addFixPrefix mode error
+        |> addFixPrefix reportFixMode error
         |> addSuppressedPrefix error
 
 
@@ -609,8 +609,8 @@ addSuppressedPrefix error previous =
 
 
 addFixPrefix : ReportFixMode -> Error -> List Text -> List Text
-addFixPrefix mode error previous =
-    case mode of
+addFixPrefix reportFixMode error previous =
+    case reportFixMode of
         Fixing fileRemovalFixesEnabled ->
             case error.fixProblem of
                 Just _ ->
@@ -1239,30 +1239,30 @@ fixableErrors files =
 
 
 formatReports : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> List FileWithError -> List Text
-formatReports detailsMode fixExplanation mode files =
-    formatReportsEndingWith [] detailsMode fixExplanation mode files
+formatReports detailsMode fixExplanation reportFixMode files =
+    formatReportsEndingWith [] detailsMode fixExplanation reportFixMode files
 
 
 formatReportsEndingWith : List (List Text) -> DetailsMode -> FixOptions.Explanation -> ReportFixMode -> List FileWithError -> List Text
-formatReportsEndingWith soFarReverse detailsMode fixExplanation mode files =
+formatReportsEndingWith soFarReverse detailsMode fixExplanation reportFixMode files =
     case files of
         [] ->
             soFarReverse |> reverseThenConcat
 
         [ firstFile ] ->
-            formatReportForFileWithExtract detailsMode fixExplanation mode firstFile
+            formatReportForFileWithExtract detailsMode fixExplanation reportFixMode firstFile
                 :: soFarReverse
                 |> reverseThenConcat
 
         firstFile :: secondFile :: restOfFiles ->
             formatReportsEndingWith
                 (fileSeparator firstFile.path secondFile.path
-                    :: formatReportForFileWithExtract detailsMode fixExplanation mode firstFile
+                    :: formatReportForFileWithExtract detailsMode fixExplanation reportFixMode firstFile
                     :: soFarReverse
                 )
                 detailsMode
                 fixExplanation
-                mode
+                reportFixMode
                 (secondFile :: restOfFiles)
 
 
