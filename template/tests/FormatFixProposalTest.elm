@@ -4,6 +4,7 @@ import Array
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Reporter as Reporter exposing (Error, File)
 import Elm.Review.ReporterOptions as ReporterOptions
+import Elm.Review.UnsuppressMode exposing (UnsuppressMode(..))
 import FormatTester exposing (expect)
 import Review.Project as Project
 import Test exposing (Test, describe, test)
@@ -85,8 +86,11 @@ some =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    ReporterOptions.WithDetails
-                    FixOptions.Succinct
+                    { detailsMode = ReporterOptions.WithDetails
+                    , fixExplanation = FixOptions.Succinct
+                    , reportFixMode = ReporterOptions.Fixing True
+                    , unsuppressMode = UnsuppressNone
+                    }
                     True
                     file
                     error
@@ -185,8 +189,11 @@ b =
 """
                 in
                 Reporter.formatSingleFixProposal
-                    ReporterOptions.WithDetails
-                    FixOptions.Succinct
+                    { detailsMode = ReporterOptions.WithDetails
+                    , fixExplanation = FixOptions.Succinct
+                    , reportFixMode = ReporterOptions.Fixing True
+                    , unsuppressMode = UnsuppressNone
+                    }
                     True
                     file
                     error
@@ -284,8 +291,11 @@ a =
 """
                 in
                 Reporter.formatSingleFixProposal
-                    ReporterOptions.WithDetails
-                    FixOptions.Succinct
+                    { detailsMode = ReporterOptions.WithDetails
+                    , fixExplanation = FixOptions.Succinct
+                    , reportFixMode = ReporterOptions.Fixing True
+                    , unsuppressMode = UnsuppressNone
+                    }
                     True
                     file
                     error
@@ -367,8 +377,11 @@ b =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    ReporterOptions.WithDetails
-                    FixOptions.Succinct
+                    { detailsMode = ReporterOptions.WithDetails
+                    , fixExplanation = FixOptions.Succinct
+                    , reportFixMode = ReporterOptions.Fixing True
+                    , unsuppressMode = UnsuppressNone
+                    }
                     True
                     file
                     error
@@ -448,8 +461,11 @@ b =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    ReporterOptions.WithDetails
-                    FixOptions.Succinct
+                    { detailsMode = ReporterOptions.WithDetails
+                    , fixExplanation = FixOptions.Succinct
+                    , reportFixMode = ReporterOptions.Fixing True
+                    , unsuppressMode = UnsuppressNone
+                    }
                     True
                     file
                     error
@@ -553,8 +569,11 @@ b =
                         }
                 in
                 Reporter.formatSingleFixProposal
-                    ReporterOptions.WithDetails
-                    FixOptions.Succinct
+                    { detailsMode = ReporterOptions.WithDetails
+                    , fixExplanation = FixOptions.Succinct
+                    , reportFixMode = ReporterOptions.Fixing True
+                    , unsuppressMode = UnsuppressNone
+                    }
                     True
                     file
                     error
