@@ -119,20 +119,27 @@ type alias Range =
     }
 
 
+type alias Options options =
+    { options
+        | unsuppressMode : UnsuppressMode
+        , detailsMode : DetailsMode
+        , fixExplanation : FixOptions.Explanation
+        , reportFixMode : ReportFixMode
+    }
+
+
 {-| Reports the errors reported by `elm-review` in a nice human-readable way.
 -}
 formatReport :
-    { suppressedErrors : SuppressedErrors
-    , unsuppressMode : UnsuppressMode
-    , originalNumberOfSuppressedErrors : Int
-    , detailsMode : DetailsMode
-    , fixExplanation : FixOptions.Explanation
-    , errorsHaveBeenFixedPreviously : Bool
-    , reportFixMode : ReportFixMode
-    }
+    Options options
+    ->
+        { suppressedErrors : SuppressedErrors
+        , originalNumberOfSuppressedErrors : Int
+        , errorsHaveBeenFixedPreviously : Bool
+        }
     -> List FileWithError
     -> List TextContent
-formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedErrors, detailsMode, fixExplanation, errorsHaveBeenFixedPreviously, reportFixMode } files =
+formatReport options { suppressedErrors, originalNumberOfSuppressedErrors, errorsHaveBeenFixedPreviously } files =
     let
         { numberOfFileErrors, numberOfGlobalErrors } =
             countErrors files
@@ -149,9 +156,9 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
             { rulesWithInvalidFixes, hasIgnoredFixableErrors, hasFileRemovalFixes } =
                 classifyFixes (fixableErrors files)
         in
-        [ formatReports detailsMode fixExplanation reportFixMode filesWithErrors
+        [ formatReports options filesWithErrors
             |> Just
-        , if showUnsuppressedWarning unsuppressMode files then
+        , if showUnsuppressedWarning options.unsuppressMode files then
             Just
                 [ "Errors marked with (unsuppressed) were previously suppressed, but you introduced new errors for the same rule and file. There are now more of those than what I previously allowed. Please fix them until you have at most as many errors as before. Maybe fix a few more while you're there?"
                     |> Text.from
@@ -169,7 +176,7 @@ formatReport { suppressedErrors, unsuppressMode, originalNumberOfSuppressedError
 
           else
             Nothing
-        , case reportFixMode of
+        , case options.reportFixMode of
             Fixing True ->
                 Nothing
 
@@ -192,7 +199,7 @@ using `elm-review --fix --allow-remove-files`."""
 
                 else
                     Nothing
-        , case reportFixMode of
+        , case options.reportFixMode of
             Reviewing ->
                 Nothing
 
@@ -203,7 +210,7 @@ using `elm-review --fix --allow-remove-files`."""
                         |> Text.inYellow
                       )
                         :: Dict.foldr listFailingRules [] rulesWithInvalidFixes
-                    , [ case fixExplanation of
+                    , [ case options.fixExplanation of
                             FixOptions.Succinct ->
                                 "Before doing so, I highly recommend re-running `elm-review` with `--explain-fix-failure`, which provides more information that could help solve the issue."
                                     |> Text.from
@@ -476,15 +483,15 @@ formatNoErrors suppressedErrors originalNumberOfSuppressedErrors errorsHaveBeenF
         |> List.map Text.toRecord
 
 
-formatReportForFileWithExtract : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> FileWithError -> List Text
-formatReportForFileWithExtract detailsMode fixExplanation reportFixMode file =
+formatReportForFileWithExtract : Options options -> FileWithError -> List Text
+formatReportForFileWithExtract options file =
     file.errors
         |> List.sortWith compareErrorPositions
         |> List.indexedMap
             (\index error ->
                 Text.join "\n\n"
                     [ [ header (index == 0) (filePathToPosition file.path error.range) ]
-                    , formatErrorWithExtract detailsMode fixExplanation reportFixMode file.source error
+                    , formatErrorWithExtract options file.source error
                     ]
             )
         |> Text.join "\n\n"
@@ -522,14 +529,14 @@ filePathToPosition filePath range =
             " GLOBAL ERROR"
 
 
-formatIndividualError : DetailsMode -> FixOptions.Explanation -> Source -> Error -> List TextContent
-formatIndividualError detailsMode fixExplanation source error =
-    formatErrorWithExtract detailsMode fixExplanation Reviewing source error
+formatIndividualError : Options options -> Source -> Error -> List TextContent
+formatIndividualError options source error =
+    formatErrorWithExtract { options | reportFixMode = Reviewing } source error
         |> Text.simplify
 
 
-formatErrorWithExtract : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> Source -> Error -> List Text
-formatErrorWithExtract detailsMode fixExplanation reportFixMode source error =
+formatErrorWithExtract : Options options -> Source -> Error -> List Text
+formatErrorWithExtract options source error =
     let
         codeExtract_ : List Text
         codeExtract_ =
@@ -546,7 +553,7 @@ formatErrorWithExtract detailsMode fixExplanation reportFixMode source error =
 
         details : List Text
         details =
-            case detailsMode of
+            case options.detailsMode of
                 WithDetails ->
                     Text.from "\n\n"
                         :: (List.map Text.from error.details
@@ -558,12 +565,12 @@ formatErrorWithExtract detailsMode fixExplanation reportFixMode source error =
 
         fixFailMessage : List Text
         fixFailMessage =
-            case reportFixMode of
+            case options.reportFixMode of
                 Fixing _ ->
                     case error.fixProblem of
                         Just problem ->
                             Text.from "\n\n"
-                                :: reasonFromProblem fixExplanation problem
+                                :: reasonFromProblem options.fixExplanation problem
 
                         Nothing ->
                             []
@@ -572,7 +579,7 @@ formatErrorWithExtract detailsMode fixExplanation reportFixMode source error =
                     []
     in
     List.concat
-        [ formatErrorTitle reportFixMode error
+        [ formatErrorTitle options.reportFixMode error
         , codeExtract_
         , details
         , fixFailMessage
@@ -1238,31 +1245,29 @@ fixableErrors files =
     List.concatMap (\{ errors } -> List.filter (\error -> error.providesFix) errors) files
 
 
-formatReports : DetailsMode -> FixOptions.Explanation -> ReportFixMode -> List FileWithError -> List Text
-formatReports detailsMode fixExplanation reportFixMode files =
-    formatReportsEndingWith [] detailsMode fixExplanation reportFixMode files
+formatReports : Options options -> List FileWithError -> List Text
+formatReports options files =
+    formatReportsEndingWith [] options files
 
 
-formatReportsEndingWith : List (List Text) -> DetailsMode -> FixOptions.Explanation -> ReportFixMode -> List FileWithError -> List Text
-formatReportsEndingWith soFarReverse detailsMode fixExplanation reportFixMode files =
+formatReportsEndingWith : List (List Text) -> Options options -> List FileWithError -> List Text
+formatReportsEndingWith soFarReverse options files =
     case files of
         [] ->
             soFarReverse |> reverseThenConcat
 
         [ firstFile ] ->
-            formatReportForFileWithExtract detailsMode fixExplanation reportFixMode firstFile
+            formatReportForFileWithExtract options firstFile
                 :: soFarReverse
                 |> reverseThenConcat
 
         firstFile :: secondFile :: restOfFiles ->
             formatReportsEndingWith
                 (fileSeparator firstFile.path secondFile.path
-                    :: formatReportForFileWithExtract detailsMode fixExplanation reportFixMode firstFile
+                    :: formatReportForFileWithExtract options firstFile
                     :: soFarReverse
                 )
-                detailsMode
-                fixExplanation
-                reportFixMode
+                options
                 (secondFile :: restOfFiles)
 
 
@@ -1290,14 +1295,12 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatSingleFixProposal : DetailsMode -> FixOptions.Explanation -> Bool -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
-formatSingleFixProposal detailsMode fixExplanation fileRemovalFixesEnabled file error diffs =
+formatSingleFixProposal : Options options -> Bool -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
+formatSingleFixProposal options fileRemovalFixesEnabled file error diffs =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
-                detailsMode
-                fixExplanation
-                (Fixing fileRemovalFixesEnabled)
+                { options | reportFixMode = Fixing fileRemovalFixesEnabled }
                 { path = file.path
                 , source = file.source
                 , errors = [ error ]

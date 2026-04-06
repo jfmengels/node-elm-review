@@ -14,7 +14,6 @@ import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
-import Elm.Review.ReporterOptions as ReporterOptions
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
@@ -349,7 +348,7 @@ I recommend you take a look at the following documents:
                             [ printJson
                                 env
                                 options.debug
-                                (encodeConfigurationErrors options.detailsMode configurationErrors)
+                                (encodeConfigurationErrors options configurationErrors)
                                 (Encode.object [])
                             , Cli.exit 1
                             ]
@@ -357,7 +356,7 @@ I recommend you take a look at the following documents:
 
                     NDJson ->
                         Cmd.batch
-                            [ printNDJson env (encodeConfigurationErrorsForNDJson options.detailsMode configurationErrors)
+                            [ printNDJson env (encodeConfigurationErrorsForNDJson options configurationErrors)
                             , Cli.exit 1
                             ]
                             |> Err
@@ -995,13 +994,10 @@ makeReport previousSuppressedErrors model =
                         groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) model.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
+                    newModel.options
                     { suppressedErrors = newSuppressedErrors
-                    , unsuppressMode = newModel.options.unsuppressMode
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-                    , detailsMode = newModel.options.detailsMode
-                    , fixExplanation = newModel.options.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , reportFixMode = newModel.options.reportFixMode
                     }
                     filesWithError
                     |> Text.toAnsi model.options.supportsColor
@@ -1017,12 +1013,11 @@ makeReport previousSuppressedErrors model =
                     errors =
                         Encode.list
                             (encodeErrorByFile
+                                model.options
                                 { suppressedErrors = newSuppressedErrors
                                 , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                                 }
                                 ruleLinks
-                                newModel.options.detailsMode
-                                newModel.options.fixExplanation
                             )
                             errorsByFile
                 in
@@ -1041,12 +1036,11 @@ makeReport previousSuppressedErrors model =
                 errorsByFile
                     |> List.concatMap
                         (encodeErrorsForNDJson
+                            newModel.options
                             { suppressedErrors = newSuppressedErrors
                             , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                             }
                             ruleLinks
-                            newModel.options.detailsMode
-                            newModel.options.fixExplanation
                         )
                     |> printNDJson model.env
         , if model.options.watch then
@@ -1092,15 +1086,15 @@ printNDJson env lines =
 
 
 encodeErrorByFile :
-    { suppressedErrors : SuppressedErrors
-    , reviewErrorsAfterSuppression : List Rule.ReviewError
-    }
+    Options
+    ->
+        { suppressedErrors : SuppressedErrors
+        , reviewErrorsAfterSuppression : List Rule.ReviewError
+        }
     -> Dict String String
-    -> ReporterOptions.DetailsMode
-    -> FixOptions.Explanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> Encode.Value
-encodeErrorByFile suppressedErrorsData links detailsMode explainFixFailure file =
+encodeErrorByFile options suppressedErrorsData links file =
     Encode.object
         [ ( "path", encodeFilePath file.path )
         , ( "errors"
@@ -1114,44 +1108,43 @@ encodeErrorByFile suppressedErrorsData links detailsMode explainFixFailure file 
                             order ->
                                 order
                     )
-                |> Encode.list (encodeError suppressedErrorsData Nothing links detailsMode explainFixFailure file.source)
+                |> Encode.list (encodeError options suppressedErrorsData Nothing links file.source)
           )
         ]
 
 
 encodeErrorsForNDJson :
-    { suppressedErrors : SuppressedErrors
-    , reviewErrorsAfterSuppression : List Rule.ReviewError
-    }
+    Options
+    ->
+        { suppressedErrors : SuppressedErrors
+        , reviewErrorsAfterSuppression : List Rule.ReviewError
+        }
     -> Dict String String
-    -> ReporterOptions.DetailsMode
-    -> FixOptions.Explanation
     -> { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
     -> List Encode.Value
-encodeErrorsForNDJson suppressedErrorsData links detailsMode explainFixFailure file =
+encodeErrorsForNDJson options suppressedErrorsData links file =
     List.map
         (encodeError
+            options
             suppressedErrorsData
             (Just ( "path", encodeFilePath file.path ))
             links
-            detailsMode
-            explainFixFailure
             file.source
         )
         file.errors
 
 
-encodeConfigurationErrors : ReporterOptions.DetailsMode -> List Reporter.Error -> Encode.Value
-encodeConfigurationErrors detailsMode errors =
+encodeConfigurationErrors : Options -> List Reporter.Error -> Encode.Value
+encodeConfigurationErrors options errors =
     Encode.object
         [ ( "path", Encode.null )
-        , ( "errors", Encode.list (encodeConfigurationError detailsMode []) errors )
+        , ( "errors", Encode.list (encodeConfigurationError options []) errors )
         ]
 
 
-encodeConfigurationErrorsForNDJson : ReporterOptions.DetailsMode -> List Reporter.Error -> List Encode.Value
-encodeConfigurationErrorsForNDJson detailsMode errors =
-    List.map (encodeConfigurationError detailsMode [ ( "path", Encode.null ) ]) errors
+encodeConfigurationErrorsForNDJson : Options -> List Reporter.Error -> List Encode.Value
+encodeConfigurationErrorsForNDJson options errors =
+    List.map (encodeConfigurationError options [ ( "path", Encode.null ) ]) errors
 
 
 encodeFilePath : Reporter.FilePath -> Encode.Value
@@ -1165,17 +1158,17 @@ encodeFilePath filePath =
 
 
 encodeError :
-    { suppressedErrors : SuppressedErrors
-    , reviewErrorsAfterSuppression : List Rule.ReviewError
-    }
+    Options
+    ->
+        { suppressedErrors : SuppressedErrors
+        , reviewErrorsAfterSuppression : List Rule.ReviewError
+        }
     -> Maybe ( String, Encode.Value )
     -> Dict String String
-    -> ReporterOptions.DetailsMode
-    -> FixOptions.Explanation
     -> Reporter.Source
     -> Rule.ReviewError
     -> Encode.Value
-encodeError { suppressedErrors, reviewErrorsAfterSuppression } pathField links detailsMode explainFixFailure source error =
+encodeError options { suppressedErrors, reviewErrorsAfterSuppression } pathField links source error =
     let
         originallySuppressed : Bool
         originallySuppressed =
@@ -1199,7 +1192,7 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } pathField links d
 
         Err _ ->
             Nothing
-    , Just ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode explainFixFailure source (fromReviewError suppressedErrors links error)) )
+    , Just ( "formatted", encodeReport (Reporter.formatIndividualError options source (fromReviewError suppressedErrors links error)) )
     , Just ( "suppressed", Encode.bool (originallySuppressed && not (List.member error reviewErrorsAfterSuppression)) )
     , Just ( "originallySuppressed", Encode.bool originallySuppressed )
     ]
@@ -1207,14 +1200,14 @@ encodeError { suppressedErrors, reviewErrorsAfterSuppression } pathField links d
         |> Encode.object
 
 
-encodeConfigurationError : ReporterOptions.DetailsMode -> List ( String, Encode.Value ) -> Reporter.Error -> Encode.Value
-encodeConfigurationError detailsMode pathField error =
+encodeConfigurationError : Options -> List ( String, Encode.Value ) -> Reporter.Error -> Encode.Value
+encodeConfigurationError options pathField error =
     pathField
         ++ [ ( "rule", Encode.string error.ruleName )
            , ( "message", Encode.string error.message )
            , ( "details", Encode.list Encode.string error.details )
            , ( "region", encodeRange Range.empty )
-           , ( "formatted", encodeReport (Reporter.formatIndividualError detailsMode FixOptions.Succinct (Reporter.Source Array.empty) error) )
+           , ( "formatted", encodeReport (Reporter.formatIndividualError { options | fixExplanation = FixOptions.Succinct } (Reporter.Source Array.empty) error) )
            ]
         |> Encode.object
 
@@ -1340,8 +1333,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
             ( { model | errorAwaitingConfirmation = AwaitingError error }
             , [ ( "confirmationMessage"
                 , Reporter.formatSingleFixProposal
-                    model.options.detailsMode
-                    model.options.fixExplanation
+                    model.options
                     fileRemovalFixesEnabled
                     (pathAndSource (Store.project model.store) filePath)
                     (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)

@@ -46,12 +46,13 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -76,12 +77,13 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = True
                     }
                 |> expect
@@ -118,12 +120,13 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -184,12 +187,13 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -250,12 +254,13 @@ a =
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -343,12 +348,13 @@ b = foo <| Debug.log "other debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -475,12 +481,13 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -608,12 +615,13 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -675,12 +683,13 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Fixing False
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -752,12 +761,13 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Detailed
                         , reportFixMode = ReporterOptions.Fixing False
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -842,12 +852,13 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1101,12 +1112,13 @@ a = Debug.log "debug" 1"""
       }
     ]
         |> Reporter.formatReport
-            { suppressedErrors = SuppressedErrors.empty
-            , unsuppressMode = UnsuppressMode.UnsuppressNone
-            , originalNumberOfSuppressedErrors = 0
+            { unsuppressMode = UnsuppressMode.UnsuppressNone
             , detailsMode = ReporterOptions.WithDetails
             , fixExplanation = fixExplanation
             , reportFixMode = ReporterOptions.Fixing True
+            }
+            { suppressedErrors = SuppressedErrors.empty
+            , originalNumberOfSuppressedErrors = 0
             , errorsHaveBeenFixedPreviously = False
             }
         |> Expect.all
@@ -1150,12 +1162,13 @@ globalErrorTest =
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -1221,12 +1234,13 @@ a = Debug.log "debug" 1"""
               }
             ]
                 |> Reporter.formatReport
-                    { suppressedErrors = SuppressedErrors.empty
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = 0
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = SuppressedErrors.empty
+                    , originalNumberOfSuppressedErrors = 0
                     , errorsHaveBeenFixedPreviously = False
                     }
                 |> expect
@@ -1289,12 +1303,13 @@ suppressedTests =
                             [ ( ( "NoDebug", "src/FileA.elm" ), 1 ) ]
                 in
                 Reporter.formatReport
-                    { suppressedErrors = suppressedErrors
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = suppressedErrors
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
                     , errorsHaveBeenFixedPreviously = False
                     }
                     []
@@ -1315,12 +1330,13 @@ There is still [1 suppressed error](#FFA500) to address."""
                             [ ( ( "NoDebug", "src/FileA.elm" ), 2 ) ]
                 in
                 Reporter.formatReport
-                    { suppressedErrors = suppressedErrors
-                    , unsuppressMode = UnsuppressMode.UnsuppressNone
-                    , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
+                    { unsuppressMode = UnsuppressMode.UnsuppressNone
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    }
+                    { suppressedErrors = suppressedErrors
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
                     , errorsHaveBeenFixedPreviously = False
                     }
                     []
@@ -1355,14 +1371,15 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-
-                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+
+                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1445,14 +1462,15 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressAll
-
-                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressAll
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+
+                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1569,14 +1587,15 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressRules (Set.singleton "NoDebug")
-
-                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressRules (Set.singleton "NoDebug")
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+
+                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1693,14 +1712,15 @@ a = Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressRules (Set.singleton "OtherRule")
-
-                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressRules (Set.singleton "OtherRule")
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+
+                        -- Note: the original number of suppressed errors and the list of those don't matter when errors are shown
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1802,12 +1822,13 @@ a = "🔧" <| Debug.log "debug" 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1857,12 +1878,13 @@ a = "🔧" ++ 1"""
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
@@ -1914,12 +1936,13 @@ a = "🔧" ++ "🔧
                   }
                 ]
                     |> Reporter.formatReport
-                        { suppressedErrors = SuppressedErrors.empty
-                        , unsuppressMode = UnsuppressMode.UnsuppressNone
-                        , originalNumberOfSuppressedErrors = 0
+                        { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        }
+                        { suppressedErrors = SuppressedErrors.empty
+                        , originalNumberOfSuppressedErrors = 0
                         , errorsHaveBeenFixedPreviously = False
                         }
                     |> expect
