@@ -1001,7 +1001,7 @@ makeReport previousSuppressedErrors model =
                     , detailsMode = newModel.options.detailsMode
                     , fixExplanation = newModel.options.fixExplanation
                     , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    , mode = newModel.options.reportFixMode
+                    , reportFixMode = newModel.options.reportFixMode
                     }
                     filesWithError
                     |> Text.toAnsi model.options.supportsColor
