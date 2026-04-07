@@ -11,5 +11,4 @@ type alias RunEnvironment =
     { elmVersion : String
     , elmHomePath : String
     , reviewFolder : String
-    , namespace : String
     }
