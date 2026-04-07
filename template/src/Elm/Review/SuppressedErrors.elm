@@ -11,12 +11,14 @@ module Elm.Review.SuppressedErrors exposing
     , encode
     , fromReviewErrors
     , member
+    , suppressedFolder
     , update
     , write
     )
 
 import Cli
 import Dict exposing (Dict)
+import Elm.Review.Options exposing (Options)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import ElmReview.Path as Path exposing (Path)
@@ -29,6 +31,11 @@ import Review.Rule as Rule
 import Set exposing (Set)
 import Task exposing (Task)
 import Worker.Capabilities exposing (Console)
+
+
+suppressedFolder : Options -> Path
+suppressedFolder options =
+    Path.join2 options.reviewFolder "suppressed"
 
 
 type SuppressedErrors
@@ -253,7 +260,7 @@ encodeFileSuppression ( nbSuppressedErrors, path ) =
 -- WRITE
 
 
-write : FileSystem -> { options | usesRemoteTemplate : Bool, suppress : Bool, rulesFilter : Maybe a } -> List String -> SuppressedErrors -> Cmd Msg
+write : FileSystem -> Options -> List String -> SuppressedErrors -> Cmd Msg
 write fs options ruleNames suppressedErrors =
     if options.usesRemoteTemplate && not options.suppress then
         Cmd.none
@@ -266,8 +273,7 @@ write fs options ruleNames suppressedErrors =
 
             suppressedErrorsFolder : Path
             suppressedErrorsFolder =
-                -- TODO Compute suppressedErrorsFolder
-                Debug.todo "Compute suppressedErrorsFolder"
+                suppressedFolder options
         in
         (if deleteAllRules then
             Fs.removeDirectory fs suppressedErrorsFolder

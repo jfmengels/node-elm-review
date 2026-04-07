@@ -25,6 +25,7 @@ import Elm.Docs
 import Elm.Module
 import Elm.Package
 import Elm.Project
+import Elm.Review.Options exposing (Options)
 import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
@@ -55,8 +56,8 @@ type alias PendingTaskCount =
     Int
 
 
-init : { fs : FileSystem, suppress : Bool, runEnvironment : RunEnvironment, directoriesToAnalyze : List Path } -> ( Model, Cmd Msg )
-init { fs, suppress, runEnvironment, directoriesToAnalyze } =
+init : { fs : FileSystem, options : Options, runEnvironment : RunEnvironment, directoriesToAnalyze : List Path } -> ( Model, Cmd Msg )
+init { fs, options, runEnvironment, directoriesToAnalyze } =
     let
         tasks : List (Cmd Msg)
         tasks =
@@ -64,11 +65,11 @@ init { fs, suppress, runEnvironment, directoriesToAnalyze } =
                 identity
                 [ Just (fetchElmJson fs directoriesToAnalyze)
                 , Just (fetchReadme fs)
-                , if suppress then
+                , if options.suppress then
                     Nothing
 
                   else
-                    Just (fetchSuppressionFiles fs (RunEnvironment.suppressionFolder runEnvironment))
+                    Just (fetchSuppressionFiles fs (SuppressedErrors.suppressedFolder options))
                 , Just (fetchRuleLinks fs runEnvironment)
                 ]
     in
