@@ -18,13 +18,12 @@ import ElmReview.Path as Path exposing (Path)
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.OsExtra as OsExtra
+import ElmRun.Prompt as Prompt
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Platform exposing (Task)
-import Stdin exposing (StdinError)
 import Task
 import Wrapper.Options exposing (InitOptions)
-import Wrapper.Prompt as Prompt
 
 
 type Model
@@ -42,7 +41,7 @@ type alias ModelData =
 
 
 type Msg
-    = UserPressedKey Stdin (Result StdinError Stdin.Key)
+    = PromptMsg Prompt.Msg
     | CreatedFiles (Result String ())
 
 
@@ -79,20 +78,16 @@ init { stdout, stderr, stdin } { fs, os } options =
 update : Msg -> Model -> Cmd Msg
 update msg (Model model) =
     case msg of
-        -- TODO Figure out how to get interactive keypresses that don't wait for the Enter key
-        UserPressedKey stdin (Ok key) ->
-            case Prompt.interpretKey key of
-                Prompt.Yes ->
+        PromptMsg promptMsg ->
+            case Prompt.update promptMsg of
+                Prompt.Accepted ->
                     installFiles model.fs model.os model.options.configPath
 
-                Prompt.No ->
+                Prompt.Refused ->
                     Cli.exit 0
 
-                Prompt.Unknown ->
-                    Stdin.readKey stdin |> Task.attempt (UserPressedKey stdin)
-
-        UserPressedKey _ (Err err) ->
-            Debug.todo ("Got error while awaiting key: " ++ Debug.toString err)
+                Prompt.TriggerCmd cmd ->
+                    Cmd.map PromptMsg cmd
 
         CreatedFiles (Ok ()) ->
             Cmd.batch
@@ -121,10 +116,8 @@ prompt stdin model =
             -- TODO Add colors for Y/n?
             "Would you like me to create " ++ c Yellow "elm.json" ++ " and " ++ c Yellow "src/ReviewConfig.elm" ++ " inside " ++ c Yellow path ++ "? › (Y/n)"
     in
-    Cmd.batch
-        [ Cli.println model.stdout promptText
-        , Stdin.readKey stdin |> Task.attempt (UserPressedKey stdin)
-        ]
+    Prompt.prompt stdin model.stdout promptText
+        |> Cmd.map PromptMsg
 
 
 installFiles : FileSystem -> ProcessCapability -> Path -> Cmd Msg
