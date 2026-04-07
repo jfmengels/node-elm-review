@@ -7,7 +7,7 @@ module Elm.Review.ReporterOptions exposing (DetailsMode(..), ReportFixMode(..))
 -}
 type ReportFixMode
     = Reviewing
-    | Fixing Bool
+    | Fixing
 
 
 type DetailsMode

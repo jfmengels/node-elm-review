@@ -75,7 +75,7 @@ toOptions options =
     , fileRemovalFixesEnabled = fileRemovalFixesEnabled
     , fixLimit = options.fixLimit
     , fixExplanation = options.fixExplanation
-    , reportFixMode = fixModeToReportFixMode options.fixMode fileRemovalFixesEnabled
+    , reportFixMode = fixModeToReportFixMode options.fixMode
     , enableExtract = options.enableExtract
     , unsuppressMode = options.unsuppressMode
     , detailsMode = options.detailsMode
@@ -97,17 +97,17 @@ toOptions options =
     }
 
 
-fixModeToReportFixMode : FixOptions.Mode -> Bool -> ReporterOptions.ReportFixMode
-fixModeToReportFixMode fixMode fileRemovalFixesEnabled =
+fixModeToReportFixMode : FixOptions.Mode -> ReporterOptions.ReportFixMode
+fixModeToReportFixMode fixMode =
     case fixMode of
         FixOptions.DontFix ->
             ReporterOptions.Reviewing
 
         FixOptions.Fix ->
-            ReporterOptions.Fixing fileRemovalFixesEnabled
+            ReporterOptions.Fixing
 
         FixOptions.FixAll ->
-            ReporterOptions.Fixing fileRemovalFixesEnabled
+            ReporterOptions.Fixing
 
 
 parse : List String -> Result String Options
