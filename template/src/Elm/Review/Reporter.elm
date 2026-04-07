@@ -177,10 +177,30 @@ formatReport options { suppressedErrors, originalNumberOfSuppressedErrors, error
           else
             Nothing
         , case options.reportFixMode of
-            Fixing True ->
-                Nothing
+            Fixing fileRemovalFixesEnabled ->
+                if fileRemovalFixesEnabled then
+                    Nothing
 
-            _ ->
+                else if hasFileRemovalFixes then
+                    if hasIgnoredFixableErrors then
+                        Just
+                            [ "Errors marked with (fix removes files) can be fixed automatically by\nalso using `--allow-remove-files`."
+                                |> Text.from
+                                |> Text.inBlue
+                            ]
+
+                    else
+                        Just
+                            [ """Errors marked with (fix removes files) can be fixed automatically
+using `elm-review --fix --allow-remove-files`."""
+                                |> Text.from
+                                |> Text.inBlue
+                            ]
+
+                else
+                    Nothing
+
+            Reviewing ->
                 if hasFileRemovalFixes then
                     if hasIgnoredFixableErrors then
                         Just
