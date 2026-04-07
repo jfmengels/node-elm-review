@@ -235,7 +235,6 @@ initValid env fs options rulesFromConfig =
             , -- TODO Get from somewhere
               elmVersion = "0.19.1"
             , reviewFolder = options.reviewFolder
-            , namespace = options.namespace
             }
 
         ( store, storeCmd ) =
