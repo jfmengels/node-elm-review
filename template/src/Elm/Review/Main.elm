@@ -489,6 +489,15 @@ update msg model =
 
 handleFixAccepted : () -> Model -> ( Model, Cmd msg )
 handleFixAccepted payload model =
+    -- TODO
+    --   - Pass files as part of payload
+    -- From JS: askConfirmationToFixWithOptions
+    --   - Format Elm files
+    --   - Delete Elm files
+    --   - Check if elm.json was modified
+    --      - Refetch source-dependencies / dependencies if they changed
+    -- From Elm: UserConfirmedFix confirmation ->
+    --   - ???
     ( model, Cmd.none )
 
 
@@ -1381,7 +1390,8 @@ applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
 
                 else
                     ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-                    , sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs (countErrors model.fixAllErrors)
+                    , -- TODO Handle multiple fix prompt
+                      sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs (countErrors model.fixAllErrors)
                     )
 
 
