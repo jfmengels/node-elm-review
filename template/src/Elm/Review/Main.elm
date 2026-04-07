@@ -680,7 +680,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         GotRequestToReview ->
             { model | fixAllErrors = Dict.empty }
                 |> runReview { fixesAllowed = True } (Store.project model.store)
-                |> reportOrFix
+                |> reportOrFixOld
 
         GotRequestToGenerateSuppressionErrors ->
             let
@@ -736,7 +736,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             , errorsHaveBeenFixedPreviously = True
                         }
                             |> runReview { fixesAllowed = True } newProject
-                            |> reportOrFix
+                            |> reportOrFixOld
                             -- TODO Separate sending files to be cached and computing the files.
                             -- We may now already have found new fixes which are likely to be accepted.
                             |> Tuple.mapSecond
@@ -759,7 +759,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             }
                                 |> refuseError error
                                 |> runReview { fixesAllowed = True } (Store.project model.store)
-                                |> reportOrFix
+                                |> reportOrFixOld
 
                         AwaitingFixAll ->
                             { model
@@ -938,7 +938,23 @@ runReview fixesAllowed initialProject model =
     }
 
 
-reportOrFix : Model -> ( Model, Cmd msg )
+reportOrFixOld : Model -> ( Model, Cmd msg )
+reportOrFixOld model =
+    case model.options.fixMode of
+        FixOptions.DontFix ->
+            model
+                |> CliCommunication.timerStart model.options.communicationKey "process-errors"
+                |> makeReport (Store.suppressedErrors model.store)
+                |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
+
+        FixOptions.Fix ->
+            applyFixesAfterReviewOld model True model.options.fileRemovalFixesEnabled
+
+        FixOptions.FixAll ->
+            applyFixesAfterReviewOld model False model.options.fileRemovalFixesEnabled
+
+
+reportOrFix : Model -> ( Model, Cmd Msg )
 reportOrFix model =
     case model.options.fixMode of
         FixOptions.DontFix ->
@@ -1272,7 +1288,27 @@ encodePosition position =
         ]
 
 
-applyFixesAfterReview : Model -> Bool -> Bool -> ( Model, Cmd msg )
+applyFixesAfterReviewOld : Model -> Bool -> Bool -> ( Model, Cmd msg )
+applyFixesAfterReviewOld model allowPrintingSingleFix fileRemovalFixesEnabled =
+    if Dict.isEmpty model.fixAllErrors then
+        makeReport (Store.suppressedErrors model.store) model
+
+    else
+        case Project.diffV2 { before = Store.project model.store, after = model.fixAllResultProject } of
+            [] ->
+                makeReport (Store.suppressedErrors model.store) model
+
+            diffs ->
+                if allowPrintingSingleFix then
+                    sendFixPromptOld fileRemovalFixesEnabled model diffs
+
+                else
+                    ( { model | errorAwaitingConfirmation = AwaitingFixAll }
+                    , sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs (countErrors model.fixAllErrors)
+                    )
+
+
+applyFixesAfterReview : Model -> Bool -> Bool -> ( Model, Cmd Msg )
 applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
     if Dict.isEmpty model.fixAllErrors then
         makeReport (Store.suppressedErrors model.store) model
@@ -1292,7 +1328,67 @@ applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
                     )
 
 
-sendFixPrompt : Bool -> Model -> List FixedFile -> ( Model, Cmd msg )
+sendFixPromptOld : Bool -> Model -> List FixedFile -> ( Model, Cmd msg )
+sendFixPromptOld fileRemovalFixesEnabled model diffs =
+    case numberOfErrors model.fixAllErrors of
+        NoErrors ->
+            ( model, Cmd.none )
+
+        OneError filePath error ->
+            let
+                changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
+                changedFiles =
+                    List.filterMap
+                        (\{ path, diff } ->
+                            case diff of
+                                Project.Edited { after } ->
+                                    Just
+                                        { path = Reporter.FilePath path
+                                        , source = Reporter.Source (after |> String.lines |> Array.fromList)
+                                        }
+
+                                Project.Removed ->
+                                    Nothing
+                        )
+                        diffs
+
+                removedFiles : List String
+                removedFiles =
+                    List.filterMap
+                        (\{ path, diff } ->
+                            case diff of
+                                Project.Edited _ ->
+                                    Nothing
+
+                                Project.Removed ->
+                                    Just path
+                        )
+                        diffs
+            in
+            ( { model | errorAwaitingConfirmation = AwaitingError error }
+            , [ ( "confirmationMessage"
+                , Reporter.formatSingleFixProposal
+                    model.options
+                    (pathAndSource (Store.project model.store) filePath)
+                    (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
+                    diffs
+                    |> encodeReport
+                )
+              , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
+              , ( "removedFiles", Encode.list Encode.string removedFiles )
+              , ( "count", Encode.int 1 )
+              ]
+                |> Encode.object
+                |> askConfirmationToFix
+            )
+
+        MultipleErrors numberOfFixedErrors ->
+            ( { model | errorAwaitingConfirmation = AwaitingFixAll }
+            , sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedErrors
+            )
+
+
+sendFixPrompt : Bool -> Model -> List FixedFile -> ( Model, Cmd Msg )
 sendFixPrompt fileRemovalFixesEnabled model diffs =
     case numberOfErrors model.fixAllErrors of
         NoErrors ->
