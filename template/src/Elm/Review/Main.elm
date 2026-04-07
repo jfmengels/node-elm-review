@@ -14,7 +14,7 @@ import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
-import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
+import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
@@ -241,7 +241,7 @@ initValid env fs options rulesFromConfig =
         ( store, storeCmd ) =
             Store.init
                 { fs = fs
-                , suppress = options.suppress
+                , options = options
                 , runEnvironment = runEnvironment
                 , directoriesToAnalyze = options.directoriesToAnalyze
                 }
@@ -490,7 +490,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         -- TODO Don't print in JSON report mode
                         , Cli.println model.env.stdout
                             ("I created suppressions files in "
-                                ++ Color.toAnsi model.options.supportsColor Color.Orange (RunEnvironment.suppressionFolder model.runEnvironment)
+                                ++ Color.toAnsi model.options.supportsColor Color.Orange (SuppressedErrors.suppressedFolder model.options)
                             )
                         , Cli.exit 0
                         ]

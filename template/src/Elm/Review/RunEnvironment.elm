@@ -1,12 +1,8 @@
-module Elm.Review.RunEnvironment exposing
-    ( RunEnvironment
-    , suppressionFolder
-    )
+module Elm.Review.RunEnvironment exposing (RunEnvironment)
 
 {-| Information about the environment in which the review application runs.
 
 @docs RunEnvironment
-@docs suppressionFolder
 
 -}
 
@@ -17,9 +13,3 @@ type alias RunEnvironment =
     , reviewFolder : String
     , namespace : String
     }
-
-
-suppressionFolder : RunEnvironment -> String
-suppressionFolder runEnvironment =
-    -- TODO Use path functions
-    runEnvironment.reviewFolder ++ "/suppressed"
