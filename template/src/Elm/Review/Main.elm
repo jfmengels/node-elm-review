@@ -11,6 +11,7 @@ import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.File
 import Elm.Review.FixOptions as FixOptions
+import Elm.Review.FixPrompt as FixPrompt
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
@@ -148,6 +149,7 @@ type alias Model =
 
     --
     , store : Store.Model
+    , fixPrompt : FixPrompt.Model
 
     --
     , rules : List Rule
@@ -182,6 +184,7 @@ type ModelWrapper
 type Msg
     = StoreMsg Store.Msg
     | SuppressedErrorsMsg SuppressedErrors.Msg
+    | FixPromptMsg (FixPrompt.Msg ())
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -252,6 +255,7 @@ initValid env fs options rulesFromConfig =
             , options = options
             , runEnvironment = runEnvironment
             , store = store
+            , fixPrompt = FixPrompt.init
             , rules = rules
             , isInitialRun = True
             , reviewErrors = []
@@ -465,6 +469,59 @@ update msg model =
             ( model
             , SuppressedErrors.update model.env.stdout suppressedErrorsMsg
             )
+
+        FixPromptMsg fixPromptMsg ->
+            case FixPrompt.update fixPromptMsg model.fixPrompt of
+                FixPrompt.Accepted payload ->
+                    handleFixAccepted payload model
+
+                FixPrompt.TriggerCmd cmd ->
+                    ( model
+                    , Cmd.map FixPromptMsg cmd
+                    )
+
+                FixPrompt.Refused ->
+                    handleFixRefused model
+
+                FixPrompt.Ignore ->
+                    ( model, Cmd.none )
+
+
+handleFixAccepted : () -> Model -> ( Model, Cmd msg )
+handleFixAccepted payload model =
+    ( model, Cmd.none )
+
+
+handleFixRefused : Model -> ( Model, Cmd msg )
+handleFixRefused model =
+    let
+        project : Project
+        project =
+            Store.project model.store
+    in
+    case model.errorAwaitingConfirmation of
+        AwaitingError error ->
+            { model
+                | errorAwaitingConfirmation = NotAwaiting
+                , fixAllResultProject = project
+            }
+                |> refuseError error
+                |> runReview { fixesAllowed = True } (Store.project model.store)
+                |> reportOrFixOld
+
+        AwaitingFixAll ->
+            { model
+                | errorAwaitingConfirmation = NotAwaiting
+                , fixAllResultProject = project
+            }
+                |> runReview { fixesAllowed = False } project
+                |> makeReport (Store.suppressedErrors model.store)
+
+        NotAwaiting ->
+            -- Should not be possible?
+            model
+                |> runReview { fixesAllowed = False } project
+                |> makeReport (Store.suppressedErrors model.store)
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -1424,22 +1481,33 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                                     Just path
                         )
                         diffs
+
+                confirmationMessage : List Reporter.TextContent
+                confirmationMessage =
+                    Reporter.formatSingleFixProposal
+                        model.options
+                        (pathAndSource (Store.project model.store) filePath)
+                        (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
+                        diffs
+
+                ( fixPrompt, fixPromptCmd ) =
+                    case model.env.stdin of
+                        Just stdin ->
+                            confirmationMessage
+                                |> Text.toAnsi model.options.supportsColor
+                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
+
+                        Nothing ->
+                            -- TODO
+                            -- If there's no stdin, assume the reply is yes.
+                            Debug.todo "Fix prompt without stdin"
             in
-            ( { model | errorAwaitingConfirmation = AwaitingError error }
-            , [ ( "confirmationMessage"
-                , Reporter.formatSingleFixProposal
-                    model.options
-                    (pathAndSource (Store.project model.store) filePath)
-                    (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
-                    diffs
-                    |> encodeReport
-                )
-              , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
-              , ( "removedFiles", Encode.list Encode.string removedFiles )
-              , ( "count", Encode.int 1 )
-              ]
-                |> Encode.object
-                |> askConfirmationToFix
+            ( { model
+                | fixPrompt = fixPrompt
+                , -- TODO Reuse/remove errorAwaitingConfirmation
+                  errorAwaitingConfirmation = AwaitingError error
+              }
+            , Cmd.map FixPromptMsg fixPromptCmd
             )
 
         MultipleErrors numberOfFixedErrors ->
