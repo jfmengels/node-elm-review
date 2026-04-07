@@ -50,6 +50,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -81,6 +82,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -124,6 +126,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -191,6 +194,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -258,6 +262,7 @@ a =
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -352,6 +357,7 @@ b = foo <| Debug.log "other debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -485,6 +491,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -619,6 +626,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -686,7 +694,8 @@ a = Debug.log "debug" 1"""
                         { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
-                        , reportFixMode = ReporterOptions.Fixing False
+                        , reportFixMode = ReporterOptions.Fixing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -764,7 +773,8 @@ a = Debug.log "debug" 1"""
                         { unsuppressMode = UnsuppressMode.UnsuppressNone
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Detailed
-                        , reportFixMode = ReporterOptions.Fixing False
+                        , reportFixMode = ReporterOptions.Fixing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -856,6 +866,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -1115,7 +1126,8 @@ a = Debug.log "debug" 1"""
             { unsuppressMode = UnsuppressMode.UnsuppressNone
             , detailsMode = ReporterOptions.WithDetails
             , fixExplanation = fixExplanation
-            , reportFixMode = ReporterOptions.Fixing True
+            , reportFixMode = ReporterOptions.Fixing
+            , fileRemovalFixesEnabled = True
             }
             { suppressedErrors = SuppressedErrors.empty
             , originalNumberOfSuppressedErrors = 0
@@ -1166,6 +1178,7 @@ globalErrorTest =
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -1238,6 +1251,7 @@ a = Debug.log "debug" 1"""
                     , detailsMode = ReporterOptions.WithoutDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = SuppressedErrors.empty
                     , originalNumberOfSuppressedErrors = 0
@@ -1307,6 +1321,7 @@ suppressedTests =
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = suppressedErrors
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors
@@ -1334,6 +1349,7 @@ There is still [1 suppressed error](#FFA500) to address."""
                     , detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
                     , reportFixMode = ReporterOptions.Reviewing
+                    , fileRemovalFixesEnabled = False
                     }
                     { suppressedErrors = suppressedErrors
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors + 4
@@ -1375,6 +1391,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
 
@@ -1466,6 +1483,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
 
@@ -1591,6 +1609,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
 
@@ -1716,6 +1735,7 @@ a = Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
 
@@ -1826,6 +1846,7 @@ a = "🔧" <| Debug.log "debug" 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -1882,6 +1903,7 @@ a = "🔧" ++ 1"""
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0
@@ -1940,6 +1962,7 @@ a = "🔧" ++ "🔧
                         , detailsMode = ReporterOptions.WithDetails
                         , fixExplanation = FixOptions.Succinct
                         , reportFixMode = ReporterOptions.Reviewing
+                        , fileRemovalFixesEnabled = False
                         }
                         { suppressedErrors = SuppressedErrors.empty
                         , originalNumberOfSuppressedErrors = 0

@@ -125,6 +125,7 @@ type alias Options options =
         , detailsMode : DetailsMode
         , fixExplanation : FixOptions.Explanation
         , reportFixMode : ReportFixMode
+        , fileRemovalFixesEnabled : Bool
     }
 
 
@@ -177,8 +178,8 @@ formatReport options { suppressedErrors, originalNumberOfSuppressedErrors, error
           else
             Nothing
         , case options.reportFixMode of
-            Fixing fileRemovalFixesEnabled ->
-                if fileRemovalFixesEnabled then
+            Fixing ->
+                if options.fileRemovalFixesEnabled then
                     Nothing
 
                 else if hasFileRemovalFixes then
@@ -223,7 +224,7 @@ using `elm-review --fix --allow-remove-files`."""
             Reviewing ->
                 Nothing
 
-            Fixing _ ->
+            Fixing ->
                 if not (Dict.isEmpty rulesWithInvalidFixes) then
                     [ ("I tried applying some fixes but they failed in ways the author(s) didn't expect. Please let the author(s) of the following rules know:"
                         |> Text.from
@@ -586,7 +587,7 @@ formatErrorWithExtract options source error =
         fixFailMessage : List Text
         fixFailMessage =
             case options.reportFixMode of
-                Fixing _ ->
+                Fixing ->
                     case error.fixProblem of
                         Just problem ->
                             Text.from "\n\n"
@@ -599,17 +600,17 @@ formatErrorWithExtract options source error =
                     []
     in
     List.concat
-        [ formatErrorTitle options.reportFixMode error
+        [ formatErrorTitle options.reportFixMode options.fileRemovalFixesEnabled error
         , codeExtract_
         , details
         , fixFailMessage
         ]
 
 
-formatErrorTitle : ReportFixMode -> Error -> List Text
-formatErrorTitle reportFixMode error =
+formatErrorTitle : ReportFixMode -> Bool -> Error -> List Text
+formatErrorTitle reportFixMode fileRemovalFixesEnabled error =
     formatErrorTitleSimple error
-        |> addFixPrefix reportFixMode error
+        |> addFixPrefix reportFixMode fileRemovalFixesEnabled error
         |> addSuppressedPrefix error
 
 
@@ -635,10 +636,10 @@ addSuppressedPrefix error previous =
         previous
 
 
-addFixPrefix : ReportFixMode -> Error -> List Text -> List Text
-addFixPrefix reportFixMode error previous =
+addFixPrefix : ReportFixMode -> Bool -> Error -> List Text -> List Text
+addFixPrefix reportFixMode fileRemovalFixesEnabled error previous =
     case reportFixMode of
-        Fixing fileRemovalFixesEnabled ->
+        Fixing ->
             case error.fixProblem of
                 Just _ ->
                     ("(FIX FAILED) "
@@ -1315,12 +1316,12 @@ fileSeparator pathAbove pathBelow =
 
 {-| Reports a fix proposal for a single error in a nice human-readable way.
 -}
-formatSingleFixProposal : Options options -> Bool -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
-formatSingleFixProposal options fileRemovalFixesEnabled file error diffs =
+formatSingleFixProposal : Options options -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
+formatSingleFixProposal options file error diffs =
     List.concat
         [ Text.join "\n\n"
             [ formatReportForFileWithExtract
-                { options | reportFixMode = Fixing fileRemovalFixesEnabled }
+                options
                 { path = file.path
                 , source = file.source
                 , errors = [ error ]
@@ -1497,7 +1498,7 @@ formatFileDiff fileRemovalFixesEnabled errorsForFile { path, diff } =
             |> Text.inBlue
       ]
     , Text.from "Modified by the following error fixes:"
-        :: List.concatMap (\error -> Text.from "\n" :: formatErrorTitle (Fixing fileRemovalFixesEnabled) error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
+        :: List.concatMap (\error -> Text.from "\n" :: formatErrorTitle Fixing fileRemovalFixesEnabled error) (List.reverse (Dict.get path errorsForFile |> Maybe.withDefault []))
     , case diff of
         Project.Edited { before, after } ->
             formatDiff before after

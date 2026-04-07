@@ -88,10 +88,10 @@ some =
                 Reporter.formatSingleFixProposal
                     { detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
-                    , reportFixMode = ReporterOptions.Fixing True
+                    , reportFixMode = ReporterOptions.Fixing
+                    , fileRemovalFixesEnabled = True
                     , unsuppressMode = UnsuppressNone
                     }
-                    True
                     file
                     error
                     [ { path = path
@@ -191,10 +191,10 @@ b =
                 Reporter.formatSingleFixProposal
                     { detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
-                    , reportFixMode = ReporterOptions.Fixing True
+                    , reportFixMode = ReporterOptions.Fixing
+                    , fileRemovalFixesEnabled = True
                     , unsuppressMode = UnsuppressNone
                     }
-                    True
                     file
                     error
                     [ { path = path
@@ -293,10 +293,10 @@ a =
                 Reporter.formatSingleFixProposal
                     { detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
-                    , reportFixMode = ReporterOptions.Fixing True
+                    , reportFixMode = ReporterOptions.Fixing
+                    , fileRemovalFixesEnabled = True
                     , unsuppressMode = UnsuppressNone
                     }
-                    True
                     file
                     error
                     [ { path = path
@@ -379,10 +379,10 @@ b =
                 Reporter.formatSingleFixProposal
                     { detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
-                    , reportFixMode = ReporterOptions.Fixing True
+                    , reportFixMode = ReporterOptions.Fixing
+                    , fileRemovalFixesEnabled = True
                     , unsuppressMode = UnsuppressNone
                     }
-                    True
                     file
                     error
                     [ { path = path
@@ -463,10 +463,10 @@ b =
                 Reporter.formatSingleFixProposal
                     { detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
-                    , reportFixMode = ReporterOptions.Fixing True
+                    , reportFixMode = ReporterOptions.Fixing
+                    , fileRemovalFixesEnabled = True
                     , unsuppressMode = UnsuppressNone
                     }
-                    True
                     file
                     error
                     [ { path = path
@@ -571,10 +571,10 @@ b =
                 Reporter.formatSingleFixProposal
                     { detailsMode = ReporterOptions.WithDetails
                     , fixExplanation = FixOptions.Succinct
-                    , reportFixMode = ReporterOptions.Fixing True
+                    , reportFixMode = ReporterOptions.Fixing
+                    , fileRemovalFixesEnabled = True
                     , unsuppressMode = UnsuppressNone
                     }
-                    True
                     file
                     error
                     [ { path = path

@@ -1334,7 +1334,6 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
             , [ ( "confirmationMessage"
                 , Reporter.formatSingleFixProposal
                     model.options
-                    fileRemovalFixesEnabled
                     (pathAndSource (Store.project model.store) filePath)
                     (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
                     diffs
