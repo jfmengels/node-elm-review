@@ -1388,7 +1388,15 @@ formatSingleFixProposal options file error diffs =
                             )
                         |> Text.join "\n\n"
             ]
-        , [ Text.from "\n" ]
+        , [ Text.from "\n"
+          , "Do you wish to apply this fix?"
+                |> Text.from
+                |> Text.inBold
+          , " (Y/n)"
+                |> Text.from
+                |> Text.inGray
+          , Text.from " "
+          ]
         ]
         |> List.map Text.toRecord
 

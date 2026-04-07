@@ -118,6 +118,8 @@ I think I can fix this. Here is my proposal:
 2| a = Debug.log "debug" 1
 +| a = 1
 3| other=lines
+
+Do you wish to apply this fix? (Y/n)
 """
                         , withColors = """[-- ELM-REVIEW ERROR ------------------------------------------ src/FileA.elm:2:5](#33BBC8)
 
@@ -138,6 +140,8 @@ Donec sed ligula ac mi pretium mattis et in nisi. Nulla nec ex hendrerit, sollic
 [2| a = Debug.log "debug" 1](#FF0000)
 [+| a = 1](#008000)
 3| other=lines
+
+Do you wish to apply this fix? (Y/n)
 """
                         }
         , test "propose fix where the diff contains blank lines" <|
