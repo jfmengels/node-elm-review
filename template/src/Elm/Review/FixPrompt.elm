@@ -21,6 +21,13 @@ type Model
     = Model ModelData
 
 
+
+{- TODO Should we simply store fields in `MainModel`?
+   - expectedPrompt : Maybe FixPayload -- Later this could be a custom type expecting more situations.
+   - promptId : Int
+-}
+
+
 type alias ModelData =
     { promptId : Int
     }
