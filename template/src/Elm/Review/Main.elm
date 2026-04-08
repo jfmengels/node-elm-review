@@ -529,6 +529,60 @@ applyFixChanges { changedFiles, removedFiles } model =
     )
 
 
+handleUserConfirmedFix :
+    { rawFiles : List { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
+    , dependencies : Maybe (List Dependency)
+    }
+    -> Model
+    -> ( Model, Cmd msg )
+handleUserConfirmedFix { rawFiles, dependencies } model =
+    let
+        previousProject : Project
+        previousProject =
+            model.fixAllResultProject
+
+        newProject : Project
+        newProject =
+            List.foldl (\file acc -> addUpdatedFileToProject dependencies file acc) previousProject rawFiles
+    in
+    if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse previousProject) then
+        -- There is a new file that failed to parse in the
+        -- project when we updated the fixed file. This means
+        -- that our fix introduced a syntactical regression that
+        -- we were not successful in preventing earlier.
+        ( model
+          -- TODO Improve abort message
+        , abort model.env model.options.supportsColor <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
+        )
+        -- TODO Handle these cases
+        --else if dependenciesHaveChanged then
+        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
+        --    , abort "The dependencies have changed"
+        --    )
+        --
+        --else if sourceDirectoriesHaveChanged then
+        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
+        --    , abort "request source directories changed"
+        --    )
+
+    else
+        { model
+            | store = Store.setProject newProject model.store
+            , rules = model.fixAllRules
+            , fixAllErrors = Dict.empty
+            , errorsHaveBeenFixedPreviously = True
+        }
+            |> runReview { fixesAllowed = True } newProject
+            |> reportOrFixOld
+            -- TODO Separate sending files to be cached and computing the files.
+            -- We may now already have found new fixes which are likely to be accepted.
+            |> Tuple.mapSecond
+                (\cmd ->
+                    (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
+                        |> Cmd.batch
+                )
+
+
 handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
 handleFixRefused fixPromptKind model =
     let
@@ -786,52 +840,8 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue (confirmationDecoder model.options.ignoreProblematicDependencies) confirmation of
-                Ok (Accepted { rawFiles, dependencies }) ->
-                    let
-                        previousProject : Project
-                        previousProject =
-                            model.fixAllResultProject
-
-                        newProject : Project
-                        newProject =
-                            List.foldl (\file acc -> addUpdatedFileToProject dependencies file acc) previousProject rawFiles
-                    in
-                    if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse previousProject) then
-                        -- There is a new file that failed to parse in the
-                        -- project when we updated the fixed file. This means
-                        -- that our fix introduced a syntactical regression that
-                        -- we were not successful in preventing earlier.
-                        ( model
-                          -- TODO Improve abort message
-                        , abort model.env model.options.supportsColor <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
-                        )
-                        -- TODO Handle these cases
-                        --else if dependenciesHaveChanged then
-                        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
-                        --    , abort "The dependencies have changed"
-                        --    )
-                        --
-                        --else if sourceDirectoriesHaveChanged then
-                        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
-                        --    , abort "request source directories changed"
-                        --    )
-
-                    else
-                        { model
-                            | store = Store.setProject newProject model.store
-                            , rules = model.fixAllRules
-                            , fixAllErrors = Dict.empty
-                            , errorsHaveBeenFixedPreviously = True
-                        }
-                            |> runReview { fixesAllowed = True } newProject
-                            |> reportOrFixOld
-                            -- TODO Separate sending files to be cached and computing the files.
-                            -- We may now already have found new fixes which are likely to be accepted.
-                            |> Tuple.mapSecond
-                                (\cmd ->
-                                    (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
-                                        |> Cmd.batch
-                                )
+                Ok (Accepted payload) ->
+                    handleUserConfirmedFix payload model
 
                 Ok Refused ->
                     let
