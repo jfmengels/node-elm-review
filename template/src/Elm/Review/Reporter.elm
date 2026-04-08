@@ -33,6 +33,7 @@ import Elm.Review.Text as Text exposing (Text)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Diff as Diff
 import Elm.Syntax.Range as Range exposing (Location)
+import ElmReview.Path exposing (Path)
 import Json.Decode
 import Parser
 import Review.Fix
@@ -78,7 +79,7 @@ type alias FileWithError =
 
 
 type FilePath
-    = FilePath String
+    = FilePath Path
     | Global
 
 
