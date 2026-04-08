@@ -193,6 +193,8 @@ type Msg
 
 type alias FixPromptPayload =
     { kind : FixPromptKind
+    , projectWithFixes : Project
+    , rulesWithFixes : List Rule
     , changedFiles : List { filePath : Path, source : String }
     , removedFiles : List Path
     }
@@ -508,7 +510,7 @@ update msg model =
 
 
 applyFixChanges : FixPromptPayload -> Model -> ( Model, Cmd Msg )
-applyFixChanges { changedFiles, removedFiles } model =
+applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles } model =
     -- TODO
     -- Support multi file fixes
     -- Remove fixAllProject from Model?
@@ -518,7 +520,10 @@ applyFixChanges { changedFiles, removedFiles } model =
     --      - Refetch source-dependencies / dependencies if they changed
     -- From Elm: UserConfirmedFix confirmation ->
     --   - ???
-    ( model
+    ( { model
+        | store = Store.setProject projectWithFixes model.store
+        , rules = rulesWithFixes
+      }
     , Task.map2 always
         (changedFiles
             -- TODO Format Elm files
@@ -1062,10 +1067,10 @@ reportOrFix model =
                 |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReview model True
+            applyFixesAfterReview True model
 
         FixOptions.FixAll ->
-            applyFixesAfterReview model False
+            applyFixesAfterReview False model
 
 
 makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
@@ -1406,8 +1411,8 @@ applyFixesAfterReviewOld model allowPrintingSingleFix =
                     )
 
 
-applyFixesAfterReview : Model -> Bool -> ( Model, Cmd Msg )
-applyFixesAfterReview model allowPrintingSingleFix =
+applyFixesAfterReview : Bool -> Model -> ( Model, Cmd Msg )
+applyFixesAfterReview allowPrintingSingleFix model =
     if Dict.isEmpty model.fixAllErrors then
         makeReport (Store.suppressedErrors model.store) model
 
@@ -1418,7 +1423,7 @@ applyFixesAfterReview model allowPrintingSingleFix =
 
             diffs ->
                 if allowPrintingSingleFix then
-                    sendFixPrompt model diffs
+                    sendFixPrompt model.fixAllResultProject model.fixAllRules diffs model
 
                 else
                     ( { model | errorAwaitingConfirmation = AwaitingFixAll }
@@ -1488,8 +1493,8 @@ sendFixPromptOld model diffs =
             )
 
 
-sendFixPrompt : Model -> List FixedFile -> ( Model, Cmd Msg )
-sendFixPrompt model diffs =
+sendFixPrompt : Project -> List Rule -> List FixedFile -> Model -> ( Model, Cmd Msg )
+sendFixPrompt projectWithFixes rulesWithFixes diffs model =
     case numberOfErrors model.fixAllErrors of
         NoErrors ->
             ( model, Cmd.none )
@@ -1536,6 +1541,8 @@ sendFixPrompt model diffs =
                 fixPayload : FixPromptPayload
                 fixPayload =
                     { kind = FixSingle error
+                    , projectWithFixes = projectWithFixes
+                    , rulesWithFixes = rulesWithFixes
                     , changedFiles = changedFiles
                     , removedFiles = removedFiles
                     }
