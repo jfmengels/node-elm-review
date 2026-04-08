@@ -1125,7 +1125,7 @@ reportOrFixOld model =
 
 
 reportOrFix : ( Model, RunReviewResult ) -> ( Model, Cmd Msg )
-reportOrFix ( model, result ) =
+reportOrFix ( model, runReviewResult ) =
     case model.options.fixMode of
         FixOptions.DontFix ->
             model
@@ -1134,10 +1134,10 @@ reportOrFix ( model, result ) =
                 |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReview True model
+            applyFixesAfterReview True runReviewResult model
 
         FixOptions.FixAll ->
-            applyFixesAfterReview False model
+            applyFixesAfterReview False runReviewResult model
 
 
 makeReportOld : SuppressedErrors -> Model -> ( Model, Cmd msg )
@@ -1578,8 +1578,8 @@ applyFixesAfterReviewOld model allowPrintingSingleFix =
                     )
 
 
-applyFixesAfterReview : Bool -> Model -> ( Model, Cmd Msg )
-applyFixesAfterReview allowPrintingSingleFix model =
+applyFixesAfterReview : Bool -> RunReviewResult -> Model -> ( Model, Cmd Msg )
+applyFixesAfterReview allowPrintingSingleFix runReviewResult model =
     if Dict.isEmpty model.fixAllErrors then
         makeReportOld (Store.suppressedErrors model.store) model
 
