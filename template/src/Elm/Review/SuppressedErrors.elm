@@ -23,6 +23,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import ElmReview.Path as Path exposing (Path)
 import ElmRun.FsExtra as FsExtra
+import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -287,17 +288,10 @@ write fs options ruleNames suppressedErrors =
                 (\() ->
                     suppressedErrors
                         |> suppressionsX ruleNames
-                        |> taskMapAll (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
+                        |> TaskExtra.mapAll (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
                 )
             |> Task.map (\_ -> ())
             |> Task.attempt WroteSuppressionFiles
-
-
-{-| Like Task.map f >> Task.sequence but the return value is ()
--}
-taskMapAll : (a -> Task x ()) -> List a -> Task x ()
-taskMapAll f list =
-    List.foldl (\task acc -> Task.map2 always (f task) acc) (Task.succeed ()) list
 
 
 writeFile : FileSystem -> Path -> Bool -> ( String, List ( Int, Path ) ) -> Task String ()
