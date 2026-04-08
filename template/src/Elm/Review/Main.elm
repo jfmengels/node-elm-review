@@ -1051,7 +1051,7 @@ type alias RunReviewResult =
     }
 
 
-runReview : { fixesAllowed : Bool } -> Project -> Model -> ( Model, RunReviewResult )
+runReview : { fixesAllowed : Bool } -> Project -> Model -> { model : Model, result : RunReviewResult }
 runReview fixesAllowed initialProject model =
     let
         suppressedErrors : SuppressedErrors
@@ -1067,45 +1067,50 @@ runReview fixesAllowed initialProject model =
                     )
                     model.rules
                 |> CliCommunication.timerEnd model.options.communicationKey "run-review"
+
+        newModel : Model
+        newModel =
+            { model
+                | reviewErrors = errors
+                , reviewErrorsAfterSuppression =
+                    errors
+                        |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
+                        |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
+                        |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
+                , rules =
+                    if model.isInitialRun || model.options.fixMode == FixOptions.DontFix then
+                        rules
+
+                    else
+                        model.rules
+                , isInitialRun = False
+                , fixAllRules = rules
+                , store =
+                    if model.options.fixMode == FixOptions.DontFix then
+                        Store.setProject project model.store
+
+                    else
+                        model.store
+                , fixAllResultProject = project
+                , fixAllErrors = fixedErrors
+                , errorAwaitingConfirmation = NotAwaiting
+                , extracts = extracts
+            }
     in
-    ( { model
-        | reviewErrors = errors
+    { model = newModel
+    , result =
+        { reviewErrors = errors
         , reviewErrorsAfterSuppression =
             errors
                 |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
                 |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
                 |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
-        , rules =
-            if model.isInitialRun || model.options.fixMode == FixOptions.DontFix then
-                rules
-
-            else
-                model.rules
-        , isInitialRun = False
         , fixAllRules = rules
-        , store =
-            if model.options.fixMode == FixOptions.DontFix then
-                Store.setProject project model.store
-
-            else
-                model.store
         , fixAllResultProject = project
         , fixAllErrors = fixedErrors
-        , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
-      }
-    , { reviewErrors = errors
-      , reviewErrorsAfterSuppression =
-            errors
-                |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
-                |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
-                |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
-      , fixAllRules = rules
-      , fixAllResultProject = project
-      , fixAllErrors = fixedErrors
-      , extracts = extracts
-      }
-    )
+        }
+    }
 
 
 reportOrFixOld : Model -> ( Model, Cmd msg )
@@ -1124,20 +1129,20 @@ reportOrFixOld model =
             applyFixesAfterReviewOld model False
 
 
-reportOrFix : ( Model, RunReviewResult ) -> ( Model, Cmd Msg )
-reportOrFix ( model, runReviewResult ) =
-    case model.options.fixMode of
+reportOrFix : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+reportOrFix input =
+    case input.model.options.fixMode of
         FixOptions.DontFix ->
-            model
-                |> CliCommunication.timerStart model.options.communicationKey "process-errors"
-                |> makeReportOld (Store.suppressedErrors model.store)
-                |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
+            input
+                |> CliCommunication.timerStart input.model.options.communicationKey "process-errors"
+                |> makeReport (Store.suppressedErrors input.model.store)
+                |> CliCommunication.timerEnd input.model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReview True runReviewResult model
+            applyFixesAfterReview True input
 
         FixOptions.FixAll ->
-            applyFixesAfterReview False runReviewResult model
+            applyFixesAfterReview False input
 
 
 makeReportOld : SuppressedErrors -> Model -> ( Model, Cmd msg )
@@ -1240,19 +1245,19 @@ makeReportOld previousSuppressedErrors model =
     )
 
 
-makeReport : SuppressedErrors -> ( Model, RunReviewResult ) -> ( Model, Cmd msg )
-makeReport previousSuppressedErrors ( model, runReviewResult ) =
+makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, Cmd msg )
+makeReport previousSuppressedErrors { model, result } =
     let
         ( newModel, suppressedErrorsForJson ) =
-            if List.isEmpty runReviewResult.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
+            if List.isEmpty result.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
                 let
                     suppressedErrors : SuppressedErrors
                     suppressedErrors =
-                        SuppressedErrors.fromReviewErrors runReviewResult.reviewErrors
+                        SuppressedErrors.fromReviewErrors result.reviewErrors
                 in
                 ( { model
                     | store = Store.setSuppressedErrors suppressedErrors model.store
-                    , rules = runReviewResult.fixAllRules
+                    , rules = result.fixAllRules
                   }
                   -- TODO Write suppression files
                 , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
@@ -1578,8 +1583,8 @@ applyFixesAfterReviewOld model allowPrintingSingleFix =
                     )
 
 
-applyFixesAfterReview : Bool -> RunReviewResult -> Model -> ( Model, Cmd Msg )
-applyFixesAfterReview allowPrintingSingleFix runReviewResult model =
+applyFixesAfterReview : Bool -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+applyFixesAfterReview allowPrintingSingleFix { model, result } =
     if Dict.isEmpty model.fixAllErrors then
         makeReportOld (Store.suppressedErrors model.store) model
 
