@@ -1584,14 +1584,14 @@ applyFixesAfterReviewOld model allowPrintingSingleFix =
 
 
 applyFixesAfterReview : Bool -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
-applyFixesAfterReview allowPrintingSingleFix { model, result } =
+applyFixesAfterReview allowPrintingSingleFix ({ model, result } as input) =
     if Dict.isEmpty model.fixAllErrors then
-        makeReportOld (Store.suppressedErrors model.store) model
+        makeReport (Store.suppressedErrors model.store) input
 
     else
-        case Project.diffV2 { before = Store.project model.store, after = model.fixAllResultProject } of
+        case Project.diffV2 { before = Store.project model.store, after = result.fixAllResultProject } of
             [] ->
-                makeReportOld (Store.suppressedErrors model.store) model
+                makeReport (Store.suppressedErrors model.store) input
 
             diffs ->
                 if allowPrintingSingleFix then
