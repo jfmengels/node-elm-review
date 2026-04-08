@@ -611,7 +611,7 @@ handleFixRefused fixPromptKind model =
                 , fixAllResultProject = project
             }
                 |> runReviewOld { fixesAllowed = False } project
-                |> makeReport (Store.suppressedErrors model.store)
+                |> makeReportOld (Store.suppressedErrors model.store)
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -818,7 +818,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         ( model, Cmd.none )
 
                     else
-                        makeReport previousSuppressErrors
+                        makeReportOld previousSuppressErrors
                             { model
                                 | store = Store.setSuppressedErrors suppressedErrors model.store
                                 , reviewErrorsAfterSuppression = SuppressedErrors.apply model.options.unsuppressMode suppressedErrors model.reviewErrors
@@ -870,12 +870,12 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 , fixAllResultProject = project
                             }
                                 |> runReviewOld { fixesAllowed = False } project
-                                |> makeReport (Store.suppressedErrors model.store)
+                                |> makeReportOld (Store.suppressedErrors model.store)
 
                         NotAwaiting ->
                             -- Should not be possible?
                             runReviewOld { fixesAllowed = False } project model
-                                |> makeReport (Store.suppressedErrors model.store)
+                                |> makeReportOld (Store.suppressedErrors model.store)
 
                 Err err ->
                     ( model, abort model.env model.options.supportsColor (Decode.errorToString err) )
@@ -1092,7 +1092,7 @@ reportOrFixOld model =
         FixOptions.DontFix ->
             model
                 |> CliCommunication.timerStart model.options.communicationKey "process-errors"
-                |> makeReport (Store.suppressedErrors model.store)
+                |> makeReportOld (Store.suppressedErrors model.store)
                 |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
@@ -1108,7 +1108,7 @@ reportOrFix model =
         FixOptions.DontFix ->
             model
                 |> CliCommunication.timerStart model.options.communicationKey "process-errors"
-                |> makeReport (Store.suppressedErrors model.store)
+                |> makeReportOld (Store.suppressedErrors model.store)
                 |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
@@ -1116,6 +1116,106 @@ reportOrFix model =
 
         FixOptions.FixAll ->
             applyFixesAfterReview False model
+
+
+makeReportOld : SuppressedErrors -> Model -> ( Model, Cmd msg )
+makeReportOld previousSuppressedErrors model =
+    let
+        ( newModel, suppressedErrorsForJson ) =
+            if List.isEmpty model.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
+                let
+                    suppressedErrors : SuppressedErrors
+                    suppressedErrors =
+                        SuppressedErrors.fromReviewErrors model.reviewErrors
+                in
+                ( { model
+                    | store = Store.setSuppressedErrors suppressedErrors model.store
+                    , rules = model.fixAllRules
+                  }
+                  -- TODO Write suppression files
+                , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
+                )
+
+            else
+                ( { model | rules = model.fixAllRules }, Encode.null )
+
+        newSuppressedErrors : SuppressedErrors
+        newSuppressedErrors =
+            Store.suppressedErrors newModel.store
+
+        ruleLinks : Dict String String
+        ruleLinks =
+            Store.ruleLinks newModel.store
+    in
+    ( newModel
+    , Cmd.batch
+        [ case newModel.options.reportMode of
+            HumanReadable ->
+                let
+                    filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
+                    filesWithError =
+                        groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) model.reviewErrorsAfterSuppression
+                in
+                Reporter.formatReport
+                    newModel.options
+                    { suppressedErrors = newSuppressedErrors
+                    , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
+                    , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+                    }
+                    filesWithError
+                    |> Text.toAnsi model.options.supportsColor
+                    |> Cli.println model.env.stdout
+
+            Json ->
+                let
+                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                    errorsByFile =
+                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
+
+                    errors : Encode.Value
+                    errors =
+                        Encode.list
+                            (encodeErrorByFile
+                                model.options
+                                { suppressedErrors = newSuppressedErrors
+                                , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                                }
+                                ruleLinks
+                            )
+                            errorsByFile
+                in
+                printJson
+                    model.env
+                    model.options.debug
+                    errors
+                    (Encode.dict identity identity newModel.extracts)
+
+            NDJson ->
+                let
+                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                    errorsByFile =
+                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
+                in
+                errorsByFile
+                    |> List.concatMap
+                        (encodeErrorsForNDJson
+                            newModel.options
+                            { suppressedErrors = newSuppressedErrors
+                            , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                            }
+                            ruleLinks
+                        )
+                    |> printNDJson model.env
+        , if model.options.watch then
+            Cmd.none
+
+          else if List.isEmpty model.reviewErrorsAfterSuppression then
+            Cli.exit 0
+
+          else
+            Cli.exit 1
+        ]
+    )
 
 
 makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
@@ -1439,12 +1539,12 @@ encodePosition position =
 applyFixesAfterReviewOld : Model -> Bool -> ( Model, Cmd msg )
 applyFixesAfterReviewOld model allowPrintingSingleFix =
     if Dict.isEmpty model.fixAllErrors then
-        makeReport (Store.suppressedErrors model.store) model
+        makeReportOld (Store.suppressedErrors model.store) model
 
     else
         case Project.diffV2 { before = Store.project model.store, after = model.fixAllResultProject } of
             [] ->
-                makeReport (Store.suppressedErrors model.store) model
+                makeReportOld (Store.suppressedErrors model.store) model
 
             diffs ->
                 if allowPrintingSingleFix then
@@ -1459,12 +1559,12 @@ applyFixesAfterReviewOld model allowPrintingSingleFix =
 applyFixesAfterReview : Bool -> Model -> ( Model, Cmd Msg )
 applyFixesAfterReview allowPrintingSingleFix model =
     if Dict.isEmpty model.fixAllErrors then
-        makeReport (Store.suppressedErrors model.store) model
+        makeReportOld (Store.suppressedErrors model.store) model
 
     else
         case Project.diffV2 { before = Store.project model.store, after = model.fixAllResultProject } of
             [] ->
-                makeReport (Store.suppressedErrors model.store) model
+                makeReportOld (Store.suppressedErrors model.store) model
 
             diffs ->
                 if allowPrintingSingleFix then
