@@ -510,10 +510,10 @@ update msg model =
 applyFixChanges : FixPromptPayload -> Model -> ( Model, Cmd Msg )
 applyFixChanges { changedFiles, removedFiles } model =
     -- TODO
-    --   - Pass files as part of payload
+    -- Support multi file fixes
+    -- Remove fixAllProject from Model?
+    -- Remove FixPrompt module?
     -- From JS: askConfirmationToFixWithOptions
-    --   - Format Elm files
-    --   - Delete Elm files
     --   - Check if elm.json was modified
     --      - Refetch source-dependencies / dependencies if they changed
     -- From Elm: UserConfirmedFix confirmation ->
