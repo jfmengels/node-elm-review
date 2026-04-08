@@ -1036,10 +1036,10 @@ reportOrFixOld model =
                 |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReviewOld model True model.options.fileRemovalFixesEnabled
+            applyFixesAfterReviewOld model True
 
         FixOptions.FixAll ->
-            applyFixesAfterReviewOld model False model.options.fileRemovalFixesEnabled
+            applyFixesAfterReviewOld model False
 
 
 reportOrFix : Model -> ( Model, Cmd Msg )
@@ -1052,10 +1052,10 @@ reportOrFix model =
                 |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReview model True model.options.fileRemovalFixesEnabled
+            applyFixesAfterReview model True
 
         FixOptions.FixAll ->
-            applyFixesAfterReview model False model.options.fileRemovalFixesEnabled
+            applyFixesAfterReview model False
 
 
 makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
@@ -1376,8 +1376,8 @@ encodePosition position =
         ]
 
 
-applyFixesAfterReviewOld : Model -> Bool -> Bool -> ( Model, Cmd msg )
-applyFixesAfterReviewOld model allowPrintingSingleFix fileRemovalFixesEnabled =
+applyFixesAfterReviewOld : Model -> Bool -> ( Model, Cmd msg )
+applyFixesAfterReviewOld model allowPrintingSingleFix =
     if Dict.isEmpty model.fixAllErrors then
         makeReport (Store.suppressedErrors model.store) model
 
@@ -1388,16 +1388,16 @@ applyFixesAfterReviewOld model allowPrintingSingleFix fileRemovalFixesEnabled =
 
             diffs ->
                 if allowPrintingSingleFix then
-                    sendFixPromptOld fileRemovalFixesEnabled model diffs
+                    sendFixPromptOld model diffs
 
                 else
                     ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-                    , sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs (countErrors model.fixAllErrors)
+                    , sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
                     )
 
 
-applyFixesAfterReview : Model -> Bool -> Bool -> ( Model, Cmd Msg )
-applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
+applyFixesAfterReview : Model -> Bool -> ( Model, Cmd Msg )
+applyFixesAfterReview model allowPrintingSingleFix =
     if Dict.isEmpty model.fixAllErrors then
         makeReport (Store.suppressedErrors model.store) model
 
@@ -1408,17 +1408,17 @@ applyFixesAfterReview model allowPrintingSingleFix fileRemovalFixesEnabled =
 
             diffs ->
                 if allowPrintingSingleFix then
-                    sendFixPrompt fileRemovalFixesEnabled model diffs
+                    sendFixPrompt model diffs
 
                 else
                     ( { model | errorAwaitingConfirmation = AwaitingFixAll }
                     , -- TODO Handle multiple fix prompt
-                      sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs (countErrors model.fixAllErrors)
+                      sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
                     )
 
 
-sendFixPromptOld : Bool -> Model -> List FixedFile -> ( Model, Cmd msg )
-sendFixPromptOld fileRemovalFixesEnabled model diffs =
+sendFixPromptOld : Model -> List FixedFile -> ( Model, Cmd msg )
+sendFixPromptOld model diffs =
     case numberOfErrors model.fixAllErrors of
         NoErrors ->
             ( model, Cmd.none )
@@ -1474,12 +1474,12 @@ sendFixPromptOld fileRemovalFixesEnabled model diffs =
 
         MultipleErrors numberOfFixedErrors ->
             ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-            , sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedErrors
+            , sendFixPromptForMultipleFixes model diffs numberOfFixedErrors
             )
 
 
-sendFixPrompt : Bool -> Model -> List FixedFile -> ( Model, Cmd Msg )
-sendFixPrompt fileRemovalFixesEnabled model diffs =
+sendFixPrompt : Model -> List FixedFile -> ( Model, Cmd Msg )
+sendFixPrompt model diffs =
     case numberOfErrors model.fixAllErrors of
         NoErrors ->
             ( model, Cmd.none )
@@ -1551,7 +1551,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
 
         MultipleErrors numberOfFixedErrors ->
             ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-            , sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedErrors
+            , sendFixPromptForMultipleFixes model diffs numberOfFixedErrors
             )
 
 
@@ -1590,8 +1590,8 @@ pathAndSource project path =
         { path = Reporter.FilePath path, source = Reporter.Source fileLines }
 
 
-sendFixPromptForMultipleFixes : Bool -> Model -> List FixedFile -> Int -> Cmd msg
-sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedErrors =
+sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
+sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
     let
         errorsForFile : Dict String (List Reporter.Error)
         errorsForFile =
@@ -1657,7 +1657,7 @@ sendFixPromptForMultipleFixes fileRemovalFixesEnabled model diffs numberOfFixedE
 
         confirmationMessage : Encode.Value
         confirmationMessage =
-            Reporter.formatFixProposals fileRemovalFixesEnabled errorsForFile diffs
+            Reporter.formatFixProposals model.options.fileRemovalFixesEnabled errorsForFile diffs
                 |> encodeReport
     in
     askConfirmationToFix
