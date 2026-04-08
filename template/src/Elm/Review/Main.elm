@@ -22,7 +22,9 @@ import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
+import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode(..))
+import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -33,6 +35,7 @@ import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
+import Task exposing (Task)
 
 
 
@@ -184,7 +187,14 @@ type ModelWrapper
 type Msg
     = StoreMsg Store.Msg
     | SuppressedErrorsMsg SuppressedErrors.Msg
-    | FixPromptMsg (FixPrompt.Msg ())
+    | FixPromptMsg (FixPrompt.Msg FixPromptPayload)
+    | AppliedFixes (Result Fs.FsError ())
+
+
+type alias FixPromptPayload =
+    { changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
+    , removedFiles : List Path
+    }
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -473,7 +483,7 @@ update msg model =
         FixPromptMsg fixPromptMsg ->
             case FixPrompt.update fixPromptMsg model.fixPrompt of
                 FixPrompt.Accepted payload ->
-                    handleFixAccepted payload model
+                    applyFixChanges payload model
 
                 FixPrompt.TriggerCmd cmd ->
                     ( model
@@ -486,9 +496,13 @@ update msg model =
                 FixPrompt.Ignore ->
                     ( model, Cmd.none )
 
+        AppliedFixes result ->
+            -- TODO Do something?
+            ( model, Cmd.none )
 
-handleFixAccepted : () -> Model -> ( Model, Cmd msg )
-handleFixAccepted payload model =
+
+applyFixChanges : FixPromptPayload -> Model -> ( Model, Cmd Msg )
+applyFixChanges { changedFiles, removedFiles } model =
     -- TODO
     --   - Pass files as part of payload
     -- From JS: askConfirmationToFixWithOptions
@@ -498,10 +512,13 @@ handleFixAccepted payload model =
     --      - Refetch source-dependencies / dependencies if they changed
     -- From Elm: UserConfirmedFix confirmation ->
     --   - ???
-    ( model, Cmd.none )
+    ( model
+    , TaskExtra.mapAll (\filePath -> Fs.deleteFile model.fs filePath) removedFiles
+        |> Task.attempt AppliedFixes
+    )
 
 
-handleFixRefused : Model -> ( Model, Cmd msg )
+handleFixRefused : Model -> ( Model, Cmd Msg )
 handleFixRefused model =
     let
         project : Project
@@ -516,7 +533,7 @@ handleFixRefused model =
             }
                 |> refuseError error
                 |> runReview { fixesAllowed = True } (Store.project model.store)
-                |> reportOrFixOld
+                |> reportOrFix
 
         AwaitingFixAll ->
             { model
@@ -1479,7 +1496,7 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                         )
                         diffs
 
-                removedFiles : List String
+                removedFiles : List Path
                 removedFiles =
                     List.filterMap
                         (\{ path, diff } ->
@@ -1500,12 +1517,18 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
                         (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
                         diffs
 
+                fixPayload : FixPromptPayload
+                fixPayload =
+                    { changedFiles = changedFiles
+                    , removedFiles = removedFiles
+                    }
+
                 ( fixPrompt, fixPromptCmd ) =
                     case model.env.stdin of
                         Just stdin ->
                             confirmationMessage
                                 |> Text.toAnsi model.options.supportsColor
-                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
+                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt fixPayload
 
                         Nothing ->
                             -- TODO
