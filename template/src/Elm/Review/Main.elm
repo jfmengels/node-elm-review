@@ -192,7 +192,7 @@ type Msg
 
 
 type alias FixPromptPayload =
-    { changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
+    { changedFiles : List { filePath : Path, source : String }
     , removedFiles : List Path
     }
 
@@ -513,7 +513,12 @@ applyFixChanges { changedFiles, removedFiles } model =
     -- From Elm: UserConfirmedFix confirmation ->
     --   - ???
     ( model
-    , TaskExtra.mapAll (\filePath -> Fs.deleteFile model.fs filePath) removedFiles
+    , Task.map2 always
+        (changedFiles
+            -- TODO Format Elm files
+            |> TaskExtra.mapAll (\{ filePath, source } -> Fs.writeTextFile model.fs filePath source)
+        )
+        (TaskExtra.mapAll (\filePath -> Fs.deleteFile model.fs filePath) removedFiles)
         |> Task.attempt AppliedFixes
     )
 
@@ -1420,7 +1425,7 @@ sendFixPromptOld fileRemovalFixesEnabled model diffs =
 
         OneError filePath error ->
             let
-                changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
+                changedFiles : List { path : Reporter.FilePath, raw : String, source : Reporter.Source }
                 changedFiles =
                     List.filterMap
                         (\{ path, diff } ->
@@ -1428,6 +1433,7 @@ sendFixPromptOld fileRemovalFixesEnabled model diffs =
                                 Project.Edited { after } ->
                                     Just
                                         { path = Reporter.FilePath path
+                                        , raw = after
                                         , source = Reporter.Source (after |> String.lines |> Array.fromList)
                                         }
 
@@ -1480,15 +1486,15 @@ sendFixPrompt fileRemovalFixesEnabled model diffs =
 
         OneError filePath error ->
             let
-                changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
+                changedFiles : List { filePath : Path, source : String }
                 changedFiles =
                     List.filterMap
                         (\{ path, diff } ->
                             case diff of
                                 Project.Edited { after } ->
                                     Just
-                                        { path = Reporter.FilePath path
-                                        , source = Reporter.Source (after |> String.lines |> Array.fromList)
+                                        { filePath = path
+                                        , source = after
                                         }
 
                                 Project.Removed ->
@@ -1701,7 +1707,7 @@ numberOfErrors dict =
             MultipleErrors (List.length list)
 
 
-encodeChangedFile : { path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
+encodeChangedFile : { file | path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
 encodeChangedFile changedFile =
     let
         (Reporter.Source source) =
