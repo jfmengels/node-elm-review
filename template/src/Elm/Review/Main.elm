@@ -187,14 +187,20 @@ type ModelWrapper
 type Msg
     = StoreMsg Store.Msg
     | SuppressedErrorsMsg SuppressedErrors.Msg
-    | FixPromptMsg (FixPrompt.Msg FixPromptPayload)
+    | FixPromptMsg FixPromptPayload (FixPrompt.Msg ())
     | AppliedFixes (Result Fs.FsError ())
 
 
 type alias FixPromptPayload =
-    { changedFiles : List { filePath : Path, source : String }
+    { kind : FixPromptKind
+    , changedFiles : List { filePath : Path, source : String }
     , removedFiles : List Path
     }
+
+
+type FixPromptKind
+    = FixSingle Rule.ReviewError
+    | FixAll
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -480,18 +486,18 @@ update msg model =
             , SuppressedErrors.update model.env.stdout suppressedErrorsMsg
             )
 
-        FixPromptMsg fixPromptMsg ->
+        FixPromptMsg payload fixPromptMsg ->
             case FixPrompt.update fixPromptMsg model.fixPrompt of
-                FixPrompt.Accepted payload ->
+                FixPrompt.Accepted () ->
                     applyFixChanges payload model
 
                 FixPrompt.TriggerCmd cmd ->
                     ( model
-                    , Cmd.map FixPromptMsg cmd
+                    , Cmd.map (FixPromptMsg payload) cmd
                     )
 
                 FixPrompt.Refused ->
-                    handleFixRefused model
+                    handleFixRefused payload.kind model
 
                 FixPrompt.Ignore ->
                     ( model, Cmd.none )
@@ -523,15 +529,15 @@ applyFixChanges { changedFiles, removedFiles } model =
     )
 
 
-handleFixRefused : Model -> ( Model, Cmd Msg )
-handleFixRefused model =
+handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
+handleFixRefused fixPromptKind model =
     let
         project : Project
         project =
             Store.project model.store
     in
-    case model.errorAwaitingConfirmation of
-        AwaitingError error ->
+    case fixPromptKind of
+        FixSingle error ->
             { model
                 | errorAwaitingConfirmation = NotAwaiting
                 , fixAllResultProject = project
@@ -540,17 +546,11 @@ handleFixRefused model =
                 |> runReview { fixesAllowed = True } (Store.project model.store)
                 |> reportOrFix
 
-        AwaitingFixAll ->
+        FixAll ->
             { model
                 | errorAwaitingConfirmation = NotAwaiting
                 , fixAllResultProject = project
             }
-                |> runReview { fixesAllowed = False } project
-                |> makeReport (Store.suppressedErrors model.store)
-
-        NotAwaiting ->
-            -- Should not be possible?
-            model
                 |> runReview { fixesAllowed = False } project
                 |> makeReport (Store.suppressedErrors model.store)
 
@@ -1525,7 +1525,8 @@ sendFixPrompt model diffs =
 
                 fixPayload : FixPromptPayload
                 fixPayload =
-                    { changedFiles = changedFiles
+                    { kind = FixSingle error
+                    , changedFiles = changedFiles
                     , removedFiles = removedFiles
                     }
 
@@ -1534,7 +1535,7 @@ sendFixPrompt model diffs =
                         Just stdin ->
                             confirmationMessage
                                 |> Text.toAnsi model.options.supportsColor
-                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt fixPayload
+                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
 
                         Nothing ->
                             -- TODO
@@ -1546,7 +1547,7 @@ sendFixPrompt model diffs =
                 , -- TODO Reuse/remove errorAwaitingConfirmation
                   errorAwaitingConfirmation = AwaitingError error
               }
-            , Cmd.map FixPromptMsg fixPromptCmd
+            , Cmd.map (FixPromptMsg fixPayload) fixPromptCmd
             )
 
         MultipleErrors numberOfFixedErrors ->
