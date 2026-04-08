@@ -577,7 +577,7 @@ handleUserConfirmedFix { rawFiles, dependencies } model =
             , fixAllErrors = Dict.empty
             , errorsHaveBeenFixedPreviously = True
         }
-            |> runReview { fixesAllowed = True } newProject
+            |> runReviewOld { fixesAllowed = True } newProject
             |> reportOrFixOld
             -- TODO Separate sending files to be cached and computing the files.
             -- We may now already have found new fixes which are likely to be accepted.
@@ -602,7 +602,7 @@ handleFixRefused fixPromptKind model =
                 , fixAllResultProject = project
             }
                 |> refuseError error
-                |> runReview { fixesAllowed = True } (Store.project model.store)
+                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
                 |> reportOrFix
 
         FixAll ->
@@ -610,7 +610,7 @@ handleFixRefused fixPromptKind model =
                 | errorAwaitingConfirmation = NotAwaiting
                 , fixAllResultProject = project
             }
-                |> runReview { fixesAllowed = False } project
+                |> runReviewOld { fixesAllowed = False } project
                 |> makeReport (Store.suppressedErrors model.store)
 
 
@@ -624,7 +624,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         newModel : Model
                         newModel =
                             { model | fixAllErrors = Dict.empty }
-                                |> runReview { fixesAllowed = False } (Store.project model.store)
+                                |> runReviewOld { fixesAllowed = False } (Store.project model.store)
                     in
                     ( newModel
                     , Cmd.batch
@@ -646,7 +646,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     let
                         ( modelWithReviewResults, newCmd ) =
                             { model | fixAllErrors = Dict.empty }
-                                |> runReview { fixesAllowed = True } (Store.project model.store)
+                                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
                                 |> reportOrFix
                     in
                     -- TODO Update suppressions
@@ -826,7 +826,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         GotRequestToReview ->
             { model | fixAllErrors = Dict.empty }
-                |> runReview { fixesAllowed = True } (Store.project model.store)
+                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
                 |> reportOrFixOld
 
         GotRequestToGenerateSuppressionErrors ->
@@ -834,7 +834,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                 newModel : Model
                 newModel =
                     { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = False } (Store.project model.store)
+                        |> runReviewOld { fixesAllowed = False } (Store.project model.store)
             in
             ( newModel
             , newModel.reviewErrors
@@ -861,7 +861,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 , fixAllResultProject = project
                             }
                                 |> refuseError error
-                                |> runReview { fixesAllowed = True } (Store.project model.store)
+                                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
                                 |> reportOrFixOld
 
                         AwaitingFixAll ->
@@ -869,12 +869,12 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 | errorAwaitingConfirmation = NotAwaiting
                                 , fixAllResultProject = project
                             }
-                                |> runReview { fixesAllowed = False } project
+                                |> runReviewOld { fixesAllowed = False } project
                                 |> makeReport (Store.suppressedErrors model.store)
 
                         NotAwaiting ->
                             -- Should not be possible?
-                            runReview { fixesAllowed = False } project model
+                            runReviewOld { fixesAllowed = False } project model
                                 |> makeReport (Store.suppressedErrors model.store)
 
                 Err err ->
@@ -994,6 +994,51 @@ confirmationDecoder ignoreProblematicDependencies =
                 else
                     Decode.succeed Refused
             )
+
+
+runReviewOld : { fixesAllowed : Bool } -> Project -> Model -> Model
+runReviewOld fixesAllowed initialProject model =
+    let
+        suppressedErrors : SuppressedErrors
+        suppressedErrors =
+            Store.suppressedErrors model.store
+
+        { errors, rules, project, extracts, fixedErrors } =
+            initialProject
+                |> CliCommunication.timerStart model.options.communicationKey "run-review"
+                |> Rule.reviewV3
+                    (Options.toReviewOptions model.options fixesAllowed model.refusedErrorFixes
+                        |> SuppressedErrors.addToReviewOptions suppressedErrors
+                    )
+                    model.rules
+                |> CliCommunication.timerEnd model.options.communicationKey "run-review"
+    in
+    { model
+        | reviewErrors = errors
+        , reviewErrorsAfterSuppression =
+            errors
+                |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
+                |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
+                |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
+        , rules =
+            if model.isInitialRun || model.options.fixMode == FixOptions.DontFix then
+                rules
+
+            else
+                model.rules
+        , isInitialRun = False
+        , fixAllRules = rules
+        , store =
+            if model.options.fixMode == FixOptions.DontFix then
+                Store.setProject project model.store
+
+            else
+                model.store
+        , fixAllResultProject = project
+        , fixAllErrors = fixedErrors
+        , errorAwaitingConfirmation = NotAwaiting
+        , extracts = extracts
+    }
 
 
 runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
