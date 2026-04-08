@@ -602,7 +602,7 @@ handleFixRefused fixPromptKind model =
                 , fixAllResultProject = project
             }
                 |> refuseError error
-                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
+                |> runReview { fixesAllowed = True } (Store.project model.store)
                 |> reportOrFix
 
         FixAll ->
@@ -610,8 +610,8 @@ handleFixRefused fixPromptKind model =
                 | errorAwaitingConfirmation = NotAwaiting
                 , fixAllResultProject = project
             }
-                |> runReviewOld { fixesAllowed = False } project
-                |> makeReportOld (Store.suppressedErrors model.store)
+                |> runReview { fixesAllowed = False } project
+                |> makeReport (Store.suppressedErrors model.store)
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -646,7 +646,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     let
                         ( modelWithReviewResults, newCmd ) =
                             { model | fixAllErrors = Dict.empty }
-                                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
+                                |> runReview { fixesAllowed = True } (Store.project model.store)
                                 |> reportOrFix
                     in
                     -- TODO Update suppressions
@@ -1041,7 +1041,17 @@ runReviewOld fixesAllowed initialProject model =
     }
 
 
-runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
+type alias RunReviewResult =
+    { reviewErrors : List Rule.ReviewError
+    , reviewErrorsAfterSuppression : List Rule.ReviewError
+    , fixAllRules : List Rule
+    , fixAllResultProject : Project
+    , fixAllErrors : Dict String (List Rule.ReviewError)
+    , extracts : Dict String Encode.Value
+    }
+
+
+runReview : { fixesAllowed : Bool } -> Project -> Model -> ( Model, RunReviewResult )
 runReview fixesAllowed initialProject model =
     let
         suppressedErrors : SuppressedErrors
@@ -1058,7 +1068,7 @@ runReview fixesAllowed initialProject model =
                     model.rules
                 |> CliCommunication.timerEnd model.options.communicationKey "run-review"
     in
-    { model
+    ( { model
         | reviewErrors = errors
         , reviewErrorsAfterSuppression =
             errors
@@ -1083,7 +1093,19 @@ runReview fixesAllowed initialProject model =
         , fixAllErrors = fixedErrors
         , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
-    }
+      }
+    , { reviewErrors = errors
+      , reviewErrorsAfterSuppression =
+            errors
+                |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
+                |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
+                |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
+      , fixAllRules = rules
+      , fixAllResultProject = project
+      , fixAllErrors = fixedErrors
+      , extracts = extracts
+      }
+    )
 
 
 reportOrFixOld : Model -> ( Model, Cmd msg )
@@ -1102,8 +1124,8 @@ reportOrFixOld model =
             applyFixesAfterReviewOld model False
 
 
-reportOrFix : Model -> ( Model, Cmd Msg )
-reportOrFix model =
+reportOrFix : ( Model, RunReviewResult ) -> ( Model, Cmd Msg )
+reportOrFix ( model, result ) =
     case model.options.fixMode of
         FixOptions.DontFix ->
             model
@@ -1218,19 +1240,19 @@ makeReportOld previousSuppressedErrors model =
     )
 
 
-makeReport : SuppressedErrors -> Model -> ( Model, Cmd msg )
-makeReport previousSuppressedErrors model =
+makeReport : SuppressedErrors -> ( Model, RunReviewResult ) -> ( Model, Cmd msg )
+makeReport previousSuppressedErrors ( model, runReviewResult ) =
     let
         ( newModel, suppressedErrorsForJson ) =
-            if List.isEmpty model.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
+            if List.isEmpty runReviewResult.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
                 let
                     suppressedErrors : SuppressedErrors
                     suppressedErrors =
-                        SuppressedErrors.fromReviewErrors model.reviewErrors
+                        SuppressedErrors.fromReviewErrors runReviewResult.reviewErrors
                 in
                 ( { model
                     | store = Store.setSuppressedErrors suppressedErrors model.store
-                    , rules = model.fixAllRules
+                    , rules = runReviewResult.fixAllRules
                   }
                   -- TODO Write suppression files
                 , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
@@ -1245,7 +1267,7 @@ makeReport previousSuppressedErrors model =
 
         ruleLinks : Dict String String
         ruleLinks =
-            Store.ruleLinks newModel.store
+            Store.ruleLinks model.store
     in
     ( newModel
     , Cmd.batch
