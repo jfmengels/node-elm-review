@@ -1245,38 +1245,64 @@ makeReportOld previousSuppressedErrors model =
     )
 
 
-makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, Cmd msg )
-makeReport previousSuppressedErrors { model, result } =
+makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+makeReport previousSuppressedErrors input =
     let
-        ( newModel, suppressedErrorsForJson ) =
-            if List.isEmpty result.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
-                let
-                    suppressedErrors : SuppressedErrors
-                    suppressedErrors =
-                        SuppressedErrors.fromReviewErrors result.reviewErrors
-                in
-                ( { model
-                    | store = Store.setSuppressedErrors suppressedErrors model.store
-                    , rules = result.fixAllRules
-                  }
-                  -- TODO Write suppression files
-                , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
-                )
+        ( model, suppressionCmd ) =
+            saveRunReviewResultsInModel input
+    in
+    ( model
+    , Cmd.batch
+        [ suppressionCmd
+        , printReport previousSuppressedErrors model
+        ]
+    )
 
-            else
-                ( { model | rules = model.fixAllRules }, Encode.null )
 
+saveRunReviewResultsInModel : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+saveRunReviewResultsInModel { model, result } =
+    let
+        store : Store.Model
+        store =
+            model.store
+                |> Store.setProject result.fixAllResultProject
+
+        newModel : Model
+        newModel =
+            { model
+                | store = store
+                , rules = result.fixAllRules
+            }
+    in
+    if List.isEmpty result.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
+        let
+            suppressedErrors : SuppressedErrors
+            suppressedErrors =
+                SuppressedErrors.fromReviewErrors result.reviewErrors
+        in
+        ( { newModel | store = Store.setSuppressedErrors suppressedErrors store }
+        , -- TODO Write suppression files
+          -- SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
+          Cmd.none
+        )
+
+    else
+        ( newModel, Cmd.none )
+
+
+printReport : SuppressedErrors -> Model -> Cmd Msg
+printReport previousSuppressedErrors model =
+    let
         newSuppressedErrors : SuppressedErrors
         newSuppressedErrors =
-            Store.suppressedErrors newModel.store
+            Store.suppressedErrors model.store
 
         ruleLinks : Dict String String
         ruleLinks =
             Store.ruleLinks model.store
     in
-    ( newModel
-    , Cmd.batch
-        [ case newModel.options.reportMode of
+    Cmd.batch
+        [ case model.options.reportMode of
             HumanReadable ->
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
@@ -1284,10 +1310,10 @@ makeReport previousSuppressedErrors { model, result } =
                         groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) model.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
-                    newModel.options
+                    model.options
                     { suppressedErrors = newSuppressedErrors
                     , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-                    , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
+                    , errorsHaveBeenFixedPreviously = model.errorsHaveBeenFixedPreviously
                     }
                     filesWithError
                     |> Text.toAnsi model.options.supportsColor
@@ -1315,7 +1341,7 @@ makeReport previousSuppressedErrors { model, result } =
                     model.env
                     model.options.debug
                     errors
-                    (Encode.dict identity identity newModel.extracts)
+                    (Encode.dict identity identity model.extracts)
 
             NDJson ->
                 let
@@ -1326,7 +1352,7 @@ makeReport previousSuppressedErrors { model, result } =
                 errorsByFile
                     |> List.concatMap
                         (encodeErrorsForNDJson
-                            newModel.options
+                            model.options
                             { suppressedErrors = newSuppressedErrors
                             , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
                             }
@@ -1342,7 +1368,6 @@ makeReport previousSuppressedErrors { model, result } =
           else
             Cli.exit 1
         ]
-    )
 
 
 printJson : Env -> Bool -> Encode.Value -> Encode.Value -> Cmd msg
