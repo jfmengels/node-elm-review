@@ -43,7 +43,7 @@ type alias LoadingModel =
 
 
 type Msg
-    = FoundNearestElmJson (Result FsError String)
+    = FoundNearestElmJson (Result FsError Path)
     | ReviewMsg Review.Msg
     | InitMsg Init.Msg
 
@@ -209,7 +209,7 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
             )
 
 
-findNearestElmJson : FileSystem -> Array String -> Task Fs.FsError String
+findNearestElmJson : FileSystem -> Array String -> Task FsError Path
 findNearestElmJson fs pathSegments =
     if Array.isEmpty pathSegments then
         Task.fail (Fs.NotFound "")
@@ -228,7 +228,7 @@ findNearestElmJson fs pathSegments =
                 )
 
 
-getCwd : FileSystem -> Dict String String -> Task Fs.FsError String
+getCwd : FileSystem -> Dict String String -> Task FsError Path
 getCwd fs env =
     -- TODO Replace this by the following when fixed.
     -- Fs.toSandboxRel fs path "."
