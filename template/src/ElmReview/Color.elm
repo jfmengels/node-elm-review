@@ -1,7 +1,7 @@
 module ElmReview.Color exposing
     ( Color(..)
     , Colorize, toAnsi
-    , Support, supportsColor, noColors, colors_FOR_TESTS
+    , Support, supportsColor, noColors, yesColors
     , doesSupportColor
     )
 
@@ -9,7 +9,7 @@ module ElmReview.Color exposing
 
 @docs Color
 @docs Colorize, toAnsi
-@docs Support, supportsColor, noColors, colors_FOR_TESTS
+@docs Support, supportsColor, noColors, yesColors
 @docs doesSupportColor
 
 -}
@@ -99,8 +99,8 @@ noColors =
     ColorSupport False
 
 
-colors_FOR_TESTS : Support
-colors_FOR_TESTS =
+yesColors : Support
+yesColors =
     ColorSupport True
 
 
