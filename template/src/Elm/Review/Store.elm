@@ -160,7 +160,17 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
                             if List.isEmpty directoriesToAnalyze then
                                 case elmJson of
                                     Elm.Project.Application application ->
-                                        List.map (fetchElmFiles fs) ("test" :: application.dirs)
+                                        if List.isEmpty application.dirs then
+                                            [ { title = "EMPTY SOURCE-DIRECTORIES"
+                                              , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
+                                              }
+                                                |> Problem.from
+                                                |> Problem.withPath path
+                                                |> handleProblem
+                                            ]
+
+                                        else
+                                            List.map (fetchElmFiles fs) ("test" :: application.dirs)
 
                                     Elm.Project.Package _ ->
                                         List.map (fetchElmFiles fs) [ "src", "test" ]
