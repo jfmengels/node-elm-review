@@ -6,7 +6,7 @@ import Dict exposing (Dict)
 import Elm.Project
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.CliVersion as CliVersion
-import Elm.Review.Color as Color
+import Elm.Review.Color
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
@@ -17,9 +17,10 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
+import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmReview.ReportMode exposing (ReportMode(..))
+import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
@@ -110,26 +111,37 @@ type FixPromptKind
 init : Env -> ( ModelWrapper, Cmd Msg )
 init env =
     case Fs.require env of
-        Err msg ->
+        Err err ->
             ( Done
-            , Cmd.batch
-                [ Cli.println env.stderr (env.programName ++ ": " ++ msg)
-                , Cli.exit 1
-                ]
+            , { title = "MISSING CAPABILITIES"
+              , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
+              }
+                |> Problem.from
+                |> Problem.exit env.stderr (roughFormatOptions env.args)
             )
 
         Ok fs ->
             case Options.parse env.args of
                 Err error ->
                     ( Done
-                    , Cmd.batch
-                        [ Cli.println env.stderr error
-                        , Cli.exit 1
-                        ]
+                    , Problem.exit env.stderr (roughFormatOptions env.args) error
                     )
 
                 Ok options ->
                     initWithOptions env fs options
+
+
+roughFormatOptions : List String -> Problem.FormatOptions {}
+roughFormatOptions args =
+    { color = Color.noColors
+    , reportMode =
+        if List.member "--report=json" args || List.member "--report=ndjson" args then
+            ReportMode.Json
+
+        else
+            ReportMode.HumanReadable
+    , debug = List.member "--debug" args
+    }
 
 
 initWithOptions : Env -> FileSystem -> Options -> ( ModelWrapper, Cmd Msg )
@@ -464,7 +476,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         -- TODO Don't print in JSON report mode
                         , Cli.println model.env.stdout
                             ("I created suppressions files in "
-                                ++ Color.toAnsi model.options.supportsColor Color.Orange (SuppressedErrors.suppressedFolder model.options)
+                                ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
                             )
                         , Cli.exit 0
                         ]
@@ -1359,7 +1371,7 @@ encodeReportPart { str, color, href } =
             fields =
                 []
                     |> maybeMapAndCons (\href_ -> ( "href", Encode.string href_ )) href
-                    |> maybeMapAndCons (\color_ -> ( "color", Encode.string (Color.toHex color_) )) color
+                    |> maybeMapAndCons (\color_ -> ( "color", Encode.string (Elm.Review.Color.toHex color_) )) color
         in
         Encode.object (( "string", Encode.string str ) :: fields)
 

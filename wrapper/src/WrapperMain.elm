@@ -4,9 +4,10 @@ import Array exposing (Array)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
-import ElmReview.Color exposing (Color(..))
+import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
+import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
@@ -51,13 +52,22 @@ type Msg
 init : Env -> ( Model, Cmd Msg )
 init env =
     case requireCapabilities env of
-        Err msg ->
+        Err err ->
             ( Done
-            , Cmd.batch
-                [ -- TODO Make pretty error
-                  Cli.println env.stderr (env.programName ++ ": " ++ msg)
-                , Cli.exit 1
-                ]
+            , { title = "MISSING CAPABILITIES"
+              , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
+              }
+                |> Problem.from
+                |> Problem.exit env.stderr
+                    { color = Color.noColors
+                    , reportMode =
+                        if List.member "--report=json" env.args || List.member "--report=ndjson" env.args then
+                            ReportMode.Json
+
+                        else
+                            ReportMode.HumanReadable
+                    , debug = List.member "--debug" env.args
+                    }
             )
 
         Ok capabilities ->
