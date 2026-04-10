@@ -3,13 +3,10 @@ port module Elm.Review.Main exposing (ModelWrapper, Msg, main)
 import Array exposing (Array)
 import Cli exposing (Env)
 import Dict exposing (Dict)
-import Elm.Docs
 import Elm.Project
-import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
-import Elm.Review.File
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.FixPrompt as FixPrompt
 import Elm.Review.Options as Options exposing (Options)
@@ -20,22 +17,19 @@ import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
-import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode(..))
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
-import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
 import Review.Project as Project exposing (Project)
-import Review.Project.Dependency as Dependency exposing (Dependency)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
-import Task exposing (Task)
+import Task
 
 
 
@@ -45,65 +39,7 @@ import Task exposing (Task)
 port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedDirectories : List String } -> Cmd msg
 
 
-port collectFile : (Decode.Value -> msg) -> Sub msg
-
-
-port removeFile : (String -> msg) -> Sub msg
-
-
-port collectElmJson : (Decode.Value -> msg) -> Sub msg
-
-
-port collectReadme : (Decode.Value -> msg) -> Sub msg
-
-
-port collectExtraFiles : (Decode.Value -> msg) -> Sub msg
-
-
-port collectDependencies : (Decode.Value -> msg) -> Sub msg
-
-
-port updateSuppressedErrors : (Decode.Value -> msg) -> Sub msg
-
-
-port cacheFile : Encode.Value -> Cmd msg
-
-
-port acknowledgeFileReceipt : Encode.Value -> Cmd msg
-
-
-port startReview : (() -> msg) -> Sub msg
-
-
-port reviewReport : Encode.Value -> Cmd msg
-
-
-port startGeneratingSuppressions : (() -> msg) -> Sub msg
-
-
-port suppressionsResponse : Encode.Value -> Cmd msg
-
-
-port userConfirmedFix : (Decode.Value -> msg) -> Sub msg
-
-
 port askConfirmationToFix : Encode.Value -> Cmd msg
-
-
-port askForFixConfirmationStatus : (() -> msg) -> Sub msg
-
-
-port fixConfirmationStatus : Bool -> Cmd msg
-
-
-abort : Env -> Bool -> String -> Cmd msg
-abort env supportsColor message =
-    abortWithDetails
-        env
-        supportsColor
-        { title = "UNEXPECTED CRASH"
-        , message = "I encountered an unexpected crash with the following error message:\n\n" ++ String.trim message
-        }
 
 
 abortWithDetails : Env -> Bool -> { title : String, message : String } -> Cmd msg
@@ -202,7 +138,6 @@ type alias FixPromptPayload =
 
 type FixPromptKind
     = FixSingle Rule.ReviewError
-    | FixAll
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -437,20 +372,6 @@ closestNames names name =
 -- UPDATE
 
 
-type MsgOld
-    = ReceivedFile Decode.Value
-    | RemovedFile String
-    | ReceivedElmJsonOld Decode.Value
-    | ReceivedReadmeOld Decode.Value
-    | ReceivedExtraFiles Decode.Value
-    | ReceivedDependencies Decode.Value
-    | UpdateSuppressedErrors Decode.Value
-    | GotRequestToReview
-    | GotRequestToGenerateSuppressionErrors
-    | UserConfirmedFix Decode.Value
-    | RequestedToKnowIfAFixConfirmationIsExpected
-
-
 updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
 updateWrapper msg wrapper =
     case wrapper of
@@ -504,7 +425,7 @@ update msg model =
                 FixPrompt.Ignore ->
                     ( model, Cmd.none )
 
-        AppliedFixes result ->
+        AppliedFixes _ ->
             -- TODO Do something?
             ( model, Cmd.none )
 
@@ -534,69 +455,15 @@ applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles }
     )
 
 
-handleUserConfirmedFix :
-    { rawFiles : List { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
-    , dependencies : Maybe (List Dependency)
-    }
-    -> Model
-    -> ( Model, Cmd msg )
-handleUserConfirmedFix { rawFiles, dependencies } model =
-    let
-        previousProject : Project
-        previousProject =
-            model.fixAllResultProject
-
-        newProject : Project
-        newProject =
-            List.foldl (\file acc -> addUpdatedFileToProject dependencies file acc) previousProject rawFiles
-    in
-    if List.length (Project.modulesThatFailedToParse newProject) > List.length (Project.modulesThatFailedToParse previousProject) then
-        -- There is a new file that failed to parse in the
-        -- project when we updated the fixed file. This means
-        -- that our fix introduced a syntactical regression that
-        -- we were not successful in preventing earlier.
-        ( model
-          -- TODO Improve abort message
-        , abort model.env model.options.supportsColor <| "One file among " ++ (String.join ", " <| List.map .path rawFiles) ++ " could not be read. An incorrect fix may have been introduced into one of these files..."
-        )
-        -- TODO Handle these cases
-        --else if dependenciesHaveChanged then
-        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
-        --    , abort "The dependencies have changed"
-        --    )
-        --
-        --else if sourceDirectoriesHaveChanged then
-        --    ( { model | project = newProject, fixAllErrors = Dict.empty, errorsHaveBeenFixedPreviously = True }
-        --    , abort "request source directories changed"
-        --    )
-
-    else
-        { model
-            | store = Store.setProject newProject model.store
-            , rules = model.fixAllRules
-            , fixAllErrors = Dict.empty
-            , errorsHaveBeenFixedPreviously = True
-        }
-            |> runReviewOld { fixesAllowed = True } newProject
-            |> reportOrFixOld
-            -- TODO Separate sending files to be cached and computing the files.
-            -- We may now already have found new fixes which are likely to be accepted.
-            |> Tuple.mapSecond
-                (\cmd ->
-                    (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
-                        |> Cmd.batch
-                )
-
-
 handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
 handleFixRefused fixPromptKind model =
-    let
-        project : Project
-        project =
-            Store.project model.store
-    in
     case fixPromptKind of
         FixSingle error ->
+            let
+                project : Project
+                project =
+                    Store.project model.store
+            in
             { model
                 | errorAwaitingConfirmation = NotAwaiting
                 , fixAllResultProject = project
@@ -604,14 +471,6 @@ handleFixRefused fixPromptKind model =
                 |> refuseError error
                 |> runReview { fixesAllowed = True } (Store.project model.store)
                 |> reportOrFix
-
-        FixAll ->
-            { model
-                | errorAwaitingConfirmation = NotAwaiting
-                , fixAllResultProject = project
-            }
-                |> runReview { fixesAllowed = False } project
-                |> makeReport (Store.suppressedErrors model.store)
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -670,286 +529,6 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
         unchanged
 
 
-updateOld : MsgOld -> Model -> ( Model, Cmd MsgOld )
-updateOld msg model =
-    case msg of
-        ReceivedFile value ->
-            case Decode.decodeValue Elm.Review.File.decode value of
-                Ok rawFile ->
-                    case rawFile.ast of
-                        Nothing ->
-                            let
-                                project : Project
-                                project =
-                                    Project.addModule { path = rawFile.path, source = rawFile.source } (Store.project model.store)
-                            in
-                            ( { model | store = Store.updateProject (Project.addModule { path = rawFile.path, source = rawFile.source }) model.store }
-                            , Encode.object
-                                [ ( "path", Encode.string rawFile.path )
-                                , ( "cacheRequest", cacheFileRequest project rawFile.source )
-                                ]
-                                |> acknowledgeFileReceipt
-                            )
-
-                        Just ast ->
-                            ( { model
-                                | store =
-                                    Store.updateProject
-                                        (Project.addParsedModule
-                                            { path = rawFile.path
-                                            , source = rawFile.source
-                                            , ast = ast
-                                            }
-                                        )
-                                        model.store
-                              }
-                            , Encode.object
-                                [ ( "path", Encode.string rawFile.path )
-                                , ( "cacheRequest", Encode.null )
-                                ]
-                                |> acknowledgeFileReceipt
-                            )
-
-                Err err ->
-                    ( model, abort model.env model.options.supportsColor (Decode.errorToString err) )
-
-        RemovedFile path ->
-            ( { model | store = Store.updateProject (Project.removeFile path) model.store }, Cmd.none )
-
-        ReceivedElmJsonOld rawElmJson ->
-            case Decode.decodeValue elmJsonDecoder rawElmJson of
-                Ok elmJson ->
-                    ( { model | store = Store.updateProject (Project.addElmJson elmJson) model.store }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
-        ReceivedReadmeOld rawReadme ->
-            let
-                readmeDecoder : Decode.Decoder { path : String, content : String }
-                readmeDecoder =
-                    Decode.map2 (\path content -> { path = path, content = content })
-                        (Decode.field "path" Decode.string)
-                        (Decode.field "content" Decode.string)
-            in
-            case Decode.decodeValue readmeDecoder rawReadme of
-                Ok readme ->
-                    ( { model | store = Store.updateProject (Project.addReadme readme) model.store }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
-        ReceivedExtraFiles rawFiles ->
-            case Decode.decodeValue (Decode.dict Decode.string) rawFiles of
-                Ok files ->
-                    ( { model | store = Store.updateProject (Project.addExtraFiles files) model.store }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
-        ReceivedDependencies json ->
-            case Decode.decodeValue (dependenciesDecoder model.options.ignoreProblematicDependencies) json of
-                Err decodeError ->
-                    ( model
-                    , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
-                        abortWithDetails
-                            model.env
-                            model.options.supportsColor
-                            { title = "FOUND PROBLEMATIC DEPENDENCIES"
-                            , message =
-                                """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
-
-    elm-review --ignore-problematic-dependencies
-
-This will ignore the problematic dependencies, and can GIVE YOU INCORRECT RESULTS! This is a temporary measure.
-
-If I am mistaken about the nature of the problem, please open a bug report at https://github.com/jfmengels/node-elm-review/issues:
-
-"""
-                                    ++ Decode.errorToString decodeError
-                            }
-
-                      else
-                        abortWithDetails
-                            model.env
-                            model.options.supportsColor
-                            { title = "PROBLEM READING DEPENDENCIES"
-                            , message =
-                                "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
-                                    ++ Decode.errorToString decodeError
-                            }
-                    )
-
-                Ok dependencies ->
-                    ( { model
-                        | store =
-                            Store.updateProject
-                                (\project ->
-                                    List.foldl
-                                        Project.addDependency
-                                        (Project.removeDependencies project)
-                                        dependencies
-                                )
-                                model.store
-                      }
-                    , Cmd.none
-                    )
-
-        UpdateSuppressedErrors json ->
-            case Decode.decodeValue SuppressedErrors.decoder json of
-                Err _ ->
-                    -- TODO Report something?
-                    -- TODO Report if version is not supported
-                    ( model, Cmd.none )
-
-                Ok suppressedErrors ->
-                    let
-                        previousSuppressErrors : SuppressedErrors
-                        previousSuppressErrors =
-                            Store.suppressedErrors model.store
-                    in
-                    if suppressedErrors == previousSuppressErrors then
-                        ( model, Cmd.none )
-
-                    else
-                        makeReportOld previousSuppressErrors
-                            { model
-                                | store = Store.setSuppressedErrors suppressedErrors model.store
-                                , reviewErrorsAfterSuppression = SuppressedErrors.apply model.options.unsuppressMode suppressedErrors model.reviewErrors
-                            }
-
-        GotRequestToReview ->
-            { model | fixAllErrors = Dict.empty }
-                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
-                |> reportOrFixOld
-
-        GotRequestToGenerateSuppressionErrors ->
-            let
-                newModel : Model
-                newModel =
-                    { model | fixAllErrors = Dict.empty }
-                        |> runReviewOld { fixesAllowed = False } (Store.project model.store)
-            in
-            ( newModel
-            , newModel.reviewErrors
-                |> SuppressedErrors.fromReviewErrors
-                |> SuppressedErrors.encode []
-                |> suppressionsResponse
-            )
-
-        UserConfirmedFix confirmation ->
-            case Decode.decodeValue (confirmationDecoder model.options.ignoreProblematicDependencies) confirmation of
-                Ok (Accepted payload) ->
-                    handleUserConfirmedFix payload model
-
-                Ok Refused ->
-                    let
-                        project : Project
-                        project =
-                            Store.project model.store
-                    in
-                    case model.errorAwaitingConfirmation of
-                        AwaitingError error ->
-                            { model
-                                | errorAwaitingConfirmation = NotAwaiting
-                                , fixAllResultProject = project
-                            }
-                                |> refuseError error
-                                |> runReviewOld { fixesAllowed = True } (Store.project model.store)
-                                |> reportOrFixOld
-
-                        AwaitingFixAll ->
-                            { model
-                                | errorAwaitingConfirmation = NotAwaiting
-                                , fixAllResultProject = project
-                            }
-                                |> runReviewOld { fixesAllowed = False } project
-                                |> makeReportOld (Store.suppressedErrors model.store)
-
-                        NotAwaiting ->
-                            -- Should not be possible?
-                            runReviewOld { fixesAllowed = False } project model
-                                |> makeReportOld (Store.suppressedErrors model.store)
-
-                Err err ->
-                    ( model, abort model.env model.options.supportsColor (Decode.errorToString err) )
-
-        RequestedToKnowIfAFixConfirmationIsExpected ->
-            ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
-
-
-elmJsonDecoder : Decode.Decoder { path : String, raw : String, project : Elm.Project.Project }
-elmJsonDecoder =
-    Decode.map3 (\path raw project -> { path = path, raw = raw, project = project })
-        (Decode.field "path" Decode.string)
-        (Decode.field "raw" Decode.string)
-        (Decode.field "project" Elm.Project.decoder)
-
-
-dependenciesDecoder : Bool -> Decode.Decoder (List Dependency)
-dependenciesDecoder ignoreProblematicDependencies =
-    if ignoreProblematicDependencies then
-        Decode.list
-            (Decode.oneOf
-                [ Decode.map Just dependencyDecoder
-                , Decode.succeed Nothing
-                ]
-            )
-            |> Decode.map (List.filterMap identity)
-
-    else
-        Decode.list dependencyDecoder
-
-
-dependencyDecoder : Decode.Decoder Dependency
-dependencyDecoder =
-    Decode.map3 Dependency.create
-        (Decode.field "name" Decode.string)
-        (Decode.field "elmJson" Elm.Project.decoder)
-        (Decode.field "docsJson" <| Decode.list Elm.Docs.decoder)
-
-
-cacheFileRequest : Project -> String -> Encode.Value
-cacheFileRequest project source =
-    case
-        project
-            |> Project.modules
-            |> find (\module_ -> module_.source == source)
-    of
-        Just { ast } ->
-            Encode.object
-                [ ( "source", Encode.string source )
-                , ( "ast", AstCodec.encode ast )
-                ]
-
-        Nothing ->
-            Encode.null
-
-
-sendFileToBeCached : Project -> String -> Cmd msg
-sendFileToBeCached project source =
-    case
-        project
-            |> Project.modules
-            |> find (\module_ -> module_.source == source)
-    of
-        Just { ast } ->
-            Encode.object
-                [ ( "source", Encode.string source )
-                , ( "ast", AstCodec.encode ast )
-                ]
-                |> cacheFile
-
-        Nothing ->
-            Cmd.none
-
-
 {-| Find the first element that satisfies a predicate and return
 Just that element. If none match, return Nothing.
 find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
@@ -971,29 +550,6 @@ find predicate list =
 refuseError : Rule.ReviewError -> Model -> Model
 refuseError error model =
     { model | refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes }
-
-
-type Confirmation
-    = Accepted
-        { rawFiles : List { path : String, source : String, ast : Maybe Elm.Syntax.File.File }
-        , dependencies : Maybe (List Dependency)
-        }
-    | Refused
-
-
-confirmationDecoder : Bool -> Decode.Decoder Confirmation
-confirmationDecoder ignoreProblematicDependencies =
-    Decode.field "answer" Decode.bool
-        |> Decode.andThen
-            (\accepted ->
-                if accepted then
-                    Decode.map2 (\rawFiles dependencies -> Accepted { rawFiles = rawFiles, dependencies = dependencies })
-                        (Decode.field "files" (Decode.list Elm.Review.File.decode))
-                        (Decode.field "dependencies" (dependenciesDecoder ignoreProblematicDependencies) |> Decode.maybe)
-
-                else
-                    Decode.succeed Refused
-            )
 
 
 runReviewOld : { fixesAllowed : Bool } -> Project -> Model -> Model
@@ -1113,22 +669,6 @@ runReview fixesAllowed initialProject model =
     }
 
 
-reportOrFixOld : Model -> ( Model, Cmd msg )
-reportOrFixOld model =
-    case model.options.fixMode of
-        FixOptions.DontFix ->
-            model
-                |> CliCommunication.timerStart model.options.communicationKey "process-errors"
-                |> makeReportOld (Store.suppressedErrors model.store)
-                |> CliCommunication.timerEnd model.options.communicationKey "process-errors"
-
-        FixOptions.Fix ->
-            applyFixesAfterReviewOld model True
-
-        FixOptions.FixAll ->
-            applyFixesAfterReviewOld model False
-
-
 reportOrFix : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
 reportOrFix input =
     case input.model.options.fixMode of
@@ -1143,106 +683,6 @@ reportOrFix input =
 
         FixOptions.FixAll ->
             applyFixesAfterReview False input
-
-
-makeReportOld : SuppressedErrors -> Model -> ( Model, Cmd msg )
-makeReportOld previousSuppressedErrors model =
-    let
-        ( newModel, suppressedErrorsForJson ) =
-            if List.isEmpty model.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
-                let
-                    suppressedErrors : SuppressedErrors
-                    suppressedErrors =
-                        SuppressedErrors.fromReviewErrors model.reviewErrors
-                in
-                ( { model
-                    | store = Store.setSuppressedErrors suppressedErrors model.store
-                    , rules = model.fixAllRules
-                  }
-                  -- TODO Write suppression files
-                , SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
-                )
-
-            else
-                ( { model | rules = model.fixAllRules }, Encode.null )
-
-        newSuppressedErrors : SuppressedErrors
-        newSuppressedErrors =
-            Store.suppressedErrors newModel.store
-
-        ruleLinks : Dict String String
-        ruleLinks =
-            Store.ruleLinks newModel.store
-    in
-    ( newModel
-    , Cmd.batch
-        [ case newModel.options.reportMode of
-            HumanReadable ->
-                let
-                    filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-                    filesWithError =
-                        groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) model.reviewErrorsAfterSuppression
-                in
-                Reporter.formatReport
-                    newModel.options
-                    { suppressedErrors = newSuppressedErrors
-                    , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-                    , errorsHaveBeenFixedPreviously = newModel.errorsHaveBeenFixedPreviously
-                    }
-                    filesWithError
-                    |> Text.toAnsi model.options.supportsColor
-                    |> Cli.println model.env.stdout
-
-            Json ->
-                let
-                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                    errorsByFile =
-                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
-
-                    errors : Encode.Value
-                    errors =
-                        Encode.list
-                            (encodeErrorByFile
-                                model.options
-                                { suppressedErrors = newSuppressedErrors
-                                , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
-                                }
-                                ruleLinks
-                            )
-                            errorsByFile
-                in
-                printJson
-                    model.env
-                    model.options.debug
-                    errors
-                    (Encode.dict identity identity newModel.extracts)
-
-            NDJson ->
-                let
-                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                    errorsByFile =
-                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
-                in
-                errorsByFile
-                    |> List.concatMap
-                        (encodeErrorsForNDJson
-                            newModel.options
-                            { suppressedErrors = newSuppressedErrors
-                            , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
-                            }
-                            ruleLinks
-                        )
-                    |> printNDJson model.env
-        , if model.options.watch then
-            Cmd.none
-
-          else if List.isEmpty model.reviewErrorsAfterSuppression then
-            Cli.exit 0
-
-          else
-            Cli.exit 1
-        ]
-    )
 
 
 makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
@@ -1588,26 +1028,6 @@ encodePosition position =
         ]
 
 
-applyFixesAfterReviewOld : Model -> Bool -> ( Model, Cmd msg )
-applyFixesAfterReviewOld model allowPrintingSingleFix =
-    if Dict.isEmpty model.fixAllErrors then
-        makeReportOld (Store.suppressedErrors model.store) model
-
-    else
-        case Project.diffV2 { before = Store.project model.store, after = model.fixAllResultProject } of
-            [] ->
-                makeReportOld (Store.suppressedErrors model.store) model
-
-            diffs ->
-                if allowPrintingSingleFix then
-                    sendFixPromptOld model diffs
-
-                else
-                    ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-                    , sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
-                    )
-
-
 applyFixesAfterReview : Bool -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
 applyFixesAfterReview allowPrintingSingleFix ({ model, result } as input) =
     if Dict.isEmpty model.fixAllErrors then
@@ -1627,67 +1047,6 @@ applyFixesAfterReview allowPrintingSingleFix ({ model, result } as input) =
                     , -- TODO Handle multiple fix prompt
                       sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
                     )
-
-
-sendFixPromptOld : Model -> List FixedFile -> ( Model, Cmd msg )
-sendFixPromptOld model diffs =
-    case numberOfErrors model.fixAllErrors of
-        NoErrors ->
-            ( model, Cmd.none )
-
-        OneError filePath error ->
-            let
-                changedFiles : List { path : Reporter.FilePath, raw : String, source : Reporter.Source }
-                changedFiles =
-                    List.filterMap
-                        (\{ path, diff } ->
-                            case diff of
-                                Project.Edited { after } ->
-                                    Just
-                                        { path = Reporter.FilePath path
-                                        , raw = after
-                                        , source = Reporter.Source (after |> String.lines |> Array.fromList)
-                                        }
-
-                                Project.Removed ->
-                                    Nothing
-                        )
-                        diffs
-
-                removedFiles : List String
-                removedFiles =
-                    List.filterMap
-                        (\{ path, diff } ->
-                            case diff of
-                                Project.Edited _ ->
-                                    Nothing
-
-                                Project.Removed ->
-                                    Just path
-                        )
-                        diffs
-            in
-            ( { model | errorAwaitingConfirmation = AwaitingError error }
-            , [ ( "confirmationMessage"
-                , Reporter.formatSingleFixProposal
-                    model.options
-                    (pathAndSource (Store.project model.store) filePath)
-                    (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
-                    diffs
-                    |> encodeReport
-                )
-              , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
-              , ( "removedFiles", Encode.list Encode.string removedFiles )
-              , ( "count", Encode.int 1 )
-              ]
-                |> Encode.object
-                |> askConfirmationToFix
-            )
-
-        MultipleErrors numberOfFixedErrors ->
-            ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-            , sendFixPromptForMultipleFixes model diffs numberOfFixedErrors
-            )
 
 
 sendFixPrompt : Project -> List Rule -> List FixedFile -> Model -> ( Model, Cmd Msg )
@@ -1727,14 +1086,6 @@ sendFixPrompt projectWithFixes rulesWithFixes diffs model =
                         )
                         diffs
 
-                confirmationMessage : List Reporter.TextContent
-                confirmationMessage =
-                    Reporter.formatSingleFixProposal
-                        model.options
-                        (pathAndSource (Store.project model.store) filePath)
-                        (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
-                        diffs
-
                 fixPayload : FixPromptPayload
                 fixPayload =
                     { kind = FixSingle error
@@ -1747,6 +1098,15 @@ sendFixPrompt projectWithFixes rulesWithFixes diffs model =
                 ( fixPrompt, fixPromptCmd ) =
                     case model.env.stdin of
                         Just stdin ->
+                            let
+                                confirmationMessage : List Reporter.TextContent
+                                confirmationMessage =
+                                    Reporter.formatSingleFixProposal
+                                        model.options
+                                        (pathAndSource (Store.project model.store) filePath)
+                                        (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
+                                        diffs
+                            in
                             confirmationMessage
                                 |> Text.toAnsi model.options.supportsColor
                                 |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
@@ -1932,46 +1292,6 @@ encodeChangedFile changedFile =
         [ ( "path", encodeFilePath changedFile.path )
         , ( "source", Encode.string (source |> Array.toList |> String.join "\n") )
         ]
-
-
-addUpdatedFileToProject : Maybe (List Dependency) -> { a | path : String, source : String } -> Project -> Project
-addUpdatedFileToProject dependencies file project =
-    if Just file.path == (Project.readme project |> Maybe.map .path) then
-        Project.addReadme { path = file.path, content = file.source } project
-
-    else if Just file.path == (Project.elmJson project |> Maybe.map .path) then
-        updateElmJsonFile dependencies file project
-
-    else
-        Project.updateFile { path = file.path, source = file.source } project
-
-
-updateElmJsonFile : Maybe (List Dependency) -> { a | source : String, path : String } -> Project -> Project
-updateElmJsonFile dependencies file project =
-    case Decode.decodeString Elm.Project.decoder file.source of
-        Ok newElmJson ->
-            let
-                withUpdatedElmJson : Project
-                withUpdatedElmJson =
-                    Project.addElmJson
-                        { path = file.path, raw = file.source, project = newElmJson }
-                        project
-            in
-            case dependencies of
-                Just deps ->
-                    List.foldl
-                        Project.addDependency
-                        (Project.removeDependencies withUpdatedElmJson)
-                        deps
-
-                Nothing ->
-                    -- If dependencies is Nothing, then the code in autofix.js
-                    -- did not detect any change in the dependencies.
-                    withUpdatedElmJson
-
-        Err _ ->
-            -- TODO Error
-            project
 
 
 type alias FixedFile =
@@ -2212,20 +1532,3 @@ maybeMapAndCons fn maybe list =
 
 
 -- REVIEWING
-
-
-subscriptions : Sub MsgOld
-subscriptions =
-    Sub.batch
-        [ collectFile ReceivedFile
-        , removeFile RemovedFile
-        , collectElmJson ReceivedElmJsonOld
-        , collectReadme ReceivedReadmeOld
-        , collectExtraFiles ReceivedExtraFiles
-        , collectDependencies ReceivedDependencies
-        , updateSuppressedErrors UpdateSuppressedErrors
-        , startReview (always GotRequestToReview)
-        , startGeneratingSuppressions (always GotRequestToGenerateSuppressionErrors)
-        , userConfirmedFix UserConfirmedFix
-        , askForFixConfirmationStatus (always RequestedToKnowIfAFixConfirmationIsExpected)
-        ]

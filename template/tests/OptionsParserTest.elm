@@ -1,7 +1,7 @@
 module OptionsParserTest exposing (all)
 
 import Dict
-import ElmReview.Color as Color exposing (Colorize)
+import ElmReview.Color as Color
 import ElmReview.Problem as Problem
 import ElmReview.ReportMode as ReportMode
 import Expect exposing (Expectation)

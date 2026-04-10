@@ -3,7 +3,7 @@ module Wrapper.MinVersion exposing (validate)
 import Elm.Version
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Problem exposing (ProblemSimple)
-import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
+import Wrapper.Options as Options exposing (ReviewProject)
 import Wrapper.PathHelpers as PathHelpers
 
 

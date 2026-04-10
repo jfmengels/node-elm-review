@@ -24,7 +24,7 @@ import Elm.Review.Vendor.List.Extra as ListExtra
 import ElmReview.Path as Path exposing (Path)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError)
+import Fs exposing (FileSystem)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Options as ReviewOptions exposing (ReviewOptions)
@@ -310,14 +310,14 @@ writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
                 |> Task.mapError FsExtra.errorToString
 
     else
-        let
-            contents : String
-            contents =
-                formatSuppressionFile list
-        in
         Fs.readTextFile fs filePath
             |> Task.andThen
                 (\previousContents ->
+                    let
+                        contents : String
+                        contents =
+                            formatSuppressionFile list
+                    in
                     if previousContents == contents then
                         Task.succeed ()
 
