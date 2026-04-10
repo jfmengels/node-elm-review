@@ -89,12 +89,8 @@ type alias Model =
 
     --
     , rules : List Rule
-    , fixAllRules : List Rule
     , isInitialRun : Bool
-    , reviewErrors : List Rule.ReviewError
-    , reviewErrorsAfterSuppression : List Rule.ReviewError
     , errorsHaveBeenFixedPreviously : Bool
-    , extracts : Dict String Encode.Value
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
@@ -198,12 +194,8 @@ initValid env fs options rulesFromConfig =
             , fixPrompt = FixPrompt.init
             , rules = rules
             , isInitialRun = True
-            , reviewErrors = []
-            , reviewErrorsAfterSuppression = []
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
-            , fixAllRules = rules
-            , extracts = Dict.empty
             }
     in
     ( Running model
@@ -560,27 +552,19 @@ runReview fixesAllowed initialProject model =
         newModel : Model
         newModel =
             { model
-                | reviewErrors = errors
-                , reviewErrorsAfterSuppression =
-                    errors
-                        |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
-                        |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
-                        |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
-                , rules =
+                | rules =
                     if model.isInitialRun || model.options.fixMode == FixOptions.DontFix then
                         rules
 
                     else
                         model.rules
                 , isInitialRun = False
-                , fixAllRules = rules
                 , store =
                     if model.options.fixMode == FixOptions.DontFix then
                         Store.setProject project model.store
 
                     else
                         model.store
-                , extracts = extracts
             }
     in
     { model = newModel
