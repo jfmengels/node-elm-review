@@ -474,14 +474,14 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
             Store.Ready ->
                 if model.options.suppress then
                     let
-                        newModel : Model
-                        newModel =
+                        res : { model : Model, result : RunReviewResult }
+                        res =
                             { model | fixAllErrors = Dict.empty }
-                                |> runReviewOld { fixesAllowed = False } (Store.project model.store)
+                                |> runReview { fixesAllowed = False } (Store.project model.store)
                     in
-                    ( newModel
+                    ( res.model
                     , Cmd.batch
-                        [ newModel.reviewErrors
+                        [ res.result.reviewErrors
                             |> SuppressedErrors.fromReviewErrors
                             |> SuppressedErrors.write model.fs model.options []
                             |> Cmd.map SuppressedErrorsMsg
@@ -538,50 +538,6 @@ find predicate list =
 
             else
                 find predicate rest
-
-
-runReviewOld : { fixesAllowed : Bool } -> Project -> Model -> Model
-runReviewOld fixesAllowed initialProject model =
-    let
-        suppressedErrors : SuppressedErrors
-        suppressedErrors =
-            Store.suppressedErrors model.store
-
-        { errors, rules, project, extracts, fixedErrors } =
-            initialProject
-                |> CliCommunication.timerStart model.options.communicationKey "run-review"
-                |> Rule.reviewV3
-                    (Options.toReviewOptions model.options fixesAllowed model.refusedErrorFixes
-                        |> SuppressedErrors.addToReviewOptions suppressedErrors
-                    )
-                    model.rules
-                |> CliCommunication.timerEnd model.options.communicationKey "run-review"
-    in
-    { model
-        | reviewErrors = errors
-        , reviewErrorsAfterSuppression =
-            errors
-                |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
-                |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
-                |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
-        , rules =
-            if model.isInitialRun || model.options.fixMode == FixOptions.DontFix then
-                rules
-
-            else
-                model.rules
-        , isInitialRun = False
-        , fixAllRules = rules
-        , store =
-            if model.options.fixMode == FixOptions.DontFix then
-                Store.setProject project model.store
-
-            else
-                model.store
-        , fixAllResultProject = project
-        , fixAllErrors = fixedErrors
-        , extracts = extracts
-    }
 
 
 type alias RunReviewResult =
