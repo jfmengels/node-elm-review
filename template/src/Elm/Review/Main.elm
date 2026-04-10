@@ -88,7 +88,7 @@ type ModelWrapper
 
 type Msg
     = StoreMsg Store.Msg
-    | SuppressedErrorsMsg SuppressedErrors.Msg
+    | WroteSuppressionFiles (Result Problem ())
     | FixPromptMsg PromptId FixPromptPayload Prompt.Msg
     | AppliedFixes (Result Fs.FsError ())
 
@@ -361,9 +361,14 @@ update msg model =
                 , Cmd.map StoreMsg cmd
                 )
 
-        SuppressedErrorsMsg suppressedErrorsMsg ->
+        WroteSuppressionFiles result ->
             ( model
-            , SuppressedErrors.update model.env.stdout suppressedErrorsMsg
+            , case result of
+                Ok () ->
+                    Cmd.none
+
+                Err problem ->
+                    Problem.exit model.env.stderr model.options problem
             )
 
         FixPromptMsg promptId payload fixPromptMsg ->
@@ -445,10 +450,16 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     in
                     ( res.model
                     , Cmd.batch
-                        [ res.result.reviewErrors
-                            |> SuppressedErrors.fromReviewErrors
-                            |> SuppressedErrors.write model.fs model.options []
-                            |> Cmd.map SuppressedErrorsMsg
+                        [ case
+                            res.result.reviewErrors
+                                |> SuppressedErrors.fromReviewErrors
+                                |> SuppressedErrors.write model.fs model.options []
+                          of
+                            Just task ->
+                                Task.attempt WroteSuppressionFiles task
+
+                            Nothing ->
+                                Cmd.none
 
                         -- TODO Don't print in JSON report mode
                         , Cli.println model.env.stdout
@@ -615,10 +626,16 @@ saveRunReviewResultsInModel { model, result } =
                 SuppressedErrors.fromReviewErrors result.reviewErrors
         in
         ( { newModel | store = Store.setSuppressedErrors suppressedErrors store }
-        , result.reviewErrors
-            |> SuppressedErrors.fromReviewErrors
-            |> SuppressedErrors.write model.fs model.options []
-            |> Cmd.map SuppressedErrorsMsg
+        , case
+            result.reviewErrors
+                |> SuppressedErrors.fromReviewErrors
+                |> SuppressedErrors.write model.fs model.options []
+          of
+            Just task ->
+                Task.attempt WroteSuppressionFiles task
+
+            Nothing ->
+                Cmd.none
         )
 
     else
