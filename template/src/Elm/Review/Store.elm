@@ -49,7 +49,7 @@ type alias ModelData =
     , project : Project
     , suppressedErrors : SuppressedErrors
     , ruleLinks : Dict String String
-    , directoriesWithoutFiles : List String
+    , directoriesFromCliArgsWithoutFiles : List String
     }
 
 
@@ -79,7 +79,7 @@ init { fs, options, runEnvironment, directoriesToAnalyze } =
         , project = Project.new
         , suppressedErrors = SuppressedErrors.empty
         , ruleLinks = Dict.empty
-        , directoriesWithoutFiles = []
+        , directoriesFromCliArgsWithoutFiles = []
         }
     , Cmd.batch tasks
     )
@@ -92,15 +92,15 @@ type Readiness
 
 
 checkReadiness : Model -> Readiness
-checkReadiness (Model { pendingTaskCount, directoriesWithoutFiles }) =
+checkReadiness (Model { pendingTaskCount, directoriesFromCliArgsWithoutFiles }) =
     if pendingTaskCount /= 0 then
         NotReady
 
-    else if List.isEmpty directoriesWithoutFiles then
+    else if List.isEmpty directoriesFromCliArgsWithoutFiles then
         Ready
 
     else
-        Failure directoriesWithoutFiles
+        Failure directoriesFromCliArgsWithoutFiles
 
 
 type Msg
@@ -145,7 +145,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
-              , directoriesWithoutFiles = model.directoriesWithoutFiles
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , Cmd.none
             )
@@ -216,7 +216,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
+                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , Cmd.batch tasks
                     )
@@ -229,7 +229,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
-              , directoriesWithoutFiles = model.directoriesWithoutFiles
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , { title = "PROBLEM READING ELM.JSON"
               , message = \c -> "I was trying to read " ++ c Yellow "elm.json" ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
@@ -246,7 +246,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
                       , project = Project.addReadme { path = path, content = content } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
+                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , Cmd.none
                     )
@@ -267,7 +267,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
                               , project = Project.addDependency dependency model.project
                               , suppressedErrors = model.suppressedErrors
                               , ruleLinks = model.ruleLinks
-                              , directoriesWithoutFiles = model.directoriesWithoutFiles
+                              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                               }
                             , Cmd.none
                             )
@@ -281,7 +281,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
                                   , project = model.project
                                   , suppressedErrors = model.suppressedErrors
                                   , ruleLinks = model.ruleLinks
-                                  , directoriesWithoutFiles = model.directoriesWithoutFiles
+                                  , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                                   }
                                 , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
                                     { title = "FOUND PROBLEMATIC DEPENDENCIES"
@@ -339,7 +339,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                           , project = model.project
                           , suppressedErrors = model.suppressedErrors
                           , ruleLinks = model.ruleLinks
-                          , directoriesWithoutFiles = directory :: model.directoriesWithoutFiles
+                          , directoriesFromCliArgsWithoutFiles = directory :: model.directoriesFromCliArgsWithoutFiles
                           }
                         , Cmd.none
                         )
@@ -356,7 +356,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = Project.addModule { path = path, source = source } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
+                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , Cmd.none
                     )
@@ -366,7 +366,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
+                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , { title = "PROBLEM READING ELM FILE"
                       , message = \c -> "I was trying to read " ++ c Yellow path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
@@ -383,7 +383,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
+                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , List.map
                         (\filePath ->
@@ -410,7 +410,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                               , project = model.project
                               , suppressedErrors = newSuppressedErrors
                               , ruleLinks = model.ruleLinks
-                              , directoriesWithoutFiles = model.directoriesWithoutFiles
+                              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                               }
                             , Cmd.none
                             )
@@ -420,7 +420,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                               , project = model.project
                               , suppressedErrors = model.suppressedErrors
                               , ruleLinks = model.ruleLinks
-                              , directoriesWithoutFiles = model.directoriesWithoutFiles
+                              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                               }
                             , handleProblem problem
                             )
@@ -430,7 +430,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
+                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , { title = "PROBLEM READING SUPPRESSION FILE"
                       , message = \c -> "I was trying to read " ++ c Orange path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
@@ -445,7 +445,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = links
-              , directoriesWithoutFiles = model.directoriesWithoutFiles
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , Cmd.none
             )
@@ -493,7 +493,7 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
-              , directoriesWithoutFiles = model.directoriesWithoutFiles
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
                 |> Cmd.batch
@@ -507,7 +507,7 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
-              , directoriesWithoutFiles = model.directoriesWithoutFiles
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , { title = "PROBLEM FINDING ELM FILES"
               , message = \_ -> "I was trying to find the Elm files in your project but encountered a problem:\n\n" ++ FsExtra.errorToString err
@@ -535,7 +535,7 @@ setProject newProject (Model model) =
         , project = newProject
         , suppressedErrors = model.suppressedErrors
         , ruleLinks = model.ruleLinks
-        , directoriesWithoutFiles = model.directoriesWithoutFiles
+        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
         }
 
 
@@ -546,7 +546,7 @@ updateProject updateFn (Model model) =
         , project = updateFn model.project
         , suppressedErrors = model.suppressedErrors
         , ruleLinks = model.ruleLinks
-        , directoriesWithoutFiles = model.directoriesWithoutFiles
+        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
         }
 
 
@@ -562,7 +562,7 @@ setSuppressedErrors newSuppressedErrors (Model model) =
         , project = model.project
         , suppressedErrors = newSuppressedErrors
         , ruleLinks = model.ruleLinks
-        , directoriesWithoutFiles = model.directoriesWithoutFiles
+        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
         }
 
 
