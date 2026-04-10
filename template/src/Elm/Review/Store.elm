@@ -18,7 +18,6 @@ module Elm.Review.Store exposing
 
 -}
 
-import Cli
 import Dict exposing (Dict)
 import Elm.Constraint
 import Elm.Docs
@@ -29,7 +28,9 @@ import Elm.Review.Options exposing (Options)
 import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
+import ElmReview.Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
@@ -105,7 +106,7 @@ checkReadiness (Model { pendingTaskCount, directoriesWithoutFiles }) =
 type Msg
     = ReceivedElmJson (List Path) String (Result Fs.FsError String)
     | ReceivedReadme String (Result Fs.FsError String)
-    | ReceivedDependency String (Result Fs.FsError { elmJson : String, docsJson : String })
+    | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
     | ReceivedElmFileList String (Result Fs.FsError (List String))
     | ReceivedElmFileListFromCliArgs String (Result Fs.FsError (List String))
     | ReceivedElmFile String (Result Fs.FsError String)
@@ -114,12 +115,18 @@ type Msg
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
 
 
+type alias File =
+    { path : Path
+    , source : String
+    }
+
+
 type alias UpdateInput =
     { fs : FileSystem
     , runEnvironment : RunEnvironment
     , stderr : Console
     , ignoreProblematicDependencies : Bool
-    , abortWithDetails : { title : String, message : String } -> Cmd Msg
+    , handleProblem : Problem -> Cmd Msg
     }
 
 
@@ -130,7 +137,7 @@ update inputs msg (Model model) =
 
 
 updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, Cmd Msg )
-updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWithDetails } msg model =
+updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleProblem } msg model =
     let
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
@@ -207,17 +214,19 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                 Err _ ->
                     decrementTaskCount ()
 
-        ReceivedElmJson _ _ (Err err) ->
+        ReceivedElmJson _ path (Err err) ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
               , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
-            , Cmd.batch
-                [ Cli.println stderr ("elm.json - " ++ FsExtra.errorToString err)
-                , Cli.exit 1
-                ]
+            , { title = "PROBLEM READING ELM.JSON"
+              , message = \c -> "I was trying to read " ++ c Yellow "elm.json" ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+              }
+                |> Problem.from
+                |> Problem.withPath path
+                |> handleProblem
             )
 
         ReceivedReadme path result ->
@@ -240,8 +249,8 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                 Ok { elmJson, docsJson } ->
                     case
                         Result.map2 (Dependency.create packageName)
-                            (Decode.decodeString Elm.Project.decoder elmJson)
-                            (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson)
+                            (Decode.decodeString Elm.Project.decoder elmJson.source |> Result.mapError (Tuple.pair elmJson.path))
+                            (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson.source |> Result.mapError (Tuple.pair docsJson.path))
                     of
                         Ok dependency ->
                             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
@@ -253,7 +262,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                             , Cmd.none
                             )
 
-                        Err decodeError ->
+                        Err ( filePath, decodeError ) ->
                             if ignoreProblematicDependencies then
                                 decrementTaskCount ()
 
@@ -265,9 +274,9 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, abortWi
                                   , directoriesWithoutFiles = model.directoriesWithoutFiles
                                   }
                                 , if String.contains "I need a valid module name like" (Decode.errorToString decodeError) then
-                                    abortWithDetails
-                                        { title = "FOUND PROBLEMATIC DEPENDENCIES"
-                                        , message =
+                                    { title = "FOUND PROBLEMATIC DEPENDENCIES"
+                                    , message =
+                                        \_ ->
                                             """I encountered an error when reading the dependencies of the project. It seems due to dependencies with modules containing `_` in their names. Unfortunately, this is an error I have no control over and I am waiting in one of the libraries I depend on. What I propose you do, is to re-run elm-review like this:
 
     elm-review --ignore-problematic-dependencies
@@ -278,15 +287,21 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
 """
                                                 ++ Decode.errorToString decodeError
-                                        }
+                                    }
+                                        |> Problem.from
+                                        |> Problem.withPath filePath
+                                        |> handleProblem
 
                                   else
-                                    abortWithDetails
-                                        { title = "PROBLEM READING DEPENDENCIES"
-                                        , message =
+                                    { title = "PROBLEM READING DEPENDENCIES"
+                                    , message =
+                                        \_ ->
                                             "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
                                                 ++ Decode.errorToString decodeError
-                                        }
+                                    }
+                                        |> Problem.from
+                                        |> Problem.withPath filePath
+                                        |> handleProblem
                                 )
 
                 Err _ ->
@@ -298,6 +313,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                 { fs = fs
                 , stderr = stderr
                 , onNotFound = decrementTaskCount
+                , handleProblem = handleProblem
                 }
                 directory
                 result
@@ -317,6 +333,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                           }
                         , Cmd.none
                         )
+                , handleProblem = handleProblem
                 }
                 directory
                 result
@@ -341,8 +358,12 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , ruleLinks = model.ruleLinks
                       , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
-                    , -- TODO Exit?
-                      Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ FsExtra.errorToString err)
+                    , { title = "PROBLEM READING ELM FILE"
+                      , message = \c -> "I was trying to read " ++ c Yellow path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+                      }
+                        |> Problem.from
+                        |> Problem.withPath path
+                        |> handleProblem
                     )
 
         ReceivedSuppressedErrorsList directory result ->
@@ -373,20 +394,26 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         ReceivedSuppressedErrorsFile path result ->
             case result of
                 Ok contents ->
-                    let
-                        ruleName : String
-                        ruleName =
-                            -- Remove leading "./" and trailing ".json"
-                            String.slice 2 -5 path
-                    in
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                      , project = model.project
-                      , suppressedErrors = SuppressedErrors.addFromFile ruleName contents model.suppressedErrors
-                      , ruleLinks = model.ruleLinks
-                      , directoriesWithoutFiles = model.directoriesWithoutFiles
-                      }
-                    , Cmd.none
-                    )
+                    case SuppressedErrors.addFromFile path contents model.suppressedErrors of
+                        Ok newSuppressedErrors ->
+                            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , project = model.project
+                              , suppressedErrors = newSuppressedErrors
+                              , ruleLinks = model.ruleLinks
+                              , directoriesWithoutFiles = model.directoriesWithoutFiles
+                              }
+                            , Cmd.none
+                            )
+
+                        Err problem ->
+                            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , project = model.project
+                              , suppressedErrors = model.suppressedErrors
+                              , ruleLinks = model.ruleLinks
+                              , directoriesWithoutFiles = model.directoriesWithoutFiles
+                              }
+                            , handleProblem problem
+                            )
 
                 Err err ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
@@ -395,8 +422,12 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , ruleLinks = model.ruleLinks
                       , directoriesWithoutFiles = model.directoriesWithoutFiles
                       }
-                      -- TODO Exit?
-                    , Cli.println stderr ("FileRead error: " ++ path ++ " - " ++ FsExtra.errorToString err)
+                    , { title = "PROBLEM READING SUPPRESSION FILE"
+                      , message = \c -> "I was trying to read " ++ c Orange path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+                      }
+                        |> Problem.from
+                        |> Problem.withPath path
+                        |> handleProblem
                     )
 
         ReceivedRuleLinks { links, fromCache } ->
@@ -436,12 +467,16 @@ addDepsFromConstraint fs runEnvironment deps initial =
 
 
 receivedElmFileList :
-    { fs : FileSystem, stderr : Console, onNotFound : () -> ( ModelData, Cmd Msg ) }
+    { fs : FileSystem
+    , stderr : Console
+    , onNotFound : () -> ( ModelData, Cmd Msg )
+    , handleProblem : Problem -> Cmd Msg
+    }
     -> Path
     -> Result FsError (List Path)
     -> ModelData
     -> ( ModelData, Cmd Msg )
-receivedElmFileList { fs, stderr, onNotFound } directory result model =
+receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result model =
     case result of
         Ok files ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
@@ -464,8 +499,12 @@ receivedElmFileList { fs, stderr, onNotFound } directory result model =
               , ruleLinks = model.ruleLinks
               , directoriesWithoutFiles = model.directoriesWithoutFiles
               }
-              -- TODO Exit?
-            , Cli.println stderr (directory ++ " - " ++ FsExtra.errorToString err)
+            , { title = "PROBLEM FINDING ELM FILES"
+              , message = \_ -> "I was trying to find the Elm files in your project but encountered a problem:\n\n" ++ FsExtra.errorToString err
+              }
+                |> Problem.from
+                |> Problem.withPath directory
+                |> handleProblem
             )
 
 
@@ -561,8 +600,8 @@ fetchDependency fs runEnvironment packageName packageVersion =
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
         -- TODO Use path functions
-        (Fs.readTextFile fs (directory ++ "/elm.json"))
-        (Fs.readTextFile fs (directory ++ "/docs.json"))
+        (readTextFileWithPath fs (directory ++ "/elm.json"))
+        (readTextFileWithPath fs (directory ++ "/docs.json"))
         |> Task.attempt (ReceivedDependency packageName)
 
 
@@ -651,6 +690,12 @@ readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String 
 readTextFile fs toMsg path =
     Fs.readTextFile fs path
         |> Task.attempt (\result -> toMsg path result)
+
+
+readTextFileWithPath : FileSystem -> String -> Task FsError File
+readTextFileWithPath fs path =
+    Fs.readTextFile fs path
+        |> Task.map (\source -> { path = path, source = source })
 
 
 joinPaths : String -> String -> String
