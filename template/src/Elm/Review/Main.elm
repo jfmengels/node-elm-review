@@ -98,10 +98,6 @@ type alias Model =
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
-
-    -- FIX ALL
-    , fixAllResultProject : Project
-    , fixAllErrors : Dict String (List Rule.ReviewError)
     }
 
 
@@ -207,8 +203,6 @@ initValid env fs options rulesFromConfig =
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
             , fixAllRules = rules
-            , fixAllResultProject = Project.new
-            , fixAllErrors = Dict.empty
             , extracts = Dict.empty
             }
     in
@@ -454,15 +448,12 @@ handleFixRefused fixPromptKind model =
     in
     case fixPromptKind of
         FixSingle error ->
-            { model
-                | fixAllResultProject = project
-                , refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes
-            }
+            { model | refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes }
                 |> runReview { fixesAllowed = True } project
                 |> reportOrFix
 
         FixAll ->
-            { model | fixAllResultProject = project }
+            model
                 |> runReview { fixesAllowed = False } project
                 |> makeReport (Store.suppressedErrors model.store)
 
@@ -476,8 +467,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                     let
                         res : { model : Model, result : RunReviewResult }
                         res =
-                            { model | fixAllErrors = Dict.empty }
-                                |> runReview { fixesAllowed = False } (Store.project model.store)
+                            runReview { fixesAllowed = False } (Store.project model.store) model
                     in
                     ( res.model
                     , Cmd.batch
@@ -498,7 +488,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                 else
                     let
                         ( newModel, newCmd ) =
-                            { model | fixAllErrors = Dict.empty }
+                            model
                                 |> runReview { fixesAllowed = True } (Store.project model.store)
                                 |> reportOrFix
                     in
@@ -590,8 +580,6 @@ runReview fixesAllowed initialProject model =
 
                     else
                         model.store
-                , fixAllResultProject = project
-                , fixAllErrors = fixedErrors
                 , extracts = extracts
             }
     in
@@ -973,7 +961,7 @@ encodePosition position =
 
 applyFixesAfterReview : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
 applyFixesAfterReview ({ model, result } as input) =
-    if Dict.isEmpty model.fixAllErrors then
+    if Dict.isEmpty result.fixedErrors then
         makeReport (Store.suppressedErrors model.store) input
 
     else
@@ -987,7 +975,7 @@ applyFixesAfterReview ({ model, result } as input) =
 
 sendFixPrompt : List FixedFile -> RunReviewResult -> Model -> ( Model, Cmd Msg )
 sendFixPrompt diffs result model =
-    case numberOfErrors model.fixAllErrors of
+    case numberOfErrors result.fixedErrors of
         Nothing ->
             ( model, Cmd.none )
 
@@ -1034,7 +1022,7 @@ sendFixPrompt diffs result model =
                 fixPayload : FixPromptPayload
                 fixPayload =
                     { kind = fixKind
-                    , projectWithFixes = model.fixAllResultProject
+                    , projectWithFixes = result.project
                     , rulesWithFixes = result.rules
                     , changedFiles = changedFiles
                     , removedFiles = removedFiles
@@ -1054,7 +1042,7 @@ sendFixPrompt diffs result model =
                                         diffs
 
                                 MultipleErrors numberOfFixedErrors ->
-                                    confirmationForMultipleFixesPrompt model diffs numberOfFixedErrors
+                                    confirmationForMultipleFixesPrompt model diffs result.fixedErrors numberOfFixedErrors
 
                         ( fixPrompt, fixPromptCmd ) =
                             confirmationMessage
@@ -1105,8 +1093,8 @@ pathAndSource project path =
         { path = Reporter.FilePath path, source = Reporter.Source fileLines }
 
 
-confirmationForMultipleFixesPrompt : Model -> List FixedFile -> Int -> List Reporter.TextContent
-confirmationForMultipleFixesPrompt model diffs numberOfFixedErrors =
+confirmationForMultipleFixesPrompt : Model -> List FixedFile -> Dict String (List Rule.ReviewError) -> Int -> List Reporter.TextContent
+confirmationForMultipleFixesPrompt model diffs fixedErrors numberOfFixedErrors =
     let
         errorsForFile : Dict String (List Reporter.Error)
         errorsForFile =
@@ -1139,7 +1127,7 @@ confirmationForMultipleFixesPrompt model diffs numberOfFixedErrors =
                         errors
                 )
                 Dict.empty
-                model.fixAllErrors
+                fixedErrors
     in
     Reporter.formatFixProposals model.options.fileRemovalFixesEnabled errorsForFile diffs numberOfFixedErrors
 
