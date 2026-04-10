@@ -982,11 +982,11 @@ applyFixesAfterReview ({ model, result } as input) =
                 makeReport (Store.suppressedErrors model.store) input
 
             diffs ->
-                sendFixPrompt model.fixAllResultProject model.fixAllRules diffs model
+                sendFixPrompt diffs result model
 
 
-sendFixPrompt : Project -> List Rule -> List FixedFile -> Model -> ( Model, Cmd Msg )
-sendFixPrompt projectWithFixes rulesWithFixes diffs model =
+sendFixPrompt : List FixedFile -> RunReviewResult -> Model -> ( Model, Cmd Msg )
+sendFixPrompt diffs result model =
     case numberOfErrors model.fixAllErrors of
         Nothing ->
             ( model, Cmd.none )
@@ -1034,8 +1034,8 @@ sendFixPrompt projectWithFixes rulesWithFixes diffs model =
                 fixPayload : FixPromptPayload
                 fixPayload =
                     { kind = fixKind
-                    , projectWithFixes = projectWithFixes
-                    , rulesWithFixes = rulesWithFixes
+                    , projectWithFixes = model.fixAllResultProject
+                    , rulesWithFixes = result.rules
                     , changedFiles = changedFiles
                     , removedFiles = removedFiles
                     }
