@@ -497,13 +497,12 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
 
                 else
                     let
-                        ( modelWithReviewResults, newCmd ) =
+                        ( newModel, newCmd ) =
                             { model | fixAllErrors = Dict.empty }
                                 |> runReview { fixesAllowed = True } (Store.project model.store)
                                 |> reportOrFix
                     in
-                    -- TODO Update suppressions
-                    ( modelWithReviewResults
+                    ( newModel
                     , Cmd.batch [ cmd, newCmd ]
                     )
 
@@ -708,9 +707,10 @@ saveRunReviewResultsInModel { model, result } =
                 SuppressedErrors.fromReviewErrors result.reviewErrors
         in
         ( { newModel | store = Store.setSuppressedErrors suppressedErrors store }
-        , -- TODO Write suppression files
-          -- SuppressedErrors.encode (List.map Rule.ruleName model.rules) suppressedErrors
-          Cmd.none
+        , result.reviewErrors
+            |> SuppressedErrors.fromReviewErrors
+            |> SuppressedErrors.write model.fs model.options []
+            |> Cmd.map SuppressedErrorsMsg
         )
 
     else
