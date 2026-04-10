@@ -624,7 +624,7 @@ makeReport previousSuppressedErrors input =
     ( model
     , Cmd.batch
         [ suppressionCmd
-        , printReport previousSuppressedErrors model
+        , printReport previousSuppressedErrors input.result model
         ]
     )
 
@@ -661,8 +661,8 @@ saveRunReviewResultsInModel { model, result } =
         ( newModel, Cmd.none )
 
 
-printReport : SuppressedErrors -> Model -> Cmd Msg
-printReport previousSuppressedErrors model =
+printReport : SuppressedErrors -> RunReviewResult -> Model -> Cmd Msg
+printReport previousSuppressedErrors result model =
     let
         newSuppressedErrors : SuppressedErrors
         newSuppressedErrors =
@@ -678,7 +678,7 @@ printReport previousSuppressedErrors model =
                 let
                     filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
                     filesWithError =
-                        groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) model.reviewErrorsAfterSuppression
+                        groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) result.reviewErrorsAfterSuppression
                 in
                 Reporter.formatReport
                     model.options
@@ -694,7 +694,7 @@ printReport previousSuppressedErrors model =
                 let
                     errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
                     errorsByFile =
-                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
+                        groupErrorsByFile identity (Store.project model.store) result.reviewErrors
 
                     errors : Encode.Value
                     errors =
@@ -702,7 +702,7 @@ printReport previousSuppressedErrors model =
                             (encodeErrorByFile
                                 model.options
                                 { suppressedErrors = newSuppressedErrors
-                                , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                                , reviewErrorsAfterSuppression = result.reviewErrorsAfterSuppression
                                 }
                                 ruleLinks
                             )
@@ -712,20 +712,20 @@ printReport previousSuppressedErrors model =
                     model.env
                     model.options.debug
                     errors
-                    (Encode.dict identity identity model.extracts)
+                    (Encode.dict identity identity result.extracts)
 
             NDJson ->
                 let
                     errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
                     errorsByFile =
-                        groupErrorsByFile identity (Store.project model.store) model.reviewErrors
+                        groupErrorsByFile identity (Store.project model.store) result.reviewErrors
                 in
                 errorsByFile
                     |> List.concatMap
                         (encodeErrorsForNDJson
                             model.options
                             { suppressedErrors = newSuppressedErrors
-                            , reviewErrorsAfterSuppression = model.reviewErrorsAfterSuppression
+                            , reviewErrorsAfterSuppression = result.reviewErrorsAfterSuppression
                             }
                             ruleLinks
                         )
@@ -733,7 +733,7 @@ printReport previousSuppressedErrors model =
         , if model.options.watch then
             Cmd.none
 
-          else if List.isEmpty model.reviewErrorsAfterSuppression then
+          else if List.isEmpty result.reviewErrorsAfterSuppression then
             Cli.exit 0
 
           else
