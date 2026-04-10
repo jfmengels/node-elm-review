@@ -2,7 +2,7 @@ module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , formatReport, formatIndividualError
     , formatSingleFixProposal, formatFixProposals
-    , FileWithError, Range, compareRange, formatConfigurationErrors
+    , FileWithError, Options, Range, compareRange, formatConfigurationErrors
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.

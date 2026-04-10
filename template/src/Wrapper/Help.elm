@@ -5,7 +5,7 @@ import ElmReview.Color as Color exposing (Color(..), Colorize)
 import Wrapper.Options exposing (HelpOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Section as Section
-import Wrapper.Subcommand as Subcommand exposing (Subcommand)
+import Wrapper.Subcommand as Subcommand
 
 
 show : HelpOptions -> String

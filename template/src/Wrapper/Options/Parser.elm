@@ -6,7 +6,7 @@ import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import Set
-import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
+import Wrapper.Flag as Flag exposing (Argument(..), Flag)
 import Wrapper.Options as Options exposing (HelpOptions, InitOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)

@@ -26,7 +26,7 @@ import Elm.Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.Options exposing (Options)
-import Elm.Review.RunEnvironment as RunEnvironment exposing (RunEnvironment)
+import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import ElmReview.Path exposing (Path)

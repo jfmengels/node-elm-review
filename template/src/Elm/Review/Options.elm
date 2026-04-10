@@ -5,7 +5,7 @@ import Elm.Review.FixOptions as FixOptions
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.ReporterOptions as ReporterOptions
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
-import ElmReview.Path as Path exposing (Path)
+import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Review.Options
 import Set exposing (Set)
