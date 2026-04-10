@@ -587,13 +587,13 @@ reportFlag =
 applyReport : String -> String -> InternalOptions -> Result (Maybe a) InternalOptions
 applyReport flagName arg options =
     if arg == "human" then
-        addToReviewAppFlagsWithArg flagName arg { options | report = ReportMode.HumanReadable }
+        addToReviewAppFlagsWithArg flagName arg { options | reportMode = ReportMode.HumanReadable }
 
     else if arg == "json" then
-        addToReviewAppFlagsWithArg flagName arg { options | report = ReportMode.Json }
+        addToReviewAppFlagsWithArg flagName arg { options | reportMode = ReportMode.Json }
 
     else if arg == "ndjson" then
-        addToReviewAppFlagsWithArg flagName arg { options | report = ReportMode.NDJson }
+        addToReviewAppFlagsWithArg flagName arg { options | reportMode = ReportMode.NDJson }
 
     else
         Err Nothing

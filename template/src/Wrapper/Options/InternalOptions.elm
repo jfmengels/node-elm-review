@@ -20,7 +20,7 @@ type alias InternalOptions =
     , forTests : Bool
     , offline : Bool
     , color : Maybe Bool
-    , report : ReportMode
+    , reportMode : ReportMode
     , version : Bool
     , unsuppressRules : List String
     , rules : List String
@@ -57,7 +57,7 @@ initialOptions =
     , forTests = False
     , offline = False
     , color = Nothing
-    , report = ReportMode.HumanReadable
+    , reportMode = ReportMode.HumanReadable
     , version = False
     , unsuppressRules = []
     , rules = []
