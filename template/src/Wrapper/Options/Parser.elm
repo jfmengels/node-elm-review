@@ -52,7 +52,7 @@ toOptions env options =
                 Just problem ->
                     ParseError
                         { color = color
-                        , report = options.report
+                        , reportMode = options.reportMode
                         , debug = options.debug
                         }
                         (Problem.from (problem options.subcommand))
@@ -62,7 +62,7 @@ toOptions env options =
                         Nothing ->
                             NeedElmJsonPath
                                 { formatOptions =
-                                    { report = options.report
+                                    { reportMode = options.reportMode
                                     , debug = options.debug
                                     , color = color
                                     }
@@ -89,7 +89,7 @@ toOptions env options =
                                     Problem.notImplementedYet "new-rule subcommand"
                                         |> ParseError
                                             { color = color
-                                            , report = options.report
+                                            , reportMode = options.reportMode
                                             , debug = options.debug
                                             }
 
@@ -97,7 +97,7 @@ toOptions env options =
                                     Problem.notImplementedYet "new-package subcommand"
                                         |> ParseError
                                             { color = color
-                                            , report = options.report
+                                            , reportMode = options.reportMode
                                             , debug = options.debug
                                             }
 
@@ -105,7 +105,7 @@ toOptions env options =
                                     Problem.notImplementedYet "prepare-offline subcommand"
                                         |> ParseError
                                             { color = color
-                                            , report = options.report
+                                            , reportMode = options.reportMode
                                             , debug = options.debug
                                             }
 
@@ -138,7 +138,7 @@ toReviewOptions color options projectRoot =
             { projectRoot = projectRoot
             , namespace = namespace
             }
-    , report = options.report
+    , reportMode = options.reportMode
     , forceBuild = options.forceBuild
     , debug = options.debug
     , color = color

@@ -92,7 +92,7 @@ emptyOptions =
     , forceBuild = False
     , color = Color.yesColors
     , debug = False
-    , report = ReportMode.HumanReadable
+    , reportMode = ReportMode.HumanReadable
     , reviewProject = Options.Local "review"
     , reviewAppFlags = []
     }

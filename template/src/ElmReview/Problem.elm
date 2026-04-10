@@ -80,19 +80,19 @@ exit stderr formatOptions problem =
 type alias FormatOptions a =
     { a
         | color : Color.Support
-        , report : ReportMode
+        , reportMode : ReportMode
         , debug : Bool
     }
 
 
 format : FormatOptions a -> Problem -> String
-format { color, report, debug } problem =
+format { color, reportMode, debug } problem =
     let
         c : Colorize
         c =
             Color.toAnsi color
     in
-    case report of
+    case reportMode of
         ReportMode.HumanReadable ->
             formatHuman c problem
 
