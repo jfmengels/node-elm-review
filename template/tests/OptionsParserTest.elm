@@ -90,7 +90,7 @@ emptyOptions =
             , namespace = "cli"
             }
     , forceBuild = False
-    , color = Color.colors_FOR_TESTS
+    , color = Color.yesColors
     , debug = False
     , report = ReportMode.HumanReadable
     , reviewProject = Options.Local "review"

@@ -5,6 +5,7 @@ import Elm.Review.FixOptions as FixOptions
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.ReporterOptions as ReporterOptions
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
+import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Review.Options
@@ -55,7 +56,7 @@ type alias InternalOptions =
     , communicationKey : CliCommunication.Key
     , suppress : Bool
     , watch : Bool
-    , supportsColor : Bool
+    , color : Color.Support
     , debug : Bool
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
@@ -88,7 +89,7 @@ toOptions options =
     , communicationKey = options.communicationKey
     , suppress = options.suppress
     , watch = options.watch
-    , supportsColor = options.supportsColor
+    , supportsColor = Color.doesSupportColor options.color
     , debug = options.debug
     , reviewFolder = options.reviewFolder
     , usesRemoteTemplate = options.usesRemoteTemplate
@@ -194,7 +195,7 @@ applyArg arg flags =
             Ok { flags | watch = True }
 
         [ "--no-color" ] ->
-            Ok { flags | supportsColor = False }
+            Ok { flags | color = Color.noColors }
 
         [ "--debug" ] ->
             Ok { flags | debug = True }
@@ -233,7 +234,7 @@ default =
     , communicationKey = CliCommunication.dummy
     , suppress = False
     , watch = False
-    , supportsColor = True
+    , color = Color.yesColors
     , debug = False
     , namespace = "cli"
     , reviewFolder = "review"
