@@ -18,6 +18,7 @@ import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Path exposing (Path)
+import ElmReview.Problem as Problem
 import ElmReview.ReportMode exposing (ReportMode(..))
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
@@ -235,17 +236,16 @@ computeRulesToRun env options =
                     ( rulesWithIds, [] )
     in
     if List.isEmpty config then
-        abortWithDetails
-            env
-            options.supportsColor
-            { title = "CONFIGURATION IS EMPTY"
-            , message =
-                """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
+        { title = "CONFIGURATION IS EMPTY"
+        , message =
+            \_ -> """Your configuration contains no rules. You can add rules by editing the ReviewConfig.elm file.
 
 I recommend you take a look at the following documents:
   - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
-            }
+        }
+            |> Problem.from
+            |> Problem.exit env.stderr options
             |> Err
 
     else if not (List.isEmpty filterNames) then
@@ -374,7 +374,7 @@ update msg model =
                         , runEnvironment = model.runEnvironment
                         , stderr = model.env.stderr
                         , ignoreProblematicDependencies = model.options.ignoreProblematicDependencies
-                        , abortWithDetails = abortWithDetails model.env model.options.supportsColor
+                        , handleProblem = Problem.exit model.env.stderr model.options
                         }
                         storeMsg
                         model.store

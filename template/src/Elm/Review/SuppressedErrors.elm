@@ -21,7 +21,9 @@ import Dict exposing (Dict)
 import Elm.Review.Options exposing (Options)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
+import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem)
@@ -48,19 +50,43 @@ empty =
     SuppressedErrors Dict.empty
 
 
-addFromFile : String -> String -> SuppressedErrors -> SuppressedErrors
-addFromFile ruleName suppressionFileContent ((SuppressedErrors previous) as untouched) =
+addFromFile : String -> String -> SuppressedErrors -> Result Problem SuppressedErrors
+addFromFile filePath suppressionFileContent (SuppressedErrors previous) =
     case Decode.decodeString suppressionFileDecoder suppressionFileContent of
-        Ok newSuppressions ->
-            List.foldl
-                (\( filePath, count_ ) dict -> Dict.insert ( ruleName, filePath ) count_ dict)
-                (Dict.filter (\( ruleName_, _ ) _ -> ruleName /= ruleName_) previous)
-                newSuppressions
-                |> SuppressedErrors
+        Ok { version, suppressions } ->
+            if version /= 1 then
+                { title = "UNKNOWN VERSION FOR SUPPRESSION FILE"
+                , message =
+                    \c ->
+                        "I was trying to read " ++ c Orange filePath ++ " but the version of that file is " ++ c Red ("\"" ++ String.fromInt version ++ "\"") ++ " whereas I only support version " ++ c YellowBright "1" ++ """.
 
-        Err _ ->
-            -- TODO Report error?
-            untouched
+Try updating """ ++ c GreenBright "elm-review" ++ " to a version that supports this version of suppression files."
+                }
+                    |> Problem.from
+                    |> Problem.withPath filePath
+                    |> Err
+
+            else
+                let
+                    ruleName : String
+                    ruleName =
+                        -- Remove leading "./" and trailing ".json"
+                        String.slice 2 -5 filePath
+                in
+                List.foldl
+                    (\( path, count_ ) dict -> Dict.insert ( ruleName, path ) count_ dict)
+                    (Dict.filter (\( ruleName_, _ ) _ -> ruleName /= ruleName_) previous)
+                    suppressions
+                    |> SuppressedErrors
+                    |> Ok
+
+        Err err ->
+            { title = "PROBLEM READING SUPPRESSION FILE"
+            , message = \c -> "I was trying to read " ++ c Orange filePath ++ " but encountered some problems:\n\n" ++ Decode.errorToString err
+            }
+                |> Problem.from
+                |> Problem.withPath filePath
+                |> Err
 
 
 fromReviewErrors : List Rule.ReviewError -> SuppressedErrors
@@ -163,9 +189,11 @@ suppressedErrorEntryDecoder =
         (Decode.field "suppressions" (Decode.list fileEntryDecoder))
 
 
-suppressionFileDecoder : Decoder (List ( String, Int ))
+suppressionFileDecoder : Decoder { version : Int, suppressions : List ( String, Int ) }
 suppressionFileDecoder =
-    Decode.field "suppressions" (Decode.list fileEntryDecoder)
+    Decode.map2 (\version suppressions -> { version = version, suppressions = suppressions })
+        (Decode.field "version" Decode.int)
+        (Decode.field "suppressions" (Decode.list fileEntryDecoder))
 
 
 fileEntryDecoder : Decoder ( String, Int )
