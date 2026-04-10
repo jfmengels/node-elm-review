@@ -543,9 +543,9 @@ find predicate list =
 type alias RunReviewResult =
     { reviewErrors : List Rule.ReviewError
     , reviewErrorsAfterSuppression : List Rule.ReviewError
-    , fixAllRules : List Rule
-    , fixAllResultProject : Project
-    , fixAllErrors : Dict String (List Rule.ReviewError)
+    , rules : List Rule
+    , project : Project
+    , fixedErrors : Dict String (List Rule.ReviewError)
     , extracts : Dict String Encode.Value
     }
 
@@ -603,9 +603,9 @@ runReview fixesAllowed initialProject model =
                 |> CliCommunication.timerStart model.options.communicationKey "apply-suppressions"
                 |> SuppressedErrors.apply model.options.unsuppressMode suppressedErrors
                 |> CliCommunication.timerEnd model.options.communicationKey "apply-suppressions"
-        , fixAllRules = rules
-        , fixAllResultProject = project
-        , fixAllErrors = fixedErrors
+        , rules = rules
+        , project = project
+        , fixedErrors = fixedErrors
         , extracts = extracts
         }
     }
@@ -647,13 +647,13 @@ saveRunReviewResultsInModel { model, result } =
         store : Store.Model
         store =
             model.store
-                |> Store.setProject result.fixAllResultProject
+                |> Store.setProject result.project
 
         newModel : Model
         newModel =
             { model
                 | store = store
-                , rules = result.fixAllRules
+                , rules = result.rules
             }
     in
     if List.isEmpty result.reviewErrorsAfterSuppression && model.options.writeSuppressionFiles then
@@ -977,7 +977,7 @@ applyFixesAfterReview ({ model, result } as input) =
         makeReport (Store.suppressedErrors model.store) input
 
     else
-        case Project.diffV2 { before = Store.project model.store, after = result.fixAllResultProject } of
+        case Project.diffV2 { before = Store.project model.store, after = result.project } of
             [] ->
                 makeReport (Store.suppressedErrors model.store) input
 
