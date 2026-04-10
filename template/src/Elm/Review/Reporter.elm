@@ -1428,8 +1428,9 @@ formatFixProposals :
     Bool
     -> Dict String (List Error)
     -> List { path : String, diff : Project.Diff }
+    -> Int
     -> List TextContent
-formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs =
+formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs numberOfFixedErrors =
     let
         diffs : List { path : String, diff : Project.Diff }
         diffs =
@@ -1463,17 +1464,20 @@ formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs =
                         ]
                     )
                     diffs
-
-        body : List Text
-        body =
-            [ [ fixAllHeader ]
-            , filesListing
-            , [ Text.from "Here is how the code would change if you applied each fix." ]
-            , formatFileDiffs fileRemovalFixesEnabled errorsForFile diffs
-            ]
-                |> Text.join "\n\n"
     in
-    (body ++ [ Text.from "\n" ])
+    [ [ fixAllHeader ]
+    , filesListing
+    , [ Text.from "Here is how the code would change if you applied each fix." ]
+    , formatFileDiffs fileRemovalFixesEnabled errorsForFile diffs
+    , [ ("Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?")
+            |> Text.from
+            |> Text.inBold
+      , " (Y/n)"
+            |> Text.from
+            |> Text.inGray
+      ]
+    ]
+        |> Text.join "\n\n"
         |> List.map Text.toRecord
 
 

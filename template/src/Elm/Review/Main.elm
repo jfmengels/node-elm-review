@@ -39,9 +39,6 @@ import Task
 port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedDirectories : List String } -> Cmd msg
 
 
-port askConfirmationToFix : Encode.Value -> Cmd msg
-
-
 abortWithDetails : Env -> Bool -> { title : String, message : String } -> Cmd msg
 abortWithDetails env supportsColor { title, message } =
     let
@@ -101,18 +98,11 @@ type alias Model =
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
-    , errorAwaitingConfirmation : AwaitingConfirmation
 
     -- FIX ALL
     , fixAllResultProject : Project
     , fixAllErrors : Dict String (List Rule.ReviewError)
     }
-
-
-type AwaitingConfirmation
-    = NotAwaiting
-    | AwaitingError Rule.ReviewError
-    | AwaitingFixAll
 
 
 type ModelWrapper
@@ -138,6 +128,7 @@ type alias FixPromptPayload =
 
 type FixPromptKind
     = FixSingle Rule.ReviewError
+    | FixAll
 
 
 init : Env -> ( ModelWrapper, Cmd Msg )
@@ -215,7 +206,6 @@ initValid env fs options rulesFromConfig =
             , reviewErrorsAfterSuppression = []
             , errorsHaveBeenFixedPreviously = False
             , refusedErrorFixes = RefusedErrorFixes.empty
-            , errorAwaitingConfirmation = NotAwaiting
             , fixAllRules = rules
             , fixAllResultProject = Project.new
             , fixAllErrors = Dict.empty
@@ -457,20 +447,24 @@ applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles }
 
 handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
 handleFixRefused fixPromptKind model =
+    let
+        project : Project
+        project =
+            Store.project model.store
+    in
     case fixPromptKind of
         FixSingle error ->
-            let
-                project : Project
-                project =
-                    Store.project model.store
-            in
             { model
-                | errorAwaitingConfirmation = NotAwaiting
-                , fixAllResultProject = project
+                | fixAllResultProject = project
+                , refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes
             }
-                |> refuseError error
-                |> runReview { fixesAllowed = True } (Store.project model.store)
+                |> runReview { fixesAllowed = True } project
                 |> reportOrFix
+
+        FixAll ->
+            { model | fixAllResultProject = project }
+                |> runReview { fixesAllowed = False } project
+                |> makeReport (Store.suppressedErrors model.store)
 
 
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -547,11 +541,6 @@ find predicate list =
                 find predicate rest
 
 
-refuseError : Rule.ReviewError -> Model -> Model
-refuseError error model =
-    { model | refusedErrorFixes = RefusedErrorFixes.insert error model.refusedErrorFixes }
-
-
 runReviewOld : { fixesAllowed : Bool } -> Project -> Model -> Model
 runReviewOld fixesAllowed initialProject model =
     let
@@ -592,7 +581,6 @@ runReviewOld fixesAllowed initialProject model =
                 model.store
         , fixAllResultProject = project
         , fixAllErrors = fixedErrors
-        , errorAwaitingConfirmation = NotAwaiting
         , extracts = extracts
     }
 
@@ -649,7 +637,6 @@ runReview fixesAllowed initialProject model =
                         model.store
                 , fixAllResultProject = project
                 , fixAllErrors = fixedErrors
-                , errorAwaitingConfirmation = NotAwaiting
                 , extracts = extracts
             }
     in
@@ -679,10 +666,10 @@ reportOrFix input =
                 |> CliCommunication.timerEnd input.model.options.communicationKey "process-errors"
 
         FixOptions.Fix ->
-            applyFixesAfterReview True input
+            applyFixesAfterReview input
 
         FixOptions.FixAll ->
-            applyFixesAfterReview False input
+            applyFixesAfterReview input
 
 
 makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
@@ -1028,8 +1015,8 @@ encodePosition position =
         ]
 
 
-applyFixesAfterReview : Bool -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
-applyFixesAfterReview allowPrintingSingleFix ({ model, result } as input) =
+applyFixesAfterReview : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+applyFixesAfterReview ({ model, result } as input) =
     if Dict.isEmpty model.fixAllErrors then
         makeReport (Store.suppressedErrors model.store) input
 
@@ -1039,14 +1026,7 @@ applyFixesAfterReview allowPrintingSingleFix ({ model, result } as input) =
                 makeReport (Store.suppressedErrors model.store) input
 
             diffs ->
-                if allowPrintingSingleFix then
-                    sendFixPrompt model.fixAllResultProject model.fixAllRules diffs model
-
-                else
-                    ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-                    , -- TODO Handle multiple fix prompt
-                      sendFixPromptForMultipleFixes model diffs (countErrors model.fixAllErrors)
-                    )
+                sendFixPrompt model.fixAllResultProject model.fixAllRules diffs model
 
 
 sendFixPrompt : Project -> List Rule -> List FixedFile -> Model -> ( Model, Cmd Msg )
@@ -1056,80 +1036,82 @@ sendFixPrompt projectWithFixes rulesWithFixes diffs model =
             ( model, Cmd.none )
 
         Just nbErrors ->
-            case nbErrors of
-                OneError filePath error ->
+            let
+                changedFiles : List { filePath : Path, source : String }
+                changedFiles =
+                    List.filterMap
+                        (\{ path, diff } ->
+                            case diff of
+                                Project.Edited { after } ->
+                                    Just
+                                        { filePath = path
+                                        , source = after
+                                        }
+
+                                Project.Removed ->
+                                    Nothing
+                        )
+                        diffs
+
+                removedFiles : List Path
+                removedFiles =
+                    List.filterMap
+                        (\{ path, diff } ->
+                            case diff of
+                                Project.Edited _ ->
+                                    Nothing
+
+                                Project.Removed ->
+                                    Just path
+                        )
+                        diffs
+
+                fixKind : FixPromptKind
+                fixKind =
+                    case nbErrors of
+                        OneError _ error ->
+                            FixSingle error
+
+                        MultipleErrors _ ->
+                            FixAll
+
+                fixPayload : FixPromptPayload
+                fixPayload =
+                    { kind = fixKind
+                    , projectWithFixes = projectWithFixes
+                    , rulesWithFixes = rulesWithFixes
+                    , changedFiles = changedFiles
+                    , removedFiles = removedFiles
+                    }
+            in
+            case model.env.stdin of
+                Just stdin ->
                     let
-                        changedFiles : List { filePath : Path, source : String }
-                        changedFiles =
-                            List.filterMap
-                                (\{ path, diff } ->
-                                    case diff of
-                                        Project.Edited { after } ->
-                                            Just
-                                                { filePath = path
-                                                , source = after
-                                                }
+                        confirmationMessage : List Reporter.TextContent
+                        confirmationMessage =
+                            case nbErrors of
+                                OneError filePath error ->
+                                    Reporter.formatSingleFixProposal
+                                        model.options
+                                        (pathAndSource (Store.project model.store) filePath)
+                                        (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
+                                        diffs
 
-                                        Project.Removed ->
-                                            Nothing
-                                )
-                                diffs
-
-                        removedFiles : List Path
-                        removedFiles =
-                            List.filterMap
-                                (\{ path, diff } ->
-                                    case diff of
-                                        Project.Edited _ ->
-                                            Nothing
-
-                                        Project.Removed ->
-                                            Just path
-                                )
-                                diffs
-
-                        fixPayload : FixPromptPayload
-                        fixPayload =
-                            { kind = FixSingle error
-                            , projectWithFixes = projectWithFixes
-                            , rulesWithFixes = rulesWithFixes
-                            , changedFiles = changedFiles
-                            , removedFiles = removedFiles
-                            }
+                                MultipleErrors numberOfFixedErrors ->
+                                    confirmationForMultipleFixesPrompt model diffs numberOfFixedErrors
 
                         ( fixPrompt, fixPromptCmd ) =
-                            case model.env.stdin of
-                                Just stdin ->
-                                    let
-                                        confirmationMessage : List Reporter.TextContent
-                                        confirmationMessage =
-                                            Reporter.formatSingleFixProposal
-                                                model.options
-                                                (pathAndSource (Store.project model.store) filePath)
-                                                (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
-                                                diffs
-                                    in
-                                    confirmationMessage
-                                        |> Text.toAnsi model.options.supportsColor
-                                        |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
-
-                                Nothing ->
-                                    -- TODO
-                                    -- If there's no stdin, assume the reply is yes.
-                                    Debug.todo "Fix prompt without stdin"
+                            confirmationMessage
+                                |> Text.toAnsi model.options.supportsColor
+                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
                     in
-                    ( { model
-                        | fixPrompt = fixPrompt
-                        , -- TODO Reuse/remove errorAwaitingConfirmation
-                          errorAwaitingConfirmation = AwaitingError error
-                      }
+                    ( { model | fixPrompt = fixPrompt }
                     , Cmd.map (FixPromptMsg fixPayload) fixPromptCmd
                     )
 
-                MultipleErrors numberOfFixedErrors ->
-                    ( { model | errorAwaitingConfirmation = AwaitingFixAll }
-                    , sendFixPromptForMultipleFixes model diffs numberOfFixedErrors
-                    )
+                Nothing ->
+                    -- If there's no stdin, assume the reply is yes.
+                    applyFixChanges fixPayload model
 
 
 pathAndSource : Project -> String -> { path : Reporter.FilePath, source : Reporter.Source }
@@ -1167,8 +1149,8 @@ pathAndSource project path =
         { path = Reporter.FilePath path, source = Reporter.Source fileLines }
 
 
-sendFixPromptForMultipleFixes : Model -> List FixedFile -> Int -> Cmd msg
-sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
+confirmationForMultipleFixesPrompt : Model -> List FixedFile -> Int -> List Reporter.TextContent
+confirmationForMultipleFixesPrompt model diffs numberOfFixedErrors =
     let
         errorsForFile : Dict String (List Reporter.Error)
         errorsForFile =
@@ -1202,67 +1184,8 @@ sendFixPromptForMultipleFixes model diffs numberOfFixedErrors =
                 )
                 Dict.empty
                 model.fixAllErrors
-
-        changedFiles : List { path : Reporter.FilePath, source : Reporter.Source }
-        changedFiles =
-            List.filterMap
-                (\{ path, diff } ->
-                    case diff of
-                        Project.Edited { after } ->
-                            Just
-                                { path = Reporter.FilePath path
-                                , source = Reporter.Source (after |> String.lines |> Array.fromList)
-                                }
-
-                        Project.Removed ->
-                            Nothing
-                )
-                diffs
-
-        removedFiles : List String
-        removedFiles =
-            List.filterMap
-                (\{ path, diff } ->
-                    case diff of
-                        Project.Edited _ ->
-                            Nothing
-
-                        Project.Removed ->
-                            Just path
-                )
-                diffs
-
-        confirmationMessage : Encode.Value
-        confirmationMessage =
-            Reporter.formatFixProposals model.options.fileRemovalFixesEnabled errorsForFile diffs
-                |> encodeReport
     in
-    askConfirmationToFix
-        (Encode.object
-            [ ( "confirmationMessage", confirmationMessage )
-            , ( "changedFiles", Encode.list encodeChangedFile changedFiles )
-            , ( "removedFiles", Encode.list Encode.string removedFiles )
-            , ( "count", Encode.int numberOfFixedErrors )
-            , ( "clearFixLine"
-              , Encode.bool
-                    (case model.options.fixMode of
-                        FixOptions.DontFix ->
-                            False
-
-                        FixOptions.Fix ->
-                            False
-
-                        FixOptions.FixAll ->
-                            True
-                    )
-              )
-            ]
-        )
-
-
-countErrors : Dict String (List a) -> Int
-countErrors dict =
-    Dict.foldl (\_ errors count -> List.length errors + count) 0 dict
+    Reporter.formatFixProposals model.options.fileRemovalFixesEnabled errorsForFile diffs numberOfFixedErrors
 
 
 type NumberOfErrors
@@ -1281,18 +1204,6 @@ numberOfErrors dict =
 
         list ->
             Just (MultipleErrors (List.length list))
-
-
-encodeChangedFile : { file | path : Reporter.FilePath, source : Reporter.Source } -> Encode.Value
-encodeChangedFile changedFile =
-    let
-        (Reporter.Source source) =
-            changedFile.source
-    in
-    Encode.object
-        [ ( "path", encodeFilePath changedFile.path )
-        , ( "source", Encode.string (source |> Array.toList |> String.join "\n") )
-        ]
 
 
 type alias FixedFile =
