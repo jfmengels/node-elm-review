@@ -18,7 +18,7 @@ import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Path exposing (Path)
-import ElmReview.Problem as Problem
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode exposing (ReportMode(..))
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
@@ -38,27 +38,6 @@ import Task
 
 
 port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedDirectories : List String } -> Cmd msg
-
-
-abortWithDetails : Env -> Bool -> { title : String, message : String } -> Cmd msg
-abortWithDetails env supportsColor { title, message } =
-    let
-        titleText : String
-        titleText =
-            "-- " ++ title ++ String.repeat (80 - String.length title - 4) "-"
-
-        colorize : String -> String
-        colorize str =
-            if supportsColor then
-                "\u{001B}[32m" ++ str ++ "\u{001B}[39m"
-
-            else
-                str
-    in
-    Cmd.batch
-        [ Cli.println env.stderr (colorize titleText ++ "\n\n" ++ String.trim message)
-        , Cli.exit 1
-        ]
 
 
 
@@ -249,17 +228,14 @@ I recommend you take a look at the following documents:
             |> Err
 
     else if not (List.isEmpty filterNames) then
-        abortWithDetails
-            env
-            options.supportsColor
-            (unknownRulesFilterMessage
-                { ruleNames =
-                    List.map Rule.ruleName config
-                        |> Set.fromList
-                        |> Set.toList
-                , filterNames = filterNames
-                }
-            )
+        unknownRulesFilterMessage
+            { ruleNames =
+                List.map Rule.ruleName config
+                    |> Set.fromList
+                    |> Set.toList
+            , filterNames = filterNames
+            }
+            |> Problem.exit env.stderr options
             |> Err
 
     else
@@ -324,7 +300,7 @@ getConfigurationError rule =
             Nothing
 
 
-unknownRulesFilterMessage : { ruleNames : List String, filterNames : List String } -> { title : String, message : String }
+unknownRulesFilterMessage : { ruleNames : List String, filterNames : List String } -> Problem
 unknownRulesFilterMessage { ruleNames, filterNames } =
     let
         unknownRulesMessage : String
@@ -333,12 +309,13 @@ unknownRulesFilterMessage { ruleNames, filterNames } =
                 |> List.map (\filterName -> "- " ++ filterName ++ ". Did you mean:\n  - " ++ String.join "\n  - " (closestNames ruleNames filterName))
                 |> String.join "\n\n"
     in
-    { title = "UNKNOWN FILTERED RULE(S)"
-    , message =
-        """You requested to only run several rules, but I could not find some of them.
+    Problem.from
+        { title = "UNKNOWN FILTERED RULE(S)"
+        , message =
+            \_ -> """You requested to only run several rules, but I could not find some of them.
 
 """ ++ unknownRulesMessage
-    }
+        }
 
 
 closestNames : List String -> String -> List String
