@@ -196,7 +196,7 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
 
         Err error ->
             ( Done
-            , Problem.unexpectedError (FsExtra.errorToString error)
+            , Problem.unexpectedError "when trying to find your project root" (FsExtra.errorToString error)
                 |> Problem.exit loading.env.stderr loading.formatOptions
             )
 
