@@ -1,6 +1,5 @@
 module Elm.Review.SuppressedErrors exposing
-    ( Msg
-    , SuppressedErrors
+    ( SuppressedErrors
     , addFromFile
     , addToReviewOptions
     , apply
@@ -12,11 +11,9 @@ module Elm.Review.SuppressedErrors exposing
     , fromReviewErrors
     , member
     , suppressedFolder
-    , update
     , write
     )
 
-import Cli
 import Dict exposing (Dict)
 import Elm.Review.Options exposing (Options)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
@@ -26,14 +23,13 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem)
+import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Options as ReviewOptions exposing (ReviewOptions)
 import Review.Rule as Rule
 import Set exposing (Set)
 import Task exposing (Task)
-import Worker.Capabilities exposing (Console)
 
 
 suppressedFolder : Options -> Path
@@ -207,24 +203,6 @@ fileEntryDecoder =
 -- ENCODE
 
 
-type Msg
-    = WroteSuppressionFiles (Result String ())
-
-
-update : Console -> Msg -> Cmd msg
-update stdout (WroteSuppressionFiles result) =
-    case result of
-        Ok () ->
-            Cmd.none
-
-        Err error ->
-            -- TODO Use Problem
-            Cmd.batch
-                [ Cli.println stdout error
-                , Cli.exit 1
-                ]
-
-
 encode : List String -> SuppressedErrors -> Encode.Value
 encode ruleNames (SuppressedErrors suppressedErrors) =
     let
@@ -289,10 +267,10 @@ encodeFileSuppression ( nbSuppressedErrors, path ) =
 -- WRITE
 
 
-write : FileSystem -> Options -> List String -> SuppressedErrors -> Cmd Msg
+write : FileSystem -> Options -> List String -> SuppressedErrors -> Maybe (Task Problem ())
 write fs options ruleNames suppressedErrors =
     if options.usesRemoteTemplate && not options.suppress then
-        Cmd.none
+        Nothing
 
     else
         let
@@ -304,25 +282,31 @@ write fs options ruleNames suppressedErrors =
             suppressedErrorsFolder =
                 suppressedFolder options
         in
-        (if deleteAllRules then
-            Fs.removeDirectory fs suppressedErrorsFolder
+        Task.sequence
+            [ if deleteAllRules then
+                Fs.removeDirectory fs suppressedErrorsFolder
+                    |> Task.onError (\_ -> Task.succeed ())
 
-         else
-            Task.succeed ()
-        )
-            |> Task.andThen (\() -> Fs.createDirectory fs suppressedErrorsFolder)
-            |> Task.mapError FsExtra.errorToString
-            |> Task.andThen
-                (\() ->
-                    suppressedErrors
-                        |> suppressionsX ruleNames
-                        |> TaskExtra.mapAll (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
-                )
+              else
+                Task.succeed ()
+            , Fs.createDirectory fs suppressedErrorsFolder
+                |> Task.onError (\_ -> Task.succeed ())
+            , suppressedErrors
+                |> suppressionsX ruleNames
+                |> TaskExtra.mapAll (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
+            ]
             |> Task.map (\_ -> ())
-            |> Task.attempt WroteSuppressionFiles
+            |> Task.mapError
+                (\err ->
+                    Problem.from
+                        { title = "PROBLEM WRITING SUPPRESSION FILES"
+                        , message = \_ -> "I was trying to write suppressions files but encountered a problem:\n\n" ++ FsExtra.errorToString err
+                        }
+                )
+            |> Just
 
 
-writeFile : FileSystem -> Path -> Bool -> ( String, List ( Int, Path ) ) -> Task String ()
+writeFile : FileSystem -> Path -> Bool -> ( String, List ( Int, Path ) ) -> Task FsError ()
 writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
     let
         filePath : Path
@@ -335,7 +319,6 @@ writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
 
         else
             Fs.deleteFile fs filePath
-                |> Task.mapError FsExtra.errorToString
 
     else
         Fs.readTextFile fs filePath
@@ -351,11 +334,6 @@ writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
 
                     else
                         Fs.writeTextFile fs filePath contents
-                )
-            |> Task.mapError
-                (\_ ->
-                    -- TODO Use Problem
-                    "FAILED TO UPDATE SUPPRESSION FILE"
                 )
 
 
