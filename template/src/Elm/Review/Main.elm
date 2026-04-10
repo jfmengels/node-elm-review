@@ -473,13 +473,9 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
             Store.NotReady ->
                 unchanged
 
-            Store.Failure files ->
-                -- TODO Write problem
+            Store.Failure problem ->
                 ( model
-                , Cmd.batch
-                    [ Cli.println model.env.stderr ("Could not find files " ++ String.join "," files)
-                    , Cli.exit 1
-                    ]
+                , Problem.exit model.env.stderr model.options problem
                 )
 
     else
