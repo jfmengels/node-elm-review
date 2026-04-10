@@ -59,7 +59,7 @@ buildLocalProject fs os options reviewFolder =
         |> Task.andThen
             (\{ raw, application } ->
                 FolderHash.hashSourceDirectories fs reviewFolder application.dirs
-                    |> Task.mapError fsErrorToProblem
+                    |> Task.mapError (fsErrorToProblem "while building and hashing source-directories")
                     |> Task.andThen
                         (\appHash ->
                             let
@@ -110,7 +110,7 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
     Task.map2 (\_ _ -> ())
         (Fs.createDirectory fs (Path.join2 buildFolder "src"))
         (Fs.createDirectory fs (Path.dirname buildData.reviewAppPath))
-        |> Task.mapError fsErrorToProblem
+        |> Task.mapError (fsErrorToProblem "while building and creating temporary directories")
         |> Task.andThen
             (\() ->
                 FsExtra.copyDirectory os
@@ -118,7 +118,7 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
                       from = "/Users/m1/dev/node-elm-review/template/src"
                     , to = buildFolder
                     }
-                    |> Task.mapError processingErrorToProblem
+                    |> Task.mapError (processingErrorToProblem "while building and copying template files")
             )
         |> Task.andThen (\() -> createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson)
         |> Task.andThen (\() -> compileProjectUsingElmRun os buildFolder buildData.reviewAppPath)
@@ -162,17 +162,17 @@ createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
         (Path.join2 buildFolder "elm.json")
         (Elm.Project.encode (Elm.Project.Application elmJson) |> Encode.encode 2)
         |> Task.map (always ())
-        |> Task.mapError fsErrorToProblem
+        |> Task.mapError (fsErrorToProblem "while building and writing the review application's elm.json")
 
 
-fsErrorToProblem : FsError -> Problem
-fsErrorToProblem error =
-    Problem.unexpectedError (FsExtra.errorToString error)
+fsErrorToProblem : String -> FsError -> Problem
+fsErrorToProblem stepDescription error =
+    Problem.unexpectedError stepDescription (FsExtra.errorToString error)
 
 
-processingErrorToProblem : ProcessError -> Problem
-processingErrorToProblem error =
-    Problem.unexpectedError (OsExtra.errorToString error)
+processingErrorToProblem : String -> ProcessError -> Problem
+processingErrorToProblem stepDescription error =
+    Problem.unexpectedError stepDescription (OsExtra.errorToString error)
 
 
 addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
@@ -321,7 +321,7 @@ compileProjectUsingElmRun os buildFolder reviewAppPath =
             , stderr = Process.InheritStderr
         }
         |> Task.map (\_ -> ())
-        |> Task.mapError processingErrorToProblem
+        |> Task.mapError (processingErrorToProblem "while building the review application binary")
 
 
 decodingErrorMessage : String -> Decode.Error -> Colorize -> String

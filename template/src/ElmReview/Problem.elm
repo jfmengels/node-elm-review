@@ -134,10 +134,10 @@ formatJsonHelp c (Problem { title, message, path }) =
         |> Encode.object
 
 
-unexpectedError : String -> Problem
-unexpectedError message =
+unexpectedError : String -> String -> Problem
+unexpectedError stepDescription message =
     { title = "UNEXPECTED ERROR"
-    , message = \c -> """I ran into an unexpected error. Please open an issue at the following link:
+    , message = \c -> "I ran into an unexpected error " ++ stepDescription ++ """. Please open an issue at the following link:
   https://github.com/jfmengels/node-elm-review/issues/new
 
 Please include this error message and as much detail as you can provide. Running
