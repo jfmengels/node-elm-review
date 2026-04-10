@@ -3,7 +3,7 @@ module ElmReview.Problem exposing
     , ProblemSimple
     , unexpectedError, notImplementedYet
     , exit
-    , FormatOptions, format
+    , FormatOptions
     , unwrapFOR_TESTS
     )
 
@@ -16,7 +16,7 @@ module ElmReview.Problem exposing
 
 @docs exit
 
-@docs FormatOptions, format
+@docs FormatOptions
 
 @docs unwrapFOR_TESTS
 

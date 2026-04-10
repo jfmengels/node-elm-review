@@ -7,6 +7,7 @@ import Elm.Review.ReporterOptions as ReporterOptions
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Review.Options
 import Set exposing (Set)
@@ -113,13 +114,13 @@ fixModeToReportFixMode fixMode =
             ReporterOptions.Fixing
 
 
-parse : List String -> Result String Options
+parse : List String -> Result Problem Options
 parse args =
     parseHelp args default
         |> Result.map toOptions
 
 
-parseHelp : List String -> InternalOptions -> Result String InternalOptions
+parseHelp : List String -> InternalOptions -> Result Problem InternalOptions
 parseHelp args flags =
     case args of
         [] ->
@@ -131,7 +132,11 @@ parseHelp args flags =
                     parseHelp rest newFlags
 
                 Err err ->
-                    Err err
+                    { title = "PROBLEM READING FLAGS"
+                    , message = \_ -> err
+                    }
+                        |> Problem.from
+                        |> Err
 
 
 applyArg : String -> InternalOptions -> Result String InternalOptions
