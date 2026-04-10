@@ -132,17 +132,9 @@ handleCliArgsParseResult env { fs, os } result =
 
 requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
 requireCapabilities env =
-    case Fs.require env of
-        Err msg ->
-            Err (env.programName ++ ": " ++ msg)
-
-        Ok fs ->
-            case Os.requireProcess env of
-                Err msg ->
-                    Err (env.programName ++ ": " ++ msg)
-
-                Ok os ->
-                    Ok { fs = fs, os = os }
+    Result.map2 (\fs os -> { fs = fs, os = os })
+        (Fs.require env)
+        (Os.requireProcess env)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
