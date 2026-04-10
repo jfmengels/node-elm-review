@@ -69,7 +69,7 @@ handleCliArgsParseResult env { fs, os } result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
             ( Done
-            , exitWithProblem env formatOptions problem
+            , Problem.exit env.stderr formatOptions problem
             )
 
         OptionsParser.ShowHelp options ->
@@ -191,13 +191,13 @@ If you wish to run elm-review from outside your project,
 try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
               }
                 |> Problem.from
-                |> exitWithProblem loading.env loading.formatOptions
+                |> Problem.exit loading.env.stderr loading.formatOptions
             )
 
         Err error ->
             ( Done
             , Problem.unexpectedError (FsExtra.errorToString error)
-                |> exitWithProblem loading.env loading.formatOptions
+                |> Problem.exit loading.env.stderr loading.formatOptions
             )
 
 
@@ -230,14 +230,6 @@ getCwd fs env =
 
         Nothing ->
             Task.fail (Fs.NotFound ".")
-
-
-exitWithProblem : Env -> Problem.FormatOptions options -> Problem.Problem -> Cmd msg
-exitWithProblem env formatOptions problem =
-    Cmd.batch
-        [ Cli.println env.stderr (Problem.format formatOptions problem)
-        , Cli.exit 1
-        ]
 
 
 {-| Find the first element that satisfies a predicate and return

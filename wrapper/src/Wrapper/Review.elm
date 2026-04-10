@@ -64,7 +64,7 @@ update msg (Model model) =
                     runReviewProcess model reviewAppPath
 
                 Err problem ->
-                    exitWithProblem model.stderr model.options problem
+                    Problem.exit model.stderr model.options problem
 
         ReviewProcessEnded result ->
             case result of
@@ -101,11 +101,3 @@ runReviewProcess { os, options } appBinary =
         , stderr = Process.InheritStderr
         }
         |> Task.attempt ReviewProcessEnded
-
-
-exitWithProblem : Console -> Problem.FormatOptions options -> Problem.Problem -> Cmd msg
-exitWithProblem stderr formatOptions problem =
-    Cmd.batch
-        [ Cli.println stderr (Problem.format formatOptions problem)
-        , Cli.exit 1
-        ]

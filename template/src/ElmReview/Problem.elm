@@ -2,6 +2,7 @@ module ElmReview.Problem exposing
     ( Problem, from, withPath
     , ProblemSimple
     , unexpectedError, notImplementedYet
+    , exit
     , FormatOptions, format
     , unwrapFOR_TESTS
     )
@@ -13,12 +14,16 @@ module ElmReview.Problem exposing
 
 @docs unexpectedError, notImplementedYet
 
+@docs exit
+
 @docs FormatOptions, format
 
-@docs unwrap_FOR_TESTS
+@docs unwrapFOR_TESTS
 
 -}
 
+import Capabilities exposing (Console)
+import Cli
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
@@ -62,6 +67,14 @@ unwrapFOR_TESTS (Problem problem) =
     { title = problem.title
     , message = problem.message
     }
+
+
+exit : Console -> FormatOptions options -> Problem -> Cmd msg
+exit stderr formatOptions problem =
+    Cmd.batch
+        [ Cli.println stderr (format formatOptions problem)
+        , Cli.exit 1
+        ]
 
 
 type alias FormatOptions a =
