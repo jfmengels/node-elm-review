@@ -615,10 +615,12 @@ makeReport previousSuppressedErrors input =
 
 saveRunReviewResultsInModel : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
 saveRunReviewResultsInModel { model, result } =
+    -- TODO Keep this function?
     let
         store : Store.Model
         store =
             model.store
+                -- TODO This is not saved in else branch?
                 |> Store.setProject result.project
 
         newModel : Model
