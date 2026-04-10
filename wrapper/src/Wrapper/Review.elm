@@ -38,7 +38,7 @@ type alias ModelData =
 
 type Msg
     = BuildCompleted (Result Problem Build.BuildData)
-    | ReviewProcessEnded (Result ProcessError Process.Completed)
+    | ReviewProcessEnded (Result Problem Process.Completed)
 
 
 init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
@@ -71,11 +71,8 @@ update msg (Model model) =
                 Ok completed ->
                     Cli.exit completed.exitCode
 
-                Err err ->
-                    Cmd.batch
-                        [ Cli.println model.stdout ("error: " ++ ElmRun.OsExtra.errorToString err)
-                        , Cli.exit 1
-                        ]
+                Err problem ->
+                    Problem.exit model.stderr model.options problem
 
 
 runReviewProcess : ModelData -> String -> Cmd Msg
@@ -100,4 +97,9 @@ runReviewProcess { os, options } appBinary =
         , stdout = Process.InheritStdout
         , stderr = Process.InheritStderr
         }
+        |> Task.mapError
+            (\err ->
+                Problem.unexpectedError "when running the review application" (ElmRun.OsExtra.errorToString err)
+                    |> Problem.withPath appBinary
+            )
         |> Task.attempt ReviewProcessEnded
