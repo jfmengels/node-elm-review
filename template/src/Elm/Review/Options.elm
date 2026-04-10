@@ -31,6 +31,7 @@ type alias Options =
     , suppress : Bool
     , watch : Bool
     , supportsColor : Bool
+    , color : Color.Support
     , debug : Bool
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
@@ -90,6 +91,7 @@ toOptions options =
     , suppress = options.suppress
     , watch = options.watch
     , supportsColor = Color.doesSupportColor options.color
+    , color = options.color
     , debug = options.debug
     , reviewFolder = options.reviewFolder
     , usesRemoteTemplate = options.usesRemoteTemplate
