@@ -8,7 +8,6 @@ import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color as Color
 import Elm.Review.FixOptions as FixOptions
-import Elm.Review.FixPrompt as FixPrompt
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
@@ -20,6 +19,7 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode(..))
+import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Encode as Encode
@@ -85,7 +85,7 @@ type alias Model =
 
     --
     , store : Store.Model
-    , fixPrompt : FixPrompt.Model
+    , promptId : PromptId
 
     --
     , rules : List Rule
@@ -97,6 +97,10 @@ type alias Model =
     }
 
 
+type PromptId
+    = PromptId Int
+
+
 type ModelWrapper
     = Done
     | Running Model
@@ -105,7 +109,7 @@ type ModelWrapper
 type Msg
     = StoreMsg Store.Msg
     | SuppressedErrorsMsg SuppressedErrors.Msg
-    | FixPromptMsg FixPromptPayload (FixPrompt.Msg ())
+    | FixPromptMsg PromptId FixPromptPayload Prompt.Msg
     | AppliedFixes (Result Fs.FsError ())
 
 
@@ -191,7 +195,7 @@ initValid env fs options rulesFromConfig =
             , options = options
             , runEnvironment = runEnvironment
             , store = store
-            , fixPrompt = FixPrompt.init
+            , promptId = PromptId 0
             , rules = rules
             , isInitialRun = True
             , errorsHaveBeenFixedPreviously = False
@@ -385,21 +389,22 @@ update msg model =
             , SuppressedErrors.update model.env.stdout suppressedErrorsMsg
             )
 
-        FixPromptMsg payload fixPromptMsg ->
-            case FixPrompt.update fixPromptMsg model.fixPrompt of
-                FixPrompt.Accepted () ->
-                    applyFixChanges payload model
+        FixPromptMsg promptId payload fixPromptMsg ->
+            if promptId == model.promptId then
+                case Prompt.update fixPromptMsg of
+                    Prompt.Accepted ->
+                        applyFixChanges payload model
 
-                FixPrompt.TriggerCmd cmd ->
-                    ( model
-                    , Cmd.map (FixPromptMsg payload) cmd
-                    )
+                    Prompt.TriggerCmd cmd ->
+                        ( model
+                        , Cmd.map (FixPromptMsg promptId payload) cmd
+                        )
 
-                FixPrompt.Refused ->
-                    handleFixRefused payload.kind model
+                    Prompt.Refused ->
+                        handleFixRefused payload.kind model
 
-                FixPrompt.Ignore ->
-                    ( model, Cmd.none )
+            else
+                ( model, Cmd.none )
 
         AppliedFixes _ ->
             -- TODO Do something?
@@ -411,7 +416,7 @@ applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles }
     -- TODO
     -- Support multi file fixes
     -- Remove fixAllProject from Model?
-    -- Remove FixPrompt module?
+    -- Remove Prompt module?
     -- From JS: askConfirmationToFixWithOptions
     --   - Check if elm.json was modified
     --      - Refetch source-dependencies / dependencies if they changed
@@ -1030,18 +1035,25 @@ sendFixPrompt diffs result model =
                                 MultipleErrors numberOfFixedErrors ->
                                     confirmationForMultipleFixesPrompt model diffs result.fixedErrors numberOfFixedErrors
 
-                        ( fixPrompt, fixPromptCmd ) =
-                            confirmationMessage
-                                |> Text.toAnsi model.options.supportsColor
-                                |> FixPrompt.prompt stdin model.env.stdout model.fixPrompt ()
+                        promptId : PromptId
+                        promptId =
+                            incrementPrompt model.promptId
                     in
-                    ( { model | fixPrompt = fixPrompt }
-                    , Cmd.map (FixPromptMsg fixPayload) fixPromptCmd
+                    ( { model | promptId = promptId }
+                    , confirmationMessage
+                        |> Text.toAnsi model.options.supportsColor
+                        |> Prompt.prompt stdin model.env.stdout
+                        |> Cmd.map (FixPromptMsg promptId fixPayload)
                     )
 
                 Nothing ->
                     -- If there's no stdin, assume the reply is yes.
                     applyFixChanges fixPayload model
+
+
+incrementPrompt : PromptId -> PromptId
+incrementPrompt (PromptId promptId) =
+    PromptId (promptId + 1)
 
 
 pathAndSource : Project -> String -> { path : Reporter.FilePath, source : Reporter.Source }
