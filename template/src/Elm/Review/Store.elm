@@ -58,14 +58,14 @@ type alias PendingTaskCount =
     Int
 
 
-init : { fs : FileSystem, options : Options, runEnvironment : RunEnvironment, directoriesToAnalyze : List Path } -> ( Model, Cmd Msg )
-init { fs, options, runEnvironment, directoriesToAnalyze } =
+init : { fs : FileSystem, options : Options, runEnvironment : RunEnvironment } -> ( Model, Cmd Msg )
+init { fs, options, runEnvironment } =
     let
         tasks : List (Cmd Msg)
         tasks =
             List.filterMap
                 identity
-                [ Just (fetchElmJson fs directoriesToAnalyze)
+                [ Just (fetchElmJson fs options.directoriesToAnalyze)
                 , Just (fetchReadme fs)
                 , if options.suppress then
                     Nothing
