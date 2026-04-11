@@ -2,11 +2,9 @@ module Elm.Review.Text exposing
     ( Text, TextContent
     , from
     , inBlue, inRed, inYellow, inGreen, inOrange
-    , inBold
     , withLink
     , join, simplify
     , toRecord, toAnsi
-    , inGray
     )
 
 {-| Represents text with some styling applied to it.
@@ -33,7 +31,6 @@ module Elm.Review.Text exposing
 # Modifiers
 
 @docs inBlue, inRed, inYellow, inGreen, inOrange
-@docs inBold
 @docs withLink
 
 
@@ -64,7 +61,6 @@ type Text
 type alias TextContent =
     { str : String
     , color : Maybe Color
-    , bold : Bool
     , href : Maybe String
     }
 
@@ -80,7 +76,6 @@ from value =
     Text
         { str = value
         , color = Nothing
-        , bold = False
         , href = Nothing
         }
 
@@ -112,16 +107,6 @@ inYellow (Text text) =
 inGreen : Text -> Text
 inGreen (Text text) =
     Text { text | color = Just Color.Green }
-
-
-inGray : Text -> Text
-inGray (Text text) =
-    Text { text | color = Just Color.Gray }
-
-
-inBold : Text -> Text
-inBold (Text text) =
-    Text { text | bold = True }
 
 
 withLink : Maybe String -> Text -> Text
@@ -157,11 +142,10 @@ simplifyHelp previousTexts lastText chunks =
             Text lastText :: previousTexts
 
         (Text newLastText) :: restOfChunks ->
-            if lastText.color == newLastText.color && lastText.bold == newLastText.bold && lastText.href == newLastText.href then
+            if lastText.color == newLastText.color && lastText.href == newLastText.href then
                 simplifyHelp previousTexts
                     { str = lastText.str ++ newLastText.str
                     , color = lastText.color
-                    , bold = lastText.bold
                     , href = lastText.href
                     }
                     restOfChunks
@@ -197,14 +181,13 @@ toAnsiHelp segments acc =
         [] ->
             acc
 
-        { str, color, bold, href } :: rest ->
+        { str, color, href } :: rest ->
             -- TODO Only add terminal links when supported
             let
                 ansiStr : String
                 ansiStr =
                     str
                         |> maybeApply (\c -> Color.toAnsi True c) color
-                        |> boolApply (\c -> Color.bold True c) bold
                         |> maybeApply addLink href
             in
             toAnsiHelp rest (acc ++ ansiStr)
@@ -218,15 +201,6 @@ maybeApply fn maybe data =
 
         Nothing ->
             data
-
-
-boolApply : (a -> a) -> Bool -> a -> a
-boolApply fn condition data =
-    if condition then
-        fn data
-
-    else
-        data
 
 
 addLink : String -> String -> String

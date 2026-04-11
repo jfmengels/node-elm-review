@@ -17,7 +17,7 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
-import ElmReview.Color as Color
+import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
@@ -1034,16 +1034,28 @@ sendFixPrompt diffs result model =
                                         (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
                                         diffs
 
+                                MultipleErrors _ ->
+                                    confirmationForMultipleFixesPrompt model diffs result.fixedErrors
+
+                        question : String
+                        question =
+                            case nbErrors of
+                                OneError _ _ ->
+                                    "Do you wish to apply this fix?"
+
                                 MultipleErrors numberOfFixedErrors ->
-                                    confirmationForMultipleFixesPrompt model diffs result.fixedErrors numberOfFixedErrors
+                                    "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
+
+                        yesNo : String
+                        yesNo =
+                            Color.toAnsi model.options.color Gray " (Y/n)"
 
                         promptId : PromptId
                         promptId =
                             incrementPrompt model.promptId
                     in
                     ( { model | promptId = promptId }
-                    , confirmationMessage
-                        |> Text.toAnsi model.options.supportsColor
+                    , (Text.toAnsi model.options.supportsColor confirmationMessage ++ "\n\n" ++ Color.bold model.options.color question ++ yesNo)
                         |> Prompt.prompt stdin model.env.stdout
                         |> Cmd.map (FixPromptMsg promptId fixPayload)
                     )
@@ -1093,8 +1105,8 @@ pathAndSource project path =
         { path = Reporter.FilePath path, source = Reporter.Source fileLines }
 
 
-confirmationForMultipleFixesPrompt : Model -> List FixedFile -> Dict String (List Rule.ReviewError) -> Int -> List Reporter.TextContent
-confirmationForMultipleFixesPrompt model diffs fixedErrors numberOfFixedErrors =
+confirmationForMultipleFixesPrompt : Model -> List FixedFile -> Dict String (List Rule.ReviewError) -> List Reporter.TextContent
+confirmationForMultipleFixesPrompt model diffs fixedErrors =
     let
         errorsForFile : Dict String (List Reporter.Error)
         errorsForFile =
@@ -1129,7 +1141,7 @@ confirmationForMultipleFixesPrompt model diffs fixedErrors numberOfFixedErrors =
                 Dict.empty
                 fixedErrors
     in
-    Reporter.formatFixProposals model.options.fileRemovalFixesEnabled errorsForFile diffs numberOfFixedErrors
+    Reporter.formatFixProposals model.options.fileRemovalFixesEnabled errorsForFile diffs
 
 
 type NumberOfErrors
