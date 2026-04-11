@@ -10,7 +10,7 @@ import Wrapper.Flag as Flag exposing (Argument(..), Flag)
 import Wrapper.Options as Options exposing (HelpOptions, InitOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
-import Wrapper.ProjectPaths as ProjectPaths
+import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
@@ -125,73 +125,84 @@ toReviewOptions color options projectRoot =
 
                         Nothing ->
                             "review"
+
+        projectPaths : ProjectPaths
+        projectPaths =
+            ProjectPaths.from
+                { projectRoot = projectRoot
+                , namespace = namespace
+                }
     in
     { subcommand = options.subcommand
-    , projectPaths =
-        ProjectPaths.from
-            { projectRoot = projectRoot
-            , namespace = namespace
-            }
+    , projectPaths = projectPaths
     , reportMode = options.reportMode
     , forceBuild = options.forceBuild
     , debug = options.debug
     , color = color
-    , reviewProject =
-        case options.remoteTemplate of
-            Just remoteTemplate ->
-                Options.Remote remoteTemplate
-
-            Nothing ->
-                case options.configPath of
-                    Just config ->
-                        Options.Local config
-
-                    Nothing ->
-                        Options.Local (Path.join2 projectRoot "review")
-    , reviewAppFlags =
-        filterMap
-            [ if List.isEmpty options.directoriesToAnalyze then
-                Nothing
-
-              else
-                Just ("--dirs-to-analyze=" ++ uniqueList options.directoriesToAnalyze)
-            , if List.isEmpty options.ignoredFiles then
-                Nothing
-
-              else
-                Just ("--ignore-files=" ++ uniqueList options.ignoredFiles)
-            , if List.isEmpty options.ignoredDirs then
-                Nothing
-
-              else
-                Just ("--ignore-dirs=" ++ uniqueList options.ignoredDirs)
-            , if List.isEmpty options.rules then
-                Nothing
-
-              else
-                Just ("--rules=" ++ uniqueList options.rules)
-            , if List.isEmpty options.unsuppressRules then
-                Nothing
-
-              else
-                Just ("--unsuppress-rules=" ++ uniqueList options.unsuppressRules)
-            , case options.subcommand of
-                Just Subcommand.Suppress ->
-                    Just "--suppress"
-
-                _ ->
-                    Nothing
-            , if Color.doesSupportColor color then
-                Nothing
-
-              else
-                Just "--no-color"
-            ]
-            (("--review-folder=" ++ reviewFolder)
-                :: ("--namespace=" ++ namespace)
-                :: options.reviewAppFlags
-            )
+    , reviewProject = reviewProject projectRoot options
+    , reviewAppFlags = reviewAppFlags color reviewFolder namespace options
     }
+
+
+reviewProject : Path -> InternalOptions -> Options.ReviewProject
+reviewProject projectRoot options =
+    case options.remoteTemplate of
+        Just remoteTemplate ->
+            Options.Remote remoteTemplate
+
+        Nothing ->
+            case options.configPath of
+                Just config ->
+                    Options.Local config
+
+                Nothing ->
+                    Options.Local (Path.join2 projectRoot "review")
+
+
+reviewAppFlags : Color.Support -> String -> String -> InternalOptions -> List String
+reviewAppFlags color reviewFolder namespace options =
+    filterMap
+        [ if List.isEmpty options.directoriesToAnalyze then
+            Nothing
+
+          else
+            Just ("--dirs-to-analyze=" ++ uniqueList options.directoriesToAnalyze)
+        , if List.isEmpty options.ignoredFiles then
+            Nothing
+
+          else
+            Just ("--ignore-files=" ++ uniqueList options.ignoredFiles)
+        , if List.isEmpty options.ignoredDirs then
+            Nothing
+
+          else
+            Just ("--ignore-dirs=" ++ uniqueList options.ignoredDirs)
+        , if List.isEmpty options.rules then
+            Nothing
+
+          else
+            Just ("--rules=" ++ uniqueList options.rules)
+        , if List.isEmpty options.unsuppressRules then
+            Nothing
+
+          else
+            Just ("--unsuppress-rules=" ++ uniqueList options.unsuppressRules)
+        , case options.subcommand of
+            Just Subcommand.Suppress ->
+                Just "--suppress"
+
+            _ ->
+                Nothing
+        , if Color.doesSupportColor color then
+            Nothing
+
+          else
+            Just "--no-color"
+        ]
+        (("--review-folder=" ++ reviewFolder)
+            :: ("--namespace=" ++ namespace)
+            :: options.reviewAppFlags
+        )
 
 
 toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions
