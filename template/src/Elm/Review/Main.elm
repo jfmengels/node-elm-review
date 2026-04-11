@@ -22,6 +22,7 @@ import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
+import ElmRun.FsExtra as FsExtra
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
@@ -92,7 +93,7 @@ type Msg
     = StoreMsg Store.Msg
     | WroteSuppressionFiles (Result Problem ())
     | FixPromptMsg PromptId FixPromptPayload Prompt.Msg
-    | AppliedFixes (Result Fs.FsError ())
+    | AppliedFixes FixPromptPayload (Result Fs.FsError ())
 
 
 type alias FixPromptPayload =
@@ -388,7 +389,7 @@ update msg model =
             if promptId == model.promptId then
                 case Prompt.update fixPromptMsg of
                     Prompt.Accepted ->
-                        applyFixChanges payload model
+                        ( model, applyFixChanges model.fs payload )
 
                     Prompt.TriggerCmd cmd ->
                         ( model
@@ -401,13 +402,25 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        AppliedFixes _ ->
-            -- TODO Do something?
-            ( model, Cmd.none )
+        AppliedFixes { projectWithFixes, rulesWithFixes } result ->
+            case result of
+                Ok () ->
+                    ( { model
+                        | store = Store.setProject projectWithFixes model.store
+                        , rules = rulesWithFixes
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( model
+                    , Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error)
+                        |> Problem.exit model.env.stderr model.options
+                    )
 
 
-applyFixChanges : FixPromptPayload -> Model -> ( Model, Cmd Msg )
-applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles } model =
+applyFixChanges : FileSystem -> FixPromptPayload -> Cmd Msg
+applyFixChanges fs fixPayload =
     -- TODO
     -- Support multi file fixes
     -- Remove fixAllProject from Model?
@@ -417,18 +430,13 @@ applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles }
     --      - Refetch source-dependencies / dependencies if they changed
     -- From Elm: UserConfirmedFix confirmation ->
     --   - ???
-    ( { model
-        | store = Store.setProject projectWithFixes model.store
-        , rules = rulesWithFixes
-      }
-    , Task.map2 always
-        (changedFiles
+    Task.map2 always
+        (fixPayload.changedFiles
             -- TODO Format Elm files
-            |> TaskExtra.mapAll (\{ filePath, source } -> Fs.writeTextFile model.fs filePath source)
+            |> TaskExtra.mapAll (\{ filePath, source } -> Fs.writeTextFile fs filePath source)
         )
-        (TaskExtra.mapAll (\filePath -> Fs.deleteFile model.fs filePath) removedFiles)
-        |> Task.attempt AppliedFixes
-    )
+        (TaskExtra.mapAll (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles)
+        |> Task.attempt (AppliedFixes fixPayload)
 
 
 handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
@@ -1061,7 +1069,7 @@ sendFixPrompt diffs result model =
                     )
 
                 Nothing ->
-                    applyFixChanges fixPayload model
+                    ( model, applyFixChanges model.fs fixPayload )
 
 
 shouldPromptForFix : Model -> Maybe Stdin
