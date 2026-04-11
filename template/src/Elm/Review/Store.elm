@@ -1,17 +1,19 @@
 module Elm.Review.Store exposing
     ( Model, init
+    , refreshProjectDependencies
     , Msg, update, UpdateInput
+    , Readiness(..), checkReadiness
     , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
     , ruleLinks
-    , Readiness(..), checkReadiness
     )
 
 {-|
 
 @docs Model, init
+@docs refreshProjectDependencies
 @docs Msg, update, UpdateInput
-@docs isReady
+@docs Readiness, checkReadiness
 @docs project, setProject, updateProject
 @docs suppressedErrors, setSuppressedErrors
 @docs ruleLinks
@@ -82,6 +84,31 @@ init { fs, options, runEnvironment } =
         , ruleLinks = Dict.empty
         , emptySourceDirectories = []
         , directoriesFromCliArgsWithoutFiles = []
+        }
+    , Cmd.batch tasks
+    )
+
+
+refreshProjectDependencies : FileSystem -> RunEnvironment -> Project -> Model -> ( Model, Cmd Msg )
+refreshProjectDependencies fs runEnvironment newProject (Model model) =
+    let
+        tasks : List (Cmd Msg)
+        tasks =
+            case Project.elmJson newProject of
+                Just elmJson ->
+                    fetchDependencies fs runEnvironment elmJson.project []
+
+                Nothing ->
+                    -- TODO Error?
+                    []
+    in
+    ( Model
+        { pendingTaskCount = model.pendingTaskCount + List.length tasks
+        , project = Project.removeDependencies newProject
+        , suppressedErrors = model.suppressedErrors
+        , ruleLinks = model.ruleLinks
+        , emptySourceDirectories = model.emptySourceDirectories
+        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
         }
     , Cmd.batch tasks
     )
