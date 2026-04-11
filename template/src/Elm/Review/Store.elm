@@ -176,62 +176,13 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
-                        fetchSources : List (Cmd Msg)
-                        fetchSources =
-                            if List.isEmpty directoriesToAnalyze then
-                                case elmJson of
-                                    Elm.Project.Application application ->
-                                        if List.isEmpty application.dirs then
-                                            [ { title = "EMPTY SOURCE-DIRECTORIES"
-                                              , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
-                                              }
-                                                |> Problem.from
-                                                |> Problem.withPath path
-                                                |> handleProblem
-                                            ]
-
-                                        else
-                                            List.map (fetchElmFiles fs) ("test" :: application.dirs)
-
-                                    Elm.Project.Package _ ->
-                                        List.map (fetchElmFiles fs) [ "src", "test" ]
-
-                            else
-                                List.map
-                                    (\fileOrDir ->
-                                        -- TODO Use version of Fs.stat that does follow symlinks
-                                        Fs.stat fs fileOrDir
-                                            |> Task.andThen
-                                                (\{ isDirectory } ->
-                                                    if isDirectory then
-                                                        Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
-                                                            |> Task.map Tuple.first
-
-                                                    else
-                                                        Task.succeed [ fileOrDir ]
-                                                )
-                                            |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
-                                    )
-                                    directoriesToAnalyze
-
-                        addDependencies : List (Cmd Msg) -> List (Cmd Msg)
-                        addDependencies initial =
-                            case elmJson of
-                                Elm.Project.Application application ->
-                                    initial
-                                        |> addDepsFromVersion fs runEnvironment application.depsDirect
-                                        |> addDepsFromVersion fs runEnvironment application.depsIndirect
-                                        |> addDepsFromVersion fs runEnvironment application.testDepsDirect
-                                        |> addDepsFromVersion fs runEnvironment application.testDepsIndirect
-
-                                Elm.Project.Package package ->
-                                    initial
-                                        |> addDepsFromConstraint fs runEnvironment package.deps
-                                        |> addDepsFromConstraint fs runEnvironment package.testDeps
+                        fetchSourceTasks : List (Cmd Msg)
+                        fetchSourceTasks =
+                            fetchSources fs handleProblem path elmJson directoriesToAnalyze
 
                         tasks : List (Cmd Msg)
                         tasks =
-                            addDependencies fetchSources
+                            fetchDependencies fs runEnvironment elmJson fetchSourceTasks
                     in
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length tasks - 1)
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
@@ -483,6 +434,61 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               }
             , Cmd.none
             )
+
+
+fetchSources : FileSystem -> (Problem -> Cmd Msg) -> String -> Elm.Project.Project -> List Path -> List (Cmd Msg)
+fetchSources fs handleProblem path elmJson directoriesToAnalyze =
+    if List.isEmpty directoriesToAnalyze then
+        case elmJson of
+            Elm.Project.Application application ->
+                if List.isEmpty application.dirs then
+                    [ { title = "EMPTY SOURCE-DIRECTORIES"
+                      , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
+                      }
+                        |> Problem.from
+                        |> Problem.withPath path
+                        |> handleProblem
+                    ]
+
+                else
+                    List.map (fetchElmFiles fs) ("test" :: application.dirs)
+
+            Elm.Project.Package _ ->
+                List.map (fetchElmFiles fs) [ "src", "test" ]
+
+    else
+        List.map
+            (\fileOrDir ->
+                -- TODO Use version of Fs.stat that does follow symlinks
+                Fs.stat fs fileOrDir
+                    |> Task.andThen
+                        (\{ isDirectory } ->
+                            if isDirectory then
+                                Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
+                                    |> Task.map Tuple.first
+
+                            else
+                                Task.succeed [ fileOrDir ]
+                        )
+                    |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
+            )
+            directoriesToAnalyze
+
+
+fetchDependencies : FileSystem -> RunEnvironment -> Elm.Project.Project -> List (Cmd Msg) -> List (Cmd Msg)
+fetchDependencies fs runEnvironment elmJson initial =
+    case elmJson of
+        Elm.Project.Application application ->
+            initial
+                |> addDepsFromVersion fs runEnvironment application.depsDirect
+                |> addDepsFromVersion fs runEnvironment application.depsIndirect
+                |> addDepsFromVersion fs runEnvironment application.testDepsDirect
+                |> addDepsFromVersion fs runEnvironment application.testDepsIndirect
+
+        Elm.Project.Package package ->
+            initial
+                |> addDepsFromConstraint fs runEnvironment package.deps
+                |> addDepsFromConstraint fs runEnvironment package.testDeps
 
 
 addDepsFromVersion : FileSystem -> RunEnvironment -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
