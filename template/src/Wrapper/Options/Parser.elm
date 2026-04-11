@@ -48,14 +48,20 @@ toOptions env options =
                 }
 
         else
-            case options.problem of
-                Just problem ->
+            let
+                parseError : Problem -> OptionsParseResult
+                parseError problem =
                     ParseError
                         { color = color
                         , reportMode = options.reportMode
                         , debug = options.debug
                         }
-                        (Problem.from (problem options.subcommand))
+                        problem
+            in
+            case options.problem of
+                Just problem ->
+                    Problem.from (problem options.subcommand)
+                        |> parseError
 
                 Nothing ->
                     case options.elmJsonPath of
@@ -87,27 +93,15 @@ toOptions env options =
 
                                 Just Subcommand.NewRule ->
                                     Problem.notImplementedYet "new-rule subcommand"
-                                        |> ParseError
-                                            { color = color
-                                            , reportMode = options.reportMode
-                                            , debug = options.debug
-                                            }
+                                        |> parseError
 
                                 Just Subcommand.NewPackage ->
                                     Problem.notImplementedYet "new-package subcommand"
-                                        |> ParseError
-                                            { color = color
-                                            , reportMode = options.reportMode
-                                            , debug = options.debug
-                                            }
+                                        |> parseError
 
                                 Just Subcommand.PrepareOffline ->
                                     Problem.notImplementedYet "prepare-offline subcommand"
-                                        |> ParseError
-                                            { color = color
-                                            , reportMode = options.reportMode
-                                            , debug = options.debug
-                                            }
+                                        |> parseError
 
 
 toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
