@@ -13,6 +13,7 @@ module ElmRun.Prompt exposing
 
 import Capabilities exposing (Console, Stdin)
 import Cli
+import ElmReview.Color as Color exposing (Color(..), Colorize)
 import Stdin exposing (Key(..), StdinError)
 import Task
 
@@ -21,10 +22,28 @@ type Msg
     = UserPressedKey Stdin (Result StdinError Stdin.Key)
 
 
-prompt : Stdin -> Console -> String -> Cmd Msg
-prompt stdin stdout promptText =
+prompt : Stdin -> Console -> { color : Color.Support, priorMessage : Maybe String, question : Colorize -> String } -> Cmd Msg
+prompt stdin stdout { color, priorMessage, question } =
+    let
+        message : String
+        message =
+            case priorMessage of
+                Just str ->
+                    str ++ "\n\n"
+
+                Nothing ->
+                    ""
+
+        question_ : String
+        question_ =
+            Color.bold color (question (Color.toAnsi color))
+
+        yesNo : String
+        yesNo =
+            Color.toAnsi color Gray " (Y/n)"
+    in
     Cmd.batch
-        [ Cli.println stdout promptText
+        [ Cli.println stdout (message ++ question_ ++ yesNo ++ "")
         , Stdin.readKey stdin
             |> Task.attempt (UserPressedKey stdin)
         ]
