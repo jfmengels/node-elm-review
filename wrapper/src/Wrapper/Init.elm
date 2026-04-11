@@ -108,22 +108,20 @@ update msg (Model model) =
 
 prompt : Stdin -> ModelData -> Cmd Msg
 prompt stdin model =
-    let
-        c : Colorize
-        c =
-            Color.toAnsi model.options.color
-
-        path : Path
-        path =
-            -- TODO Anonymize?
-            model.options.configPath
-
-        promptText : String
-        promptText =
-            -- TODO Add colors for Y/n?
-            "Would you like me to create " ++ c Yellow "elm.json" ++ " and " ++ c Yellow "src/ReviewConfig.elm" ++ " inside " ++ c Yellow path ++ "? › (Y/n)"
-    in
-    Prompt.prompt stdin model.stdout promptText
+    Prompt.prompt stdin
+        model.stdout
+        { color = model.options.color
+        , priorMessage = Nothing
+        , question =
+            \c ->
+                let
+                    path : Path
+                    path =
+                        -- TODO Anonymize?
+                        model.options.configPath
+                in
+                "Would you like me to create " ++ c Yellow "elm.json" ++ " and " ++ c Yellow "src/ReviewConfig.elm" ++ " inside " ++ c Yellow path ++ "?"
+        }
         |> Cmd.map PromptMsg
 
 

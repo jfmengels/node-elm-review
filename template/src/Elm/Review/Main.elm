@@ -1024,8 +1024,8 @@ sendFixPrompt diffs result model =
             case model.env.stdin of
                 Just stdin ->
                     let
-                        confirmationMessage : List Reporter.TextContent
-                        confirmationMessage =
+                        proposal : List Reporter.TextContent
+                        proposal =
                             case nbErrors of
                                 OneError filePath error ->
                                     Reporter.formatSingleFixProposal
@@ -1037,26 +1037,25 @@ sendFixPrompt diffs result model =
                                 MultipleErrors _ ->
                                     confirmationForMultipleFixesPrompt model diffs result.fixedErrors
 
-                        question : String
-                        question =
-                            case nbErrors of
-                                OneError _ _ ->
-                                    "Do you wish to apply this fix?"
-
-                                MultipleErrors numberOfFixedErrors ->
-                                    "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
-
-                        yesNo : String
-                        yesNo =
-                            Color.toAnsi model.options.color Gray " (Y/n)"
-
                         promptId : PromptId
                         promptId =
                             incrementPrompt model.promptId
                     in
                     ( { model | promptId = promptId }
-                    , (Text.toAnsi model.options.supportsColor confirmationMessage ++ "\n\n" ++ Color.bold model.options.color question ++ yesNo)
-                        |> Prompt.prompt stdin model.env.stdout
+                    , Prompt.prompt
+                        stdin
+                        model.env.stdout
+                        { color = model.options.color
+                        , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
+                        , question =
+                            \_ ->
+                                case nbErrors of
+                                    OneError _ _ ->
+                                        "Do you wish to apply this fix?"
+
+                                    MultipleErrors numberOfFixedErrors ->
+                                        "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
+                        }
                         |> Cmd.map (FixPromptMsg promptId fixPayload)
                     )
 
