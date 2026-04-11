@@ -404,18 +404,96 @@ update msg model =
         AppliedFixes { projectWithFixes, rulesWithFixes } result ->
             case result of
                 Ok () ->
-                    ( { model
-                        | store = Store.setProject projectWithFixes model.store
-                        , rules = rulesWithFixes
-                      }
-                    , Cmd.none
-                    )
+                    case
+                        changesInElmJson
+                            model.options.directoriesToAnalyze
+                            { before = Project.elmJson (Store.project model.store)
+                            , after = Project.elmJson projectWithFixes
+                            }
+                    of
+                        NoChanges ->
+                            ( { model
+                                | store = Store.setProject projectWithFixes model.store
+                                , rules = rulesWithFixes
+                                , errorsHaveBeenFixedPreviously = True
+                              }
+                            , Cmd.none
+                            )
+
+                        ReloadDependencies ->
+                            let
+                                ( store, cmd ) =
+                                    Store.refreshProjectDependencies model.fs model.runEnvironment projectWithFixes model.store
+                            in
+                            ( { model
+                                | store = store
+                                , rules = rulesWithFixes
+                                , errorsHaveBeenFixedPreviously = True
+                              }
+                            , Cmd.map StoreMsg cmd
+                            )
+
+                        ReloadCompletely ->
+                            let
+                                ( store, cmd ) =
+                                    Store.init
+                                        { fs = model.fs
+                                        , options = model.options
+                                        , runEnvironment = model.runEnvironment
+                                        }
+                            in
+                            ( { model
+                                | store = store
+                                , rules = rulesWithFixes
+                                , errorsHaveBeenFixedPreviously = True
+                              }
+                            , Cmd.map StoreMsg cmd
+                            )
 
                 Err error ->
                     ( model
                     , Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error)
                         |> Problem.exit model.env.stderr model.options
                     )
+
+
+type ElmJsonChanges
+    = NoChanges
+    | ReloadDependencies
+    | ReloadCompletely
+
+
+changesInElmJson :
+    List String
+    ->
+        { before : Maybe { a | project : Elm.Project.Project }
+        , after : Maybe { a | project : Elm.Project.Project }
+        }
+    -> ElmJsonChanges
+changesInElmJson directoriesToAnalyze { before, after } =
+    case ( Maybe.map .project before, Maybe.map .project after ) of
+        ( Nothing, Nothing ) ->
+            NoChanges
+
+        ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+            if a.dirs /= b.dirs && not (List.isEmpty directoriesToAnalyze) then
+                ReloadCompletely
+
+            else if a.elm /= b.elm || a /= b then
+                ReloadDependencies
+
+            else
+                NoChanges
+
+        ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
+            if a.elm /= b.elm || a.deps /= b.deps || a.testDeps /= b.testDeps then
+                ReloadDependencies
+
+            else
+                NoChanges
+
+        _ ->
+            ReloadCompletely
 
 
 applyFixChanges : FileSystem -> FixPromptPayload -> Cmd Msg
