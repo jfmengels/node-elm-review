@@ -563,6 +563,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         ("I created suppressions files in "
                             ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
                         )
+                    , cmd
                     , Cli.exit 0
                     ]
                 )
