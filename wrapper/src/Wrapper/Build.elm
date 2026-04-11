@@ -18,7 +18,7 @@ import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError, defaultSpawnOptions)
+import Os.Process as Process exposing (ProcessError)
 import Set exposing (Set)
 import Task exposing (Task)
 import Wrapper.FolderHash as FolderHash
@@ -121,7 +121,7 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
                     |> Task.mapError (processingErrorToProblem "while building and copying template files")
             )
         |> Task.andThen (\() -> createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson)
-        |> Task.andThen (\() -> compileProjectUsingElmRun os buildFolder buildData.reviewAppPath)
+        |> Task.andThen (\() -> compileProjectUsingElmRun os reviewFolder buildFolder buildData.reviewAppPath)
 
 
 createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
@@ -304,24 +304,59 @@ Maybe you chose the wrong template, or the template is malformed. If the latter 
                 }
 
 
-compileProjectUsingElmRun : ProcessCapability -> Path -> String -> Task Problem ()
-compileProjectUsingElmRun os buildFolder reviewAppPath =
+compileProjectUsingElmRun : ProcessCapability -> Path -> Path -> String -> Task Problem ()
+compileProjectUsingElmRun os reviewFolder buildFolder reviewAppPath =
     Process.run os
         -- TODO Get run from somewhere
         "run"
-        { defaultSpawnOptions
-            | args =
-                [ "make"
-                , "--trust-always"
-                , "-o"
-                , reviewAppPath
-                , Path.join2 buildFolder "src/Elm/Review/Main.elm"
-                ]
-            , stdout = Process.InheritStdout
-            , stderr = Process.InheritStderr
+        { args =
+            [ "make"
+            , "--trust-always"
+            , "-o"
+            , reviewAppPath
+            , Path.join2 buildFolder "src/Elm/Review/Main.elm"
+            ]
+
+        -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
+        , env = Nothing
+        , cwd = Nothing
+        , stdin = Process.NullStdin
+        , stdout = Process.NullStdout
+        , stderr = Process.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = Process.TruncateOutput }
         }
-        |> Task.map (\_ -> ())
         |> Task.mapError (processingErrorToProblem "while building the review application binary")
+        |> Task.andThen
+            (\{ exitCode, stderr } ->
+                if exitCode == 0 then
+                    Task.succeed ()
+
+                else
+                    compilationError reviewFolder (Maybe.withDefault "No compiler output." stderr)
+                        |> Problem.from
+                        |> Task.fail
+            )
+
+
+compilationError : Path -> String -> ProblemSimple
+compilationError reviewFolder stderr =
+    if String.contains "DEBUG REMNANTS" stderr then
+        { title = "DEBUG IN CONFIGURATION"
+        , message = \c -> "You are using the " ++ c Yellow "Debug" ++ " module in your configuration or rules, but I am compiling in optimized mode. Either remove those uses or run elm-review with " ++ c Yellow "--debug" ++ "."
+        }
+
+    else if String.contains "MODULE NOT FOUND" stderr then
+        { title = "MODULE NOT FOUND"
+        , message = \c -> "A module is missing in your configuration. Maybe you forgot to add some dependencies that contain the rules you wished to enable? If so, run " ++ c Magenta "elm install" ++ " with the package name from inside " ++ c Yellow reviewFolder ++ """.
+
+Here is the full error message:
+
+""" ++ stderr
+        }
+
+    else
+        { title = "CONFIGURATION COMPILATION ERROR"
+        , message = \c -> "Errors occurred while compiling your configuration for " ++ c GreenBright "elm-review" ++ ". I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n" ++ stderr
+        }
 
 
 decodingErrorMessage : String -> Decode.Error -> Colorize -> String
