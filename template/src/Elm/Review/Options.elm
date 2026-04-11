@@ -17,6 +17,7 @@ type alias Options =
     { fixMode : FixOptions.Mode
     , fileRemovalFixesEnabled : Bool
     , fixLimit : Maybe Int
+    , skipFixPrompt : Bool
     , fixExplanation : FixOptions.Explanation
     , reportFixMode : ReporterOptions.ReportFixMode
     , enableExtract : Bool
@@ -45,6 +46,7 @@ type alias InternalOptions =
     { fixMode : FixOptions.Mode
     , fileRemovalFixesEnabled : Bool
     , fixLimit : Maybe Int
+    , skipFixPrompt : Bool
     , fixExplanation : FixOptions.Explanation
     , enableExtract : Bool
     , unsuppressMode : UnsuppressMode
@@ -77,6 +79,7 @@ toOptions options =
     { fixMode = options.fixMode
     , fileRemovalFixesEnabled = fileRemovalFixesEnabled
     , fixLimit = options.fixLimit
+    , skipFixPrompt = options.skipFixPrompt
     , fixExplanation = options.fixExplanation
     , reportFixMode = fixModeToReportFixMode options.fixMode
     , enableExtract = options.enableExtract
@@ -147,6 +150,9 @@ applyArg arg flags =
 
         [ "--fix-all" ] ->
             Ok { flags | fixMode = FixOptions.FixAll }
+
+        [ "--fix-all-without-prompt" ] ->
+            Ok { flags | fixMode = FixOptions.FixAll, skipFixPrompt = True }
 
         [ "--allow-remove-files" ] ->
             Ok { flags | fileRemovalFixesEnabled = True }
@@ -228,6 +234,7 @@ default =
     { fixMode = FixOptions.DontFix
     , fileRemovalFixesEnabled = False
     , fixLimit = Nothing
+    , skipFixPrompt = False
     , enableExtract = False
     , fixExplanation = FixOptions.Succinct
     , unsuppressMode = UnsuppressMode.UnsuppressNone

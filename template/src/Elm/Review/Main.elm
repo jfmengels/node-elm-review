@@ -1,6 +1,7 @@
 port module Elm.Review.Main exposing (ModelWrapper, Msg, main)
 
 import Array exposing (Array)
+import Capabilities exposing (Stdin)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Project
@@ -1021,7 +1022,7 @@ sendFixPrompt diffs result model =
                     , removedFiles = removedFiles
                     }
             in
-            case model.env.stdin of
+            case shouldPromptForFix model of
                 Just stdin ->
                     let
                         proposal : List Reporter.TextContent
@@ -1060,8 +1061,17 @@ sendFixPrompt diffs result model =
                     )
 
                 Nothing ->
-                    -- If there's no stdin, assume the reply is yes.
                     applyFixChanges fixPayload model
+
+
+shouldPromptForFix : Model -> Maybe Stdin
+shouldPromptForFix model =
+    if model.options.skipFixPrompt then
+        -- If there's no stdin, assume the reply is yes.
+        model.env.stdin
+
+    else
+        Nothing
 
 
 incrementPrompt : PromptId -> PromptId
