@@ -15,6 +15,8 @@ import Cli
 import Elm.Version exposing (Version)
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
+import ElmReview.Problem as Problem
+import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.OsExtra as OsExtra
@@ -96,7 +98,12 @@ update msg (Model model) =
                 ]
 
         CreatedFiles (Err err) ->
-            Debug.todo ("Got error while creating files: " ++ err)
+            Problem.exit model.stderr
+                { color = model.options.color
+                , reportMode = ReportMode.HumanReadable
+                , debug = model.options.debug
+                }
+                (Problem.unexpectedError "while creating files" err)
 
 
 prompt : Stdin -> ModelData -> Cmd Msg
