@@ -96,8 +96,18 @@ toOptions env options =
                                         |> parseError
 
                                 Just Subcommand.NewPackage ->
-                                    Problem.notImplementedYet "new-package subcommand"
-                                        |> parseError
+                                    if options.offline then
+                                        { title = "COMMAND REQUIRES NETWORK ACCESS"
+                                        , message = \c -> "I can't use " ++ c Yellow "new-package" ++ " in " ++ c Cyan "offline" ++ """ mode, as I need network access to perform a number of steps.
+
+I recommend you try to gain network access and try again."""
+                                        }
+                                            |> Problem.from
+                                            |> parseError
+
+                                    else
+                                        Problem.notImplementedYet "new-package subcommand"
+                                            |> parseError
 
                                 Just Subcommand.PrepareOffline ->
                                     Problem.notImplementedYet "prepare-offline subcommand"
