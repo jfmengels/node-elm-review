@@ -537,58 +537,54 @@ handleFixRefused fixPromptKind model =
 
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
-    if model.isInitialRun then
-        case Store.checkReadiness model.store of
-            Store.Ready ->
-                if model.options.suppress then
-                    let
-                        res : { model : Model, result : RunReviewResult }
-                        res =
-                            runReview { fixesAllowed = False } (Store.project model.store) model
-                    in
-                    ( res.model
-                    , Cmd.batch
-                        [ case
-                            res.result.reviewErrors
-                                |> SuppressedErrors.fromReviewErrors
-                                |> SuppressedErrors.write model.fs model.options []
-                          of
-                            Just task ->
-                                Task.attempt WroteSuppressionFiles task
+    case Store.checkReadiness model.store of
+        Store.Ready ->
+            if model.options.suppress then
+                let
+                    res : { model : Model, result : RunReviewResult }
+                    res =
+                        runReview { fixesAllowed = False } (Store.project model.store) model
+                in
+                ( res.model
+                , Cmd.batch
+                    [ case
+                        res.result.reviewErrors
+                            |> SuppressedErrors.fromReviewErrors
+                            |> SuppressedErrors.write model.fs model.options []
+                      of
+                        Just task ->
+                            Task.attempt WroteSuppressionFiles task
 
-                            Nothing ->
-                                Cmd.none
+                        Nothing ->
+                            Cmd.none
 
-                        -- TODO Don't print in JSON report mode
-                        , Cli.println model.env.stdout
-                            ("I created suppressions files in "
-                                ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
-                            )
-                        , Cli.exit 0
-                        ]
-                    )
-
-                else
-                    let
-                        ( newModel, newCmd ) =
-                            model
-                                |> runReview { fixesAllowed = True } (Store.project model.store)
-                                |> reportOrFix
-                    in
-                    ( newModel
-                    , Cmd.batch [ cmd, newCmd ]
-                    )
-
-            Store.NotReady ->
-                unchanged
-
-            Store.Failure problem ->
-                ( model
-                , Problem.exit model.env.stderr model.options problem
+                    -- TODO Don't print in JSON report mode
+                    , Cli.println model.env.stdout
+                        ("I created suppressions files in "
+                            ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
+                        )
+                    , Cli.exit 0
+                    ]
                 )
 
-    else
-        unchanged
+            else
+                let
+                    ( newModel, newCmd ) =
+                        model
+                            |> runReview { fixesAllowed = True } (Store.project model.store)
+                            |> reportOrFix
+                in
+                ( newModel
+                , Cmd.batch [ cmd, newCmd ]
+                )
+
+        Store.NotReady ->
+            unchanged
+
+        Store.Failure problem ->
+            ( model
+            , Problem.exit model.env.stderr model.options problem
+            )
 
 
 {-| Find the first element that satisfies a predicate and return
