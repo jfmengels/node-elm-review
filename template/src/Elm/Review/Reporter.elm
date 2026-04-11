@@ -1319,85 +1319,74 @@ fileSeparator pathAbove pathBelow =
 -}
 formatSingleFixProposal : Options options -> File -> Error -> List { path : String, diff : Project.Diff } -> List TextContent
 formatSingleFixProposal options file error diffs =
-    List.concat
-        [ Text.join "\n\n"
-            [ formatReportForFileWithExtract
-                options
-                { path = file.path
-                , source = file.source
-                , errors = [ error ]
-                }
-            , [ "I think I can fix this. Here is my proposal:"
-                    |> Text.from
-                    |> Text.inBlue
-              ]
-            , case diffs of
-                [ { path, diff } ] ->
-                    case diff of
-                        Project.Edited { before, after } ->
-                            if FilePath path /= file.path then
-                                formatFilePathForSingleFix path
-                                    :: Text.from "\n\n"
-                                    :: formatDiff before after
-
-                            else
-                                formatDiff before after
-
-                        Project.Removed ->
-                            if FilePath path /= file.path then
-                                [ formatFilePathForSingleFix path
-                                , Text.from "\n\n"
-                                , Text.inRed (Text.from "    REMOVE FILE")
-                                ]
-
-                            else
-                                [ Text.inRed (Text.from ("    REMOVE FILE " ++ path)) ]
-
-                _ ->
-                    let
-                        numberOfDiffs : Int
-                        numberOfDiffs =
-                            List.length diffs
-                    in
-                    diffs
-                        |> List.sortBy
-                            (\{ path, diff } ->
-                                case diff of
-                                    -- Sort so that the file the error was for is presented first
-                                    -- and deleted files show up at the end.
-                                    Project.Edited _ ->
-                                        if FilePath path == file.path then
-                                            ( 0, "" )
-
-                                        else
-                                            ( 0, path )
-
-                                    Project.Removed ->
-                                        ( 1, path )
-                            )
-                        |> List.indexedMap
-                            (\index { path, diff } ->
-                                formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
-                                    :: Text.from "\n\n"
-                                    :: (case diff of
-                                            Project.Edited { before, after } ->
-                                                formatDiff before after
-
-                                            Project.Removed ->
-                                                [ Text.inRed (Text.from "    REMOVE FILE") ]
-                                       )
-                            )
-                        |> Text.join "\n\n"
-            ]
-        , [ Text.from "\n"
-          , "Do you wish to apply this fix?"
+    Text.join "\n\n"
+        [ formatReportForFileWithExtract
+            options
+            { path = file.path
+            , source = file.source
+            , errors = [ error ]
+            }
+        , [ "I think I can fix this. Here is my proposal:"
                 |> Text.from
-                |> Text.inBold
-          , " (Y/n)"
-                |> Text.from
-                |> Text.inGray
-          , Text.from " "
+                |> Text.inBlue
           ]
+        , case diffs of
+            [ { path, diff } ] ->
+                case diff of
+                    Project.Edited { before, after } ->
+                        if FilePath path /= file.path then
+                            formatFilePathForSingleFix path
+                                :: Text.from "\n\n"
+                                :: formatDiff before after
+
+                        else
+                            formatDiff before after
+
+                    Project.Removed ->
+                        if FilePath path /= file.path then
+                            [ formatFilePathForSingleFix path
+                            , Text.from "\n\n"
+                            , Text.inRed (Text.from "    REMOVE FILE")
+                            ]
+
+                        else
+                            [ Text.inRed (Text.from ("    REMOVE FILE " ++ path)) ]
+
+            _ ->
+                let
+                    numberOfDiffs : Int
+                    numberOfDiffs =
+                        List.length diffs
+                in
+                diffs
+                    |> List.sortBy
+                        (\{ path, diff } ->
+                            case diff of
+                                -- Sort so that the file the error was for is presented first
+                                -- and deleted files show up at the end.
+                                Project.Edited _ ->
+                                    if FilePath path == file.path then
+                                        ( 0, "" )
+
+                                    else
+                                        ( 0, path )
+
+                                Project.Removed ->
+                                    ( 1, path )
+                        )
+                    |> List.indexedMap
+                        (\index { path, diff } ->
+                            formatFilePathForSingleFixWith (index + 1) numberOfDiffs path
+                                :: Text.from "\n\n"
+                                :: (case diff of
+                                        Project.Edited { before, after } ->
+                                            formatDiff before after
+
+                                        Project.Removed ->
+                                            [ Text.inRed (Text.from "    REMOVE FILE") ]
+                                   )
+                        )
+                    |> Text.join "\n\n"
         ]
         |> List.map Text.toRecord
 
@@ -1428,9 +1417,8 @@ formatFixProposals :
     Bool
     -> Dict String (List Error)
     -> List { path : String, diff : Project.Diff }
-    -> Int
     -> List TextContent
-formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs numberOfFixedErrors =
+formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs =
     let
         diffs : List { path : String, diff : Project.Diff }
         diffs =
@@ -1469,13 +1457,6 @@ formatFixProposals fileRemovalFixesEnabled errorsForFile unsortedDiffs numberOfF
     , filesListing
     , [ Text.from "Here is how the code would change if you applied each fix." ]
     , formatFileDiffs fileRemovalFixesEnabled errorsForFile diffs
-    , [ ("Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?")
-            |> Text.from
-            |> Text.inBold
-      , " (Y/n)"
-            |> Text.from
-            |> Text.inGray
-      ]
     ]
         |> Text.join "\n\n"
         |> List.map Text.toRecord

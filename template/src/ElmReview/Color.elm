@@ -3,6 +3,7 @@ module ElmReview.Color exposing
     , Colorize, toAnsi
     , Support, supportsColor, noColors, yesColors
     , doesSupportColor
+    , bold
     )
 
 {-|
@@ -23,6 +24,7 @@ type Color
     | Yellow
     | Magenta
     | Cyan
+    | Gray
     | RedBright
     | GreenBright
     | YellowBright
@@ -113,6 +115,15 @@ toAnsi (ColorSupport supportsColor_) =
         \_ str -> str
 
 
+bold : Support -> String -> String
+bold (ColorSupport supportsColor_) str =
+    if supportsColor_ then
+        "\u{001B}[1m" ++ str ++ "\u{001B}[22m"
+
+    else
+        str
+
+
 toAnsiColor : Color -> String
 toAnsiColor color =
     case color of
@@ -130,6 +141,9 @@ toAnsiColor color =
 
         Cyan ->
             "36"
+
+        Gray ->
+            "90"
 
         RedBright ->
             "91"

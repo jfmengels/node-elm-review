@@ -1,7 +1,6 @@
 module Elm.Review.Color exposing
     ( Color(..)
     , toHex, toAnsi
-    , bold
     )
 
 {-| Terminal colors.
@@ -18,7 +17,6 @@ type Color
     | Orange
     | Yellow
     | Green
-    | Gray
 
 
 toHex : Color -> String
@@ -39,23 +37,11 @@ toHex color =
         Green ->
             "#008000"
 
-        Gray ->
-            "#808080"
-
 
 toAnsi : Bool -> Color -> String -> String
 toAnsi supportsColor color str =
     if supportsColor then
         "\u{001B}[" ++ toRGB color ++ "m" ++ str ++ "\u{001B}[39m"
-
-    else
-        str
-
-
-bold : Bool -> String -> String
-bold supportsColor str =
-    if supportsColor then
-        "\u{001B}[1m" ++ str ++ "\u{001B}[22m"
 
     else
         str
@@ -78,6 +64,3 @@ toRGB color =
 
         Green ->
             "38;2;0;128;0"
-
-        Gray ->
-            "90"
