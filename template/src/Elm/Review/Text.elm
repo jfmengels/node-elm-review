@@ -86,32 +86,32 @@ from value =
 
 inBlue : Text -> Text
 inBlue (Text text) =
-    Text { text | color = Just Color.Blue }
+    Text { str = text.str, color = Just Color.Blue, href = text.href }
 
 
 inRed : Text -> Text
 inRed (Text text) =
-    Text { text | color = Just Color.Red }
+    Text { str = text.str, color = Just Color.Red, href = text.href }
 
 
 inOrange : Text -> Text
 inOrange (Text text) =
-    Text { text | color = Just Color.Orange }
+    Text { str = text.str, color = Just Color.Orange, href = text.href }
 
 
 inYellow : Text -> Text
 inYellow (Text text) =
-    Text { text | color = Just Color.Yellow }
+    Text { str = text.str, color = Just Color.Yellow, href = text.href }
 
 
 inGreen : Text -> Text
 inGreen (Text text) =
-    Text { text | color = Just Color.Green }
+    Text { str = text.str, color = Just Color.Green, href = text.href }
 
 
 withLink : Maybe String -> Text -> Text
 withLink maybeLink (Text text) =
-    Text { text | href = maybeLink }
+    Text { str = text.str, color = text.color, href = maybeLink }
 
 
 
