@@ -254,8 +254,9 @@ Try changing the permissions of the file and/or its parents directories."""
                             |> Problem.from
                             |> Problem.withPath pathToElmJson
 
-                    Fs.IoError string ->
-                        Debug.todo ("Unknown error: " ++ string)
+                    Fs.IoError message ->
+                        Problem.unexpectedError ("when trying to read " ++ pathToElmJson) message
+                            |> Problem.withPath pathToElmJson
             )
 
 
