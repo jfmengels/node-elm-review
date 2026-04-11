@@ -179,7 +179,6 @@ initValid env fs options rulesFromConfig =
                 { fs = fs
                 , options = options
                 , runEnvironment = runEnvironment
-                , directoriesToAnalyze = options.directoriesToAnalyze
                 }
 
         model : Model
