@@ -31,7 +31,7 @@ type alias InternalOptions =
     , directoriesToAnalyze : List String
     , subcommandPossible : Bool
     , configPath : Maybe String
-    , remoteTemplate : Maybe RemoteTemplate
+    , remoteTemplate : Maybe { raw : String, remoteTemplate : RemoteTemplate }
     , elmJsonPath : Maybe String
     , compilerPath : Maybe String
     , elmFormatPath : Maybe String
