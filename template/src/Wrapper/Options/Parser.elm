@@ -157,7 +157,7 @@ toReviewOptions color options projectRoot =
 reviewProject : Path -> InternalOptions -> Options.ReviewProject
 reviewProject projectRoot options =
     case options.remoteTemplate of
-        Just remoteTemplate ->
+        Just { remoteTemplate } ->
             Options.Remote remoteTemplate
 
         Nothing ->
@@ -218,7 +218,7 @@ reviewAppFlags color reviewFolder namespace options =
 toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions
 toInitOptions color options projectRoot =
     { configPath = Path.join2 projectRoot "review"
-    , remoteTemplate = options.remoteTemplate
+    , remoteTemplate = Maybe.map .remoteTemplate options.remoteTemplate
     , forTests = options.forTests
     , debug = options.debug
     , color = color
