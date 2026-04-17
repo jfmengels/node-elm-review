@@ -3,6 +3,7 @@ module Wrapper.Options exposing
     , ReviewProject(..)
     , HelpOptions
     , InitOptions
+    , NewRuleOptions
     )
 
 {-|
@@ -14,11 +15,14 @@ module Wrapper.Options exposing
 
 @docs InitOptions
 
+@docs NewRuleOptions
+
 -}
 
 import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode)
+import Wrapper.Options.RuleType exposing (RuleType)
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -54,4 +58,14 @@ type alias InitOptions =
     , forTests : Bool
     , debug : Bool
     , color : Color.Support
+    }
+
+
+type alias NewRuleOptions =
+    { reviewFolder : Path
+    , forTests : Bool
+    , debug : Bool
+    , color : Color.Support
+    , newRuleName : Maybe String
+    , ruleType : Maybe RuleType
     }

@@ -1,4 +1,7 @@
-module Elm.Review.Vendor.List.Extra exposing (gatherWith)
+module Elm.Review.Vendor.List.Extra exposing
+    ( findIndex, findWithIndex
+    , gatherWith
+    )
 
 {-| Copied from <https://github.com/elm-community/list-extra>
 
@@ -28,6 +31,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+@docs findIndex, findWithIndex
+@docs gatherWith
+
 -}
 
 
@@ -54,3 +60,41 @@ gatherWith testFn list =
                     helper remaining (( toGather, gathering ) :: gathered)
     in
     helper list []
+
+
+findIndex : (a -> Bool) -> List a -> Maybe Int
+findIndex predicate list =
+    findIndexInternal predicate 0 list
+
+
+findIndexInternal : (a -> Bool) -> Int -> List a -> Maybe Int
+findIndexInternal predicate index list =
+    case list of
+        [] ->
+            Nothing
+
+        item :: rest ->
+            if predicate item then
+                Just index
+
+            else
+                findIndexInternal predicate (index + 1) rest
+
+
+findWithIndex : (a -> Bool) -> List a -> Maybe ( a, Int )
+findWithIndex predicate list =
+    findWithIndexInternal predicate 0 list
+
+
+findWithIndexInternal : (a -> Bool) -> Int -> List a -> Maybe ( a, Int )
+findWithIndexInternal predicate index list =
+    case list of
+        [] ->
+            Nothing
+
+        item :: rest ->
+            if predicate item then
+                Just ( item, index )
+
+            else
+                findWithIndexInternal predicate (index + 1) rest
