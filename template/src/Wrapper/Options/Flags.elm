@@ -21,6 +21,7 @@ import ElmReview.Problem exposing (ProblemSimple)
 import ElmReview.ReportMode as ReportMode
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
+import Wrapper.Options.RuleType as RuleType
 import Wrapper.RemoteTemplate as RemoteTemplate
 import Wrapper.Section as Section exposing (Section)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
@@ -193,11 +194,12 @@ flags =
                 , usesEquals = False
                 , apply =
                     \_ arg options ->
-                        if arg == "module" || arg == "project" then
-                            Ok { options | compilerPath = Just arg }
+                        case RuleType.fromString arg of
+                            Just ruleType ->
+                                Ok { options | ruleType = Just ruleType }
 
-                        else
-                            Err Nothing
+                            Nothing ->
+                                Err Nothing
                 }
       , display =
             Just

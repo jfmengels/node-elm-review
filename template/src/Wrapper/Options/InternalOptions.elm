@@ -3,6 +3,7 @@ module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions
 import ElmReview.Problem exposing (ProblemSimple)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
+import Wrapper.Options.RuleType exposing (RuleType)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
 
@@ -25,10 +26,8 @@ type alias InternalOptions =
     , unsuppressRules : List String
     , rules : List String
     , reviewAppFlags : List String
-
-    -- TODO Custom type
-    , ruleType : String
-    , directoriesToAnalyze : List String
+    , ruleType : Maybe RuleType
+    , restOfArgs : List String
     , subcommandPossible : Bool
     , configPath : Maybe String
     , remoteTemplate : Maybe { raw : String, remoteTemplate : RemoteTemplate }
@@ -62,7 +61,7 @@ initialOptions =
     , unsuppressRules = []
     , rules = []
     , reviewAppFlags = []
-    , ruleType = "module"
+    , ruleType = Nothing
     , subcommandPossible = True
     , configPath = Nothing
     , remoteTemplate = Nothing
@@ -72,7 +71,7 @@ initialOptions =
     , prefill = Nothing
     , namespace = Nothing
     , githubAuth = Nothing
-    , directoriesToAnalyze = []
+    , restOfArgs = []
     , flagsNotToUseAnymore = Set.empty
     , problem = Nothing
     }

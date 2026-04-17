@@ -7,7 +7,7 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import Set
 import Wrapper.Flag as Flag exposing (Argument(..), Flag)
-import Wrapper.Options as Options exposing (HelpOptions, InitOptions, ReviewOptions)
+import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewRuleOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
@@ -26,6 +26,7 @@ type OptionsParseResult
     | ShowVersion
     | ShowHelp HelpOptions
     | Init InitOptions
+    | NewRule NewRuleOptions
     | ParseError (Problem.FormatOptions {}) Problem
 
 
@@ -92,8 +93,7 @@ toOptions env options =
                                     Init (toInitOptions color options projectRoot)
 
                                 Just Subcommand.NewRule ->
-                                    Problem.notImplementedYet "new-rule subcommand"
-                                        |> parseError
+                                    NewRule (toNewRuleOptions color options projectRoot)
 
                                 Just Subcommand.NewPackage ->
                                     if options.offline then
@@ -172,11 +172,11 @@ reviewProject projectRoot options =
 reviewAppFlags : Color.Support -> String -> String -> InternalOptions -> List String
 reviewAppFlags color reviewFolder namespace options =
     filterMap
-        [ if List.isEmpty options.directoriesToAnalyze then
+        [ if List.isEmpty options.restOfArgs then
             Nothing
 
           else
-            Just ("--dirs-to-analyze=" ++ uniqueList options.directoriesToAnalyze)
+            Just ("--dirs-to-analyze=" ++ uniqueList options.restOfArgs)
         , if List.isEmpty options.ignoredFiles then
             Nothing
 
@@ -225,6 +225,17 @@ toInitOptions color options projectRoot =
     }
 
 
+toNewRuleOptions : Color.Support -> InternalOptions -> Path -> NewRuleOptions
+toNewRuleOptions color options projectRoot =
+    { reviewFolder = projectRoot
+    , forTests = options.forTests
+    , debug = options.debug
+    , color = color
+    , newRuleName = List.reverse options.restOfArgs |> List.head
+    , ruleType = options.ruleType
+    }
+
+
 filterMap : List (Maybe a) -> List a -> List a
 filterMap list initial =
     List.foldl
@@ -268,7 +279,7 @@ parseHelp args options =
                         Nothing ->
                             parseHelp rest
                                 { options
-                                    | directoriesToAnalyze = arg :: options.directoriesToAnalyze
+                                    | restOfArgs = arg :: options.restOfArgs
                                     , subcommandPossible = False
                                 }
 
