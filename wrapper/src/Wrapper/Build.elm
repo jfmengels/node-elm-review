@@ -221,7 +221,6 @@ readReviewElmJson fs reviewProject reviewFolder pathToElmJson =
         |> Task.andThen
             (\rawElmJson ->
                 parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson
-                    |> Result.mapError (Problem.from >> Problem.withPath pathToElmJson)
                     |> resultToTask
             )
 
@@ -260,29 +259,31 @@ Try changing the permissions of the file and/or its parents directories."""
             )
 
 
-parseElmJson : ReviewProject -> String -> String -> String -> Result ProblemSimple { raw : String, application : Elm.Project.ApplicationInfo }
+parseElmJson : ReviewProject -> String -> String -> String -> Result Problem { raw : String, application : Elm.Project.ApplicationInfo }
 parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson =
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
-            Err
-                { title = "COULD NOT READ ELM.JSON"
-                , message = decodingErrorMessage pathToElmJson error
-                }
+            Err (Problem.invalidElmJson pathToElmJson error)
 
         Ok (Elm.Project.Package _) ->
-            Err
-                { title = "REVIEW CONFIG IS NOT AN APPLICATION"
-                , message =
-                    \c ->
-                        "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
+            { title = "REVIEW CONFIG IS NOT AN APPLICATION"
+            , message =
+                \c ->
+                    "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
 
 I think it is likely that you are pointing to an incorrect configuration file. Please check the path to your configuration again."""
-                }
+            }
+                |> Problem.from
+                |> Problem.withPath pathToElmJson
+                |> Err
 
         Ok (Elm.Project.Application application) ->
             case validateElmReviewVersion reviewProject reviewFolder application of
                 Just problem ->
-                    Err problem
+                    problem
+                        |> Problem.from
+                        |> Problem.withPath pathToElmJson
+                        |> Err
 
                 Nothing ->
                     Ok { raw = rawElmJson, application = application }
@@ -358,15 +359,6 @@ Here is the full error message:
         { title = "CONFIGURATION COMPILATION ERROR"
         , message = \c -> "Errors occurred while compiling your configuration for " ++ c GreenBright "elm-review" ++ ". I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n" ++ stderr
         }
-
-
-decodingErrorMessage : String -> Decode.Error -> Colorize -> String
-decodingErrorMessage pathToElmJson error c =
-    "I tried reading " ++ c Yellow pathToElmJson ++ """ but encountered an error while reading it. Please check that it is valid JSON that the Elm compiler would be happy with.
-
-Here is the error I encountered:
-
-""" ++ Decode.errorToString error
 
 
 resultToTask : Result x a -> Task x a
