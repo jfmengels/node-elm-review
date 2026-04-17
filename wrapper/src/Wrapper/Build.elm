@@ -14,6 +14,7 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.OsExtra as OsExtra
+import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -221,7 +222,7 @@ readReviewElmJson fs reviewProject reviewFolder pathToElmJson =
         |> Task.andThen
             (\rawElmJson ->
                 parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson
-                    |> resultToTask
+                    |> TaskExtra.resultToTask
             )
 
 
@@ -359,16 +360,6 @@ Here is the full error message:
         { title = "CONFIGURATION COMPILATION ERROR"
         , message = \c -> "Errors occurred while compiling your configuration for " ++ c GreenBright "elm-review" ++ ". I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n" ++ stderr
         }
-
-
-resultToTask : Result x a -> Task x a
-resultToTask result =
-    case result of
-        Ok value ->
-            Task.succeed value
-
-        Err err ->
-            Task.fail err
 
 
 {-| Find the first element that satisfies a predicate and return
