@@ -1,7 +1,7 @@
 module ElmReview.Problem exposing
     ( Problem, from, withPath
     , ProblemSimple
-    , unexpectedError, notImplementedYet
+    , invalidElmJson, unexpectedError, notImplementedYet
     , exit
     , FormatOptions
     , unwrapFOR_TESTS
@@ -12,7 +12,7 @@ module ElmReview.Problem exposing
 @docs Problem, from, withPath
 @docs ProblemSimple
 
-@docs unexpectedError, notImplementedYet
+@docs invalidElmJson, unexpectedError, notImplementedYet
 
 @docs exit
 
@@ -27,6 +27,7 @@ import Cli
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -132,6 +133,24 @@ formatJsonHelp c (Problem { title, message, path }) =
     ]
         |> List.filterMap identity
         |> Encode.object
+
+
+invalidElmJson : String -> Decode.Error -> Problem
+invalidElmJson pathToElmJson error =
+    { title = "COULD NOT READ ELM.JSON"
+    , message = decodingErrorMessage pathToElmJson error
+    }
+        |> from
+        |> withPath pathToElmJson
+
+
+decodingErrorMessage : String -> Decode.Error -> Colorize -> String
+decodingErrorMessage pathToElmJson error c =
+    "I tried reading " ++ c Yellow pathToElmJson ++ """ but encountered an error while reading it. Please check that it is valid JSON that the Elm compiler would be happy with.
+
+Here is the error I encountered:
+
+""" ++ Decode.errorToString error
 
 
 unexpectedError : String -> String -> Problem
