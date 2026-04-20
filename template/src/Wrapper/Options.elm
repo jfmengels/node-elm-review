@@ -4,6 +4,7 @@ module Wrapper.Options exposing
     , HelpOptions
     , InitOptions
     , NewRuleOptions
+    , NewPackageOptions
     )
 
 {-|
@@ -16,6 +17,7 @@ module Wrapper.Options exposing
 @docs InitOptions
 
 @docs NewRuleOptions
+@docs NewPackageOptions
 
 -}
 
@@ -67,5 +69,13 @@ type alias NewRuleOptions =
     , debug : Bool
     , color : Color.Support
     , newRuleName : Maybe String
+    , ruleType : Maybe RuleType
+    }
+
+
+type alias NewPackageOptions =
+    { forTests : Bool
+    , debug : Bool
+    , color : Color.Support
     , ruleType : Maybe RuleType
     }
