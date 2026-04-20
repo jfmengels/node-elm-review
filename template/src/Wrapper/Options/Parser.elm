@@ -7,7 +7,7 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import Set
 import Wrapper.Flag as Flag exposing (Argument(..), Flag)
-import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewRuleOptions, ReviewOptions)
+import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewPackageOptions, NewRuleOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
@@ -27,6 +27,7 @@ type OptionsParseResult
     | ShowHelp HelpOptions
     | Init InitOptions
     | NewRule NewRuleOptions
+    | NewPackage NewPackageOptions
     | ParseError (Problem.FormatOptions {}) Problem
 
 
@@ -65,53 +66,72 @@ toOptions env options =
                         |> parseError
 
                 Nothing ->
-                    case options.elmJsonPath of
+                    let
+                        requiresElmJsonPath_ : (Path -> OptionsParseResult) -> OptionsParseResult
+                        requiresElmJsonPath_ =
+                            requiresElmJsonPath options color
+                    in
+                    case options.subcommand of
                         Nothing ->
-                            NeedElmJsonPath
-                                { formatOptions =
-                                    { reportMode = options.reportMode
-                                    , debug = options.debug
-                                    , color = color
-                                    }
-                                , toOptions = \{ elmJsonPath } -> toOptions env { options | elmJsonPath = Just elmJsonPath }
-                                }
+                            requiresElmJsonPath_
+                                (\elmJsonPath ->
+                                    Review (toReviewOptions color options (Path.dirname elmJsonPath))
+                                )
 
-                        Just elmJsonPath ->
-                            let
-                                projectRoot : Path
-                                projectRoot =
-                                    Path.dirname elmJsonPath
-                            in
-                            case options.subcommand of
-                                Nothing ->
-                                    Review (toReviewOptions color options projectRoot)
+                        Just Subcommand.Suppress ->
+                            requiresElmJsonPath_
+                                (\elmJsonPath ->
+                                    Review (toReviewOptions color options (Path.dirname elmJsonPath))
+                                )
 
-                                Just Subcommand.Suppress ->
-                                    Review (toReviewOptions color options projectRoot)
+                        Just Subcommand.Init ->
+                            requiresElmJsonPath_
+                                (\elmJsonPath ->
+                                    Init (toInitOptions color options (Path.dirname elmJsonPath))
+                                )
 
-                                Just Subcommand.Init ->
-                                    Init (toInitOptions color options projectRoot)
+                        Just Subcommand.NewRule ->
+                            requiresElmJsonPath_
+                                (\elmJsonPath ->
+                                    NewRule (toNewRuleOptions color options (Path.dirname elmJsonPath))
+                                )
 
-                                Just Subcommand.NewRule ->
-                                    NewRule (toNewRuleOptions color options projectRoot)
-
-                                Just Subcommand.NewPackage ->
-                                    if options.offline then
-                                        { title = "COMMAND REQUIRES NETWORK ACCESS"
-                                        , message = \c -> "I can't use " ++ c Yellow "new-package" ++ " in " ++ c Cyan "offline" ++ """ mode, as I need network access to perform a number of steps.
+                        Just Subcommand.NewPackage ->
+                            if options.offline then
+                                { title = "COMMAND REQUIRES NETWORK ACCESS"
+                                , message = \c -> "I can't use " ++ c Yellow "new-package" ++ " in " ++ c Cyan "offline" ++ """ mode, as I need network access to perform a number of steps.
 
 I recommend you try to gain network access and try again."""
-                                        }
-                                            |> Problem.from
-                                            |> parseError
+                                }
+                                    |> Problem.from
+                                    |> parseError
 
-                                    else
-                                        Problem.notImplementedYet "new-package subcommand"
-                                            |> parseError
+                            else
+                                NewPackage (toNewPackageOptions color options)
 
-                                Just Subcommand.PrepareOffline ->
+                        Just Subcommand.PrepareOffline ->
+                            requiresElmJsonPath_
+                                (\elmJsonPath ->
                                     Problem.notImplementedYet "prepare-offline subcommand"
                                         |> parseError
+                                )
+
+
+requiresElmJsonPath : InternalOptions -> Color.Support -> (Path -> OptionsParseResult) -> OptionsParseResult
+requiresElmJsonPath options color createOptions =
+    case options.elmJsonPath of
+        Nothing ->
+            NeedElmJsonPath
+                { formatOptions =
+                    { reportMode = options.reportMode
+                    , debug = options.debug
+                    , color = color
+                    }
+                , toOptions = \{ elmJsonPath } -> createOptions elmJsonPath
+                }
+
+        Just elmJsonPath ->
+            createOptions elmJsonPath
 
 
 toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
@@ -232,6 +252,15 @@ toNewRuleOptions color options projectRoot =
     , debug = options.debug
     , color = color
     , newRuleName = List.reverse options.restOfArgs |> List.head
+    , ruleType = options.ruleType
+    }
+
+
+toNewPackageOptions : Color.Support -> InternalOptions -> NewPackageOptions
+toNewPackageOptions color options =
+    { forTests = options.forTests
+    , debug = options.debug
+    , color = color
     , ruleType = options.ruleType
     }
 

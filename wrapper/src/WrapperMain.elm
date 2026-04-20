@@ -14,6 +14,7 @@ import Os exposing (ProcessCapability)
 import Task exposing (Task)
 import Wrapper.Help as Help
 import Wrapper.Init as Init
+import Wrapper.NewPackage as NewPackage
 import Wrapper.NewRule as NewRule
 import Wrapper.Options.Parser as OptionsParser
 import Wrapper.Review as Review
@@ -34,6 +35,7 @@ type Model
     | Review Review.Model
     | Init Init.Model
     | NewRule NewRule.Model
+    | NewPackage NewPackage.Model
 
 
 type alias LoadingModel =
@@ -50,6 +52,7 @@ type Msg
     | ReviewMsg Review.Msg
     | InitMsg Init.Msg
     | NewRuleMsg NewRule.Msg
+    | NewPackageMsg NewPackage.Msg
 
 
 init : Env -> ( Model, Cmd Msg )
@@ -149,6 +152,17 @@ handleCliArgsParseResult env { fs, os } result =
             in
             ( NewRule newRuleModel, Cmd.map NewRuleMsg cmd )
 
+        OptionsParser.NewPackage options ->
+            let
+                ( newPackageModel, cmd ) =
+                    NewPackage.init env
+                        { fs = fs
+                        , os = os
+                        }
+                        options
+            in
+            ( NewPackage newPackageModel, Cmd.map NewPackageMsg cmd )
+
 
 requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
 requireCapabilities env =
@@ -185,6 +199,17 @@ update msg model =
                     ( model
                     , Init.update initMsg initModel
                         |> Cmd.map InitMsg
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        NewPackageMsg newPackageMsg ->
+            case model of
+                NewPackage newPackageModel ->
+                    ( model
+                    , NewPackage.update newPackageMsg newPackageModel
+                        |> Cmd.map NewPackageMsg
                     )
 
                 _ ->

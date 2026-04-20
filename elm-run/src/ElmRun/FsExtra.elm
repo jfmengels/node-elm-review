@@ -1,19 +1,28 @@
 module ElmRun.FsExtra exposing
     ( errorToString
+    , createFileAndItsDirectory
     , copyDirectory
     )
 
 {-|
 
 @docs errorToString
+@docs createFileAndItsDirectory
 @docs copyDirectory
 
 -}
 
+import ElmReview.Path as Path exposing (Path)
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
+
+
+createFileAndItsDirectory : FileSystem -> Path -> String -> Task FsError ()
+createFileAndItsDirectory fs path content =
+    Fs.createDirectory fs (Path.dirname path)
+        |> Task.andThen (\() -> Fs.writeTextFile fs path content)
 
 
 errorToString : FsError -> String
