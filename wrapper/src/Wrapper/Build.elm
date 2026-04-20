@@ -53,8 +53,7 @@ buildLocalProject fs os options reviewFolder =
     let
         pathToElmJson : String
         pathToElmJson =
-            -- TODO Use path functions
-            String.join "/" [ reviewFolder, "elm.json" ]
+            Path.join2 reviewFolder "elm.json"
     in
     readReviewElmJson fs options.reviewProject reviewFolder pathToElmJson
         |> Task.andThen

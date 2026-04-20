@@ -31,7 +31,7 @@ import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
-import ElmReview.Path exposing (Path)
+import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
@@ -682,29 +682,25 @@ fetchDependency fs runEnvironment packageName packageVersion =
     let
         directory : String
         directory =
-            -- TODO Use path functions
-            String.join "/" [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages", packageName, packageVersion ]
+            Path.join [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages", packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
-        -- TODO Use path functions
-        (readTextFileWithPath fs (directory ++ "/elm.json"))
-        (readTextFileWithPath fs (directory ++ "/docs.json"))
+        (readTextFileWithPath fs (Path.join2 directory "elm.json"))
+        (readTextFileWithPath fs (Path.join2 directory "docs.json"))
         |> Task.attempt (ReceivedDependency packageName)
 
 
 fetchRuleLinks : FileSystem -> RunEnvironment -> Cmd Msg
 fetchRuleLinks fs runEnvironment =
-    -- TODO Use path functions
-    Fs.readTextFile fs (runEnvironment.reviewFolder ++ "/elm.json")
+    Fs.readTextFile fs (Path.join2 runEnvironment.reviewFolder "elm.json")
         |> Task.andThen
             (\elmJson ->
                 case Decode.decodeString Elm.Project.decoder elmJson of
                     Ok (Elm.Project.Application { depsDirect, depsIndirect }) ->
                         let
-                            packagesDirectory : String
+                            packagesDirectory : Path
                             packagesDirectory =
-                                -- TODO Use path functions
-                                String.join "/" [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages" ]
+                                Path.join [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages" ]
                         in
                         (depsDirect ++ depsIndirect)
                             |> List.map (readElmJson fs packagesDirectory)
@@ -718,7 +714,7 @@ fetchRuleLinks fs runEnvironment =
         |> Task.perform (\links -> ReceivedRuleLinks { links = links, fromCache = False })
 
 
-readElmJson : FileSystem -> String -> ( Elm.Package.Name, Elm.Version.Version ) -> Task x (List ( String, String ))
+readElmJson : FileSystem -> Path -> ( Elm.Package.Name, Elm.Version.Version ) -> Task x (List ( String, String ))
 readElmJson fs packagesDirectory ( rawPackageName, rawPackageVersion ) =
     let
         packageName : String
@@ -729,8 +725,7 @@ readElmJson fs packagesDirectory ( rawPackageName, rawPackageVersion ) =
         packageVersion =
             Elm.Version.toString rawPackageVersion
     in
-    -- TODO Use path functions
-    String.join "/" [ packagesDirectory, packageName, packageVersion, "elm.json" ]
+    Path.join [ packagesDirectory, packageName, packageVersion, "elm.json" ]
         |> Fs.readTextFile fs
         |> Task.map
             (\elmJson ->
