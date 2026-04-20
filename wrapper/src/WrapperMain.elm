@@ -218,8 +218,9 @@ findNearestElmJson fs pathSegments =
 
     else
         let
-            path : String
+            path : Path
             path =
+                -- TODO Does this work for Windows?
                 Array.push "elm.json" pathSegments |> Array.toList |> String.join "/"
         in
         Fs.stat fs path
