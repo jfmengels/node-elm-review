@@ -119,6 +119,9 @@ expectReview expected received =
         NewRule options ->
             Expect.fail ("Unexpected parsing of new-rule subcommand " ++ Debug.toString options)
 
+        NewPackage options ->
+            Expect.fail ("Unexpected parsing of new-package subcommand " ++ Debug.toString options)
+
         ParseError _ problem ->
             let
                 { title, message } =
@@ -144,6 +147,9 @@ expectHelp expectedSubcommand received =
 
         NewRule options ->
             Expect.fail ("Unexpected parsing of new-rule subcommand " ++ Debug.toString options)
+
+        NewPackage options ->
+            Expect.fail ("Unexpected parsing of new-package subcommand " ++ Debug.toString options)
 
         NeedElmJsonPath _ ->
             Expect.fail "Unexpected parse success without help"

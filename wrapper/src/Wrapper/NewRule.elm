@@ -1,12 +1,15 @@
 module Wrapper.NewRule exposing
     ( Model, init
     , Msg, update
+    , ruleDescription, newSourceFile, newTestFile
     )
 
 {-|
 
 @docs Model, init
 @docs Msg, update
+
+@docs ruleDescription, newSourceFile, newTestFile
 
 -}
 
@@ -593,8 +596,8 @@ injectRuleInPreviewFolders fs reviewFolder pkg ruleName =
                 files
                     |> List.filter
                         (\filePath ->
-                            String.startsWith "./preview" filePath
-                                && not (String.contains "/elm-stuff/" filePath)
+                            String.startsWith "preview" filePath
+                                && not (String.contains "elm-stuff/" filePath)
                         )
                     |> List.map
                         (\filePath ->

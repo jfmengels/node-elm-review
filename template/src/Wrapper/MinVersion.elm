@@ -1,4 +1,14 @@
-module Wrapper.MinVersion exposing (validate)
+module Wrapper.MinVersion exposing
+    ( validate
+    , supportedRange
+    )
+
+{-|
+
+@docs validate
+@docs supportedRange
+
+-}
 
 import Elm.Version
 import ElmReview.Color exposing (Color(..), Colorize)
