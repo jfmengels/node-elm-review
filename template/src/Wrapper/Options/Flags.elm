@@ -459,7 +459,7 @@ flags =
                 { argName = "<namespace>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \flagName arg options -> addToReviewAppFlagsWithArg flagName arg { options | namespace = Just arg }
+                , apply = \flagName arg options -> addToReviewAppFlagsWithArg flagName arg { options | namespace = arg }
                 }
       , display = Nothing
       }
