@@ -35,7 +35,7 @@ type alias InternalOptions =
     , compilerPath : Maybe String
     , elmFormatPath : Maybe String
     , prefill : Maybe String
-    , namespace : Maybe String
+    , namespace : String
     , githubAuth : Maybe String
     , flagsNotToUseAnymore : Set String
     , problem : Maybe (Maybe Subcommand -> ProblemSimple)
@@ -69,7 +69,7 @@ initialOptions =
     , compilerPath = Nothing
     , elmFormatPath = Nothing
     , prefill = Nothing
-    , namespace = Nothing
+    , namespace = "cli"
     , githubAuth = Nothing
     , restOfArgs = []
     , flagsNotToUseAnymore = Set.empty

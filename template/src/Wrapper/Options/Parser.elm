@@ -137,10 +137,6 @@ requiresElmJsonPath options color createOptions =
 toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
 toReviewOptions color options projectRoot =
     let
-        namespace : String
-        namespace =
-            Maybe.withDefault "cli" options.namespace
-
         reviewFolder : Path
         reviewFolder =
             case options.remoteTemplate of
@@ -160,7 +156,7 @@ toReviewOptions color options projectRoot =
         projectPaths =
             ProjectPaths.from
                 { projectRoot = projectRoot
-                , namespace = namespace
+                , namespace = options.namespace
                 }
     in
     { subcommand = options.subcommand
@@ -170,7 +166,7 @@ toReviewOptions color options projectRoot =
     , debug = options.debug
     , color = color
     , reviewProject = reviewProject projectRoot options
-    , reviewAppFlags = reviewAppFlags color reviewFolder namespace options
+    , reviewAppFlags = reviewAppFlags color reviewFolder options
     }
 
 
@@ -189,8 +185,8 @@ reviewProject projectRoot options =
                     Options.Local (Path.join2 projectRoot "review")
 
 
-reviewAppFlags : Color.Support -> String -> String -> InternalOptions -> List String
-reviewAppFlags color reviewFolder namespace options =
+reviewAppFlags : Color.Support -> String -> InternalOptions -> List String
+reviewAppFlags color reviewFolder options =
     addJusts
         [ if List.isEmpty options.restOfArgs then
             Nothing
@@ -230,7 +226,6 @@ reviewAppFlags color reviewFolder namespace options =
             Just "--no-color"
         ]
         (("--review-folder=" ++ reviewFolder)
-            :: ("--namespace=" ++ namespace)
             :: options.reviewAppFlags
         )
 
