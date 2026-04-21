@@ -12,20 +12,18 @@ module Wrapper.Init exposing
 
 import Capabilities exposing (Console, Stdin)
 import Cli
-import Elm.Version exposing (Version)
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem
 import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
-import ElmRun.OsExtra as OsExtra
 import ElmRun.Prompt as Prompt
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
-import Platform exposing (Task)
 import Task
 import Wrapper.Options exposing (InitOptions)
+import Wrapper.ReviewConfigTemplate as ReviewConfigTemplate
 
 
 type Model
@@ -127,90 +125,10 @@ prompt stdin model =
 
 installFiles : FileSystem -> ProcessCapability -> Path -> Cmd Msg
 installFiles fs os reviewPath =
-    let
-        reviewSrcPath : Path
-        reviewSrcPath =
-            Path.join2 reviewPath "src"
-    in
-    Fs.createDirectory fs reviewSrcPath
-        |> Task.mapError FsExtra.errorToString
-        |> Task.andThen
-            (\() ->
-                Task.map2 (\_ _ -> ())
-                    (createElmJson fs os reviewPath
-                        |> Task.mapError FsExtra.errorToString
-                    )
-                    (FsExtra.copyFile os
-                        { from = initTemplatePath "DefaultReviewConfig.elm"
-                        , to = Path.join2 reviewSrcPath "ReviewConfig.elm"
-                        }
-                        |> Task.mapError OsExtra.errorToString
-                    )
-            )
-        |> Task.attempt CreatedFiles
-
-
-createElmJson : FileSystem -> ProcessCapability -> Path -> Task FsError ()
-createElmJson fs os reviewPath =
     ElmBinary.findElmVersion os
-        |> Task.andThen
-            (\elmVersion ->
-                Fs.writeTextFile
-                    fs
-                    (Path.join2 reviewPath "elm.json")
-                    (createNewReviewElmJson elmVersion)
-            )
-
-
-createNewReviewElmJson : Version -> String
-createNewReviewElmJson elmVersion =
-    -- TODO Update dependencies to the latest version
-    -- Maybe avoid this when options.forTests == True
-    -- and have a test just checking that without tests the elm.json file is different but valid?
-    -- TODO Make sure jfmengels/elm-review is always at least MinVersion.supportedRange
-    """{
-    "type": "application",
-    "source-directories": [
-        "src"
-    ],
-    "elm-version": \"""" ++ Elm.Version.toString elmVersion ++ """",
-    "dependencies": {
-        "direct": {
-            "elm/core": "1.0.5",
-            "jfmengels/elm-review": "2.16.6",
-            "stil4m/elm-syntax": "7.3.9"
-        },
-        "indirect": {
-            "elm/bytes": "1.0.8",
-            "elm/html": "1.0.1",
-            "elm/json": "1.1.4",
-            "elm/parser": "1.1.0",
-            "elm/project-metadata-utils": "1.0.2",
-            "elm/random": "1.0.0",
-            "elm/regex": "1.0.0",
-            "elm/time": "1.0.0",
-            "elm/virtual-dom": "1.0.5",
-            "elm-explorations/test": "2.2.1",
-            "rtfeldman/elm-hex": "1.0.0",
-            "stil4m/structured-writer": "1.0.3"
-        }
-    },
-    "test-dependencies": {
-        "direct": {
-            "elm-explorations/test": "2.2.1"
-        },
-        "indirect": {}
-    }
-}
-"""
-
-
-initTemplatePath : Path -> Path
-initTemplatePath templatePath =
-    Path.join2
-        -- TODO Use path relative to this binary
-        "/Users/m1/dev/node-elm-review/init-templates"
-        templatePath
+        |> Task.andThen (\elmVersion -> ReviewConfigTemplate.create fs elmVersion reviewPath Nothing)
+        |> Task.mapError FsExtra.errorToString
+        |> Task.attempt CreatedFiles
 
 
 successMessage : InitOptions -> String
