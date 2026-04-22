@@ -527,9 +527,9 @@ applyFixChanges { projectWithFixes, rulesWithFixes, changedFiles, removedFiles }
     , Task.map2 always
         (changedFiles
             -- TODO Format Elm files
-            |> TaskExtra.mapAll (\{ filePath, source } -> Fs.writeTextFile model.fs filePath source)
+            |> TaskExtra.mapAllAndIgnore (\{ filePath, source } -> Fs.writeTextFile model.fs filePath source)
         )
-        (TaskExtra.mapAll (\filePath -> Fs.deleteFile model.fs filePath) removedFiles)
+        (TaskExtra.mapAllAndIgnore (\filePath -> Fs.deleteFile model.fs filePath) removedFiles)
         |> Task.attempt AppliedFixes
     )
 

@@ -293,7 +293,7 @@ write fs options ruleNames suppressedErrors =
                 |> Task.onError (\_ -> Task.succeed ())
             , suppressedErrors
                 |> suppressionsX ruleNames
-                |> TaskExtra.mapAll (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
+                |> TaskExtra.mapAllAndIgnore (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
             ]
             |> Task.map (\_ -> ())
             |> Task.mapError
