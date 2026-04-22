@@ -1,12 +1,12 @@
 module ElmRun.TaskExtra exposing
-    ( mapAllAndIgnore
+    ( mapAllAndFold, mapAllAndIgnore
     , resultToTask
     , toResultTask
     )
 
 {-|
 
-@docs mapAllAndIgnore
+@docs mapAllAndFold, mapAllAndIgnore
 @docs resultToTask
 @docs toResultTask
 
@@ -27,9 +27,14 @@ resultToTask result =
             Task.fail err
 
 
+mapAllAndFold : (a -> Task x b) -> (b -> c -> c) -> c -> List a -> Task x c
+mapAllAndFold f fold initial list =
+    List.foldl (\task acc -> Task.map2 (\c b -> fold b c) acc (f task)) (Task.succeed initial) list
+
+
 mapAllAndIgnore : (a -> Task x ()) -> List a -> Task x ()
 mapAllAndIgnore f list =
-    List.foldl (\task acc -> Task.map2 always (f task) acc) (Task.succeed ()) list
+    List.foldl (\task acc -> Task.map2 always acc (f task)) (Task.succeed ()) list
 
 
 toResultTask : Task x value -> Task never (Result () value)
