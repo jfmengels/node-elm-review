@@ -34,6 +34,7 @@ import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
+import ElmRun.TaskExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
@@ -702,10 +703,11 @@ fetchRuleLinks fs runEnvironment =
                             packagesDirectory =
                                 Path.join [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages" ]
                         in
-                        (depsDirect ++ depsIndirect)
-                            |> List.map (readElmJson fs packagesDirectory)
-                            |> Task.sequence
-                            |> Task.map (List.concat >> Dict.fromList)
+                        FsExtra.mapAllAndFold
+                            (readElmJson fs packagesDirectory)
+                            (\deps dict -> List.foldl (\( name, dep ) d -> Dict.insert name dep d) dict deps)
+                            Dict.empty
+                            (depsDirect ++ depsIndirect)
 
                     _ ->
                         Task.succeed Dict.empty
