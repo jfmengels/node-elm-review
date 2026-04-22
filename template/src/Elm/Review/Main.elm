@@ -510,9 +510,9 @@ applyFixChanges fs fixPayload =
     Task.map2 always
         (fixPayload.changedFiles
             -- TODO Format Elm files
-            |> TaskExtra.mapAll (\{ filePath, source } -> Fs.writeTextFile fs filePath source)
+            |> TaskExtra.mapAllAndIgnore (\{ filePath, source } -> Fs.writeTextFile fs filePath source)
         )
-        (TaskExtra.mapAll (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles)
+        (TaskExtra.mapAllAndIgnore (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles)
         |> Task.attempt (AppliedFixes fixPayload)
 
 
