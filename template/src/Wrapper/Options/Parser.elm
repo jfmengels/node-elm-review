@@ -191,7 +191,7 @@ reviewProject projectRoot options =
 
 reviewAppFlags : Color.Support -> String -> String -> InternalOptions -> List String
 reviewAppFlags color reviewFolder namespace options =
-    filterMap
+    addJusts
         [ if List.isEmpty options.restOfArgs then
             Nothing
 
@@ -265,8 +265,8 @@ toNewPackageOptions color options =
     }
 
 
-filterMap : List (Maybe a) -> List a -> List a
-filterMap list initial =
+addJusts : List (Maybe a) -> List a -> List a
+addJusts list initial =
     List.foldl
         (\maybe acc ->
             case maybe of
