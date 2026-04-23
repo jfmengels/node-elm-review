@@ -12,6 +12,7 @@ module Wrapper.Review exposing
 
 import Capabilities exposing (Console)
 import Cli exposing (Env)
+import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
 import ElmRun.OsExtra
 import Fs exposing (FileSystem, FsError)
@@ -60,8 +61,11 @@ update msg (Model model) =
     case msg of
         BuildCompleted result ->
             case result of
-                Ok { reviewAppPath } ->
-                    runReviewProcess model reviewAppPath
+                Ok { elmJsonPath, reviewAppPath } ->
+                    runReviewProcess model
+                        { reviewAppPath = reviewAppPath
+                        , reviewFolder = Path.dirname elmJsonPath
+                        }
 
                 Err problem ->
                     Problem.exit model.stderr model.options problem
@@ -75,18 +79,22 @@ update msg (Model model) =
                     Problem.exit model.stderr model.options problem
 
 
-runReviewProcess : ModelData -> String -> Cmd Msg
-runReviewProcess { os, options } appBinary =
+runReviewProcess : ModelData -> { reviewAppPath : Path, reviewFolder : Path } -> Cmd Msg
+runReviewProcess { os, options } { reviewAppPath, reviewFolder } =
     let
+        reviewAppFlags : List String
+        reviewAppFlags =
+            ("--review-folder=" ++ reviewFolder) :: options.reviewAppFlags
+
         ( cmd, args ) =
             if options.debug then
                 -- TODO Get host-cli from somewhere?
                 ( "host-cli"
-                , "-v" :: "--trust" :: appBinary :: options.reviewAppFlags
+                , "-v" :: "--trust" :: reviewAppPath :: reviewAppFlags
                 )
 
             else
-                ( appBinary, options.reviewAppFlags )
+                ( reviewAppPath, reviewAppFlags )
     in
     Process.run os
         cmd
@@ -100,6 +108,6 @@ runReviewProcess { os, options } appBinary =
         |> Task.mapError
             (\err ->
                 Problem.unexpectedError "when running the review application" (ElmRun.OsExtra.errorToString err)
-                    |> Problem.withPath appBinary
+                    |> Problem.withPath reviewAppPath
             )
         |> Task.attempt ReviewProcessEnded

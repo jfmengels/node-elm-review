@@ -3,6 +3,7 @@ module Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions
 import ElmReview.Problem exposing (ProblemSimple)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
+import Wrapper.Auth exposing (Auth)
 import Wrapper.Options.RuleType exposing (RuleType)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -36,7 +37,7 @@ type alias InternalOptions =
     , elmFormatPath : Maybe String
     , prefill : Maybe String
     , namespace : String
-    , githubAuth : Maybe String
+    , auth : Maybe Auth
     , flagsNotToUseAnymore : Set String
     , problem : Maybe (Maybe Subcommand -> ProblemSimple)
     }
@@ -70,7 +71,7 @@ initialOptions =
     , elmFormatPath = Nothing
     , prefill = Nothing
     , namespace = "cli"
-    , githubAuth = Nothing
+    , auth = Nothing
     , restOfArgs = []
     , flagsNotToUseAnymore = Set.empty
     , problem = Nothing
