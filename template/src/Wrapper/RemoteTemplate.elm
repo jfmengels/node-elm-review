@@ -1,6 +1,6 @@
 module Wrapper.RemoteTemplate exposing (RemoteTemplate, fromString)
 
-import Regex exposing (Regex)
+import ElmReview.Path as Path
 
 
 type alias RemoteTemplate =
@@ -12,20 +12,39 @@ type alias RemoteTemplate =
 
 fromString : String -> Result () RemoteTemplate
 fromString string =
-    let
-        regex : Regex
-        regex =
-            "^([^/]+\\/[^#/]+)(\\/[^#]+)?(#(.+))?$"
-                |> Regex.fromString
-                |> Maybe.withDefault Regex.never
-    in
-    case Regex.findAtMost 1 regex string |> List.map .submatches of
-        [ Just repoName, pathToFolder, _, reference ] :: _ ->
-            Ok
-                { repoName = repoName
-                , pathToFolder = pathToFolder
-                , reference = reference
-                }
-
-        _ ->
+    case String.split "#" string of
+        [] ->
             Err ()
+
+        repoNameAndPath :: rest ->
+            case String.split "/" repoNameAndPath of
+                pkgAuthor :: pkgName :: pathToFolder ->
+                    let
+                        ref : Result () (Maybe String)
+                        ref =
+                            case rest of
+                                [] ->
+                                    Ok Nothing
+
+                                [ reference ] ->
+                                    Ok (Just reference)
+
+                                _ ->
+                                    Err ()
+                    in
+                    Result.map
+                        (\reference ->
+                            { repoName = pkgAuthor ++ "/" ++ pkgName
+                            , pathToFolder =
+                                if List.isEmpty pathToFolder then
+                                    Nothing
+
+                                else
+                                    Just (Path.join pathToFolder)
+                            , reference = reference
+                            }
+                        )
+                        ref
+
+                _ ->
+                    Err ()
