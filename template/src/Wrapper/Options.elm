@@ -24,6 +24,7 @@ module Wrapper.Options exposing
 import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode)
+import Wrapper.Auth exposing (Auth)
 import Wrapper.Options.RuleType exposing (RuleType)
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
@@ -39,6 +40,7 @@ type alias ReviewOptions =
     , color : Color.Support
     , reviewProject : ReviewProject
     , reviewAppFlags : List String
+    , auth : Maybe Auth
     }
 
 

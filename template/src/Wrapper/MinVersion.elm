@@ -1,15 +1,17 @@
 module Wrapper.MinVersion exposing
-    ( validate
+    ( validate, validateDependencyVersion
     , supportedRange
     )
 
 {-|
 
-@docs validate
+@docs validate, validateDependencyVersion
 @docs supportedRange
 
 -}
 
+import Elm.Package
+import Elm.Project
 import Elm.Version
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Problem exposing (ProblemSimple)
@@ -34,8 +36,8 @@ supportedRange =
 
 {-| Validates that the `jfmengels/elm-review` version is compatible with this runner.
 -}
-validate : ReviewProject -> String -> Elm.Version.Version -> Maybe ProblemSimple
-validate reviewProject reviewFolder version =
+validate : ReviewProject -> Elm.Version.Version -> Maybe ProblemSimple
+validate reviewProject version =
     let
         ( major, minor, _ ) =
             Elm.Version.toTuple version
@@ -48,7 +50,7 @@ validate reviewProject reviewFolder version =
             { title = "UNSUPPORTED ELM-REVIEW VERSION"
             , message =
                 case reviewProject of
-                    Options.Local _ ->
+                    Options.Local reviewFolder ->
                         localErrorMessage reviewFolder version
 
                     Options.Remote _ ->
@@ -56,6 +58,23 @@ validate reviewProject reviewFolder version =
 
 Please inform the template author and kindly ask them to update their configuration, or make a pull request to help them out."""
             }
+
+
+validateDependencyVersion : ReviewProject -> Elm.Project.ApplicationInfo -> Maybe ProblemSimple
+validateDependencyVersion reviewProject application =
+    case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
+        Just ( _, version ) ->
+            validate reviewProject version
+
+        Nothing ->
+            Just
+                { title = "MISSING ELM-REVIEW DEPENDENCY"
+                , message =
+                    \c ->
+                        "The template's configuration does not include " ++ c GreenBright "jfmengels/elm-review" ++ """ in its direct dependencies.
+
+Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."""
+                }
 
 
 localErrorMessage : String -> Elm.Version.Version -> Colorize -> String
@@ -75,3 +94,21 @@ Please upgrade your version by running the following commands:
 If that doesn't work, try out:
 
 """ ++ c Magenta ("cd " ++ dirPath ++ "\nnpx elm-json upgrade --unsafe")
+
+
+{-| Find the first element that satisfies a predicate and return
+Just that element. If none match, return Nothing.
+find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
+-}
+find : (a -> Bool) -> List a -> Maybe a
+find predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+
+            else
+                find predicate rest

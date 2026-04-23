@@ -22,16 +22,18 @@ import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
 import Set exposing (Set)
 import Task exposing (Task)
+import Wrapper.FetchRemoteTemplate as FetchRemoteTemplate
 import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
 import Wrapper.ProjectPaths as ProjectPaths
+import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
 type alias BuildData =
     { reviewAppPath : Path
-    , pathToElmJson : Path
+    , elmJsonPath : Path
     , reviewElmJson : Elm.Project.ApplicationInfo
     , appHash : Hash
     }
@@ -44,18 +46,18 @@ build fs os options =
             buildLocalProject fs os options reviewFolder
 
         Options.Remote remoteTemplate ->
-            Problem.notImplementedYet "Building remote template"
-                |> Task.fail
+            FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate options.debug
+                |> Task.andThen (\reviewFolder -> buildLocalProject fs os options reviewFolder)
 
 
-buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> String -> Task Problem BuildData
+buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem BuildData
 buildLocalProject fs os options reviewFolder =
     let
-        pathToElmJson : String
-        pathToElmJson =
+        elmJsonPath : String
+        elmJsonPath =
             Path.join2 reviewFolder "elm.json"
     in
-    readReviewElmJson fs options.reviewProject reviewFolder pathToElmJson
+    readReviewElmJson fs options.reviewProject reviewFolder elmJsonPath
         |> Task.andThen
             (\{ raw, application } ->
                 FolderHash.hashSourceDirectories fs reviewFolder application.dirs
@@ -70,7 +72,7 @@ buildLocalProject fs os options reviewFolder =
                                 buildData : BuildData
                                 buildData =
                                     { reviewAppPath = reviewAppPath
-                                    , pathToElmJson = pathToElmJson
+                                    , elmJsonPath = elmJsonPath
                                     , reviewElmJson = application
                                     , appHash = appHash
                                     }
@@ -216,11 +218,12 @@ addReviewAppDependencies initialDependencies =
 
 
 readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
-readReviewElmJson fs reviewProject reviewFolder pathToElmJson =
-    fetchElmJson fs reviewFolder pathToElmJson
+readReviewElmJson fs reviewProject reviewFolder elmJsonPath =
+    fetchElmJson fs reviewFolder elmJsonPath
         |> Task.andThen
             (\rawElmJson ->
-                parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson
+                parseElmJson reviewProject elmJsonPath rawElmJson
+                    |> Result.map (\application -> { raw = rawElmJson, application = application })
                     |> TaskExtra.resultToTask
             )
 
@@ -259,26 +262,55 @@ Try changing the permissions of the file and/or its parents directories."""
             )
 
 
-parseElmJson : ReviewProject -> String -> String -> String -> Result Problem { raw : String, application : Elm.Project.ApplicationInfo }
-parseElmJson reviewProject reviewFolder pathToElmJson rawElmJson =
+parseElmJson : ReviewProject -> String -> String -> Result Problem Elm.Project.ApplicationInfo
+parseElmJson reviewProject pathToElmJson rawElmJson =
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
+            -- TODO Improve error when elm.json is from a template
             Err (Problem.invalidElmJson pathToElmJson error)
 
         Ok (Elm.Project.Package _) ->
-            { title = "REVIEW CONFIG IS NOT AN APPLICATION"
-            , message =
-                \c ->
-                    "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
+            case reviewProject of
+                Options.Local _ ->
+                    { title = "REVIEW CONFIG IS NOT AN APPLICATION"
+                    , message =
+                        \c ->
+                            "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
 
 I think it is likely that you are pointing to an incorrect configuration file. Please check the path to your configuration again."""
-            }
-                |> Problem.from
-                |> Problem.withPath pathToElmJson
-                |> Err
+                    }
+                        |> Problem.from
+                        |> Problem.withPath pathToElmJson
+                        |> Err
+
+                Options.Remote { repoName, reference } ->
+                    let
+                        referenceAsUrl : String
+                        referenceAsUrl =
+                            case reference of
+                                Just ref ->
+                                    "#" ++ ref
+
+                                Nothing ->
+                                    ""
+                    in
+                    { title = "INVALID TEMPLATE ELM.JSON TYPE"
+                    , message =
+                        \c ->
+                            "I found the " ++ c Yellow "elm.json" ++ " associated with " ++ c Yellow repoName ++ """ repository on GitHub,
+but it is of type """ ++ c Red "package" ++ " when I need it to be of type " ++ c Yellow "application" ++ """.
+
+Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "preview" ++ """ folder in that repository?
+
+    elm-review --template """ ++ repoName ++ "/example" ++ referenceAsUrl ++ """
+    elm-review --template """ ++ repoName ++ "/review" ++ referenceAsUrl
+                    }
+                        |> Problem.from
+                        |> Err
 
         Ok (Elm.Project.Application application) ->
-            case validateElmReviewVersion reviewProject reviewFolder application of
+            -- TODO For templates, try to upgrade dependencies if they don't match
+            case MinVersion.validateDependencyVersion reviewProject application of
                 Just problem ->
                     problem
                         |> Problem.from
@@ -286,24 +318,7 @@ I think it is likely that you are pointing to an incorrect configuration file. P
                         |> Err
 
                 Nothing ->
-                    Ok { raw = rawElmJson, application = application }
-
-
-validateElmReviewVersion : ReviewProject -> String -> Elm.Project.ApplicationInfo -> Maybe ProblemSimple
-validateElmReviewVersion reviewProject reviewFolder application =
-    case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
-        Just ( _, version ) ->
-            MinVersion.validate reviewProject reviewFolder version
-
-        Nothing ->
-            Just
-                { title = "MISSING ELM-REVIEW DEPENDENCY"
-                , message =
-                    \c ->
-                        "The template's configuration does not include " ++ c GreenBright "jfmengels/elm-review" ++ """ in its direct dependencies.
-
-Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."""
-                }
+                    Ok application
 
 
 compileProjectUsingElmRun : ProcessCapability -> Path -> Path -> String -> Task Problem ()
@@ -359,21 +374,3 @@ Here is the full error message:
         { title = "CONFIGURATION COMPILATION ERROR"
         , message = \c -> "Errors occurred while compiling your configuration for " ++ c GreenBright "elm-review" ++ ". I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n" ++ stderr
         }
-
-
-{-| Find the first element that satisfies a predicate and return
-Just that element. If none match, return Nothing.
-find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
--}
-find : (a -> Bool) -> List a -> Maybe a
-find predicate list =
-    case list of
-        [] ->
-            Nothing
-
-        first :: rest ->
-            if predicate first then
-                Just first
-
-            else
-                find predicate rest

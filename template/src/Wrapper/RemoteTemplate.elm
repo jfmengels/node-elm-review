@@ -1,5 +1,11 @@
 module Wrapper.RemoteTemplate exposing (RemoteTemplate, fromString)
 
+{-|
+
+@docs RemoteTemplate, fromString
+
+-}
+
 import ElmReview.Path as Path
 
 
