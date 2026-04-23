@@ -137,21 +137,6 @@ requiresElmJsonPath options color createOptions =
 toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
 toReviewOptions color options projectRoot =
     let
-        reviewFolder : Path
-        reviewFolder =
-            case options.remoteTemplate of
-                Just remoteTemplate ->
-                    Debug.todo "Compute location for remote template review folder"
-
-                Nothing ->
-                    case options.configPath of
-                        Just config ->
-                            -- TODO Make this path relative to the root
-                            config
-
-                        Nothing ->
-                            "review"
-
         projectPaths : ProjectPaths
         projectPaths =
             ProjectPaths.from
@@ -166,7 +151,8 @@ toReviewOptions color options projectRoot =
     , debug = options.debug
     , color = color
     , reviewProject = reviewProject projectRoot options
-    , reviewAppFlags = reviewAppFlags color reviewFolder options
+    , reviewAppFlags = reviewAppFlags color options
+    , auth = options.auth
     }
 
 
@@ -185,8 +171,8 @@ reviewProject projectRoot options =
                     Options.Local (Path.join2 projectRoot "review")
 
 
-reviewAppFlags : Color.Support -> String -> InternalOptions -> List String
-reviewAppFlags color reviewFolder options =
+reviewAppFlags : Color.Support -> InternalOptions -> List String
+reviewAppFlags color options =
     addJusts
         [ if List.isEmpty options.restOfArgs then
             Nothing
@@ -225,9 +211,7 @@ reviewAppFlags color reviewFolder options =
           else
             Just "--no-color"
         ]
-        (("--review-folder=" ++ reviewFolder)
-            :: options.reviewAppFlags
-        )
+        options.reviewAppFlags
 
 
 toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions

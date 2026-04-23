@@ -19,6 +19,7 @@ import Dict exposing (Dict)
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Problem exposing (ProblemSimple)
 import ElmReview.ReportMode as ReportMode
+import Wrapper.Auth as Auth
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 import Wrapper.Options.RuleType as RuleType
@@ -559,7 +560,7 @@ gitHubAuthFlag =
             { argName = "<github-api-token>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
-            , apply = \_ arg options -> Ok { options | githubAuth = Just arg }
+            , apply = \_ arg options -> Ok { options | auth = Just (Auth.fromString arg) }
             }
     , display =
         Just
