@@ -57,7 +57,7 @@ buildLocalProject fs os options reviewFolder =
         elmJsonPath =
             Path.join2 reviewFolder "elm.json"
     in
-    readReviewElmJson fs options.reviewProject reviewFolder elmJsonPath
+    readReviewElmJson fs options.reviewProject elmJsonPath
         |> Task.andThen
             (\{ raw, application } ->
                 FolderHash.hashSourceDirectories fs reviewFolder application.dirs
@@ -217,9 +217,9 @@ addReviewAppDependencies initialDependencies =
         ]
 
 
-readReviewElmJson : FileSystem -> ReviewProject -> String -> String -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
-readReviewElmJson fs reviewProject reviewFolder elmJsonPath =
-    fetchElmJson fs reviewFolder elmJsonPath
+readReviewElmJson : FileSystem -> ReviewProject -> Path -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
+readReviewElmJson fs reviewProject elmJsonPath =
+    fetchElmJson fs reviewProject elmJsonPath
         |> Task.andThen
             (\rawElmJson ->
                 parseElmJson reviewProject elmJsonPath rawElmJson
@@ -228,46 +228,85 @@ readReviewElmJson fs reviewProject reviewFolder elmJsonPath =
             )
 
 
-fetchElmJson : FileSystem -> String -> String -> Task Problem String
-fetchElmJson fs reviewFolder pathToElmJson =
-    Fs.readTextFile fs pathToElmJson
+fetchElmJson : FileSystem -> ReviewProject -> Path -> Task Problem String
+fetchElmJson fs reviewProject elmJsonPath =
+    Fs.readTextFile fs elmJsonPath
         |> Task.mapError
             (\error ->
                 case error of
                     Fs.NotFound _ ->
-                        { title = "INCORRECT CONFIGURATION"
-                        , message =
-                            \c ->
-                                "I could not find a review configuration. I was expecting to find an " ++ c Yellow "elm.json" ++ " file and a " ++ c Cyan "ReviewConfig.elm" ++ " file in " ++ c Cyan (reviewFolder ++ "/") ++ """.
-
-I can help set you up with an initial configuration if you run """ ++ c Magenta "elm-review init" ++ "."
-                        }
-                            |> Problem.from
-                            |> Problem.withPath pathToElmJson
+                        elmJsonNotFoundProblem reviewProject elmJsonPath
 
                     Fs.PermissionDenied ->
                         { title = "PERMISSION DENIED"
                         , message =
                             \c ->
-                                "I tried reading " ++ c Yellow pathToElmJson ++ """ but couldn't because of the file's read permissions.
+                                "I tried reading " ++ c Yellow elmJsonPath ++ """ but couldn't because of the file's read permissions.
 
 Try changing the permissions of the file and/or its parents directories."""
                         }
                             |> Problem.from
-                            |> Problem.withPath pathToElmJson
+                            |> Problem.withPath elmJsonPath
+
+                    Fs.IoError "Not a directory" ->
+                        notADirectoryConfigurationProblem elmJsonPath
 
                     Fs.IoError message ->
-                        Problem.unexpectedError ("when trying to read " ++ pathToElmJson) message
-                            |> Problem.withPath pathToElmJson
+                        Problem.unexpectedError ("when trying to read " ++ elmJsonPath) message
+                            |> Problem.withPath elmJsonPath
             )
 
 
+elmJsonNotFoundProblem : ReviewProject -> Path -> Problem
+elmJsonNotFoundProblem reviewProject elmJsonPath =
+    case reviewProject of
+        Options.Local reviewFolder ->
+            { title = "INCORRECT CONFIGURATION"
+            , message =
+                \c ->
+                    "I could not find a review configuration. I was expecting to find an " ++ c Yellow "elm.json" ++ " file and a " ++ c Cyan "ReviewConfig.elm" ++ " file in " ++ c Cyan (reviewFolder ++ "/") ++ """.
+
+I can help set you up with an initial configuration if you run """ ++ c Magenta "elm-review init" ++ "."
+            }
+                |> Problem.from
+                |> Problem.withPath elmJsonPath
+
+        Options.Remote remoteTemplate ->
+            let
+                templateElmJsonPath : Path
+                templateElmJsonPath =
+                    Path.join2 (Maybe.withDefault "." remoteTemplate.pathToFolder) "elm.json"
+            in
+            { title = "TEMPLATE ELM.JSON NOT FOUND"
+            , message =
+                \c -> "I found the " ++ c Yellow remoteTemplate.repoName ++ """ repository on GitHub,
+but I could not find a """ ++ c Yellow templateElmJsonPath ++ """ file in it.
+
+I need this file to determine the rest of the configuration."""
+            }
+                |> Problem.from
+
+
+notADirectoryConfigurationProblem : Path -> Problem
+notADirectoryConfigurationProblem elmJsonPath =
+    { title = "INCORRECT CONFIGURATION"
+    , message =
+        \c -> "I was expecting the configuration to be a path to a directory containing an " ++ c Yellow "elm.json" ++ " file and a " ++ c Cyan "ReviewConfig.elm" ++ " file, but it seems " ++ c Red "you pointed at a file" ++ """.
+
+Instead of """ ++ c Red "--config some/path/to/review/elm.json" ++ """ (or similar),
+please use """ ++ c GreenBright "--config some/path/to/review"
+    }
+        |> Problem.from
+        |> Problem.withPath elmJsonPath
+
+
 parseElmJson : ReviewProject -> String -> String -> Result Problem Elm.Project.ApplicationInfo
-parseElmJson reviewProject pathToElmJson rawElmJson =
+parseElmJson reviewProject elmJsonPath rawElmJson =
+    -- TODO Review errors coming out of this function, especially wrt to templates
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
             -- TODO Improve error when elm.json is from a template
-            Err (Problem.invalidElmJson pathToElmJson error)
+            Err (Problem.invalidElmJson elmJsonPath error)
 
         Ok (Elm.Project.Package _) ->
             case reviewProject of
@@ -275,12 +314,12 @@ parseElmJson reviewProject pathToElmJson rawElmJson =
                     { title = "REVIEW CONFIG IS NOT AN APPLICATION"
                     , message =
                         \c ->
-                            "I wanted to use " ++ c Yellow pathToElmJson ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
+                            "I wanted to use " ++ c Yellow elmJsonPath ++ " as the basis for the configuration, and I expected it to be an " ++ c Yellow "application" ++ """, but it wasn't.
 
 I think it is likely that you are pointing to an incorrect configuration file. Please check the path to your configuration again."""
                     }
                         |> Problem.from
-                        |> Problem.withPath pathToElmJson
+                        |> Problem.withPath elmJsonPath
                         |> Err
 
                 Options.Remote { repoName, reference } ->
@@ -314,7 +353,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
                 Just problem ->
                     problem
                         |> Problem.from
-                        |> Problem.withPath pathToElmJson
+                        |> Problem.withPath elmJsonPath
                         |> Err
 
                 Nothing ->
