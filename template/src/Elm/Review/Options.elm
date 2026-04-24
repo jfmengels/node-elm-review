@@ -35,6 +35,7 @@ type alias Options =
     , supportsColor : Bool
     , color : Color.Support
     , debug : Bool
+    , packagesLocation : String
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
     , namespace : String
@@ -62,6 +63,7 @@ type alias InternalOptions =
     , watch : Bool
     , color : Color.Support
     , debug : Bool
+    , packagesLocation : Path
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
     , namespace : String
@@ -97,6 +99,7 @@ toOptions options =
     , supportsColor = Color.doesSupportColor options.color
     , color = options.color
     , debug = options.debug
+    , packagesLocation = options.packagesLocation
     , reviewFolder = options.reviewFolder
     , usesRemoteTemplate = options.usesRemoteTemplate
     , namespace = options.namespace
@@ -225,6 +228,9 @@ applyArg arg flags =
         [ "--dirs-to-analyze", dirs ] ->
             Ok { flags | directoriesToAnalyze = String.split "," dirs }
 
+        [ "--packages-location", packagesLocation ] ->
+            Ok { flags | packagesLocation = packagesLocation }
+
         _ ->
             Err ("Unknown flag `" ++ arg ++ "`")
 
@@ -251,6 +257,7 @@ default =
     , color = Color.yesColors
     , debug = False
     , namespace = "cli"
+    , packagesLocation = "0.19.1"
     , reviewFolder = "review"
     , usesRemoteTemplate = False
     , directoriesToAnalyze = []

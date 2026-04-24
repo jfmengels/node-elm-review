@@ -6,9 +6,10 @@ module Elm.Review.RunEnvironment exposing (RunEnvironment)
 
 -}
 
+import ElmReview.Path exposing (Path)
+
 
 type alias RunEnvironment =
-    { elmVersion : String
-    , elmHomePath : String
-    , reviewFolder : String
+    { packagesLocation : Path
+    , reviewFolder : Path
     }

@@ -683,7 +683,7 @@ fetchDependency fs runEnvironment packageName packageVersion =
     let
         directory : String
         directory =
-            Path.join [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages", packageName, packageVersion ]
+            Path.join [ runEnvironment.packagesLocation, packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
         (readTextFileWithPath fs (Path.join2 directory "elm.json"))
@@ -698,13 +698,8 @@ fetchRuleLinks fs runEnvironment =
             (\elmJson ->
                 case Decode.decodeString Elm.Project.decoder elmJson of
                     Ok (Elm.Project.Application { depsDirect, depsIndirect }) ->
-                        let
-                            packagesDirectory : Path
-                            packagesDirectory =
-                                Path.join [ runEnvironment.elmHomePath, runEnvironment.elmVersion, "packages" ]
-                        in
                         FsExtra.mapAllAndFold
-                            (readElmJson fs packagesDirectory)
+                            (readElmJson fs runEnvironment.packagesLocation)
                             (\deps dict -> List.foldl (\( name, dep ) d -> Dict.insert name dep d) dict deps)
                             Dict.empty
                             (depsDirect ++ depsIndirect)

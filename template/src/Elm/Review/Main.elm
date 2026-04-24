@@ -167,10 +167,7 @@ initValid env fs options rulesFromConfig =
 
         runEnvironment : RunEnvironment
         runEnvironment =
-            { --TODO Get from somewhere
-              elmHomePath = "/Users/m1/.elm"
-            , -- TODO Get from somewhere
-              elmVersion = "0.19.1"
+            { packagesLocation = options.packagesLocation
             , reviewFolder = options.reviewFolder
             }
 
