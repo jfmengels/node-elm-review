@@ -142,7 +142,8 @@ type alias Git =
 
 pullAndCheckout : Git -> RemoteTemplate -> Task Problem ()
 pullAndCheckout { git, gitCapture } remoteTemplate =
-    getReference gitCapture remoteTemplate
+    remoteTemplate.reference
+        |> TaskExtra.otherwise (\() -> findRemoteDefaultBranch gitCapture remoteTemplate)
         |> Task.andThen
             (\reference ->
                 Task.map2 (\() () -> ())
@@ -178,16 +179,6 @@ Please check the spelling and make sure it has been pushed."""
                         |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template's code" error)
                     )
             )
-
-
-getReference : (List String -> Task String String) -> RemoteTemplate -> Task Problem String
-getReference gitCapture remoteTemplate =
-    case remoteTemplate.reference of
-        Just reference ->
-            Task.succeed reference
-
-        Nothing ->
-            findRemoteDefaultBranch gitCapture
 
 
 findRemoteDefaultBranch : (List String -> Task String String) -> RemoteTemplate -> Task Problem String
