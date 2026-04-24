@@ -12,6 +12,8 @@ module Wrapper.Review exposing
 
 import Capabilities exposing (Console)
 import Cli exposing (Env)
+import Elm.Project
+import Elm.Version
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
 import ElmRun.OsExtra
@@ -61,9 +63,10 @@ update msg (Model model) =
     case msg of
         BuildCompleted result ->
             case result of
-                Ok { elmJsonPath, reviewAppPath } ->
+                Ok { elmJsonPath, reviewElmJson, reviewAppPath } ->
                     runReviewProcess model
                         { reviewAppPath = reviewAppPath
+                        , reviewElmJson = reviewElmJson
                         , reviewFolder = Path.dirname elmJsonPath
                         }
 
@@ -79,12 +82,19 @@ update msg (Model model) =
                     Problem.exit model.stderr model.options problem
 
 
-runReviewProcess : ModelData -> { reviewAppPath : Path, reviewFolder : Path } -> Cmd Msg
-runReviewProcess { os, options } { reviewAppPath, reviewFolder } =
+runReviewProcess : ModelData -> { reviewAppPath : Path, reviewElmJson : Elm.Project.ApplicationInfo, reviewFolder : Path } -> Cmd Msg
+runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder } =
     let
+        -- TODO Get from somewhere
+        elmHomePath : String
+        elmHomePath =
+            "/Users/m1/.elm"
+
         reviewAppFlags : List String
         reviewAppFlags =
-            ("--review-folder=" ++ reviewFolder) :: options.reviewAppFlags
+            ("--review-folder=" ++ reviewFolder)
+                :: ("--packages-location=" ++ Path.join [ elmHomePath, Elm.Version.toString reviewElmJson.elm, "packages" ])
+                :: options.reviewAppFlags
 
         ( cmd, args ) =
             if options.debug then
