@@ -12,17 +12,24 @@ module Wrapper.Init exposing
 
 import Capabilities exposing (Console, Stdin)
 import Cli
+import Elm.Project
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
-import ElmReview.Problem as Problem
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
+import ElmRun.OsExtra as OsExtra
 import ElmRun.Prompt as Prompt
+import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
+import Json.Decode as Decode
 import Os exposing (ProcessCapability)
-import Task
-import Wrapper.Options exposing (InitOptions)
+import Task exposing (Task)
+import Wrapper.FetchRemoteTemplate as FetchRemoteTemplate
+import Wrapper.MinVersion as MinVersion
+import Wrapper.Options as Options exposing (InitOptions)
+import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.ReviewConfigTemplate as ReviewConfigTemplate
 
 
@@ -42,7 +49,7 @@ type alias ModelData =
 
 type Msg
     = PromptMsg Prompt.Msg
-    | CreatedFiles (Result String ())
+    | CreatedFiles (Result Problem ())
 
 
 init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> InitOptions -> ( Model, Cmd Msg )
@@ -64,14 +71,14 @@ init { stdout, stderr, stdin } { fs, os } options =
             case options.remoteTemplate of
                 Just _ ->
                     -- Don't prompt when using template, the user likely knows what they are doing.
-                    installFiles fs os model.options.configPath
+                    createConfiguration fs os model.options
 
                 Nothing ->
                     prompt stdin_ model
 
         Nothing ->
             -- If there is no stdin, assume the prompt answer is yes.
-            installFiles fs os model.options.configPath
+            createConfiguration fs os model.options
     )
 
 
@@ -81,7 +88,7 @@ update msg (Model model) =
         PromptMsg promptMsg ->
             case Prompt.update promptMsg of
                 Prompt.Accepted ->
-                    installFiles model.fs model.os model.options.configPath
+                    createConfiguration model.fs model.os model.options
 
                 Prompt.Refused ->
                     Cli.exit 0
@@ -95,13 +102,13 @@ update msg (Model model) =
                 , Cli.exit 0
                 ]
 
-        CreatedFiles (Err err) ->
+        CreatedFiles (Err problem) ->
             Problem.exit model.stderr
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug
                 }
-                (Problem.unexpectedError "while creating files" err)
+                problem
 
 
 prompt : Stdin -> ModelData -> Cmd Msg
@@ -123,12 +130,138 @@ prompt stdin model =
         |> Cmd.map PromptMsg
 
 
-installFiles : FileSystem -> ProcessCapability -> Path -> Cmd Msg
-installFiles fs os reviewPath =
+createConfiguration : FileSystem -> ProcessCapability -> InitOptions -> Cmd Msg
+createConfiguration fs os options =
+    case options.remoteTemplate of
+        Nothing ->
+            createDefaultConfiguration fs os options.configPath
+                |> Task.attempt CreatedFiles
+
+        Just remoteTemplate ->
+            createTemplateConfiguration fs os options.configPath remoteTemplate options.debug
+                |> Task.attempt CreatedFiles
+
+
+createDefaultConfiguration : FileSystem -> ProcessCapability -> Path -> Task Problem ()
+createDefaultConfiguration fs os reviewPath =
     ElmBinary.findElmVersion os
         |> Task.andThen (\elmVersion -> ReviewConfigTemplate.create fs elmVersion reviewPath Nothing)
-        |> Task.mapError FsExtra.errorToString
-        |> Task.attempt CreatedFiles
+        |> Task.mapError (\error -> Problem.unexpectedError "while creating files" (FsExtra.errorToString error))
+
+
+createTemplateConfiguration : FileSystem -> ProcessCapability -> Path -> RemoteTemplate -> Bool -> Task Problem ()
+createTemplateConfiguration fs os reviewPath remoteTemplate debug =
+    FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate debug
+        |> Task.andThen
+            (\templateConfigPath ->
+                let
+                    elmJsonPath : Path
+                    elmJsonPath =
+                        Path.join2 templateConfigPath "elm.json"
+                in
+                Fs.readTextFile fs elmJsonPath
+                    |> Task.mapError
+                        (\error ->
+                            case error of
+                                Fs.NotFound _ ->
+                                    elmJsonNotFoundProblem remoteTemplate
+
+                                Fs.PermissionDenied ->
+                                    Problem.unexpectedError ("when trying to read " ++ elmJsonPath) "Permission denied."
+
+                                Fs.IoError message ->
+                                    Problem.unexpectedError ("when trying to read " ++ elmJsonPath) message
+                                        |> Problem.withPath elmJsonPath
+                        )
+                    |> Task.andThen
+                        (\rawElmJson ->
+                            parseElmJson remoteTemplate elmJsonPath rawElmJson
+                                |> TaskExtra.resultToTask
+                                |> Task.andThen
+                                    (\elmJson ->
+                                        Task.map2
+                                            (\() () -> ())
+                                            (Fs.writeTextFile fs (Path.join2 reviewPath "elm.json") rawElmJson
+                                                |> Task.mapError (\error -> Problem.unexpectedError "writing the template's elm.json file" (FsExtra.errorToString error))
+                                            )
+                                            (TaskExtra.mapAllAndIgnore
+                                                (\directory ->
+                                                    FsExtra.copyDirectory os
+                                                        { from = Path.join2 templateConfigPath directory
+                                                        , to = Path.join2 reviewPath directory
+                                                        }
+                                                        |> Task.mapError (\error -> Problem.unexpectedError ("copying the template's " ++ directory ++ " source directory") (OsExtra.errorToString error))
+                                                )
+                                                elmJson.dirs
+                                            )
+                                    )
+                        )
+            )
+
+
+elmJsonNotFoundProblem : RemoteTemplate -> Problem
+elmJsonNotFoundProblem remoteTemplate =
+    -- TODO Duplicated in Build. More code sharing?
+    let
+        elmJsonPath : Path
+        elmJsonPath =
+            Path.join2 (Maybe.withDefault "." remoteTemplate.pathToFolder) "elm.json"
+    in
+    { title = "TEMPLATE ELM.JSON NOT FOUND"
+    , message =
+        \c -> "I found the " ++ c Yellow remoteTemplate.repoName ++ """ repository on GitHub,
+but I could not find a """ ++ c Yellow elmJsonPath ++ """ file in it.
+
+I need this file to determine the rest of the configuration."""
+    }
+        |> Problem.from
+
+
+parseElmJson : RemoteTemplate -> String -> String -> Result Problem Elm.Project.ApplicationInfo
+parseElmJson remoteTemplate elmJsonPath rawElmJson =
+    -- TODO This is quite a bit of duplication with Build.parseElmJson. Could we share some of the code?
+    -- TODO Review errors coming out of this function, especially wrt to templates
+    case Decode.decodeString Elm.Project.decoder rawElmJson of
+        Err error ->
+            -- TODO Improve error when elm.json is from a template
+            Err (Problem.invalidElmJson elmJsonPath error)
+
+        Ok (Elm.Project.Package _) ->
+            let
+                referenceAsUrl : String
+                referenceAsUrl =
+                    case remoteTemplate.reference of
+                        Just ref ->
+                            "#" ++ ref
+
+                        Nothing ->
+                            ""
+            in
+            { title = "INVALID TEMPLATE ELM.JSON TYPE"
+            , message =
+                \c ->
+                    "I found the " ++ c Yellow "elm.json" ++ " associated with " ++ c Yellow remoteTemplate.repoName ++ """ repository on GitHub,
+but it is of type """ ++ c Red "package" ++ " when I need it to be of type " ++ c Yellow "application" ++ """.
+
+Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "preview" ++ """ folder in that repository?
+
+    elm-review --template """ ++ remoteTemplate.repoName ++ "/example" ++ referenceAsUrl ++ """
+    elm-review --template """ ++ remoteTemplate.repoName ++ "/review" ++ referenceAsUrl
+            }
+                |> Problem.from
+                |> Err
+
+        Ok (Elm.Project.Application application) ->
+            -- TODO Upgrade dependencies if the major versions match
+            case MinVersion.validateDependencyVersion (Options.Remote remoteTemplate) application of
+                Just problem ->
+                    problem
+                        |> Problem.from
+                        |> Problem.withPath elmJsonPath
+                        |> Err
+
+                Nothing ->
+                    Ok application
 
 
 successMessage : InitOptions -> String
