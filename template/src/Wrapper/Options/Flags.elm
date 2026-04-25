@@ -349,35 +349,7 @@ flags =
                 , newPackageDescription = Nothing
                 }
       }
-    , { name = "fix-limit"
-      , argument =
-            ArgumentPresent
-                { argName = "N"
-                , mayBeUsedSeveralTimes = False
-                , usesEquals = True
-                , apply =
-                    \flag arg options ->
-                        case String.toInt arg of
-                            Just n ->
-                                if n < 1 then
-                                    -- TODO Make custom error
-                                    Err Nothing
-
-                                else
-                                    addToReviewAppFlagsWithArg flag arg options
-
-                            Nothing ->
-                                Err Nothing
-                }
-      , display =
-            Just
-                { color = BlueBright
-                , sections = [ Section.Fix ]
-                , description = \_ -> [ "Limit the number of fixes applied in a single batch to N." ]
-                , initDescription = Nothing
-                , newPackageDescription = Nothing
-                }
-      }
+    , fixLimitFlag
     , { name = "allow-remove-files"
       , argument = ArgumentAbsent addToReviewAppFlags
       , display =
@@ -603,6 +575,51 @@ reportFlag =
             , initDescription = Nothing
             , newPackageDescription = Nothing
             }
+    }
+
+
+fixLimitFlag : Flag
+fixLimitFlag =
+    { name = "fix-limit"
+    , argument =
+        ArgumentPresent
+            { argName = "N"
+            , mayBeUsedSeveralTimes = False
+            , usesEquals = True
+            , apply =
+                \flag arg options ->
+                    case String.toInt arg of
+                        Just n ->
+                            if n < 1 then
+                                Err (Just (fixLimitNegativeError arg))
+
+                            else
+                                addToReviewAppFlagsWithArg flag arg options
+
+                        Nothing ->
+                            Err Nothing
+            }
+    , display =
+        Just
+            { color = BlueBright
+            , sections = [ Section.Fix ]
+            , description = \_ -> [ "Limit the number of fixes applied in a single batch to N." ]
+            , initDescription = Nothing
+            , newPackageDescription = Nothing
+            }
+    }
+
+
+fixLimitNegativeError : String -> ProblemSimple
+fixLimitNegativeError arg =
+    { title = "FIX-LIMIT FLAG NEEDS POSITIVE INTEGER"
+    , message =
+        \c ->
+            c (Flag.color fixLimitFlag) "--fix-limit" ++ " needs its argument to be a strictly positive integer (1 or higher), but got " ++ c Red arg ++ """.
+
+Here is the documentation for this flag:
+
+""" ++ buildFlag c Nothing fixLimitFlag
     }
 
 
