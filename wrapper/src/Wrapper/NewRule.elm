@@ -599,12 +599,12 @@ injectRuleInPreviewFolders fs reviewFolder pkg ruleName =
                             String.startsWith "./preview" filePath
                                 && not (String.contains "/elm-stuff/" filePath)
                         )
-                    |> List.map
+                    |> TaskExtra.mapAllAndFold
                         (\filePath ->
                             injectRuleInPreview fs (Path.dirname (Path.join2 reviewFolder filePath)) pkg ruleName
                         )
-                    |> Task.sequence
-                    |> Task.map List.concat
+                        (++)
+                        []
             )
 
 
