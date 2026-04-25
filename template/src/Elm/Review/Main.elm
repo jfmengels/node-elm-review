@@ -554,12 +554,18 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
 
                         Nothing ->
                             Cmd.none
+                    , case model.options.reportMode of
+                        HumanReadable ->
+                            Cli.println model.env.stdout
+                                ("I created suppressions files in "
+                                    ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
+                                )
 
-                    -- TODO Don't print in JSON report mode
-                    , Cli.println model.env.stdout
-                        ("I created suppressions files in "
-                            ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
-                        )
+                        Json ->
+                            Cmd.none
+
+                        NDJson ->
+                            Cmd.none
                     , cmd
                     , Cli.exit 0
                     ]
