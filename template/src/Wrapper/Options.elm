@@ -39,6 +39,7 @@ type alias ReviewOptions =
     , color : Color.Support
     , reviewProject : ReviewProject
     , reviewAppFlags : List String
+    , localElmReview : Maybe Path
     }
 
 

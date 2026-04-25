@@ -2,6 +2,7 @@ module ElmRun.TaskExtra exposing
     ( sequence, mapAllAndFold, mapAllAndIgnore
     , resultToTask, toResultTask
     , otherwise
+    , alwaysRun
     )
 
 {-|
@@ -9,6 +10,7 @@ module ElmRun.TaskExtra exposing
 @docs sequence, mapAllAndFold, mapAllAndIgnore
 @docs resultToTask, toResultTask
 @docs otherwise
+@docs alwaysRun
 
 -}
 
@@ -47,6 +49,28 @@ otherwise alternative maybe =
 sequence : List (Task x ()) -> Task x ()
 sequence list =
     List.foldl (\task acc -> Task.map2 always acc task) (Task.succeed ()) list
+
+
+{-| Run a Task after another, regardless of whether the second succeeded or failed.
+
+Similar to JavaScript's `finally` on Promises or try/catch.
+
+-}
+alwaysRun : Task ignoredError ignoredValue -> Task x a -> Task x a
+alwaysRun finallyTask task =
+    task
+        |> Task.onError
+            (\error ->
+                finallyTask
+                    |> Task.onError (\_ -> Task.fail error)
+                    |> Task.andThen (\_ -> Task.fail error)
+            )
+        |> Task.andThen
+            (\value ->
+                finallyTask
+                    |> Task.andThen (\_ -> Task.succeed value)
+                    |> Task.onError (\_ -> Task.succeed value)
+            )
 
 
 mapAllAndFold : (a -> Task x b) -> (b -> c -> c) -> c -> List a -> Task x c

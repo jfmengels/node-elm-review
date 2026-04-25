@@ -75,13 +75,13 @@ toOptions env options =
                         Nothing ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Suppress ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Init ->
@@ -134,8 +134,8 @@ requiresElmJsonPath options color createOptions =
             createOptions elmJsonPath
 
 
-toReviewOptions : Color.Support -> InternalOptions -> Path -> ReviewOptions
-toReviewOptions color options projectRoot =
+toReviewOptions : Dict String String -> Color.Support -> InternalOptions -> Path -> ReviewOptions
+toReviewOptions env color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -152,6 +152,9 @@ toReviewOptions color options projectRoot =
     , color = color
     , reviewProject = reviewProject projectRoot options
     , reviewAppFlags = reviewAppFlags color options
+
+    -- TODO Make this relative to CWD
+    , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     }
 
 
