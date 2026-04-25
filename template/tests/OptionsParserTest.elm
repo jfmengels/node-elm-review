@@ -95,6 +95,7 @@ emptyOptions =
     , reportMode = ReportMode.HumanReadable
     , reviewProject = Options.Local "review"
     , reviewAppFlags = []
+    , localElmReview = Nothing
     }
 
 
