@@ -1,6 +1,7 @@
 module Wrapper.FolderHash exposing (hashSourceDirectories)
 
 import ElmReview.Path as Path exposing (Path)
+import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem)
 import Task exposing (Task)
 import Wrapper.Hash as Hash exposing (Hash)
@@ -26,20 +27,30 @@ hashSourceDirectories fs reviewFolder sourceDirectories =
 
 readFiles : FileSystem -> Path -> List Path -> Task x (List ( Path, String ))
 readFiles fs dirPath files =
-    files
-        |> List.map
-            (\file ->
-                let
-                    path : Path
-                    path =
-                        Path.join2 dirPath file
-                in
-                Fs.readTextFile fs path
-                    |> Task.map (\content -> Just ( file, content ))
-                    |> Task.onError (\_ -> Task.succeed Nothing)
-            )
-        |> Task.sequence
-        |> Task.map (List.filterMap identity)
+    TaskExtra.mapAllAndFold
+        (\file ->
+            let
+                path : Path
+                path =
+                    Path.join2 dirPath file
+            in
+            Fs.readTextFile fs path
+                |> Task.map (\content -> Just ( file, content ))
+                |> Task.onError (\_ -> Task.succeed Nothing)
+        )
+        maybeCons
+        []
+        files
+
+
+maybeCons : Maybe a -> List a -> List a
+maybeCons maybe list =
+    case maybe of
+        Just a ->
+            a :: list
+
+        Nothing ->
+            list
 
 
 hashFiles : List (List ( comparable, String )) -> Hash
