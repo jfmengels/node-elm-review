@@ -8,7 +8,7 @@ module Wrapper.Build exposing (build, BuildData)
 
 import Elm.Package
 import Elm.Project
-import Elm.Version
+import Elm.Version exposing (Version)
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
@@ -36,6 +36,7 @@ type alias BuildData =
     , elmJsonPath : Path
     , packagesLocation : Path
     , reviewElmJson : Elm.Project.ApplicationInfo
+    , elmReviewVersion : Version
     , appHash : Hash
     }
 
@@ -59,10 +60,10 @@ buildLocalProject fs os options reviewFolder elmHomePath =
             Path.join2 reviewFolder "elm.json"
     in
     readReviewElmJson fs options.reviewProject elmJsonPath
-        |> Task.andThen (\elmJson -> validateElmReviewVersion options.reviewProject elmJsonPath elmJson |> TaskExtra.resultToTask)
+        |> Task.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson |> TaskExtra.resultToTask)
         |> Task.andThen
-            (\{ raw, application } ->
-                FolderHash.hashApplication fs reviewFolder application
+            (\{ raw, application, elmReviewVersion } ->
+                FolderHash.hashApplication fs reviewFolder options.localElmReview application
                     |> Task.mapError (fsErrorToProblem "while building and hashing source-directories")
                     |> Task.andThen
                         (\appHash ->
@@ -81,6 +82,7 @@ buildLocalProject fs os options reviewFolder elmHomePath =
                                     , elmJsonPath = elmJsonPath
                                     , packagesLocation = packagesLocation
                                     , reviewElmJson = application
+                                    , elmReviewVersion = elmReviewVersion
                                     , appHash = appHash
                                     }
                             in
@@ -96,6 +98,7 @@ buildLocalProject fs os options reviewFolder elmHomePath =
                                                 os
                                                 reviewFolder
                                                 (ProjectPaths.buildFolder options.projectPaths "review-project")
+                                                options.localElmReview
                                                 buildData
                                     )
                                 |> Task.map (\() -> buildData)
@@ -103,18 +106,22 @@ buildLocalProject fs os options reviewFolder elmHomePath =
             )
 
 
-validateElmReviewVersion : ReviewProject -> Path -> { raw : String, application : Elm.Project.ApplicationInfo } -> Result Problem { raw : String, application : Elm.Project.ApplicationInfo }
-validateElmReviewVersion reviewProject elmJsonPath elmJson =
+validateElmReviewVersion : ReviewOptions -> Path -> { raw : String, application : Elm.Project.ApplicationInfo } -> Result Problem { raw : String, application : Elm.Project.ApplicationInfo, elmReviewVersion : Version }
+validateElmReviewVersion options elmJsonPath elmJson =
     -- TODO For templates, try to upgrade dependencies if they don't match
-    case MinVersion.validateDependencyVersion reviewProject elmJson.application of
-        Just problem ->
+    case MinVersion.validateDependencyVersion options.reviewProject options.localElmReview elmJson.application of
+        Err problem ->
             problem
                 |> Problem.from
                 |> Problem.withPath elmJsonPath
                 |> Err
 
-        Nothing ->
-            Ok elmJson
+        Ok version ->
+            Ok
+                { raw = elmJson.raw
+                , application = elmJson.application
+                , elmReviewVersion = version
+                }
 
 
 reuseExistingReviewApp : FileSystem -> Bool -> String -> Task x Bool
@@ -128,8 +135,19 @@ reuseExistingReviewApp fs forceBuild reviewAppPath =
             |> Task.onError (\_ -> Task.succeed False)
 
 
-buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> BuildData -> Task Problem ()
-buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
+buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> Maybe Path -> BuildData -> Task Problem ()
+buildLocalProjectBuild fs os reviewFolder buildFolder localElmReview buildData =
+    let
+        localElmReviewTasks : { setUp : Task Problem (), cleanUp : Task Problem () }
+        localElmReviewTasks =
+            createSymLinkForLocalElmReview fs
+                os
+                { buildFolder = buildFolder
+                , localElmReview = localElmReview
+                , packagesLocation = buildData.packagesLocation
+                , elmReviewVersion = buildData.elmReviewVersion
+                }
+    in
     TaskExtra.sequence
         [ Fs.createDirectory fs (Path.join2 buildFolder "src")
             |> Task.mapError (fsErrorToProblem "while building and creating temporary source directory")
@@ -142,8 +160,62 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
             }
             |> Task.mapError (processingErrorToProblem "while building and copying template files")
         , createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson
+        , localElmReviewTasks.setUp
         , compileProjectUsingElmRun os reviewFolder buildFolder buildData.reviewAppPath
+            |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
         ]
+
+
+createSymLinkForLocalElmReview :
+    FileSystem
+    -> ProcessCapability
+    ->
+        { buildFolder : Path
+        , localElmReview : Maybe Path
+        , packagesLocation : Path
+        , elmReviewVersion : Version
+        }
+    -> { setUp : Task Problem (), cleanUp : Task x () }
+createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLocation, elmReviewVersion } =
+    case localElmReview of
+        Nothing ->
+            { setUp = Task.succeed (), cleanUp = Task.succeed () }
+
+        Just localElmReview_ ->
+            let
+                packagePath : Path
+                packagePath =
+                    Path.join [ packagesLocation, "jfmengels/elm-review", Elm.Version.toString elmReviewVersion, "elm.json" ]
+
+                elmStuffForBuild : Path
+                elmStuffForBuild =
+                    Path.join2 buildFolder "elm-stuff"
+            in
+            { setUp =
+                TaskExtra.sequence
+                    [ -- TODO Move code rather than delete it?
+                      -- Fs.createTempDirectory fs "elm-review"
+                      Fs.removeDirectory fs packagePath
+                        |> Task.onError (\_ -> Task.succeed ())
+                    , Fs.removeDirectory fs elmStuffForBuild
+                        |> Task.onError (\_ -> Task.succeed ())
+                    , Fs.deleteFile fs (Path.join2 localElmReview_ "artifacts.dat")
+                        |> Task.onError (\_ -> Task.succeed ())
+                    , -- TODO Create a symlink instead
+                      FsExtra.copyDirectory os { from = localElmReview_, to = packagePath }
+                        |> Task.mapError
+                            (\error ->
+                                Problem.unexpectedError ("while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath) (OsExtra.errorToString error)
+                            )
+                    ]
+            , cleanUp =
+                TaskExtra.sequence
+                    [ Fs.removeDirectory fs packagePath
+                        |> Task.onError (\_ -> Task.succeed ())
+                    , Fs.removeDirectory fs elmStuffForBuild
+                        |> Task.onError (\_ -> Task.succeed ())
+                    ]
+            }
 
 
 createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()

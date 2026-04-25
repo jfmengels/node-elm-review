@@ -12,9 +12,9 @@ module Wrapper.MinVersion exposing
 
 import Elm.Package
 import Elm.Project
-import Elm.Version
+import Elm.Version exposing (Version)
 import ElmReview.Color exposing (Color(..), Colorize)
-import ElmReview.Path as Path
+import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem exposing (ProblemSimple)
 import Wrapper.Options as Options exposing (ReviewProject)
 import Wrapper.PathHelpers as PathHelpers
@@ -61,14 +61,24 @@ Please inform the template author and kindly ask them to update their configurat
             }
 
 
-validateDependencyVersion : ReviewProject -> Elm.Project.ApplicationInfo -> Maybe ProblemSimple
-validateDependencyVersion reviewProject application =
+validateDependencyVersion : ReviewProject -> Maybe Path -> Elm.Project.ApplicationInfo -> Result ProblemSimple Version
+validateDependencyVersion reviewProject localElmReview application =
     case find (\( name, _ ) -> Elm.Package.toString name == "jfmengels/elm-review") application.depsDirect of
         Just ( _, version ) ->
-            validate reviewProject version
+            case localElmReview of
+                Just _ ->
+                    Ok version
+
+                Nothing ->
+                    case validate reviewProject version of
+                        Nothing ->
+                            Ok version
+
+                        Just problem ->
+                            Err problem
 
         Nothing ->
-            Just
+            Err
                 { title = "MISSING ELM-REVIEW DEPENDENCY"
                 , message =
                     case reviewProject of

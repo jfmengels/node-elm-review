@@ -252,14 +252,14 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
 
         Ok (Elm.Project.Application application) ->
             -- TODO Upgrade dependencies if the major versions match
-            case MinVersion.validateDependencyVersion (Options.Remote remoteTemplate) application of
-                Just problem ->
+            case MinVersion.validateDependencyVersion (Options.Remote remoteTemplate) Nothing application of
+                Err problem ->
                     problem
                         |> Problem.from
                         |> Problem.withPath elmJsonPath
                         |> Err
 
-                Nothing ->
+                Ok _ ->
                     Ok application
 
 

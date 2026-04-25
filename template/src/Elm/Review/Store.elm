@@ -706,7 +706,7 @@ fetchRuleLinks fs runEnvironment =
 
 
 readElmJson : FileSystem -> Path -> ( Elm.Package.Name, Elm.Version.Version ) -> Task x (List ( String, String ))
-readElmJson fs packagesDirectory ( rawPackageName, rawPackageVersion ) =
+readElmJson fs packagesLocation ( rawPackageName, rawPackageVersion ) =
     let
         packageName : String
         packageName =
@@ -716,7 +716,7 @@ readElmJson fs packagesDirectory ( rawPackageName, rawPackageVersion ) =
         packageVersion =
             Elm.Version.toString rawPackageVersion
     in
-    Path.join [ packagesDirectory, packageName, packageVersion, "elm.json" ]
+    Path.join [ packagesLocation, packageName, packageVersion, "elm.json" ]
         |> Fs.readTextFile fs
         |> Task.map
             (\elmJson ->

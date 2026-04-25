@@ -10,9 +10,18 @@ import Task exposing (Task)
 import Wrapper.Hash as Hash exposing (Hash)
 
 
-hashApplication : FileSystem -> Path -> Elm.Project.ApplicationInfo -> Task x Hash
-hashApplication fs reviewFolder application =
+hashApplication : FileSystem -> Path -> Maybe Path -> Elm.Project.ApplicationInfo -> Task x Hash
+hashApplication fs reviewFolder localElmReview application =
     let
+        sourceDirectories : List Path
+        sourceDirectories =
+            case localElmReview of
+                Just localElmReview_ ->
+                    Path.join2 localElmReview_ "src" :: application.dirs
+
+                Nothing ->
+                    application.dirs
+
         elmJsonHash : Hash
         elmJsonHash =
             (application.depsDirect
@@ -36,7 +45,7 @@ hashApplication fs reviewFolder application =
         )
         (++)
         []
-        application.dirs
+        sourceDirectories
         |> Task.map (\files -> hashList Tuple.second elmJsonHash files)
 
 
