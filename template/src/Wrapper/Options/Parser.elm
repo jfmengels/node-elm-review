@@ -152,7 +152,6 @@ toReviewOptions color options projectRoot =
     , color = color
     , reviewProject = reviewProject projectRoot options
     , reviewAppFlags = reviewAppFlags color options
-    , auth = options.auth
     }
 
 

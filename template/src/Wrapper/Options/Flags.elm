@@ -19,7 +19,6 @@ import Dict exposing (Dict)
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Problem exposing (ProblemSimple)
 import ElmReview.ReportMode as ReportMode
-import Wrapper.Auth as Auth
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 import Wrapper.Options.RuleType as RuleType
@@ -532,20 +531,13 @@ gitHubAuthFlag =
             { argName = "<github-api-token>"
             , mayBeUsedSeveralTimes = False
             , usesEquals = True
-            , apply = \_ arg options -> Ok { options | auth = Just (Auth.fromString arg) }
+            , apply = \_ _ options -> Ok options
             }
     , display =
         Just
             { color = Cyan
             , sections = []
-            , description =
-                \c ->
-                    [ "To be used along with " ++ c Cyan "--template" ++ " to avoid GitHub rate limiting."
-                    , "Follow https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to create an API token. The API token needs access to public repositories."
-                    , ""
-                    , "Then use the flag like this:"
-                    , c GreenBright "  --github-auth=github_pat_abcdef01234567890"
-                    ]
+            , description = \_ -> [ "Deprecated. This flag does not have any effect anymore." ]
             , initDescription = Nothing
             , newPackageDescription = Nothing
             }
