@@ -90,18 +90,12 @@ init { fs, options, runEnvironment } =
     )
 
 
-refreshProjectDependencies : FileSystem -> RunEnvironment -> Project -> Model -> ( Model, Cmd Msg )
-refreshProjectDependencies fs runEnvironment newProject (Model model) =
+refreshProjectDependencies : FileSystem -> RunEnvironment -> Elm.Project.Project -> Project -> Model -> ( Model, Cmd Msg )
+refreshProjectDependencies fs runEnvironment elmJson newProject (Model model) =
     let
         tasks : List (Cmd Msg)
         tasks =
-            case Project.elmJson newProject of
-                Just elmJson ->
-                    fetchDependencies fs runEnvironment elmJson.project []
-
-                Nothing ->
-                    -- TODO Error?
-                    []
+            fetchDependencies fs runEnvironment elmJson []
     in
     ( Model
         { pendingTaskCount = model.pendingTaskCount + List.length tasks

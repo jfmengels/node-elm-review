@@ -417,10 +417,10 @@ update msg model =
                             , Cmd.none
                             )
 
-                        ReloadDependencies ->
+                        ReloadDependencies newElmJson ->
                             let
                                 ( store, cmd ) =
-                                    Store.refreshProjectDependencies model.fs model.runEnvironment projectWithFixes model.store
+                                    Store.refreshProjectDependencies model.fs model.runEnvironment newElmJson projectWithFixes model.store
                             in
                             ( { model
                                 | store = store
@@ -456,7 +456,7 @@ update msg model =
 
 type ElmJsonChanges
     = NoChanges
-    | ReloadDependencies
+    | ReloadDependencies Elm.Project.Project
     | ReloadCompletely
 
 
@@ -472,19 +472,19 @@ changesInElmJson directoriesToAnalyze { before, after } =
         ( Nothing, Nothing ) ->
             NoChanges
 
-        ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+        ( Just (Elm.Project.Application a), Just ((Elm.Project.Application b) as newProject) ) ->
             if a.dirs /= b.dirs && not (List.isEmpty directoriesToAnalyze) then
                 ReloadCompletely
 
             else if a.elm /= b.elm || a /= b then
-                ReloadDependencies
+                ReloadDependencies newProject
 
             else
                 NoChanges
 
-        ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
+        ( Just (Elm.Project.Package a), Just ((Elm.Project.Package b) as newProject) ) ->
             if a.elm /= b.elm || a.deps /= b.deps || a.testDeps /= b.testDeps then
-                ReloadDependencies
+                ReloadDependencies newProject
 
             else
                 NoChanges
