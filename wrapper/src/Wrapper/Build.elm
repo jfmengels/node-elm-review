@@ -60,7 +60,7 @@ buildLocalProject fs os options reviewFolder =
     readReviewElmJson fs options.reviewProject elmJsonPath
         |> Task.andThen
             (\{ raw, application } ->
-                FolderHash.hashSourceDirectories fs reviewFolder application.dirs
+                FolderHash.hashApplication fs reviewFolder application
                     |> Task.mapError (fsErrorToProblem "while building and hashing source-directories")
                     |> Task.andThen
                         (\appHash ->

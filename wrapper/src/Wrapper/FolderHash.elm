@@ -1,5 +1,8 @@
-module Wrapper.FolderHash exposing (hashSourceDirectories)
+module Wrapper.FolderHash exposing (hashApplication)
 
+import Elm.Package
+import Elm.Project
+import Elm.Version
 import ElmReview.Path as Path exposing (Path)
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem)
@@ -7,22 +10,34 @@ import Task exposing (Task)
 import Wrapper.Hash as Hash exposing (Hash)
 
 
-hashSourceDirectories : FileSystem -> Path -> List Path -> Task x Hash
-hashSourceDirectories fs reviewFolder sourceDirectories =
-    sourceDirectories
-        |> List.map
-            (\directory ->
-                let
-                    dirPath : Path
-                    dirPath =
-                        Path.join2 reviewFolder directory
-                in
-                Fs.walkTree fs dirPath (Just "*.elm") Fs.Any
-                    |> Task.andThen (\( files, _ ) -> readFiles fs dirPath files)
-                    |> Task.onError (\_ -> Task.succeed [])
+hashApplication : FileSystem -> Path -> Elm.Project.ApplicationInfo -> Task x Hash
+hashApplication fs reviewFolder application =
+    let
+        elmJsonHash : Hash
+        elmJsonHash =
+            (application.depsDirect
+                ++ application.depsIndirect
+                ++ application.testDepsDirect
+                ++ application.testDepsIndirect
             )
-        |> Task.sequence
-        |> Task.map hashFiles
+                |> List.map (\( pkgName, version ) -> ( Elm.Package.toString pkgName, Elm.Version.toString version ))
+                |> hashList (\( pkgName, version ) -> pkgName ++ ":" ++ version ++ ";") Hash.initial
+    in
+    TaskExtra.mapAllAndFold
+        (\directory ->
+            let
+                dirPath : Path
+                dirPath =
+                    Path.join2 reviewFolder directory
+            in
+            Fs.walkTree fs dirPath (Just "*.elm") Fs.Any
+                |> Task.andThen (\( files, _ ) -> readFiles fs dirPath files)
+                |> Task.onError (\_ -> Task.succeed [])
+        )
+        (++)
+        []
+        application.dirs
+        |> Task.map (\files -> hashList Tuple.second elmJsonHash files)
 
 
 readFiles : FileSystem -> Path -> List Path -> Task x (List ( Path, String ))
@@ -53,9 +68,8 @@ maybeCons maybe list =
             list
 
 
-hashFiles : List (List ( comparable, String )) -> Hash
-hashFiles files =
-    files
-        |> List.concat
+hashList : (( comparable, a ) -> String) -> Hash -> List ( comparable, a ) -> Hash
+hashList toString initialHash list =
+    list
         |> List.sortBy Tuple.first
-        |> Hash.fromList Tuple.second Hash.initial
+        |> Hash.fromList toString initialHash
