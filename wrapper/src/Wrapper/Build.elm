@@ -58,6 +58,7 @@ buildLocalProject fs os options reviewFolder =
             Path.join2 reviewFolder "elm.json"
     in
     readReviewElmJson fs options.reviewProject elmJsonPath
+        |> Task.andThen (\elmJson -> validateElmReviewVersion options.reviewProject elmJsonPath elmJson |> TaskExtra.resultToTask)
         |> Task.andThen
             (\{ raw, application } ->
                 FolderHash.hashApplication fs reviewFolder application
@@ -94,6 +95,20 @@ buildLocalProject fs os options reviewFolder =
                                 |> Task.map (\() -> buildData)
                         )
             )
+
+
+validateElmReviewVersion : ReviewProject -> Path -> { raw : String, application : Elm.Project.ApplicationInfo } -> Result Problem { raw : String, application : Elm.Project.ApplicationInfo }
+validateElmReviewVersion reviewProject elmJsonPath elmJson =
+    -- TODO For templates, try to upgrade dependencies if they don't match
+    case MinVersion.validateDependencyVersion reviewProject elmJson.application of
+        Just problem ->
+            problem
+                |> Problem.from
+                |> Problem.withPath elmJsonPath
+                |> Err
+
+        Nothing ->
+            Ok elmJson
 
 
 reuseExistingReviewApp : FileSystem -> Bool -> String -> Task x Bool
@@ -345,16 +360,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
                         |> Err
 
         Ok (Elm.Project.Application application) ->
-            -- TODO For templates, try to upgrade dependencies if they don't match
-            case MinVersion.validateDependencyVersion reviewProject application of
-                Just problem ->
-                    problem
-                        |> Problem.from
-                        |> Problem.withPath elmJsonPath
-                        |> Err
-
-                Nothing ->
-                    Ok application
+            Ok application
 
 
 compileProjectUsingElmRun : ProcessCapability -> Path -> Path -> String -> Task Problem ()
