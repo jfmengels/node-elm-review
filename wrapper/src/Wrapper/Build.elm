@@ -301,11 +301,9 @@ please use """ ++ c GreenBright "--config some/path/to/review"
 
 parseElmJson : ReviewProject -> String -> String -> Result Problem Elm.Project.ApplicationInfo
 parseElmJson reviewProject elmJsonPath rawElmJson =
-    -- TODO Review errors coming out of this function, especially wrt to templates
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
-            -- TODO Improve error when elm.json is from a template
-            Err (Problem.invalidElmJson elmJsonPath error)
+            Err (Problem.invalidElmJson elmJsonPath reviewProject error)
 
         Ok (Elm.Project.Package _) ->
             case reviewProject of
