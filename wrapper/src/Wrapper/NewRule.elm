@@ -32,7 +32,7 @@ import Json.Encode as Encode
 import Platform exposing (Task)
 import Regex exposing (Regex)
 import Task
-import Wrapper.Options exposing (NewRuleOptions)
+import Wrapper.Options as Options exposing (NewRuleOptions)
 import Wrapper.Options.RuleType as RuleType exposing (RuleType)
 
 
@@ -84,7 +84,7 @@ readReviewElmJson fs pathToElmJson_ =
         |> Task.andThen
             (\elmJsonRaw ->
                 Decode.decodeString Elm.Project.decoder elmJsonRaw
-                    |> Result.mapError (\error -> Problem.invalidElmJson pathToElmJson_ error)
+                    |> Result.mapError (\error -> Problem.invalidElmJson pathToElmJson_ (Options.Local "") error)
                     |> TaskExtra.resultToTask
             )
 
