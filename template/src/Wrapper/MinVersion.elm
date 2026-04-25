@@ -14,6 +14,7 @@ import Elm.Package
 import Elm.Project
 import Elm.Version
 import ElmReview.Color exposing (Color(..), Colorize)
+import ElmReview.Path as Path
 import ElmReview.Problem exposing (ProblemSimple)
 import Wrapper.Options as Options exposing (ReviewProject)
 import Wrapper.PathHelpers as PathHelpers
@@ -70,8 +71,16 @@ validateDependencyVersion reviewProject application =
             Just
                 { title = "MISSING ELM-REVIEW DEPENDENCY"
                 , message =
-                    \c ->
-                        "The template's configuration does not include " ++ c GreenBright "jfmengels/elm-review" ++ """ in its direct dependencies.
+                    case reviewProject of
+                        Options.Local reviewFolder ->
+                            \c ->
+                                c Yellow (Path.join2 reviewFolder "elm.json") ++ " does not include " ++ c GreenBright "jfmengels/elm-review" ++ """ in its direct dependencies.
+
+Please add it by running """ ++ c Magenta "elm install jfmengels/elm-review" ++ " inside of " ++ c Yellow reviewFolder ++ "."
+
+                        Options.Remote _ ->
+                            \c ->
+                                "The template's configuration does not include " ++ c GreenBright "jfmengels/elm-review" ++ """ in its direct dependencies.
 
 Maybe you chose the wrong template, or the template is malformed. If the latter is the case, please inform the template author."""
                 }

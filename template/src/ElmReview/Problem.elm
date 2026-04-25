@@ -29,6 +29,8 @@ import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Wrapper.Options as Options exposing (ReviewProject)
+import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
 type Problem
@@ -135,19 +137,36 @@ formatJsonHelp c (Problem { title, message, path }) =
         |> Encode.object
 
 
-invalidElmJson : String -> Decode.Error -> Problem
-invalidElmJson pathToElmJson error =
-    { title = "COULD NOT READ ELM.JSON"
-    , message = decodingErrorMessage pathToElmJson error
-    }
-        |> from
-        |> withPath pathToElmJson
+invalidElmJson : String -> ReviewProject -> Decode.Error -> Problem
+invalidElmJson pathToElmJson reviewProject error =
+    case reviewProject of
+        Options.Local _ ->
+            { title = "COULD NOT READ ELM.JSON"
+            , message = localDecodingErrorMessage pathToElmJson error
+            }
+                |> from
+                |> withPath pathToElmJson
+
+        Options.Remote remoteTemplate ->
+            { title = "TEMPLATE ELM.JSON PARSING ERROR"
+            , message = templateDecodingErrorMessage remoteTemplate error
+            }
+                |> from
 
 
-decodingErrorMessage : String -> Decode.Error -> Colorize -> String
-decodingErrorMessage pathToElmJson error c =
-    "I tried reading " ++ c Yellow pathToElmJson ++ """ but encountered an error while reading it. Please check that it is valid JSON that the Elm compiler would be happy with.
+localDecodingErrorMessage : String -> Decode.Error -> Colorize -> String
+localDecodingErrorMessage pathToElmJson error c =
+    "I tried reading " ++ c Yellow pathToElmJson ++ """ but encountered a problem while reading it. Please check that it is valid JSON that the Elm compiler would be happy with.
 
+Here is the error I encountered:
+
+""" ++ Decode.errorToString error
+
+
+templateDecodingErrorMessage : RemoteTemplate -> Decode.Error -> Colorize -> String
+templateDecodingErrorMessage remoteTemplate error c =
+    "I found the " ++ c Yellow "elm.json" ++ " associated with " ++ c Yellow remoteTemplate.repoName ++ """, but encountered a problem while reading it. Please check that it is valid JSON that the Elm compiler would be happy with.
+   
 Here is the error I encountered:
 
 """ ++ Decode.errorToString error
