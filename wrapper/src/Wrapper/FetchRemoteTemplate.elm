@@ -116,7 +116,7 @@ createRepo fs git remoteTemplate repoFolder =
         repository =
             "git@github.com:" ++ remoteTemplate.repoName ++ ".git"
     in
-    Task.sequence
+    TaskExtra.sequence
         [ Fs.createDirectory fs repoFolder
             |> Task.onError (\_ -> Task.succeed ())
         , git [ "init" ]
@@ -126,7 +126,6 @@ createRepo fs git remoteTemplate repoFolder =
         , git [ "remote", "add", "origin", repository ]
         ]
         |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template" error)
-        |> Task.map (\_ -> ())
 
 
 nextIndex : String -> String -> Maybe Int

@@ -109,7 +109,7 @@ reuseExistingReviewApp fs forceBuild reviewAppPath =
 
 buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> BuildData -> Task Problem ()
 buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
-    Task.sequence
+    TaskExtra.sequence
         [ Fs.createDirectory fs (Path.join2 buildFolder "src")
             |> Task.mapError (fsErrorToProblem "while building and creating temporary source directory")
         , Fs.createDirectory fs (Path.dirname buildData.reviewAppPath)
@@ -123,7 +123,6 @@ buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
         , createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson
         , compileProjectUsingElmRun os reviewFolder buildFolder buildData.reviewAppPath
         ]
-        |> Task.map (\_ -> ())
 
 
 createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
