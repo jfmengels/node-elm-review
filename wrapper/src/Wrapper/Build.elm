@@ -109,21 +109,21 @@ reuseExistingReviewApp fs forceBuild reviewAppPath =
 
 buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> BuildData -> Task Problem ()
 buildLocalProjectBuild fs os reviewFolder buildFolder buildData =
-    Task.map2 (\_ _ -> ())
-        (Fs.createDirectory fs (Path.join2 buildFolder "src"))
-        (Fs.createDirectory fs (Path.dirname buildData.reviewAppPath))
-        |> Task.mapError (fsErrorToProblem "while building and creating temporary directories")
-        |> Task.andThen
-            (\() ->
-                FsExtra.copyDirectory os
-                    { -- TODO Use path relative to this binary
-                      from = "/Users/m1/dev/node-elm-review/template/src"
-                    , to = buildFolder
-                    }
-                    |> Task.mapError (processingErrorToProblem "while building and copying template files")
-            )
-        |> Task.andThen (\() -> createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson)
-        |> Task.andThen (\() -> compileProjectUsingElmRun os reviewFolder buildFolder buildData.reviewAppPath)
+    Task.sequence
+        [ Fs.createDirectory fs (Path.join2 buildFolder "src")
+            |> Task.mapError (fsErrorToProblem "while building and creating temporary source directory")
+        , Fs.createDirectory fs (Path.dirname buildData.reviewAppPath)
+            |> Task.mapError (fsErrorToProblem "while building and creating temporary directory")
+        , FsExtra.copyDirectory os
+            { -- TODO Use path relative to this binary
+              from = "/Users/m1/dev/node-elm-review/template/src"
+            , to = buildFolder
+            }
+            |> Task.mapError (processingErrorToProblem "while building and copying template files")
+        , createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson
+        , compileProjectUsingElmRun os reviewFolder buildFolder buildData.reviewAppPath
+        ]
+        |> Task.map (\_ -> ())
 
 
 createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
