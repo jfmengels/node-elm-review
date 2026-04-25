@@ -282,7 +282,7 @@ write fs options ruleNames suppressedErrors =
             suppressedErrorsFolder =
                 suppressedFolder options
         in
-        Task.sequence
+        TaskExtra.sequence
             [ if deleteAllRules then
                 Fs.removeDirectory fs suppressedErrorsFolder
                     |> Task.onError (\_ -> Task.succeed ())
@@ -295,7 +295,6 @@ write fs options ruleNames suppressedErrors =
                 |> suppressionsX ruleNames
                 |> TaskExtra.mapAllAndIgnore (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
             ]
-            |> Task.map (\_ -> ())
             |> Task.mapError
                 (\err ->
                     Problem.from

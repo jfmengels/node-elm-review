@@ -26,6 +26,7 @@ import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.OsExtra as OsExtra
+import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
 import Json.Encode as Encode
 import Os exposing (ProcessCapability)
@@ -146,7 +147,7 @@ createProject input { fs, os, options } =
         ruleName =
             Module.toString input.ruleName
     in
-    Task.sequence
+    TaskExtra.sequence
         [ -- Rule source file
           FsExtra.createFileAndItsDirectory
             fs
@@ -194,7 +195,6 @@ createProject input { fs, os, options } =
         --, createPackageTests fs input
         --, createCheckPreviewCompile fs input
         ]
-        |> Task.map (\_ -> ())
 
 
 createElmJsonFile : FileSystem -> Elm.Project.Project -> Input -> Task Problem ()
