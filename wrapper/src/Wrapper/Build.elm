@@ -45,15 +45,15 @@ build : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem
 build fs os options elmHomePath =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildLocalProject fs os options reviewFolder elmHomePath
+            buildProject fs os options reviewFolder elmHomePath
 
         Options.Remote remoteTemplate ->
             FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate options.debug
-                |> Task.andThen (\reviewFolder -> buildLocalProject fs os options reviewFolder elmHomePath)
+                |> Task.andThen (\reviewFolder -> buildProject fs os options reviewFolder elmHomePath)
 
 
-buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Path -> Task Problem BuildData
-buildLocalProject fs os options reviewFolder elmHomePath =
+buildProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Path -> Task Problem BuildData
+buildProject fs os options reviewFolder elmHomePath =
     let
         elmJsonPath : String
         elmJsonPath =
@@ -93,7 +93,7 @@ buildLocalProject fs os options reviewFolder elmHomePath =
                                             Task.succeed ()
 
                                         else
-                                            buildLocalProjectBuild
+                                            buildCreatedProject
                                                 fs
                                                 os
                                                 reviewFolder
@@ -135,8 +135,8 @@ reuseExistingReviewApp fs forceBuild reviewAppPath =
             |> Task.onError (\_ -> Task.succeed False)
 
 
-buildLocalProjectBuild : FileSystem -> ProcessCapability -> Path -> Path -> Maybe Path -> BuildData -> Task Problem ()
-buildLocalProjectBuild fs os reviewFolder buildFolder localElmReview buildData =
+buildCreatedProject : FileSystem -> ProcessCapability -> Path -> Path -> Maybe Path -> BuildData -> Task Problem ()
+buildCreatedProject fs os reviewFolder buildFolder localElmReview buildData =
     let
         localElmReviewTasks : { setUp : Task Problem (), cleanUp : Task Problem () }
         localElmReviewTasks =
