@@ -25,11 +25,11 @@ resultToTask result =
             Task.fail err
 
 
-toResultTask : Task x value -> Task never (Result () value)
+toResultTask : Task x value -> Task never (Result x value)
 toResultTask task =
     task
         |> Task.map Ok
-        |> Task.onError (\_ -> Task.succeed (Err ()))
+        |> Task.onError (\x -> Task.succeed (Err x))
 
 
 otherwise : (() -> Task x a) -> Maybe a -> Task x a
