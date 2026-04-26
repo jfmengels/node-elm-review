@@ -13,7 +13,6 @@ module Wrapper.Review exposing
 import Capabilities exposing (Console)
 import Cli exposing (Env)
 import Elm.Project
-import Elm.Version
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
 import ElmRun.OsExtra
@@ -46,6 +45,12 @@ type Msg
 
 init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
 init { stdout, stderr } { fs, os } options =
+    let
+        -- TODO Get from somewhere
+        elmHomePath : String
+        elmHomePath =
+            "/Users/m1/.elm"
+    in
     ( Model
         { stdout = stdout
         , stderr = stderr
@@ -53,7 +58,7 @@ init { stdout, stderr } { fs, os } options =
         , os = os
         , options = options
         }
-    , Build.build fs os options
+    , Build.build fs os options elmHomePath
         |> Task.attempt BuildCompleted
     )
 
@@ -63,11 +68,12 @@ update msg (Model model) =
     case msg of
         BuildCompleted result ->
             case result of
-                Ok { elmJsonPath, reviewElmJson, reviewAppPath } ->
+                Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation } ->
                     runReviewProcess model
                         { reviewAppPath = reviewAppPath
                         , reviewElmJson = reviewElmJson
                         , reviewFolder = Path.dirname elmJsonPath
+                        , packagesLocation = packagesLocation
                         }
 
                 Err problem ->
@@ -82,18 +88,21 @@ update msg (Model model) =
                     Problem.exit model.stderr model.options problem
 
 
-runReviewProcess : ModelData -> { reviewAppPath : Path, reviewElmJson : Elm.Project.ApplicationInfo, reviewFolder : Path } -> Cmd Msg
-runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder } =
+runReviewProcess :
+    ModelData
+    ->
+        { reviewAppPath : Path
+        , reviewElmJson : Elm.Project.ApplicationInfo
+        , reviewFolder : Path
+        , packagesLocation : Path
+        }
+    -> Cmd Msg
+runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
     let
-        -- TODO Get from somewhere
-        elmHomePath : String
-        elmHomePath =
-            "/Users/m1/.elm"
-
         reviewAppFlags : List String
         reviewAppFlags =
             ("--review-folder=" ++ reviewFolder)
-                :: ("--packages-location=" ++ Path.join [ elmHomePath, Elm.Version.toString reviewElmJson.elm, "packages" ])
+                :: ("--packages-location=" ++ packagesLocation)
                 :: options.reviewAppFlags
 
         ( cmd, args ) =

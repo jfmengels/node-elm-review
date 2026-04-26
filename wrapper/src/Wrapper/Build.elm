@@ -34,24 +34,25 @@ import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 type alias BuildData =
     { reviewAppPath : Path
     , elmJsonPath : Path
+    , packagesLocation : Path
     , reviewElmJson : Elm.Project.ApplicationInfo
     , appHash : Hash
     }
 
 
-build : FileSystem -> ProcessCapability -> ReviewOptions -> Task Problem BuildData
-build fs os options =
+build : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem BuildData
+build fs os options elmHomePath =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildLocalProject fs os options reviewFolder
+            buildLocalProject fs os options reviewFolder elmHomePath
 
         Options.Remote remoteTemplate ->
             FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate options.debug
-                |> Task.andThen (\reviewFolder -> buildLocalProject fs os options reviewFolder)
+                |> Task.andThen (\reviewFolder -> buildLocalProject fs os options reviewFolder elmHomePath)
 
 
-buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem BuildData
-buildLocalProject fs os options reviewFolder =
+buildLocalProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Path -> Task Problem BuildData
+buildLocalProject fs os options reviewFolder elmHomePath =
     let
         elmJsonPath : String
         elmJsonPath =
@@ -70,10 +71,15 @@ buildLocalProject fs os options reviewFolder =
                                 reviewAppPath =
                                     ProjectPaths.reviewApp options.projectPaths appHash
 
+                                packagesLocation : Path
+                                packagesLocation =
+                                    Path.join [ elmHomePath, Elm.Version.toString application.elm, "packages" ]
+
                                 buildData : BuildData
                                 buildData =
                                     { reviewAppPath = reviewAppPath
                                     , elmJsonPath = elmJsonPath
+                                    , packagesLocation = packagesLocation
                                     , reviewElmJson = application
                                     , appHash = appHash
                                     }
