@@ -487,8 +487,11 @@ injectRuleInReadme fs options pkg ruleName =
                                 )
                             |> Task.map (\() -> warnings)
 
-                    Err () ->
-                        Task.succeed [ \c -> "I tried mentioning the rule in README.md but could not find a " ++ c Yellow "README.md" ++ " file." ]
+                    Err (Fs.NotFound _) ->
+                        Task.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but could not find such a file." ]
+
+                    Err error ->
+                        Task.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but encountered a problem while doing so:\n\n" ++ FsExtra.errorToString error ]
             )
 
 
@@ -620,8 +623,8 @@ injectRuleInPreview fs previewFolder pkg ruleName =
         |> Task.andThen
             (\maybeContent ->
                 case maybeContent of
-                    Err () ->
-                        Task.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it." ]
+                    Err error ->
+                        Task.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it:\n\n" ++ FsExtra.errorToString error ]
 
                     Ok content ->
                         let

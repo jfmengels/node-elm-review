@@ -103,7 +103,7 @@ createRepoIfNecessary fs git remoteTemplate repoFolder =
                     Ok _ ->
                         Task.succeed ()
 
-                    Err () ->
+                    Err _ ->
                         -- First time checkout out the repo, let's create it
                         createRepo fs git remoteTemplate repoFolder
             )
