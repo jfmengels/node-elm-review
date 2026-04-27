@@ -21,6 +21,7 @@ module Wrapper.Options exposing
 
 -}
 
+import Elm.Module as Module
 import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode)
@@ -69,7 +70,7 @@ type alias NewRuleOptions =
     , forTests : Bool
     , debug : Bool
     , color : Color.Support
-    , newRuleName : Maybe String
+    , newRuleName : Maybe Module.Name
     , ruleType : Maybe RuleType
     }
 

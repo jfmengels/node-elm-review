@@ -1,6 +1,7 @@
 module Wrapper.Options.Parser exposing (OptionsParseResult(..), parse)
 
 import Dict exposing (Dict)
+import Elm.Module as Module
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
@@ -93,7 +94,12 @@ toOptions env options =
                         Just Subcommand.NewRule ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    NewRule (toNewRuleOptions color options (Path.dirname elmJsonPath))
+                                    case toNewRuleOptions color options (Path.dirname elmJsonPath) of
+                                        Ok newRuleOptions ->
+                                            NewRule newRuleOptions
+
+                                        Err problem ->
+                                            parseError (Problem.from problem)
                                 )
 
                         Just Subcommand.NewPackage ->
@@ -226,13 +232,31 @@ toInitOptions color options projectRoot =
     }
 
 
-toNewRuleOptions : Color.Support -> InternalOptions -> Path -> NewRuleOptions
+toNewRuleOptions : Color.Support -> InternalOptions -> Path -> Result ProblemSimple NewRuleOptions
 toNewRuleOptions color options projectRoot =
+    case List.reverse options.restOfArgs |> List.head of
+        Nothing ->
+            Ok (toNewRuleOptionsHelp color options projectRoot Nothing)
+
+        Just newRuleName ->
+            case Module.fromString newRuleName of
+                Just validRuleName ->
+                    Ok (toNewRuleOptionsHelp color options projectRoot (Just validRuleName))
+
+                Nothing ->
+                    Err
+                        { title = "INVALID RULE NAME"
+                        , message = \_ -> "The rule name needs to be a valid Elm module name that only contains characters A-Z, digits and `_`."
+                        }
+
+
+toNewRuleOptionsHelp : Color.Support -> InternalOptions -> Path -> Maybe Module.Name -> NewRuleOptions
+toNewRuleOptionsHelp color options projectRoot newRuleName =
     { reviewFolder = projectRoot
     , forTests = options.forTests
     , debug = options.debug
     , color = color
-    , newRuleName = List.reverse options.restOfArgs |> List.head
+    , newRuleName = newRuleName
     , ruleType = options.ruleType
     }
 
