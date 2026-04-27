@@ -468,29 +468,44 @@ compileProjectUsingElmRun os reviewFolder buildFolder reviewAppPath =
                     Task.succeed ()
 
                 else
-                    compilationError reviewFolder (Maybe.withDefault "No compiler output." stderr)
+                    compilationError reviewFolder stderr
                         |> Problem.from
                         |> Task.fail
             )
 
 
-compilationError : Path -> String -> ProblemSimple
+compilationError : Path -> Maybe String -> ProblemSimple
 compilationError reviewFolder stderr =
-    if String.contains "DEBUG REMNANTS" stderr then
+    let
+        output : String
+        output =
+            case stderr of
+                Nothing ->
+                    "No compiler output."
+
+                Just "" ->
+                    "No compiler output."
+
+                Just message ->
+                    message
+    in
+    -- TODO Improve the error message when elm-run could not be found.
+    -- TODO Right now there's no message indicating that.
+    if String.contains "DEBUG REMNANTS" output then
         { title = "DEBUG IN CONFIGURATION"
         , message = \c -> "You are using the " ++ c Yellow "Debug" ++ " module in your configuration or rules, but I am compiling in optimized mode. Either remove those uses or run elm-review with " ++ c Yellow "--debug" ++ "."
         }
 
-    else if String.contains "MODULE NOT FOUND" stderr then
+    else if String.contains "MODULE NOT FOUND" output then
         { title = "MODULE NOT FOUND"
         , message = \c -> "A module is missing in your configuration. Maybe you forgot to add some dependencies that contain the rules you wished to enable? If so, run " ++ c Magenta "elm install" ++ " with the package name from inside " ++ c Yellow reviewFolder ++ """.
 
 Here is the full error message:
 
-""" ++ stderr
+""" ++ output
         }
 
     else
         { title = "CONFIGURATION COMPILATION ERROR"
-        , message = \c -> "Errors occurred while compiling your configuration for " ++ c GreenBright "elm-review" ++ ". I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n" ++ stderr
+        , message = \c -> "Errors occurred while compiling your configuration for " ++ c GreenBright "elm-review" ++ ". I need your configuration to compile in order to know how to analyze your files. Hopefully the compiler error below will help you figure out how to fix it.\n\n" ++ output
         }
