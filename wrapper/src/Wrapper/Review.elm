@@ -13,8 +13,10 @@ module Wrapper.Review exposing
 import Capabilities exposing (Console)
 import Cli exposing (Env)
 import Elm.Project
+import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
-import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
+import ElmReview.Problem as Problem exposing (FormatOptions, Problem, ProblemSimple)
+import ElmRun.FsExtra as FsExtra
 import ElmRun.OsExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
@@ -22,7 +24,7 @@ import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
 import Wrapper.Build as Build
 import Wrapper.Options exposing (ReviewOptions)
-import Wrapper.ProjectPaths as ProjectPaths
+import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 
 
 type Model
@@ -58,9 +60,43 @@ init { stdout, stderr } { fs, os } options =
         , os = os
         , options = options
         }
-    , Build.build fs os options elmHomePath
+    , verifyElmJsonExists fs options.projectPaths
+        |> Task.andThen (\() -> Build.build fs os options elmHomePath)
         |> Task.attempt BuildCompleted
     )
+
+
+verifyElmJsonExists : FileSystem -> ProjectPaths -> Task Problem ()
+verifyElmJsonExists fs projectPaths =
+    let
+        elmJsonPath : Path
+        elmJsonPath =
+            Path.join2 (ProjectPaths.projectRoot projectPaths) "elm.json"
+    in
+    Fs.stat fs elmJsonPath
+        |> Task.map (\_ -> ())
+        |> Task.mapError
+            (\error ->
+                let
+                    problem : ProblemSimple
+                    problem =
+                        case error of
+                            Fs.NotFound _ ->
+                                { title = "ELM.JSON NOT FOUND"
+                                , message = \c -> "I could not find the " ++ c Cyan "elm.json" ++ " of the project to review. I was looking for it at\n\n    " ++ c Yellow elmJsonPath ++ """
+
+Since you specified this path, I'm assuming that you misconfigured the CLI's arguments."""
+                                }
+
+                            _ ->
+                                { title = "PROBLEM READING ELM.JSON"
+                                , message = \c -> "I was trying to read " ++ c Yellow elmJsonPath ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString error
+                                }
+                in
+                problem
+                    |> Problem.from
+                    |> Problem.withPath elmJsonPath
+            )
 
 
 update : Msg -> Model -> Cmd Msg
