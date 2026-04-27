@@ -20,7 +20,7 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
-import ElmReview.Problem as Problem exposing (Problem)
+import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
 import ElmRun.FsExtra as FsExtra
 import ElmRun.Prompt as Prompt
@@ -112,25 +112,31 @@ type FixPromptKind
 
 init : Env -> ( ModelWrapper, Cmd Msg )
 init env =
-    case Fs.require env of
+    case Result.map2 Tuple.pair (requireFs env) (Options.parse env.args) of
+        Ok ( fs, options ) ->
+            case computeRulesToRun env options of
+                Ok rulesFromConfig ->
+                    initWithOptions env fs options rulesFromConfig
+
+                Err cmd ->
+                    ( Done, cmd )
+
         Err err ->
             ( Done
-            , { title = "MISSING CAPABILITIES"
-              , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
-              }
-                |> Problem.from
-                |> Problem.exit env.stderr (roughFormatOptions env.args)
+            , Problem.exit env.stderr (roughFormatOptions env.args) err
             )
 
-        Ok fs ->
-            case Options.parse env.args of
-                Err error ->
-                    ( Done
-                    , Problem.exit env.stderr (roughFormatOptions env.args) error
-                    )
 
-                Ok options ->
-                    initWithOptions env fs options
+requireFs : Env -> Result Problem FileSystem
+requireFs env =
+    Result.mapError
+        (\err ->
+            Problem.from
+                { title = "MISSING CAPABILITIES"
+                , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
+                }
+        )
+        (Fs.require env)
 
 
 roughFormatOptions : List String -> Problem.FormatOptions {}
@@ -146,18 +152,8 @@ roughFormatOptions args =
     }
 
 
-initWithOptions : Env -> FileSystem -> Options -> ( ModelWrapper, Cmd Msg )
-initWithOptions env fs options =
-    case computeRulesToRun env options of
-        Err cmd ->
-            ( Done, cmd )
-
-        Ok rulesFromConfig ->
-            initValid env fs options rulesFromConfig
-
-
-initValid : Env -> FileSystem -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
-initValid env fs options rulesFromConfig =
+initWithOptions : Env -> FileSystem -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
+initWithOptions env fs options rulesFromConfig =
     let
         rules : List Rule
         rules =
