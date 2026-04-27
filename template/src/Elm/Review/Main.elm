@@ -152,8 +152,8 @@ initWithOptions env fs options =
         Err cmd ->
             ( Done, cmd )
 
-        Ok rules ->
-            initValid env fs options rules
+        Ok rulesFromConfig ->
+            initValid env fs options rulesFromConfig
 
 
 initValid : Env -> FileSystem -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
