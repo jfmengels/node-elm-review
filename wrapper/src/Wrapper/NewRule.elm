@@ -120,16 +120,6 @@ pathToElmJson options =
     Path.join2 options.reviewFolder "elm.json"
 
 
-validateOrElsePromptForRuleName : Elm.Project.Project -> Maybe String -> Model -> Cmd Msg
-validateOrElsePromptForRuleName elmJson newRuleName ((Model { options }) as model) =
-    case Maybe.andThen Module.fromString newRuleName of
-        Just ruleName ->
-            validateOrElsePromptForRuleType elmJson ruleName options.ruleType model
-
-        Nothing ->
-            promptForRuleName ()
-
-
 validateOrElsePromptForRuleType : Elm.Project.Project -> Module.Name -> Maybe RuleType -> Model -> Cmd Msg
 validateOrElsePromptForRuleType elmJson ruleName maybeRuleType model =
     case maybeRuleType of
@@ -753,7 +743,12 @@ update : Msg -> Model -> Cmd Msg
 update msg (Model model) =
     case msg of
         GotElmJson (Ok elmJson) ->
-            validateOrElsePromptForRuleName elmJson model.options.newRuleName (Model model)
+            case model.options.newRuleName of
+                Just newRuleName ->
+                    validateOrElsePromptForRuleType elmJson newRuleName model.options.ruleType (Model model)
+
+                Nothing ->
+                    promptForRuleName ()
 
         GotElmJson (Err problem) ->
             Problem.exit model.stderr
