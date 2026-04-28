@@ -42,10 +42,18 @@ checkoutGitRepository fs os remoteTemplate debug =
                 , env = Nothing
                 , stdin = Process.NullStdin
                 , stdout = stdoutSpec debug
-                , stderr = stderrSpec debug
+                , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 }
-                |> Task.mapError (\error -> "$ git " ++ String.join " " args ++ "\n\n" ++ OsExtra.errorToString error)
-                |> Task.map (\_ -> ())
+                |> Task.mapError (\error -> OsExtra.errorToString error)
+                |> Task.andThen
+                    (\{ exitCode, stderr } ->
+                        if exitCode == 0 then
+                            Task.succeed ()
+
+                        else
+                            Task.fail (Maybe.withDefault "No Git output." stderr)
+                    )
+                |> Task.mapError (\error -> "$ git " ++ String.join " " args ++ "\n\n" ++ error)
 
         {- Same as the `git` function but captures and returns the stdout output. -}
         gitCapture : List String -> Task String String
@@ -82,15 +90,6 @@ stdoutSpec debug =
 
     else
         Process.NullStdout
-
-
-stderrSpec : Bool -> Process.StderrSpec
-stderrSpec debug =
-    if debug then
-        Process.InheritStderr
-
-    else
-        Process.NullStderr
 
 
 createRepoIfNecessary : FileSystem -> (List String -> Task String ()) -> RemoteTemplate -> Path -> Task Problem ()
