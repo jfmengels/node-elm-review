@@ -96,6 +96,7 @@ emptyOptions =
     , reviewProject = Options.Local "review"
     , reviewAppFlags = []
     , localElmReview = Nothing
+    , watchConfig = False
     }
 
 

@@ -41,6 +41,7 @@ type alias ReviewOptions =
     , reviewProject : ReviewProject
     , reviewAppFlags : List String
     , localElmReview : Maybe Path
+    , watchConfig : Bool
     }
 
 
