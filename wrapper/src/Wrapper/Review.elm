@@ -17,12 +17,13 @@ import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
-import ElmRun.OsExtra
+import ElmRun.OsExtra as OsExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
 import Worker.FileWatcher as FileWatcher exposing (FileEvent)
+import Worker.Process exposing (ProcessId)
 import Wrapper.Build as Build
 import Wrapper.Options as Options exposing (ReviewOptions)
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
@@ -38,15 +39,18 @@ type alias ModelData =
     , fs : FileSystem
     , os : ProcessCapability
     , options : ReviewOptions
+    , pid : Maybe ProcessId
     , watch : Maybe (Sub Msg)
     }
 
 
 type Msg
     = BuildCompleted (Result Problem Build.BuildData)
-    | ReviewProcessEnded (Result Problem Process.Completed)
+    | SpawnedReviewProcess (Result Problem ProcessId)
+    | ReviewProcessEnded ProcessId (Result Problem Process.Completed)
     | GotConfigElmJsonWatchEvent
     | GotConfigSourceFileWatchEvent FileEvent
+    | KilledReviewProcess
 
 
 init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
@@ -63,6 +67,7 @@ init { stdout, stderr } { fs, os } options =
         , fs = fs
         , os = os
         , options = options
+        , pid = Nothing
         , watch = Nothing
         }
     , startBuild fs os options elmHomePath
@@ -128,7 +133,7 @@ updateHelp msg model =
                                 { model | watch = Just watcher }
 
                             Options.Remote _ ->
-                                Sub.none
+                                model
 
                       else
                         model
@@ -145,11 +150,13 @@ updateHelp msg model =
                     , Problem.exit model.stderr model.options problem
                     )
 
-        ReviewProcessEnded result ->
+        SpawnedReviewProcess result ->
             case result of
-                Ok completed ->
-                    ( model
-                    , Cli.exit completed.exitCode
+                Ok pid ->
+                    ( { model | pid = Just pid }
+                    , Process.wait model.os pid
+                        |> Task.mapError (\error -> Debug.todo ("Spawn error " ++ OsExtra.errorToString error))
+                        |> Task.attempt (ReviewProcessEnded pid)
                     )
 
                 Err problem ->
@@ -157,38 +164,62 @@ updateHelp msg model =
                     , Problem.exit model.stderr model.options problem
                     )
 
-        GotConfigElmJsonWatchEvent ->
-            -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
-            -- TODO Check if the important parts of file has changed
-            -- TODO Kill the previous app
-            -- TODO Show a message to the user? (depends on report mode)
-            let
-                -- TODO Get from somewhere
-                elmHomePath : String
-                elmHomePath =
-                    "/Users/m1/.elm"
-            in
-            ( model
-            , startBuild model.fs model.os model.options elmHomePath
-            )
+        ReviewProcessEnded pid result ->
+            if model.pid == Just pid then
+                case result of
+                    Ok completed ->
+                        ( model
+                        , Cli.exit completed.exitCode
+                        )
 
-        GotConfigSourceFileWatchEvent fileEvent ->
-            if String.endsWith ".elm" fileEvent.path then
-                let
-                    -- TODO Get from somewhere
-                    elmHomePath : String
-                    elmHomePath =
-                        "/Users/m1/.elm"
-                in
-                -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
-                -- TODO Kill the previous app
-                -- TODO Show a message to the user? (depends on report mode)
-                ( model
-                , startBuild model.fs model.os model.options elmHomePath
-                )
+                    Err problem ->
+                        ( model
+                        , Problem.exit model.stderr model.options problem
+                        )
 
             else
                 ( model, Cmd.none )
+
+        GotConfigElmJsonWatchEvent ->
+            -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
+            -- TODO Check if the important parts of file has changed
+            -- TODO Show a message to the user? (depends on report mode)
+            restartBuild model
+
+        GotConfigSourceFileWatchEvent fileEvent ->
+            if String.endsWith ".elm" fileEvent.path then
+                -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
+                -- TODO Show a message to the user? (depends on report mode)
+                restartBuild model
+
+            else
+                ( model, Cmd.none )
+
+        KilledReviewProcess ->
+            ( model, Cmd.none )
+
+
+restartBuild : ModelData -> ( ModelData, Cmd Msg )
+restartBuild model =
+    let
+        -- TODO Get from somewhere
+        elmHomePath : String
+        elmHomePath =
+            "/Users/m1/.elm"
+    in
+    ( { model | pid = Nothing }
+    , Cmd.batch
+        [ startBuild model.fs model.os model.options elmHomePath
+        , case model.pid of
+            Just pid ->
+                -- TODO Send softer signal that waits until any file writes are done and exits.
+                Process.kill model.os pid 9
+                    |> Task.attempt (\_ -> KilledReviewProcess)
+
+            Nothing ->
+                Cmd.none
+        ]
+    )
 
 
 startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Cmd Msg
@@ -225,7 +256,7 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
             else
                 ( reviewAppPath, reviewAppFlags )
     in
-    Process.run os
+    Process.spawn os
         cmd
         { args = args
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
@@ -236,10 +267,11 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
         }
         |> Task.mapError
             (\err ->
-                Problem.unexpectedError "when running the review application" (ElmRun.OsExtra.errorToString err)
+                Problem.unexpectedError "when running the review application" (OsExtra.errorToString err)
                     |> Problem.withPath reviewAppPath
             )
-        |> Task.attempt ReviewProcessEnded
+        |> Task.map .pid
+        |> Task.attempt SpawnedReviewProcess
 
 
 subscriptions : Model -> Sub Msg
