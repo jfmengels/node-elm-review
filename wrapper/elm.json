@@ -17,6 +17,7 @@
             "elm-run/fs": "1.0.0",
             "elm-run/os": "1.0.0",
             "elm-run/stdio": "1.0.0",
+            "elm-run/worker": "1.0.0",
             "robinheghan/fnv1a": "1.0.0"
         },
         "indirect": {

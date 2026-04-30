@@ -25,7 +25,7 @@ main =
     Cli.program
         { init = init
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -305,3 +305,14 @@ find predicate list =
 
             else
                 find predicate rest
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model of
+        Review reviewModel ->
+            Review.subscriptions reviewModel
+                |> Sub.map ReviewMsg
+
+        _ ->
+            Sub.none
