@@ -185,9 +185,12 @@ update msg model =
         ReviewMsg reviewMsg ->
             case model of
                 Review reviewModel ->
-                    ( model
-                    , Review.update reviewMsg reviewModel
-                        |> Cmd.map ReviewMsg
+                    let
+                        ( newReviewModel, cmd ) =
+                            Review.update reviewMsg reviewModel
+                    in
+                    ( Review newReviewModel
+                    , Cmd.map ReviewMsg cmd
                     )
 
                 _ ->

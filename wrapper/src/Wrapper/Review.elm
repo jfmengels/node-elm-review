@@ -99,29 +99,43 @@ Since you specified this path, I'm assuming that you misconfigured the CLI's arg
             )
 
 
-update : Msg -> Model -> Cmd Msg
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg (Model model) =
+    updateHelp msg model
+        |> Tuple.mapFirst Model
+
+
+updateHelp : Msg -> ModelData -> ( ModelData, Cmd Msg )
+updateHelp msg model =
     case msg of
         BuildCompleted result ->
             case result of
                 Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation } ->
-                    runReviewProcess model
+                    ( model
+                    , runReviewProcess model
                         { reviewAppPath = reviewAppPath
                         , reviewElmJson = reviewElmJson
                         , reviewFolder = Path.dirname elmJsonPath
                         , packagesLocation = packagesLocation
                         }
+                    )
 
                 Err problem ->
-                    Problem.exit model.stderr model.options problem
+                    ( model
+                    , Problem.exit model.stderr model.options problem
+                    )
 
         ReviewProcessEnded result ->
             case result of
                 Ok completed ->
-                    Cli.exit completed.exitCode
+                    ( model
+                    , Cli.exit completed.exitCode
+                    )
 
                 Err problem ->
-                    Problem.exit model.stderr model.options problem
+                    ( model
+                    , Problem.exit model.stderr model.options problem
+                    )
 
         GotElmJsonWatchEvent fileEvent ->
             let
@@ -136,20 +150,22 @@ update msg (Model model) =
                     -- TODO Check if the important parts of file has changed
                     -- TODO Kill the previous app
                     -- TODO Show a message to the user? (depends on report mode)
-                    startBuild model.fs model.os model.options elmHomePath
+                    ( model
+                    , startBuild model.fs model.os model.options elmHomePath
+                    )
 
                 FileWatcher.Created ->
                     -- TODO Consider file as being modified after a delete
-                    Cmd.none
+                    ( model, Cmd.none )
 
                 FileWatcher.Deleted ->
                     -- TODO Mark elm.json as temporarily deleted?
                     -- Keep process alive regardless
-                    Cmd.none
+                    ( model, Cmd.none )
 
                 FileWatcher.Renamed ->
                     -- Can't really be renamed?
-                    Cmd.none
+                    ( model, Cmd.none )
 
 
 startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Cmd Msg
