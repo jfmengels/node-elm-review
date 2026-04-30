@@ -161,6 +161,7 @@ toReviewOptions env color options projectRoot =
 
     -- TODO Make this relative to CWD
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
+    , watchConfig = options.watchConfig
     }
 
 
