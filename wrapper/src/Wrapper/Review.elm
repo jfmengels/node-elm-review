@@ -1,12 +1,12 @@
 module Wrapper.Review exposing
     ( Model, init
-    , Msg, update
+    , Msg, update, subscriptions
     )
 
 {-|
 
 @docs Model, init
-@docs Msg, update
+@docs Msg, update, subscriptions
 
 -}
 
@@ -22,8 +22,9 @@ import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
+import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 import Wrapper.Build as Build
-import Wrapper.Options exposing (ReviewOptions)
+import Wrapper.Options as Options exposing (ReviewOptions)
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 
 
@@ -43,6 +44,7 @@ type alias ModelData =
 type Msg
     = BuildCompleted (Result Problem Build.BuildData)
     | ReviewProcessEnded (Result Problem Process.Completed)
+    | GotElmJsonWatchEvent FileEvent
 
 
 init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
@@ -121,6 +123,34 @@ update msg (Model model) =
                 Err problem ->
                     Problem.exit model.stderr model.options problem
 
+        GotElmJsonWatchEvent fileEvent ->
+            let
+                -- TODO Get from somewhere
+                elmHomePath : String
+                elmHomePath =
+                    "/Users/m1/.elm"
+            in
+            case FileWatcher.toEventType fileEvent.eventType of
+                FileWatcher.Modified ->
+                    -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
+                    -- TODO Check if the important parts of file has changed
+                    -- TODO Kill the previous app
+                    -- TODO Show a message to the user? (depends on report mode)
+                    startBuild model.fs model.os model.options elmHomePath
+
+                FileWatcher.Created ->
+                    -- TODO Consider file as being modified after a delete
+                    Cmd.none
+
+                FileWatcher.Deleted ->
+                    -- TODO Mark elm.json as temporarily deleted?
+                    -- Keep process alive regardless
+                    Cmd.none
+
+                FileWatcher.Renamed ->
+                    -- Can't really be renamed?
+                    Cmd.none
+
 
 startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Cmd Msg
 startBuild fs os options elmHomePath =
@@ -171,3 +201,30 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
                     |> Problem.withPath reviewAppPath
             )
         |> Task.attempt ReviewProcessEnded
+
+
+subscriptions : Model -> Sub Msg
+subscriptions (Model model) =
+    if model.options.watchConfig then
+        case model.options.reviewProject of
+            Options.Local reviewFolder ->
+                watchElmJson reviewFolder
+
+            Options.Remote _ ->
+                Sub.none
+
+    else
+        Sub.none
+
+
+watchElmJson : Path -> Sub Msg
+watchElmJson reviewFolder =
+    FileWatcher.watch
+        (Debug.todo "watch permission")
+        (Path.join2 reviewFolder "elm.json")
+        { excludePaths = []
+        , recursive = False
+        , coalesceMs = 100
+        , eventMask = 15
+        }
+        GotElmJsonWatchEvent
