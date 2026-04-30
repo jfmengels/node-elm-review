@@ -39,13 +39,23 @@ type alias ModelData =
     , fs : FileSystem
     , os : ProcessCapability
     , options : ReviewOptions
+    , buildId : BuildId
     , pid : Maybe ProcessId
     , watch : Maybe (Sub Msg)
     }
 
 
+type BuildId
+    = BuildId Int
+
+
+incrementBuild : BuildId -> BuildId
+incrementBuild (BuildId n) =
+    BuildId (n + 1)
+
+
 type Msg
-    = BuildCompleted (Result Problem Build.BuildData)
+    = BuildCompleted BuildId (Result Problem Build.BuildData)
     | SpawnedReviewProcess (Result Problem ProcessId)
     | ReviewProcessEnded ProcessId (Result Problem Process.Completed)
     | GotConfigElmJsonWatchEvent
@@ -60,17 +70,22 @@ init { stdout, stderr } { fs, os } options =
         elmHomePath : String
         elmHomePath =
             "/Users/m1/.elm"
+
+        buildId : BuildId
+        buildId =
+            BuildId 0
     in
     ( Model
         { stdout = stdout
         , stderr = stderr
         , fs = fs
         , os = os
+        , buildId = buildId
         , options = options
         , pid = Nothing
         , watch = Nothing
         }
-    , startBuild fs os options elmHomePath
+    , startBuild fs os options elmHomePath buildId
     )
 
 
@@ -116,39 +131,43 @@ update msg (Model model) =
 updateHelp : Msg -> ModelData -> ( ModelData, Cmd Msg )
 updateHelp msg model =
     case msg of
-        BuildCompleted result ->
-            case result of
-                Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation } ->
-                    ( if model.options.watchConfig then
-                        case model.options.reviewProject of
-                            Options.Local reviewFolder ->
-                                let
-                                    watcher : Sub Msg
-                                    watcher =
-                                        watchConfig
-                                            (Debug.todo "watch permission")
-                                            reviewFolder
-                                            reviewElmJson
-                                in
-                                { model | watch = Just watcher }
+        BuildCompleted buildId result ->
+            if buildId /= model.buildId then
+                ( model, Cmd.none )
 
-                            Options.Remote _ ->
-                                model
+            else
+                case result of
+                    Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation } ->
+                        ( if model.options.watchConfig then
+                            case model.options.reviewProject of
+                                Options.Local reviewFolder ->
+                                    let
+                                        watcher : Sub Msg
+                                        watcher =
+                                            watchConfig
+                                                (Debug.todo "watch permission")
+                                                reviewFolder
+                                                reviewElmJson
+                                    in
+                                    { model | watch = Just watcher }
 
-                      else
-                        model
-                    , runReviewProcess model
-                        { reviewAppPath = reviewAppPath
-                        , reviewElmJson = reviewElmJson
-                        , reviewFolder = Path.dirname elmJsonPath
-                        , packagesLocation = packagesLocation
-                        }
-                    )
+                                Options.Remote _ ->
+                                    model
 
-                Err problem ->
-                    ( model
-                    , Problem.exit model.stderr model.options problem
-                    )
+                          else
+                            model
+                        , runReviewProcess model
+                            { reviewAppPath = reviewAppPath
+                            , reviewElmJson = reviewElmJson
+                            , reviewFolder = Path.dirname elmJsonPath
+                            , packagesLocation = packagesLocation
+                            }
+                        )
+
+                    Err problem ->
+                        ( model
+                        , Problem.exit model.stderr model.options problem
+                        )
 
         SpawnedReviewProcess result ->
             case result of
@@ -206,10 +225,14 @@ restartBuild model =
         elmHomePath : String
         elmHomePath =
             "/Users/m1/.elm"
+
+        buildId : BuildId
+        buildId =
+            incrementBuild model.buildId
     in
-    ( { model | pid = Nothing }
+    ( { model | buildId = buildId, pid = Nothing }
     , Cmd.batch
-        [ startBuild model.fs model.os model.options elmHomePath
+        [ startBuild model.fs model.os model.options elmHomePath buildId
         , case model.pid of
             Just pid ->
                 -- TODO Send softer signal that waits until any file writes are done and exits.
@@ -222,11 +245,11 @@ restartBuild model =
     )
 
 
-startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Cmd Msg
-startBuild fs os options elmHomePath =
+startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> BuildId -> Cmd Msg
+startBuild fs os options elmHomePath buildId =
     verifyElmJsonExists fs options.projectPaths
         |> Task.andThen (\() -> Build.build fs os options elmHomePath)
-        |> Task.attempt BuildCompleted
+        |> Task.attempt (BuildCompleted buildId)
 
 
 runReviewProcess :
