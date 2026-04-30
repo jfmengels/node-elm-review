@@ -38,6 +38,7 @@ type alias ModelData =
     , fs : FileSystem
     , os : ProcessCapability
     , options : ReviewOptions
+    , watch : Maybe (Sub Msg)
     }
 
 
@@ -61,6 +62,7 @@ init { stdout, stderr } { fs, os } options =
         , fs = fs
         , os = os
         , options = options
+        , watch = Nothing
         }
     , startBuild fs os options elmHomePath
     )
@@ -111,7 +113,16 @@ updateHelp msg model =
         BuildCompleted result ->
             case result of
                 Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation } ->
-                    ( model
+                    ( if model.options.watchConfig then
+                        case model.options.reviewProject of
+                            Options.Local reviewFolder ->
+                                { model | watch = Just (watchElmJson reviewFolder) }
+
+                            Options.Remote _ ->
+                                Sub.none
+
+                      else
+                        model
                     , runReviewProcess model
                         { reviewAppPath = reviewAppPath
                         , reviewElmJson = reviewElmJson
@@ -221,16 +232,7 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
 
 subscriptions : Model -> Sub Msg
 subscriptions (Model model) =
-    if model.options.watchConfig then
-        case model.options.reviewProject of
-            Options.Local reviewFolder ->
-                watchElmJson reviewFolder
-
-            Options.Remote _ ->
-                Sub.none
-
-    else
-        Sub.none
+    Maybe.withDefault Sub.none model.watch
 
 
 watchElmJson : Path -> Sub Msg
