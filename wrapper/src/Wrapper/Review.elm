@@ -60,9 +60,7 @@ init { stdout, stderr } { fs, os } options =
         , os = os
         , options = options
         }
-    , verifyElmJsonExists fs options.projectPaths
-        |> Task.andThen (\() -> Build.build fs os options elmHomePath)
-        |> Task.attempt BuildCompleted
+    , startBuild fs os options elmHomePath
     )
 
 
@@ -122,6 +120,13 @@ update msg (Model model) =
 
                 Err problem ->
                     Problem.exit model.stderr model.options problem
+
+
+startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Cmd Msg
+startBuild fs os options elmHomePath =
+    verifyElmJsonExists fs options.projectPaths
+        |> Task.andThen (\() -> Build.build fs os options elmHomePath)
+        |> Task.attempt BuildCompleted
 
 
 runReviewProcess :
