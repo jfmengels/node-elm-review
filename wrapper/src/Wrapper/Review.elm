@@ -10,7 +10,7 @@ module Wrapper.Review exposing
 
 -}
 
-import Capabilities exposing (Console)
+import Capabilities exposing (Console, FileWatcher)
 import Cli exposing (Env)
 import Elm.Project
 import ElmReview.Color exposing (Color(..))
@@ -45,7 +45,8 @@ type alias ModelData =
 type Msg
     = BuildCompleted (Result Problem Build.BuildData)
     | ReviewProcessEnded (Result Problem Process.Completed)
-    | GotElmJsonWatchEvent FileEvent
+    | GotConfigElmJsonWatchEvent
+    | GotConfigSourceFileWatchEvent FileEvent
 
 
 init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
@@ -116,7 +117,15 @@ updateHelp msg model =
                     ( if model.options.watchConfig then
                         case model.options.reviewProject of
                             Options.Local reviewFolder ->
-                                { model | watch = Just (watchElmJson reviewFolder) }
+                                let
+                                    watcher : Sub Msg
+                                    watcher =
+                                        watchConfig
+                                            (Debug.todo "watch permission")
+                                            reviewFolder
+                                            reviewElmJson
+                                in
+                                { model | watch = Just watcher }
 
                             Options.Remote _ ->
                                 Sub.none
@@ -148,35 +157,38 @@ updateHelp msg model =
                     , Problem.exit model.stderr model.options problem
                     )
 
-        GotElmJsonWatchEvent fileEvent ->
+        GotConfigElmJsonWatchEvent ->
+            -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
+            -- TODO Check if the important parts of file has changed
+            -- TODO Kill the previous app
+            -- TODO Show a message to the user? (depends on report mode)
             let
                 -- TODO Get from somewhere
                 elmHomePath : String
                 elmHomePath =
                     "/Users/m1/.elm"
             in
-            case FileWatcher.toEventType fileEvent.eventType of
-                FileWatcher.Modified ->
-                    -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
-                    -- TODO Check if the important parts of file has changed
-                    -- TODO Kill the previous app
-                    -- TODO Show a message to the user? (depends on report mode)
-                    ( model
-                    , startBuild model.fs model.os model.options elmHomePath
-                    )
+            ( model
+            , startBuild model.fs model.os model.options elmHomePath
+            )
 
-                FileWatcher.Created ->
-                    -- TODO Consider file as being modified after a delete
-                    ( model, Cmd.none )
+        GotConfigSourceFileWatchEvent fileEvent ->
+            if String.endsWith ".elm" fileEvent.path then
+                let
+                    -- TODO Get from somewhere
+                    elmHomePath : String
+                    elmHomePath =
+                        "/Users/m1/.elm"
+                in
+                -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
+                -- TODO Kill the previous app
+                -- TODO Show a message to the user? (depends on report mode)
+                ( model
+                , startBuild model.fs model.os model.options elmHomePath
+                )
 
-                FileWatcher.Deleted ->
-                    -- TODO Mark elm.json as temporarily deleted?
-                    -- Keep process alive regardless
-                    ( model, Cmd.none )
-
-                FileWatcher.Renamed ->
-                    -- Can't really be renamed?
-                    ( model, Cmd.none )
+            else
+                ( model, Cmd.none )
 
 
 startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Cmd Msg
@@ -232,17 +244,42 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
 
 subscriptions : Model -> Sub Msg
 subscriptions (Model model) =
-    Maybe.withDefault Sub.none model.watch
+    case model.watch of
+        Just sub ->
+            sub
+
+        Nothing ->
+            Sub.none
 
 
-watchElmJson : Path -> Sub Msg
-watchElmJson reviewFolder =
+watchConfig : FileWatcher -> Path -> Elm.Project.ApplicationInfo -> Sub Msg
+watchConfig fileWatcher reviewFolder reviewElmJson =
+    watchElmJson fileWatcher reviewFolder
+        :: List.map (\dir -> watchSourceDirectory fileWatcher (Path.join2 reviewFolder dir)) reviewElmJson.dirs
+        |> Sub.batch
+
+
+watchElmJson : FileWatcher -> Path -> Sub Msg
+watchElmJson fileWatcher reviewFolder =
     FileWatcher.watch
-        (Debug.todo "watch permission")
+        fileWatcher
         (Path.join2 reviewFolder "elm.json")
         { excludePaths = []
         , recursive = False
         , coalesceMs = 100
-        , eventMask = 15
+        , eventMask = 2
         }
-        GotElmJsonWatchEvent
+        (\_ -> GotConfigElmJsonWatchEvent)
+
+
+watchSourceDirectory : FileWatcher -> Path -> Sub Msg
+watchSourceDirectory fileWatcher directory =
+    FileWatcher.watch
+        fileWatcher
+        directory
+        { excludePaths = []
+        , recursive = True
+        , coalesceMs = 100
+        , eventMask = 2
+        }
+        GotConfigSourceFileWatchEvent
