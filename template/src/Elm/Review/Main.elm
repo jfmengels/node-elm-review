@@ -12,7 +12,6 @@ import Elm.Review.FixOptions as FixOptions
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
-import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.Store as Store
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
@@ -57,7 +56,6 @@ type alias Model =
     { env : Env
     , fs : FileSystem
     , options : Options
-    , runEnvironment : RunEnvironment
 
     --
     , store : Store.Model
@@ -154,17 +152,10 @@ initWithOptions env fs options rulesFromConfig =
                 (Rule.ignoreErrorsForDirectories options.ignoredDirs >> Rule.ignoreErrorsForFiles options.ignoredFiles)
                 rulesFromConfig
 
-        runEnvironment : RunEnvironment
-        runEnvironment =
-            { packagesLocation = options.packagesLocation
-            , reviewFolder = options.reviewFolder
-            }
-
         ( store, storeCmd ) =
             Store.init
                 { fs = fs
                 , options = options
-                , runEnvironment = runEnvironment
                 }
 
         model : Model
@@ -172,7 +163,6 @@ initWithOptions env fs options rulesFromConfig =
             { env = env
             , fs = fs
             , options = options
-            , runEnvironment = runEnvironment
             , store = store
             , promptId = PromptId 0
             , rules = rules
@@ -344,7 +334,7 @@ update msg model =
                 ( store, cmd ) =
                     Store.update
                         { fs = model.fs
-                        , runEnvironment = model.runEnvironment
+                        , packagesLocation = model.options.packagesLocation
                         , stderr = model.env.stderr
                         , ignoreProblematicDependencies = model.options.ignoreProblematicDependencies
                         , handleProblem = Problem.exit model.env.stderr model.options
@@ -402,13 +392,12 @@ update msg model =
                                     )
 
                                 ReloadDependencies newElmJson ->
-                                    Store.refreshProjectDependencies model.fs model.runEnvironment newElmJson projectWithFixes model.store
+                                    Store.refreshProjectDependencies model.fs model.options.packagesLocation newElmJson projectWithFixes model.store
 
                                 ReloadCompletely ->
                                     Store.init
                                         { fs = model.fs
                                         , options = model.options
-                                        , runEnvironment = model.runEnvironment
                                         }
                     in
                     ( { model
