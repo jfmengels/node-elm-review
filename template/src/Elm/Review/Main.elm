@@ -416,7 +416,7 @@ type ElmJsonChanges
 
 
 changesInElmJson :
-    List String
+    Maybe (List Path)
     ->
         { before : Maybe { a | project : Elm.Project.Project }
         , after : Maybe { a | project : Elm.Project.Project }
@@ -428,7 +428,7 @@ changesInElmJson directoriesToAnalyze { before, after } =
             NoChanges
 
         ( Just (Elm.Project.Application a), Just ((Elm.Project.Application b) as newProject) ) ->
-            if a.dirs /= b.dirs && not (List.isEmpty directoriesToAnalyze) then
+            if a.dirs /= b.dirs && not (List.isEmpty (Maybe.withDefault [] directoriesToAnalyze)) then
                 ReloadCompletely
 
             else if a.elm /= b.elm || a /= b then
