@@ -389,7 +389,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       }
                     , List.map
                         (\filePath ->
-                            Fs.readTextFile fs (directory ++ "/" ++ filePath)
+                            Fs.readTextFile fs (Path.join2 directory filePath)
                                 |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
                         )
                         files
@@ -815,7 +815,11 @@ fetchReadme fs =
 fetchSuppressionFiles : FileSystem -> Path -> Cmd Msg
 fetchSuppressionFiles fs directory =
     Fs.walkTree fs directory (Just "*.json") Fs.Any
-        |> Task.map Tuple.first
+        |> Task.map
+            (\( files, _ ) ->
+                -- Remove leading "./"
+                List.map (String.dropLeft 2) files
+            )
         |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
