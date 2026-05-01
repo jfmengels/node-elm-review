@@ -1422,7 +1422,7 @@ subscriptions wrapper =
             if model.options.watch then
                 case watchPermission () of
                     Just fileWatcher ->
-                        Store.subscriptions fileWatcher model.store
+                        Store.subscriptions fileWatcher model.options model.store
                             |> Sub.map StoreMsg
 
                     Nothing ->
