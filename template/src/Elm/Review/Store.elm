@@ -483,27 +483,17 @@ fetchSources fs path elmJson directoriesToAnalyze =
                             |> Err
 
                     else
-                        List.map (fetchElmFiles fs) ("test" :: application.dirs)
+                        List.map (\directory -> fetchElmFiles fs { fromCliArgs = False, target = directory }) ("test" :: application.dirs)
                             |> Ok
 
                 Elm.Project.Package _ ->
-                    List.map (fetchElmFiles fs) [ "src", "test" ]
+                    List.map (\directory -> fetchElmFiles fs { fromCliArgs = False, target = directory }) [ "src", "test" ]
                         |> Ok
 
         Just directoriesToAnalyze_ ->
             List.map
                 (\fileOrDir ->
-                    -- TODO Use version of Fs.stat that does follow symlinks
-                    Fs.stat fs fileOrDir
-                        |> Task.andThen
-                            (\{ isDirectory } ->
-                                if isDirectory then
-                                    Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
-                                        |> Task.map Tuple.first
-
-                                else
-                                    Task.succeed [ fileOrDir ]
-                            )
+                    fetchElmFiles fs { fromCliArgs = False, target = fileOrDir }
                         |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
                 )
                 directoriesToAnalyze_
@@ -758,11 +748,29 @@ fetchSuppressionFiles fs directory =
         |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
-fetchElmFiles : FileSystem -> String -> Cmd Msg
-fetchElmFiles fs directory =
-    Fs.walkTree fs directory (Just "*.elm") Fs.Any
+fetchElmFiles : FileSystem -> { fromCliArgs : Bool, target : Path } -> Cmd Msg
+fetchElmFiles fs { fromCliArgs, target } =
+    if fromCliArgs then
+        Fs.stat fs target
+            |> Task.andThen
+                (\{ isDirectory } ->
+                    if isDirectory then
+                        listElmFiles fs target
+
+                    else
+                        Task.succeed [ target ]
+                )
+            |> Task.attempt (ReceivedElmFileList target)
+
+    else
+        listElmFiles fs target
+            |> Task.attempt (ReceivedElmFileList target)
+
+
+listElmFiles : FileSystem -> String -> Task FsError (List Path)
+listElmFiles fs target =
+    Fs.walkTree fs target (Just "*.elm") Fs.Any
         |> Task.map Tuple.first
-        |> Task.attempt (ReceivedElmFileList directory)
 
 
 fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
