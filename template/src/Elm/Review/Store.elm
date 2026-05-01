@@ -1,7 +1,7 @@
 module Elm.Review.Store exposing
     ( Model, init
-    , refreshProjectDependencies
     , Msg, update, UpdateInput
+    , applyChangesFromFix
     , Readiness(..), checkReadiness
     , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
@@ -11,8 +11,8 @@ module Elm.Review.Store exposing
 {-|
 
 @docs Model, init
-@docs refreshProjectDependencies
 @docs Msg, update, UpdateInput
+@docs applyChangesFromFix
 @docs Readiness, checkReadiness
 @docs project, setProject, updateProject
 @docs suppressedErrors, setSuppressedErrors
@@ -84,25 +84,6 @@ init fs options =
         , ruleLinks = Dict.empty
         , emptySourceDirectories = []
         , directoriesFromCliArgsWithoutFiles = []
-        }
-    , Cmd.batch tasks
-    )
-
-
-refreshProjectDependencies : FileSystem -> Path -> Elm.Project.Project -> Project -> Model -> ( Model, Cmd Msg )
-refreshProjectDependencies fs packagesLocation elmJson newProject (Model model) =
-    let
-        tasks : List (Cmd Msg)
-        tasks =
-            fetchDependencies fs packagesLocation elmJson []
-    in
-    ( Model
-        { pendingTaskCount = model.pendingTaskCount + List.length tasks
-        , project = Project.removeDependencies newProject
-        , suppressedErrors = model.suppressedErrors
-        , ruleLinks = model.ruleLinks
-        , emptySourceDirectories = model.emptySourceDirectories
-        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
         }
     , Cmd.batch tasks
     )
@@ -587,14 +568,83 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
             )
 
 
-minimum : Int -> Int
-minimum =
-    Basics.max 0
+applyChangesFromFix : FileSystem -> Options -> Project -> Model -> ( Model, Cmd Msg )
+applyChangesFromFix fs options projectWithFixes model =
+    case
+        changesInElmJson
+            options.directoriesToAnalyze
+            { before = Project.elmJson (project model)
+            , after = Project.elmJson projectWithFixes
+            }
+    of
+        NoChanges ->
+            ( setProject projectWithFixes model
+            , Cmd.none
+            )
+
+        ReloadDependencies newElmJson ->
+            refreshProjectDependencies fs options.packagesLocation newElmJson projectWithFixes model
+
+        ReloadCompletely ->
+            init fs options
 
 
-project : Model -> Project
-project (Model model) =
-    model.project
+type ElmJsonChanges
+    = NoChanges
+    | ReloadDependencies Elm.Project.Project
+    | ReloadCompletely
+
+
+changesInElmJson :
+    Maybe (List Path)
+    ->
+        { before : Maybe { a | project : Elm.Project.Project }
+        , after : Maybe { a | project : Elm.Project.Project }
+        }
+    -> ElmJsonChanges
+changesInElmJson directoriesToAnalyze { before, after } =
+    case ( Maybe.map .project before, Maybe.map .project after ) of
+        ( Nothing, Nothing ) ->
+            NoChanges
+
+        ( Just (Elm.Project.Application a), Just ((Elm.Project.Application b) as newProject) ) ->
+            if a.dirs /= b.dirs && not (List.isEmpty (Maybe.withDefault [] directoriesToAnalyze)) then
+                ReloadCompletely
+
+            else if a.elm /= b.elm || a /= b then
+                ReloadDependencies newProject
+
+            else
+                NoChanges
+
+        ( Just (Elm.Project.Package a), Just ((Elm.Project.Package b) as newProject) ) ->
+            if a.elm /= b.elm || a.deps /= b.deps || a.testDeps /= b.testDeps then
+                ReloadDependencies newProject
+
+            else
+                NoChanges
+
+        _ ->
+            ReloadCompletely
+
+
+refreshProjectDependencies : FileSystem -> Path -> Elm.Project.Project -> Project -> Model -> ( Model, Cmd Msg )
+refreshProjectDependencies fs packagesLocation elmJson newProject (Model model) =
+    let
+        tasks : List (Cmd Msg)
+        tasks =
+            fetchDependencies fs packagesLocation elmJson []
+    in
+    ( Model
+        { pendingTaskCount = model.pendingTaskCount + List.length tasks
+        , project = Project.removeDependencies newProject
+        , suppressedErrors = model.suppressedErrors
+        , ruleLinks = model.ruleLinks
+        , emptySourceDirectories = model.emptySourceDirectories
+        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+        }
+    , Cmd.batch tasks
+    )
 
 
 setProject : Project -> Model -> Model
@@ -607,6 +657,16 @@ setProject newProject (Model model) =
         , emptySourceDirectories = model.emptySourceDirectories
         , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
         }
+
+
+minimum : Int -> Int
+minimum =
+    Basics.max 0
+
+
+project : Model -> Project
+project (Model model) =
+    model.project
 
 
 updateProject : (Project -> Project) -> Model -> Model
