@@ -149,8 +149,8 @@ type alias UpdateInput =
     { fs : FileSystem
     , packagesLocation : Path
     , stderr : Console
+    , options : Options
     , ignoreProblematicDependencies : Bool
-    , handleProblem : Problem -> Cmd Msg
     }
 
 
@@ -161,7 +161,7 @@ update inputs msg (Model model) =
 
 
 updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, Cmd Msg )
-updateInner { fs, stderr, packagesLocation, ignoreProblematicDependencies, handleProblem } msg model =
+updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependencies } msg model =
     let
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
@@ -174,6 +174,10 @@ updateInner { fs, stderr, packagesLocation, ignoreProblematicDependencies, handl
               }
             , Cmd.none
             )
+
+        handleProblem : Problem -> Cmd msg
+        handleProblem problem =
+            Problem.exit stderr options problem
     in
     case msg of
         ReceivedElmJson directoriesToAnalyze path (Ok rawElmJson) ->
