@@ -103,10 +103,11 @@ update msg (Model model) =
                 ]
 
         CreatedFiles (Err problem) ->
-            Problem.exit model.stderr
+            Problem.stop model.stderr
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug
+                , attemptFutureRecovery = False
                 }
                 problem
 
@@ -214,7 +215,7 @@ but I could not find a """ ++ c Yellow elmJsonPath ++ """ file in it.
 
 I need this file to determine the rest of the configuration."""
     }
-        |> Problem.from
+        |> Problem.from Problem.Recoverable
 
 
 parseElmJson : RemoteTemplate -> String -> String -> Result Problem Elm.Project.ApplicationInfo
@@ -247,7 +248,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
     elm-review --template """ ++ remoteTemplate.repoName ++ "/example" ++ referenceAsUrl ++ """
     elm-review --template """ ++ remoteTemplate.repoName ++ "/review" ++ referenceAsUrl
             }
-                |> Problem.from
+                |> Problem.from Problem.Recoverable
                 |> Err
 
         Ok (Elm.Project.Application application) ->
@@ -255,7 +256,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
             case MinVersion.validateDependencyVersion (Options.Remote remoteTemplate) Nothing application of
                 Err problem ->
                     problem
-                        |> Problem.from
+                        |> Problem.from Problem.Recoverable
                         |> Problem.withPath elmJsonPath
                         |> Err
 

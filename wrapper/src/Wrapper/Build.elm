@@ -112,7 +112,7 @@ validateElmReviewVersion options elmJsonPath elmJson =
     case MinVersion.validateDependencyVersion options.reviewProject options.localElmReview elmJson.application of
         Err problem ->
             problem
-                |> Problem.from
+                |> Problem.from Problem.Recoverable
                 |> Problem.withPath elmJsonPath
                 |> Err
 
@@ -337,7 +337,7 @@ fetchElmJson fs reviewProject elmJsonPath =
 
 Try changing the permissions of the file and/or its parents directories."""
                         }
-                            |> Problem.from
+                            |> Problem.from Problem.Recoverable
                             |> Problem.withPath elmJsonPath
 
                     Fs.IoError "Not a directory" ->
@@ -360,7 +360,7 @@ elmJsonNotFoundProblem reviewProject elmJsonPath =
 
 I can help set you up with an initial configuration if you run """ ++ c Magenta "elm-review init" ++ "."
             }
-                |> Problem.from
+                |> Problem.from Problem.Recoverable
                 |> Problem.withPath elmJsonPath
 
         Options.Remote remoteTemplate ->
@@ -376,7 +376,7 @@ but I could not find a """ ++ c Yellow templateElmJsonPath ++ """ file in it.
 
 I need this file to determine the rest of the configuration."""
             }
-                |> Problem.from
+                |> Problem.from Problem.Unrecoverable
 
 
 notADirectoryConfigurationProblem : Path -> Problem
@@ -388,7 +388,7 @@ notADirectoryConfigurationProblem elmJsonPath =
 Instead of """ ++ c Red "--config some/path/to/review/elm.json" ++ """ (or similar),
 please use """ ++ c GreenBright "--config some/path/to/review"
     }
-        |> Problem.from
+        |> Problem.from Problem.Unrecoverable
         |> Problem.withPath elmJsonPath
 
 
@@ -408,7 +408,7 @@ parseElmJson reviewProject elmJsonPath rawElmJson =
 
 I think it is likely that you are pointing to an incorrect configuration file. Please check the path to your configuration again."""
                     }
-                        |> Problem.from
+                        |> Problem.from Problem.Recoverable
                         |> Problem.withPath elmJsonPath
                         |> Err
 
@@ -434,7 +434,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
     elm-review --template """ ++ repoName ++ "/example" ++ referenceAsUrl ++ """
     elm-review --template """ ++ repoName ++ "/review" ++ referenceAsUrl
                     }
-                        |> Problem.from
+                        |> Problem.from Problem.Unrecoverable
                         |> Err
 
         Ok (Elm.Project.Application application) ->
@@ -469,7 +469,7 @@ compileProjectUsingElmRun os reviewFolder buildFolder reviewAppPath =
 
                 else
                     compilationError reviewFolder stderr
-                        |> Problem.from
+                        |> Problem.from Problem.Recoverable
                         |> Task.fail
             )
 

@@ -117,7 +117,7 @@ Since you specified this path, I'm assuming that you misconfigured the CLI's arg
                                 }
                 in
                 problem
-                    |> Problem.from
+                    |> Problem.from Problem.Recoverable
                     |> Problem.withPath elmJsonPath
             )
 
@@ -126,6 +126,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg (Model model) =
     updateHelp msg model
         |> Tuple.mapFirst Model
+
+
+stopBecauseOfProblem : ModelData -> Problem -> Cmd msg
+stopBecauseOfProblem model problem =
+    Problem.stop
+        model.stderr
+        { color = model.options.color
+        , reportMode = model.options.reportMode
+        , debug = model.options.debug
+        , attemptFutureRecovery = model.options.watchConfig
+        }
+        problem
 
 
 updateHelp : Msg -> ModelData -> ( ModelData, Cmd Msg )
@@ -166,7 +178,7 @@ updateHelp msg model =
 
                     Err problem ->
                         ( model
-                        , Problem.exit model.stderr model.options problem
+                        , stopBecauseOfProblem model problem
                         )
 
         SpawnedReviewProcess result ->
@@ -180,7 +192,7 @@ updateHelp msg model =
 
                 Err problem ->
                     ( model
-                    , Problem.exit model.stderr model.options problem
+                    , stopBecauseOfProblem model problem
                     )
 
         ReviewProcessEnded pid result ->
@@ -193,7 +205,7 @@ updateHelp msg model =
 
                     Err problem ->
                         ( model
-                        , Problem.exit model.stderr model.options problem
+                        , stopBecauseOfProblem model problem
                         )
 
             else

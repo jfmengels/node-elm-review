@@ -141,7 +141,7 @@ parseHelp args flags =
                     { title = "PROBLEM READING FLAGS"
                     , message = \_ -> err
                     }
-                        |> Problem.from
+                        |> Problem.from Problem.Unrecoverable
                         |> Err
 
 

@@ -58,12 +58,14 @@ toOptions env options =
                         { color = color
                         , reportMode = options.reportMode
                         , debug = options.debug
+                        , attemptFutureRecovery = False
                         }
                         problem
             in
             case options.problem of
                 Just problem ->
-                    Problem.from (problem options.subcommand)
+                    Problem.from Problem.Unrecoverable
+                        (problem options.subcommand)
                         |> parseError
 
                 Nothing ->
@@ -99,7 +101,9 @@ toOptions env options =
                                             NewRule newRuleOptions
 
                                         Err problem ->
-                                            parseError (Problem.from problem)
+                                            problem
+                                                |> Problem.from Problem.Unrecoverable
+                                                |> parseError
                                 )
 
                         Just Subcommand.NewPackage ->
@@ -109,7 +113,7 @@ toOptions env options =
 
 I recommend you try to gain network access and try again."""
                                 }
-                                    |> Problem.from
+                                    |> Problem.from Problem.Unrecoverable
                                     |> parseError
 
                             else
@@ -132,6 +136,7 @@ requiresElmJsonPath options color createOptions =
                     { reportMode = options.reportMode
                     , debug = options.debug
                     , color = color
+                    , attemptFutureRecovery = options.watchConfig
                     }
                 , toOptions = \{ elmJsonPath } -> createOptions elmJsonPath
                 }

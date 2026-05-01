@@ -2,9 +2,9 @@ module ElmReview.Problem exposing
     ( Problem, from, withPath
     , ProblemSimple
     , invalidElmJson, unexpectedError, notImplementedYet
-    , exit
     , FormatOptions
     , unwrapFOR_TESTS
+    , Recovery(..), stop
     )
 
 {-|
@@ -38,6 +38,7 @@ type Problem
         { title : String
         , message : Colorize -> String
         , path : Maybe Path
+        , recovery : Recovery
         }
 
 
@@ -47,12 +48,18 @@ type alias ProblemSimple =
     }
 
 
-from : ProblemSimple -> Problem
-from { title, message } =
+type Recovery
+    = Recoverable
+    | Unrecoverable
+
+
+from : Recovery -> ProblemSimple -> Problem
+from recovery { title, message } =
     Problem
         { title = title
         , message = message
         , path = Nothing
+        , recovery = recovery
         }
 
 
@@ -62,6 +69,7 @@ withPath path (Problem problem) =
         { title = problem.title
         , message = problem.message
         , path = Just path
+        , recovery = problem.recovery
         }
 
 
@@ -72,12 +80,26 @@ unwrapFOR_TESTS (Problem problem) =
     }
 
 
-exit : Console -> FormatOptions options -> Problem -> Cmd msg
-exit stderr formatOptions problem =
+stop : Console -> FormatOptions options -> Problem -> Cmd msg
+stop stderr formatOptions problem =
     Cmd.batch
         [ Cli.println stderr (format formatOptions problem)
-        , Cli.exit 1
+        , exit formatOptions.attemptFutureRecovery problem
         ]
+
+
+exit : Bool -> Problem -> Cmd msg
+exit watch (Problem problem) =
+    case problem.recovery of
+        Recoverable ->
+            if watch then
+                Cmd.none
+
+            else
+                Cli.exit 1
+
+        Unrecoverable ->
+            Cli.exit 1
 
 
 type alias FormatOptions a =
@@ -85,6 +107,7 @@ type alias FormatOptions a =
         | color : Color.Support
         , reportMode : ReportMode
         , debug : Bool
+        , attemptFutureRecovery : Bool
     }
 
 
@@ -144,14 +167,14 @@ invalidElmJson pathToElmJson reviewProject error =
             { title = "COULD NOT READ ELM.JSON"
             , message = localDecodingErrorMessage pathToElmJson error
             }
-                |> from
+                |> from Recoverable
                 |> withPath pathToElmJson
 
         Options.Remote remoteTemplate ->
             { title = "TEMPLATE ELM.JSON PARSING ERROR"
             , message = templateDecodingErrorMessage remoteTemplate error
             }
-                |> from
+                |> from Unrecoverable
 
 
 localDecodingErrorMessage : String -> Decode.Error -> Colorize -> String
@@ -187,7 +210,7 @@ Below is the error that was encountered.
 --------------------------------------------------------------------------------
 """ ++ message
     }
-        |> from
+        |> from Unrecoverable
 
 
 notImplementedYet : String -> Problem
@@ -195,4 +218,4 @@ notImplementedYet featureDescription =
     { title = "FEATURE IS NOT IMPLEMENTED YET"
     , message = \_ -> featureDescription ++ " is not implemented yet."
     }
-        |> from
+        |> from Unrecoverable

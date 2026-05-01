@@ -112,7 +112,7 @@ checkReadiness (Model model) =
 When I can't find files in some of the directories, I'm assuming that you
 misconfigured the CLI's arguments."""
         }
-            |> Problem.from
+            |> Problem.from Problem.Recoverable
             |> Failure
 
     else if List.isEmpty (Project.modules model.project) then
@@ -121,7 +121,7 @@ misconfigured the CLI's arguments."""
             \_ -> """I could not find any files in this project. I looked in these folders:
 - """ ++ String.join "\n - " model.emptySourceDirectories
         }
-            |> Problem.from
+            |> Problem.from Problem.Recoverable
             |> Failure
 
     else
@@ -177,7 +177,13 @@ updateInner { fs, stderr, options } msg model =
 
         handleProblem : Problem -> Cmd msg
         handleProblem problem =
-            Problem.exit stderr options problem
+            Problem.stop stderr
+                { color = options.color
+                , reportMode = options.reportMode
+                , debug = options.debug
+                , attemptFutureRecovery = options.watch
+                }
+                problem
     in
     case msg of
         ReceivedElmJson path (Ok rawElmJson) ->
@@ -223,7 +229,7 @@ updateInner { fs, stderr, options } msg model =
             , { title = "PROBLEM READING ELM.JSON"
               , message = \c -> "I was trying to read " ++ c Yellow "elm.json" ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
               }
-                |> Problem.from
+                |> Problem.from Problem.Recoverable
                 |> Problem.withPath path
                 |> handleProblem
             )
@@ -290,7 +296,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 """
                                                 ++ Decode.errorToString decodeError
                                     }
-                                        |> Problem.from
+                                        |> Problem.from Problem.Recoverable
                                         |> Problem.withPath filePath
                                         |> handleProblem
 
@@ -301,7 +307,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                             "I encountered an error when reading the dependencies of the project. I suggest opening a bug report at https://github.com/jfmengels/node-elm-review/issues."
                                                 ++ Decode.errorToString decodeError
                                     }
-                                        |> Problem.from
+                                        |> Problem.from Problem.Recoverable
                                         |> Problem.withPath filePath
                                         |> handleProblem
                                 )
@@ -366,7 +372,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     , { title = "PROBLEM READING ELM FILE"
                       , message = \c -> "I was trying to read " ++ c Yellow path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
                       }
-                        |> Problem.from
+                        |> Problem.from Problem.Recoverable
                         |> Problem.withPath path
                         |> handleProblem
                     )
@@ -434,7 +440,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     , { title = "PROBLEM READING SUPPRESSION FILE"
                       , message = \c -> "I was trying to read " ++ c Orange path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
                       }
-                        |> Problem.from
+                        |> Problem.from Problem.Recoverable
                         |> Problem.withPath path
                         |> handleProblem
                     )
@@ -472,7 +478,7 @@ fetchSources fs path elmJson directoriesToAnalyze =
                         { title = "EMPTY SOURCE-DIRECTORIES"
                         , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
                         }
-                            |> Problem.from
+                            |> Problem.from Problem.Recoverable
                             |> Problem.withPath path
                             |> Err
 
@@ -588,7 +594,7 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
             , { title = "PROBLEM FINDING ELM FILES"
               , message = \_ -> "I was trying to find the Elm files in your project but encountered a problem:\n\n" ++ FsExtra.errorToString err
               }
-                |> Problem.from
+                |> Problem.from Problem.Recoverable
                 |> Problem.withPath directory
                 |> handleProblem
             )
