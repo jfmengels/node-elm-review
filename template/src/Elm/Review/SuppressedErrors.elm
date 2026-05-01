@@ -66,8 +66,8 @@ Try updating """ ++ c GreenBright "elm-review" ++ " to a version that supports t
                 let
                     ruleName : String
                     ruleName =
-                        -- Remove leading "./" and trailing ".json"
-                        String.slice 2 -5 filePath
+                        -- Remove trailing ".json"
+                        String.dropRight 5 filePath
                 in
                 List.foldl
                     (\( path, count_ ) dict -> Dict.insert ( ruleName, path ) count_ dict)
