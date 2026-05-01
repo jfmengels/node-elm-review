@@ -65,13 +65,13 @@ readReviewElmJson fs pathToElmJson_ =
             (\error ->
                 case error of
                     Fs.NotFound _ ->
-                        Problem.from
+                        Problem.from Problem.Recoverable
                             { title = "COULD NOT FIND ELM.JSON"
                             , message = couldNotFindElmJsonMessage pathToElmJson_
                             }
 
                     Fs.PermissionDenied ->
-                        Problem.from
+                        Problem.from Problem.Recoverable
                             { title = "PERMISSION DENIED"
                             , message = \c -> "I could not read " ++ c Yellow pathToElmJson_ ++ " file due to missing permissions."
                             }
@@ -751,10 +751,11 @@ update msg (Model model) =
                     promptForRuleName ()
 
         GotElmJson (Err problem) ->
-            Problem.exit model.stderr
+            Problem.stop model.stderr
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug
+                , attemptFutureRecovery = False
                 }
                 problem
 
@@ -786,9 +787,10 @@ update msg (Model model) =
                 ]
 
         Done _ (Err problem) ->
-            Problem.exit model.stderr
+            Problem.stop model.stderr
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug
+                , attemptFutureRecovery = False
                 }
                 problem

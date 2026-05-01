@@ -128,10 +128,11 @@ update msg (Model model) =
                         ]
 
                 Err problem ->
-                    Problem.exit model.stderr
+                    Problem.stop model.stderr
                         { color = model.options.color
                         , reportMode = ReportMode.HumanReadable
                         , debug = model.options.debug
+                        , attemptFutureRecovery = False
                         }
                         problem
 

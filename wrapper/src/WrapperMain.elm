@@ -63,8 +63,8 @@ init env =
             , { title = "MISSING CAPABILITIES"
               , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
               }
-                |> Problem.from
-                |> Problem.exit env.stderr
+                |> Problem.from Problem.Unrecoverable
+                |> Problem.stop env.stderr
                     { color = Color.noColors
                     , reportMode =
                         if List.member "--report=json" env.args || List.member "--report=ndjson" env.args then
@@ -73,6 +73,7 @@ init env =
                         else
                             ReportMode.HumanReadable
                     , debug = List.member "--debug" env.args
+                    , attemptFutureRecovery = False
                     }
             )
 
@@ -85,7 +86,7 @@ handleCliArgsParseResult env { fs, os } result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
             ( Done
-            , Problem.exit env.stderr formatOptions problem
+            , Problem.stop env.stderr formatOptions problem
             )
 
         OptionsParser.ShowHelp options ->
@@ -249,14 +250,14 @@ foundNearestElmJson loading result =
 If you wish to run elm-review from outside your project,
 try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
               }
-                |> Problem.from
-                |> Problem.exit loading.env.stderr loading.formatOptions
+                |> Problem.from Problem.Recoverable
+                |> Problem.stop loading.env.stderr loading.formatOptions
             )
 
         Err error ->
             ( Done
             , Problem.unexpectedError "when trying to find your project root" (FsExtra.errorToString error)
-                |> Problem.exit loading.env.stderr loading.formatOptions
+                |> Problem.stop loading.env.stderr loading.formatOptions
             )
 
 

@@ -115,7 +115,7 @@ init env =
 
         Err err ->
             ( Done
-            , Problem.exit env.stderr (roughFormatOptions env.args) err
+            , Problem.stop env.stderr (roughFormatOptions env.args) err
             )
 
 
@@ -123,7 +123,7 @@ requireFs : Env -> Result Problem FileSystem
 requireFs env =
     Result.mapError
         (\err ->
-            Problem.from
+            Problem.from Problem.Unrecoverable
                 { title = "MISSING CAPABILITIES"
                 , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
                 }
@@ -131,7 +131,7 @@ requireFs env =
         (Fs.require env)
 
 
-roughFormatOptions : List String -> Problem.FormatOptions {}
+roughFormatOptions : List String -> Problem.FormatOptions { attemptFutureRecovery : Bool }
 roughFormatOptions args =
     { color = Color.noColors
     , reportMode =
@@ -141,6 +141,7 @@ roughFormatOptions args =
         else
             ReportMode.HumanReadable
     , debug = List.member "--debug" args
+    , attemptFutureRecovery = False
     }
 
 
@@ -177,6 +178,17 @@ initWithOptions env fs options rulesFromConfig =
 computeRulesToRun : Env -> Options -> Result (Cmd msg) (List Rule)
 computeRulesToRun env options =
     let
+        stopBecauseOfProblem_ : Problem -> Cmd msg
+        stopBecauseOfProblem_ problem =
+            Problem.stop
+                env.stderr
+                { color = options.color
+                , reportMode = options.reportMode
+                , debug = options.debug
+                , attemptFutureRecovery = False
+                }
+                problem
+
         rulesWithIds : List Rule
         rulesWithIds =
             List.indexedMap Rule.withRuleId config
@@ -207,8 +219,8 @@ I recommend you take a look at the following documents:
   - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
         }
-            |> Problem.from
-            |> Problem.exit env.stderr options
+            |> Problem.from Problem.Recoverable
+            |> stopBecauseOfProblem_
             |> Err
 
     else if not (List.isEmpty filterNames) then
@@ -219,7 +231,7 @@ I recommend you take a look at the following documents:
                     |> Set.toList
             , filterNames = filterNames
             }
-            |> Problem.exit env.stderr options
+            |> stopBecauseOfProblem_
             |> Err
 
     else
@@ -293,7 +305,7 @@ unknownRulesFilterMessage { ruleNames, filterNames } =
                 |> List.map (\filterName -> "- " ++ filterName ++ ". Did you mean:\n  - " ++ String.join "\n  - " (closestNames ruleNames filterName))
                 |> String.join "\n\n"
     in
-    Problem.from
+    Problem.from Problem.Unrecoverable
         { title = "UNKNOWN FILTERED RULE(S)"
         , message =
             \_ -> """You requested to only run several rules, but I could not find some of them.
@@ -324,6 +336,18 @@ updateWrapper msg wrapper =
                 |> Tuple.mapFirst Running
 
 
+stopBecauseOfProblem : Model -> Problem -> Cmd msg
+stopBecauseOfProblem model problem =
+    Problem.stop
+        model.env.stderr
+        { color = model.options.color
+        , reportMode = model.options.reportMode
+        , debug = model.options.debug
+        , attemptFutureRecovery = model.options.watch
+        }
+        problem
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -350,7 +374,7 @@ update msg model =
                     Cmd.none
 
                 Err problem ->
-                    Problem.exit model.env.stderr model.options problem
+                    stopBecauseOfProblem model problem
             )
 
         FixPromptMsg promptId payload fixPromptMsg ->
@@ -388,7 +412,7 @@ update msg model =
                 Err error ->
                     ( model
                     , Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error)
-                        |> Problem.exit model.env.stderr model.options
+                        |> stopBecauseOfProblem model
                     )
 
 
@@ -486,7 +510,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
 
         Store.Failure problem ->
             ( model
-            , Problem.exit model.env.stderr model.options problem
+            , stopBecauseOfProblem model problem
             )
 
 
