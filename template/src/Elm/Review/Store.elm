@@ -42,6 +42,7 @@ import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
 import Task exposing (Task)
 import Worker.Capabilities exposing (Console, FileWatcher)
+import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 
 
 type Model
@@ -137,6 +138,7 @@ type Msg
     | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
     | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
+    | GotProjectElmJsonWatchEvent
 
 
 type alias File =
@@ -446,6 +448,17 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , Cmd.none
+            )
+
+        GotProjectElmJsonWatchEvent ->
+            ( { pendingTaskCount = model.pendingTaskCount + 1
+              , project = model.project
+              , suppressedErrors = model.suppressedErrors
+              , ruleLinks = model.ruleLinks
+              , emptySourceDirectories = model.emptySourceDirectories
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+              }
+            , fetchElmJson fs
             )
 
 
@@ -851,4 +864,12 @@ joinPaths directory filePath =
 
 subscriptions : FileWatcher -> Model -> Sub Msg
 subscriptions fileWatcher (Model model) =
-    Sub.none
+    FileWatcher.watch
+        fileWatcher
+        "elm.json"
+        { excludePaths = []
+        , recursive = False
+        , coalesceMs = 100
+        , eventMask = 3
+        }
+        (\_ -> GotProjectElmJsonWatchEvent)
