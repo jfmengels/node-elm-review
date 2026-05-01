@@ -1,4 +1,4 @@
-port module Elm.Review.Main exposing (ModelWrapper, Msg, main)
+module Elm.Review.Main exposing (ModelWrapper, Msg, main)
 
 import Array exposing (Array)
 import Capabilities exposing (Stdin)
@@ -34,13 +34,6 @@ import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
 import Task
-
-
-
--- PORTS
-
-
-port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedDirectories : List String } -> Cmd msg
 
 
 
@@ -189,10 +182,7 @@ initWithOptions env fs options rulesFromConfig =
             }
     in
     ( Running model
-    , Cmd.batch
-        [ rules |> List.concatMap Rule.ruleRequestedFiles |> requestReadingFiles
-        , Cmd.map StoreMsg storeCmd
-        ]
+    , Cmd.map StoreMsg storeCmd
     )
 
 
