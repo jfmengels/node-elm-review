@@ -1,12 +1,14 @@
 module ElmReview.Path exposing
     ( Path
-    , dirname, join, joinArray, join2
+    , baseName, dirname
+    , join, joinArray, join2
     )
 
 {-| Utilities to work with paths.
 
 @docs Path
-@docs dirname, join, joinArray, join2
+@docs baseName, dirname
+@docs join, joinArray, join2
 
 -}
 
@@ -15,6 +17,18 @@ import Array exposing (Array)
 
 type alias Path =
     String
+
+
+{-| Returns the name of the file, without its parents.
+-}
+baseName : Path -> Path
+baseName path =
+    case List.reverse (String.split "/" path) of
+        segment :: _ ->
+            segment
+
+        [] ->
+            path
 
 
 dirname : Path -> Path

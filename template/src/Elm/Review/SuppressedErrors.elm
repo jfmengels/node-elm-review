@@ -10,6 +10,7 @@ module Elm.Review.SuppressedErrors exposing
     , encode
     , fromReviewErrors
     , member
+    , removeFromFile
     , suppressedFolder
     , write
     )
@@ -83,6 +84,18 @@ Try updating """ ++ c GreenBright "elm-review" ++ " to a version that supports t
                 |> Problem.from Problem.Unrecoverable
                 |> Problem.withPath filePath
                 |> Err
+
+
+removeFromFile : Path -> SuppressedErrors -> SuppressedErrors
+removeFromFile filePath (SuppressedErrors suppressedErrors) =
+    let
+        ruleNameToRemove : String
+        ruleNameToRemove =
+            -- Remove trailing ".json"
+            String.dropRight 5 (Path.baseName filePath)
+    in
+    Dict.filter (\( ruleName, _ ) _ -> ruleName == ruleNameToRemove) suppressedErrors
+        |> SuppressedErrors
 
 
 fromReviewErrors : List Rule.ReviewError -> SuppressedErrors
