@@ -332,10 +332,8 @@ update msg model =
                 ( store, cmd ) =
                     Store.update
                         { fs = model.fs
-                        , packagesLocation = model.options.packagesLocation
                         , stderr = model.env.stderr
                         , options = model.options
-                        , ignoreProblematicDependencies = model.options.ignoreProblematicDependencies
                         }
                         storeMsg
                         model.store
