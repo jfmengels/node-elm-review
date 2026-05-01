@@ -145,7 +145,7 @@ misconfigured the CLI's arguments."""
 
 
 type Msg
-    = ReceivedElmJson (List Path) String (Result Fs.FsError String)
+    = ReceivedElmJson (Maybe (List Path)) String (Result Fs.FsError String)
     | ReceivedReadme String (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
     | ReceivedElmFileList String (Result Fs.FsError (List String))
@@ -457,43 +457,44 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
             )
 
 
-fetchSources : FileSystem -> (Problem -> Cmd Msg) -> String -> Elm.Project.Project -> List Path -> List (Cmd Msg)
+fetchSources : FileSystem -> (Problem -> Cmd Msg) -> Path -> Elm.Project.Project -> Maybe (List Path) -> List (Cmd Msg)
 fetchSources fs handleProblem path elmJson directoriesToAnalyze =
-    if List.isEmpty directoriesToAnalyze then
-        case elmJson of
-            Elm.Project.Application application ->
-                if List.isEmpty application.dirs then
-                    [ { title = "EMPTY SOURCE-DIRECTORIES"
-                      , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
-                      }
-                        |> Problem.from
-                        |> Problem.withPath path
-                        |> handleProblem
-                    ]
+    case directoriesToAnalyze of
+        Nothing ->
+            case elmJson of
+                Elm.Project.Application application ->
+                    if List.isEmpty application.dirs then
+                        [ { title = "EMPTY SOURCE-DIRECTORIES"
+                          , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
+                          }
+                            |> Problem.from
+                            |> Problem.withPath path
+                            |> handleProblem
+                        ]
 
-                else
-                    List.map (fetchElmFiles fs) ("test" :: application.dirs)
+                    else
+                        List.map (fetchElmFiles fs) ("test" :: application.dirs)
 
-            Elm.Project.Package _ ->
-                List.map (fetchElmFiles fs) [ "src", "test" ]
+                Elm.Project.Package _ ->
+                    List.map (fetchElmFiles fs) [ "src", "test" ]
 
-    else
-        List.map
-            (\fileOrDir ->
-                -- TODO Use version of Fs.stat that does follow symlinks
-                Fs.stat fs fileOrDir
-                    |> Task.andThen
-                        (\{ isDirectory } ->
-                            if isDirectory then
-                                Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
-                                    |> Task.map Tuple.first
+        Just directoriesToAnalyze_ ->
+            List.map
+                (\fileOrDir ->
+                    -- TODO Use version of Fs.stat that does follow symlinks
+                    Fs.stat fs fileOrDir
+                        |> Task.andThen
+                            (\{ isDirectory } ->
+                                if isDirectory then
+                                    Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
+                                        |> Task.map Tuple.first
 
-                            else
-                                Task.succeed [ fileOrDir ]
-                        )
-                    |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
-            )
-            directoriesToAnalyze
+                                else
+                                    Task.succeed [ fileOrDir ]
+                            )
+                        |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
+                )
+                directoriesToAnalyze_
 
 
 fetchDependencies : FileSystem -> Path -> Elm.Project.Project -> List (Cmd Msg) -> List (Cmd Msg)
@@ -648,7 +649,7 @@ fetchElmFile fs filePath =
         |> Task.attempt (ReceivedElmFile filePath)
 
 
-fetchElmJson : FileSystem -> List Path -> Cmd Msg
+fetchElmJson : FileSystem -> Maybe (List Path) -> Cmd Msg
 fetchElmJson fs directoriesToAnalyze =
     readTextFile fs (ReceivedElmJson directoriesToAnalyze) "elm.json"
 

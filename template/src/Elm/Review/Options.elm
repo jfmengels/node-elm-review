@@ -39,7 +39,7 @@ type alias Options =
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
     , namespace : String
-    , directoriesToAnalyze : List Path
+    , directoriesToAnalyze : Maybe (List Path)
     }
 
 
@@ -67,7 +67,7 @@ type alias InternalOptions =
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
     , namespace : String
-    , directoriesToAnalyze : List Path
+    , directoriesToAnalyze : Maybe (List Path)
     }
 
 
@@ -226,7 +226,7 @@ applyArg arg flags =
             Ok { flags | usesRemoteTemplate = True }
 
         [ "--dirs-to-analyze", dirs ] ->
-            Ok { flags | directoriesToAnalyze = String.split "," dirs }
+            Ok { flags | directoriesToAnalyze = Just (String.split "," dirs) }
 
         [ "--packages-location", packagesLocation ] ->
             Ok { flags | packagesLocation = packagesLocation }
@@ -260,7 +260,7 @@ default =
     , packagesLocation = "0.19.1"
     , reviewFolder = "review"
     , usesRemoteTemplate = False
-    , directoriesToAnalyze = []
+    , directoriesToAnalyze = Nothing
     }
 
 
