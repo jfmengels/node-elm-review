@@ -33,7 +33,7 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
-import ElmReview.Problem as Problem exposing (Problem)
+import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
@@ -468,6 +468,25 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
 fetchSources : FileSystem -> Path -> Elm.Project.Project -> Maybe (List Path) -> Result Problem (List (Cmd Msg))
 fetchSources fs elmJsonPath elmJson directoriesToAnalyze =
+    case filesToFetch elmJson directoriesToAnalyze of
+        Ok targets ->
+            List.map
+                (\sourceDirectoryInfo ->
+                    fetchElmFiles fs sourceDirectoryInfo
+                        |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
+                )
+                targets
+                |> Ok
+
+        Err problem ->
+            problem
+                |> Problem.from Problem.Recoverable
+                |> Problem.withPath elmJsonPath
+                |> Err
+
+
+filesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List SourceDirectoryInfo)
+filesToFetch elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
         Nothing ->
             case elmJson of
@@ -476,22 +495,20 @@ fetchSources fs elmJsonPath elmJson directoriesToAnalyze =
                         { title = "EMPTY SOURCE-DIRECTORIES"
                         , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
                         }
-                            |> Problem.from Problem.Recoverable
-                            |> Problem.withPath elmJsonPath
                             |> Err
 
                     else
-                        List.map (\directory -> fetchElmFiles fs { fromCliArgs = False, target = directory }) ("test" :: application.dirs)
+                        List.map (\directory -> { fromCliArgs = False, target = directory }) ("test" :: application.dirs)
                             |> Ok
 
                 Elm.Project.Package _ ->
-                    List.map (\directory -> fetchElmFiles fs { fromCliArgs = False, target = directory }) [ "src", "test" ]
+                    List.map (\directory -> { fromCliArgs = False, target = directory }) [ "src", "test" ]
                         |> Ok
 
         Just directoriesToAnalyze_ ->
             List.map
                 (\fileOrDir ->
-                    fetchElmFiles fs { fromCliArgs = True, target = fileOrDir }
+                    { fromCliArgs = True, target = fileOrDir }
                 )
                 directoriesToAnalyze_
                 |> Ok
@@ -745,16 +762,14 @@ fetchSuppressionFiles fs directory =
         |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
-fetchElmFiles : FileSystem -> SourceDirectoryInfo -> Cmd Msg
+fetchElmFiles : FileSystem -> SourceDirectoryInfo -> Task FsError (List String)
 fetchElmFiles fs sourceDirectoryInfo =
-    Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
-        (if sourceDirectoryInfo.fromCliArgs && String.endsWith ".elm" sourceDirectoryInfo.target then
-            Task.succeed [ sourceDirectoryInfo.target ]
+    if sourceDirectoryInfo.fromCliArgs && String.endsWith ".elm" sourceDirectoryInfo.target then
+        Task.succeed [ sourceDirectoryInfo.target ]
 
-         else
-            Fs.walkTree fs sourceDirectoryInfo.target (Just "*.elm") Fs.Any
-                |> Task.map (\( files, _ ) -> List.map (Path.join2 sourceDirectoryInfo.target) files)
-        )
+    else
+        Fs.walkTree fs sourceDirectoryInfo.target (Just "*.elm") Fs.Any
+            |> Task.map (\( files, _ ) -> List.map (Path.join2 sourceDirectoryInfo.target) files)
 
 
 fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
