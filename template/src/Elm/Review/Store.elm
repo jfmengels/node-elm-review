@@ -60,8 +60,8 @@ type alias PendingTaskCount =
     Int
 
 
-init : { fs : FileSystem, options : Options } -> ( Model, Cmd Msg )
-init { fs, options } =
+init : FileSystem -> Options -> ( Model, Cmd Msg )
+init fs options =
     let
         tasks : List (Cmd Msg)
         tasks =
