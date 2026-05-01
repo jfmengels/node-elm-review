@@ -2,6 +2,7 @@ module Elm.Review.Store exposing
     ( Model, init
     , Msg, update, UpdateInput
     , applyChangesFromFix
+    , subscriptions
     , Readiness(..), checkReadiness
     , project, setProject, updateProject
     , suppressedErrors, setSuppressedErrors
@@ -13,6 +14,7 @@ module Elm.Review.Store exposing
 @docs Model, init
 @docs Msg, update, UpdateInput
 @docs applyChangesFromFix
+@docs subscriptions
 @docs Readiness, checkReadiness
 @docs project, setProject, updateProject
 @docs suppressedErrors, setSuppressedErrors
@@ -39,7 +41,7 @@ import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
 import Task exposing (Task)
-import Worker.Capabilities exposing (Console)
+import Worker.Capabilities exposing (Console, FileWatcher)
 
 
 type Model
@@ -834,3 +836,8 @@ readTextFileWithPath fs path =
 joinPaths : String -> String -> String
 joinPaths directory filePath =
     directory ++ String.dropLeft 1 filePath ++ ""
+
+
+subscriptions : FileWatcher -> Model -> Sub Msg
+subscriptions fileWatcher (Model model) =
+    Sub.none
