@@ -132,13 +132,18 @@ type Msg
     = ReceivedElmJson Path (Result Fs.FsError String)
     | ReceivedReadme Path (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
-    | ReceivedElmFileList Path (Result Fs.FsError (List Path))
-    | ReceivedElmFileListFromCliArgs Path (Result Fs.FsError (List String))
+    | ReceivedElmFileList SourceDirectoryInfo (Result Fs.FsError (List Path))
     | ReceivedElmFile Path (Result Fs.FsError String)
     | ReceivedSuppressedErrorsList Path (Result Fs.FsError (List Path))
     | ReceivedSuppressedErrorsFile Path (Result Fs.FsError String)
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
     | GotProjectElmJsonWatchEvent
+
+
+type alias SourceDirectoryInfo =
+    { fromCliArgs : Bool
+    , target : Path
+    }
 
 
 type alias File =
@@ -316,35 +321,28 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     -- TODO Download dependencies
                     decrementTaskCount ()
 
-        ReceivedElmFileList directory result ->
-            receivedElmFileList
-                { fs = fs
-                , stderr = stderr
-                , onNotFound = decrementTaskCount
-                , handleProblem = handleProblem
-                }
-                directory
-                result
-                model
-
-        ReceivedElmFileListFromCliArgs directory result ->
+        ReceivedElmFileList { fromCliArgs, target } result ->
             receivedElmFileList
                 { fs = fs
                 , stderr = stderr
                 , onNotFound =
                     \() ->
-                        ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                          , project = model.project
-                          , suppressedErrors = model.suppressedErrors
-                          , ruleLinks = model.ruleLinks
-                          , emptySourceDirectories = model.emptySourceDirectories
-                          , directoriesFromCliArgsWithoutFiles = directory :: model.directoriesFromCliArgsWithoutFiles
-                          }
-                        , Cmd.none
-                        )
+                        if fromCliArgs then
+                            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , project = model.project
+                              , suppressedErrors = model.suppressedErrors
+                              , ruleLinks = model.ruleLinks
+                              , emptySourceDirectories = model.emptySourceDirectories
+                              , directoriesFromCliArgsWithoutFiles = target :: model.directoriesFromCliArgsWithoutFiles
+                              }
+                            , Cmd.none
+                            )
+
+                        else
+                            decrementTaskCount ()
                 , handleProblem = handleProblem
                 }
-                directory
+                target
                 result
                 model
 
@@ -493,8 +491,12 @@ fetchSources fs path elmJson directoriesToAnalyze =
         Just directoriesToAnalyze_ ->
             List.map
                 (\fileOrDir ->
-                    fetchElmFiles fs { fromCliArgs = False, target = fileOrDir }
-                        |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
+                    if String.endsWith ".elm" fileOrDir then
+                        Task.succeed [ fileOrDir ]
+                            |> Task.attempt (ReceivedElmFileList { fromCliArgs = True, target = fileOrDir })
+
+                    else
+                        fetchElmFiles fs { fromCliArgs = True, target = fileOrDir }
                 )
                 directoriesToAnalyze_
                 |> Ok
@@ -566,7 +568,7 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
                         model.emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
-            , List.map (\filePath -> fetchElmFile fs (joinPaths directory filePath)) files
+            , List.map (\filePath -> fetchElmFile fs filePath) files
                 |> Cmd.batch
             )
 
@@ -748,29 +750,11 @@ fetchSuppressionFiles fs directory =
         |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
-fetchElmFiles : FileSystem -> { fromCliArgs : Bool, target : Path } -> Cmd Msg
-fetchElmFiles fs { fromCliArgs, target } =
-    if fromCliArgs then
-        Fs.stat fs target
-            |> Task.andThen
-                (\{ isDirectory } ->
-                    if isDirectory then
-                        listElmFiles fs target
-
-                    else
-                        Task.succeed [ target ]
-                )
-            |> Task.attempt (ReceivedElmFileList target)
-
-    else
-        listElmFiles fs target
-            |> Task.attempt (ReceivedElmFileList target)
-
-
-listElmFiles : FileSystem -> String -> Task FsError (List Path)
-listElmFiles fs target =
-    Fs.walkTree fs target (Just "*.elm") Fs.Any
-        |> Task.map Tuple.first
+fetchElmFiles : FileSystem -> SourceDirectoryInfo -> Cmd Msg
+fetchElmFiles fs sourceDirectoryInfo =
+    Fs.walkTree fs sourceDirectoryInfo.target (Just "*.elm") Fs.Any
+        |> Task.map (\( files, _ ) -> List.map (Path.join2 sourceDirectoryInfo.target) files)
+        |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
 
 
 fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
@@ -870,11 +854,6 @@ readTextFileWithPath : FileSystem -> String -> Task FsError File
 readTextFileWithPath fs path =
     Fs.readTextFile fs path
         |> Task.map (\source -> { path = path, source = source })
-
-
-joinPaths : String -> String -> String
-joinPaths directory filePath =
-    directory ++ String.dropLeft 1 filePath ++ ""
 
 
 subscriptions : FileWatcher -> Model -> Sub Msg
