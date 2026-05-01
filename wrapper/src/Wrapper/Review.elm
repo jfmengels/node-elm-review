@@ -58,8 +58,8 @@ type Msg
     = BuildCompleted BuildId (Result Problem Build.BuildData)
     | SpawnedReviewProcess (Result Problem ProcessId)
     | ReviewProcessEnded ProcessId (Result Problem Process.Completed)
-    | GotConfigElmJsonWatchEvent
-    | GotConfigSourceFileWatchEvent FileEvent
+    | ConfigElmJsonWasModified
+    | ConfigSourceFileWasModified FileEvent
     | KilledReviewProcess
 
 
@@ -199,13 +199,13 @@ updateHelp msg model =
             else
                 ( model, Cmd.none )
 
-        GotConfigElmJsonWatchEvent ->
+        ConfigElmJsonWasModified ->
             -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
             -- TODO Check if the important parts of file has changed
             -- TODO Show a message to the user? (depends on report mode)
             restartBuild model
 
-        GotConfigSourceFileWatchEvent fileEvent ->
+        ConfigSourceFileWasModified fileEvent ->
             if String.endsWith ".elm" fileEvent.path then
                 -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
                 -- TODO Show a message to the user? (depends on report mode)
@@ -324,7 +324,7 @@ watchElmJson fileWatcher reviewFolder =
         , coalesceMs = 100
         , eventMask = 2
         }
-        (\_ -> GotConfigElmJsonWatchEvent)
+        (\_ -> ConfigElmJsonWasModified)
 
 
 watchSourceDirectory : FileWatcher -> Path -> Sub Msg
@@ -337,4 +337,4 @@ watchSourceDirectory fileWatcher directory =
         , coalesceMs = 100
         , eventMask = 2
         }
-        GotConfigSourceFileWatchEvent
+        ConfigSourceFileWasModified
