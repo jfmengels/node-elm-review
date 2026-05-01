@@ -191,12 +191,12 @@ updateInner { fs, stderr, options } msg model =
                 problem
     in
     case msg of
-        ReceivedElmJson path (Ok rawElmJson) ->
+        ReceivedElmJson elmJsonPath (Ok rawElmJson) ->
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
                         ( newTasksCount, tasks ) =
-                            case fetchSources fs path elmJson options.directoriesToAnalyze of
+                            case fetchSources fs elmJsonPath elmJson options.directoriesToAnalyze of
                                 Err problem ->
                                     ( 0
                                     , [ handleProblem problem ]
@@ -211,7 +211,7 @@ updateInner { fs, stderr, options } msg model =
                                     ( List.length fetchTasks, fetchTasks )
                     in
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + newTasksCount - 1)
-                      , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
+                      , project = Project.addElmJson { path = elmJsonPath, raw = rawElmJson, project = elmJson } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
                       , emptySourceDirectories = model.emptySourceDirectories
@@ -467,7 +467,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
 
 fetchSources : FileSystem -> Path -> Elm.Project.Project -> Maybe (List Path) -> Result Problem (List (Cmd Msg))
-fetchSources fs path elmJson directoriesToAnalyze =
+fetchSources fs elmJsonPath elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
         Nothing ->
             case elmJson of
@@ -477,7 +477,7 @@ fetchSources fs path elmJson directoriesToAnalyze =
                         , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
                         }
                             |> Problem.from Problem.Recoverable
-                            |> Problem.withPath path
+                            |> Problem.withPath elmJsonPath
                             |> Err
 
                     else
