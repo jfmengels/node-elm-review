@@ -140,6 +140,7 @@ type Msg
     | GotProjectElmJsonWatchEvent
     | GotProjectReadmeWatchEvent FileEvent
     | GotSourceFileWatchEvent FileEvent
+    | GotSuppressedFileWatchEvent FileEvent
 
 
 type alias SourceDirectoryInfo =
@@ -520,6 +521,35 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
             else
                 ( model, Cmd.none )
+
+        GotSuppressedFileWatchEvent fileEvent ->
+            if isSuppressedErrorFile fileEvent.path then
+                let
+                    ( newSuppressedErrors, cmds ) =
+                        if fileEvent.eventType == 4 {- file was deleted -} then
+                            ( SuppressedErrors.removeFromFile fileEvent.path model.suppressedErrors, [] )
+
+                        else
+                            {- file was added or modified -}
+                            ( model.suppressedErrors, [ fetchSuppressionFile fs fileEvent.path ] )
+                in
+                ( { pendingTaskCount = model.pendingTaskCount + List.length cmds
+                  , project = model.project
+                  , suppressedErrors = newSuppressedErrors
+                  , ruleLinks = model.ruleLinks
+                  , emptySourceDirectories = model.emptySourceDirectories
+                  , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                  }
+                , Cmd.batch cmds
+                )
+
+            else
+                ( model, Cmd.none )
+
+
+isSuppressedErrorFile : Path -> Bool
+isSuppressedErrorFile path =
+    String.endsWith ".json" path
 
 
 fetchSources : FileSystem -> Path -> Elm.Project.Project -> Maybe (List Path) -> Result Problem (List (Cmd Msg))
@@ -953,6 +983,7 @@ subscriptions fileWatcher options (Model model) =
             , eventMask = 7
             }
         , watchSourceDirectories fileWatcher options model
+        , watchSuppressedFiles fileWatcher options
         ]
 
 
@@ -979,6 +1010,16 @@ watchSourceDirectories fileWatcher options model =
 
         Nothing ->
             Sub.none
+
+
+watchSuppressedFiles : FileWatcher -> Options -> Sub Msg
+watchSuppressedFiles fileWatcher options =
+    watchPath fileWatcher
+        { path = SuppressedErrors.suppressedFolder options
+        , toMsg = GotSuppressedFileWatchEvent
+        , recursive = False -- TODO Should this be True?
+        , eventMask = 7
+        }
 
 
 watchPath : FileWatcher -> { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> Sub Msg
