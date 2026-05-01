@@ -33,6 +33,7 @@ import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
 import Task
+import Worker.Capabilities exposing (FileWatcher)
 
 
 
@@ -44,7 +45,7 @@ main =
     Cli.program
         { init = init
         , update = updateWrapper
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -1392,5 +1393,27 @@ maybeMapAndCons fn maybe list =
             list
 
 
+subscriptions : ModelWrapper -> Sub Msg
+subscriptions wrapper =
+    case wrapper of
+        Running model ->
+            if model.options.watch then
+                case watchPermission () of
+                    Just fileWatcher ->
+                        Store.subscriptions fileWatcher model.store
+                            |> Sub.map StoreMsg
 
--- REVIEWING
+                    Nothing ->
+                        Sub.none
+
+            else
+                Sub.none
+
+        Done ->
+            Sub.none
+
+
+watchPermission : () -> Maybe FileWatcher
+watchPermission () =
+    -- TODO Get FileWatcher permission from somewhere
+    Nothing
