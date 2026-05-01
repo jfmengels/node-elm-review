@@ -153,10 +153,7 @@ initWithOptions env fs options rulesFromConfig =
                 rulesFromConfig
 
         ( store, storeCmd ) =
-            Store.init
-                { fs = fs
-                , options = options
-                }
+            Store.init fs options
 
         model : Model
         model =
@@ -395,10 +392,7 @@ update msg model =
                                     Store.refreshProjectDependencies model.fs model.options.packagesLocation newElmJson projectWithFixes model.store
 
                                 ReloadCompletely ->
-                                    Store.init
-                                        { fs = model.fs
-                                        , options = model.options
-                                        }
+                                    Store.init model.fs model.options
                     in
                     ( { model
                         | store = store
