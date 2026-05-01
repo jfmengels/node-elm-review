@@ -153,15 +153,17 @@ updateHelp msg model =
                         ( if model.options.watchConfig then
                             case model.options.reviewProject of
                                 Options.Local reviewFolder ->
-                                    let
-                                        watcher : Sub Msg
-                                        watcher =
-                                            watchConfig
-                                                (Debug.todo "watch permission")
-                                                reviewFolder
-                                                reviewElmJson
-                                    in
-                                    { model | watch = Just watcher }
+                                    case watchPermission () of
+                                        Just fileWatcher ->
+                                            let
+                                                watcher : Sub Msg
+                                                watcher =
+                                                    watchConfig fileWatcher reviewFolder reviewElmJson
+                                            in
+                                            { model | watch = Just watcher }
+
+                                        Nothing ->
+                                            model
 
                                 Options.Remote _ ->
                                     model
@@ -350,3 +352,9 @@ watchSourceDirectory fileWatcher directory =
         , eventMask = 2
         }
         ConfigSourceFileWasModified
+
+
+watchPermission : () -> Maybe FileWatcher
+watchPermission () =
+    -- TODO Get FileWatcher permission from somewhere
+    Nothing
