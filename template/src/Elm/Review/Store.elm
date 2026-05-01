@@ -138,6 +138,7 @@ type Msg
     | ReceivedSuppressedErrorsFile Path (Result Fs.FsError String)
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
     | GotProjectElmJsonWatchEvent
+    | GotProjectReadmeWatchEvent FileEvent
     | GotSourceFileWatchEvent FileEvent
 
 
@@ -464,6 +465,27 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , fetchElmJson fs
+            )
+
+        GotProjectReadmeWatchEvent fileEvent ->
+            let
+                ( newProject, cmd ) =
+                    if fileEvent.eventType == 4 {- file was deleted -} then
+                        -- TODO Remove README.md from project
+                        ( model.project, [] )
+
+                    else
+                        {- file was added or modified -}
+                        ( model.project, [ fetchReadme fs ] )
+            in
+            ( { pendingTaskCount = model.pendingTaskCount + List.length cmd
+              , project = newProject
+              , suppressedErrors = model.suppressedErrors
+              , ruleLinks = model.ruleLinks
+              , emptySourceDirectories = model.emptySourceDirectories
+              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+              }
+            , Cmd.batch cmd
             )
 
         GotSourceFileWatchEvent fileEvent ->
@@ -914,6 +936,12 @@ subscriptions fileWatcher options (Model model) =
             , toMsg = \_ -> GotProjectElmJsonWatchEvent
             , recursive = False
             , eventMask = 3
+            }
+        , watchFile fileWatcher
+            { path = "README.md"
+            , toMsg = GotProjectReadmeWatchEvent
+            , recursive = False
+            , eventMask = 7
             }
         , watchSourceDirectories fileWatcher options model
         ]
