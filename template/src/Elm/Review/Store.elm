@@ -377,7 +377,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         |> handleProblem
                     )
 
-        ReceivedSuppressedErrorsList directory result ->
+        ReceivedSuppressedErrorsList suppressedDirectory result ->
             case result of
                 Ok files ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
@@ -389,8 +389,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       }
                     , List.map
                         (\filePath ->
-                            Fs.readTextFile fs (Path.join2 directory filePath)
-                                |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
+                            fetchSuppressionFile fs (Path.join2 suppressedDirectory filePath)
                         )
                         files
                         |> Cmd.batch
@@ -796,10 +795,16 @@ ruleLinks (Model model) =
     model.ruleLinks
 
 
-fetchElmFile : FileSystem -> String -> Cmd Msg
+fetchElmFile : FileSystem -> Path -> Cmd Msg
 fetchElmFile fs filePath =
     Fs.readTextFile fs filePath
         |> Task.attempt (ReceivedElmFile filePath)
+
+
+fetchSuppressionFile : FileSystem -> Path -> Cmd Msg
+fetchSuppressionFile fs filePath =
+    Fs.readTextFile fs filePath
+        |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
 
 
 fetchElmJson : FileSystem -> Cmd Msg
@@ -813,14 +818,14 @@ fetchReadme fs =
 
 
 fetchSuppressionFiles : FileSystem -> Path -> Cmd Msg
-fetchSuppressionFiles fs directory =
-    Fs.walkTree fs directory (Just "*.json") Fs.Any
+fetchSuppressionFiles fs suppressedDirectory =
+    Fs.walkTree fs suppressedDirectory (Just "*.json") Fs.Any
         |> Task.map
             (\( files, _ ) ->
                 -- Remove leading "./"
                 List.map (String.dropLeft 2) files
             )
-        |> Task.attempt (ReceivedSuppressedErrorsList directory)
+        |> Task.attempt (ReceivedSuppressedErrorsList suppressedDirectory)
 
 
 fetchElmFiles : FileSystem -> SourceDirectoryInfo -> Task FsError (List String)
