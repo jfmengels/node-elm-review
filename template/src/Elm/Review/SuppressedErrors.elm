@@ -58,7 +58,7 @@ addFromFile filePath suppressionFileContent (SuppressedErrors previous) =
 
 Try updating """ ++ c GreenBright "elm-review" ++ " to a version that supports this version of suppression files."
                 }
-                    |> Problem.from
+                    |> Problem.from Problem.Unrecoverable
                     |> Problem.withPath filePath
                     |> Err
 
@@ -80,7 +80,7 @@ Try updating """ ++ c GreenBright "elm-review" ++ " to a version that supports t
             { title = "PROBLEM READING SUPPRESSION FILE"
             , message = \c -> "I was trying to read " ++ c Orange filePath ++ " but encountered some problems:\n\n" ++ Decode.errorToString err
             }
-                |> Problem.from
+                |> Problem.from Problem.Unrecoverable
                 |> Problem.withPath filePath
                 |> Err
 
@@ -297,7 +297,7 @@ write fs options ruleNames suppressedErrors =
             ]
             |> Task.mapError
                 (\err ->
-                    Problem.from
+                    Problem.from Problem.Recoverable
                         { title = "PROBLEM WRITING SUPPRESSION FILES"
                         , message = \_ -> "I was trying to write suppressions files but encountered a problem:\n\n" ++ FsExtra.errorToString err
                         }

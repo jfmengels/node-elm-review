@@ -159,7 +159,7 @@ pullAndCheckout { git, gitCapture } remoteTemplate =
 
 Check the spelling and make sure it is a public repository, as I can't work with private ones at the moment."""
                                     }
-                                        |> Problem.from
+                                        |> Problem.from Problem.Unrecoverable
 
                                 else if String.contains "couldn't find remote ref" searchableError then
                                     { title = "BRANCH OR COMMIT NOT FOUND"
@@ -167,7 +167,7 @@ Check the spelling and make sure it is a public repository, as I can't work with
 
 Please check the spelling and make sure it has been pushed."""
                                     }
-                                        |> Problem.from
+                                        |> Problem.from Problem.Unrecoverable
 
                                 else
                                     Problem.unexpectedError ("while fetching the contents of " ++ reference ++ " in the template") error
@@ -190,7 +190,7 @@ findRemoteDefaultBranch gitCapture remoteTemplate =
 
 Check the spelling and make sure it is a public repository, as I can't work with private ones at the moment."""
                     }
-                        |> Problem.from
+                        |> Problem.from Problem.Unrecoverable
 
                 else
                     Problem.unexpectedError "while trying to figure out the remote template's default Git branch" error
@@ -227,7 +227,7 @@ headBranchName output =
             { title = "COULD NOT FIGURE DEFAULT BRANCH FOR REMOTE"
             , message = \c -> headBranchNotFoundError searchTarget output c
             }
-                |> Problem.from
+                |> Problem.from Problem.Unrecoverable
                 |> Err
 
 
