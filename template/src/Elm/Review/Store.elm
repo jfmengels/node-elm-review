@@ -931,13 +931,13 @@ readTextFileWithPath fs path =
 subscriptions : FileWatcher -> Options -> Model -> Sub Msg
 subscriptions fileWatcher options (Model model) =
     Sub.batch
-        [ watchFile fileWatcher
+        [ watchPath fileWatcher
             { path = "elm.json"
             , toMsg = \_ -> GotProjectElmJsonWatchEvent
             , recursive = False
             , eventMask = 3
             }
-        , watchFile fileWatcher
+        , watchPath fileWatcher
             { path = "README.md"
             , toMsg = GotProjectReadmeWatchEvent
             , recursive = False
@@ -956,7 +956,7 @@ watchSourceDirectories fileWatcher options model =
                     targets
                         |> List.map
                             (\{ fromCliArgs, target } ->
-                                watchFile fileWatcher
+                                watchPath fileWatcher
                                     { path = target
                                     , toMsg = GotSourceFileWatchEvent
                                     , recursive = not (fromCliArgs && String.endsWith ".elm" target)
@@ -972,8 +972,8 @@ watchSourceDirectories fileWatcher options model =
             Sub.none
 
 
-watchFile : FileWatcher -> { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> Sub Msg
-watchFile fileWatcher { toMsg, path, recursive, eventMask } =
+watchPath : FileWatcher -> { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> Sub Msg
+watchPath fileWatcher { toMsg, path, recursive, eventMask } =
     FileWatcher.watch
         fileWatcher
         path
