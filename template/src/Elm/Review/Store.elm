@@ -129,14 +129,14 @@ misconfigured the CLI's arguments."""
 
 
 type Msg
-    = ReceivedElmJson String (Result Fs.FsError String)
-    | ReceivedReadme String (Result Fs.FsError String)
+    = ReceivedElmJson Path (Result Fs.FsError String)
+    | ReceivedReadme Path (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
-    | ReceivedElmFileList String (Result Fs.FsError (List String))
-    | ReceivedElmFileListFromCliArgs String (Result Fs.FsError (List String))
-    | ReceivedElmFile String (Result Fs.FsError String)
-    | ReceivedSuppressedErrorsList String (Result Fs.FsError ( List String, List ( String, Fs.FsError ) ))
-    | ReceivedSuppressedErrorsFile String (Result Fs.FsError String)
+    | ReceivedElmFileList Path (Result Fs.FsError (List Path))
+    | ReceivedElmFileListFromCliArgs Path (Result Fs.FsError (List String))
+    | ReceivedElmFile Path (Result Fs.FsError String)
+    | ReceivedSuppressedErrorsList Path (Result Fs.FsError (List Path))
+    | ReceivedSuppressedErrorsFile Path (Result Fs.FsError String)
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
     | GotProjectElmJsonWatchEvent
 
@@ -379,7 +379,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         ReceivedSuppressedErrorsList directory result ->
             case result of
-                Ok ( files, _ ) ->
+                Ok files ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
@@ -751,9 +751,10 @@ fetchReadme fs =
     readTextFile fs ReceivedReadme "README.md"
 
 
-fetchSuppressionFiles : FileSystem -> String -> Cmd Msg
+fetchSuppressionFiles : FileSystem -> Path -> Cmd Msg
 fetchSuppressionFiles fs directory =
     Fs.walkTree fs directory (Just "*.json") Fs.Any
+        |> Task.map Tuple.first
         |> Task.attempt (ReceivedSuppressedErrorsList directory)
 
 
