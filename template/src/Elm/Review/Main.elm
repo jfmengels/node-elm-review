@@ -376,23 +376,7 @@ update msg model =
                 Ok () ->
                     let
                         ( store, cmd ) =
-                            case
-                                changesInElmJson
-                                    model.options.directoriesToAnalyze
-                                    { before = Project.elmJson (Store.project model.store)
-                                    , after = Project.elmJson projectWithFixes
-                                    }
-                            of
-                                NoChanges ->
-                                    ( Store.setProject projectWithFixes model.store
-                                    , Cmd.none
-                                    )
-
-                                ReloadDependencies newElmJson ->
-                                    Store.refreshProjectDependencies model.fs model.options.packagesLocation newElmJson projectWithFixes model.store
-
-                                ReloadCompletely ->
-                                    Store.init model.fs model.options
+                            Store.applyChangesFromFix model.fs model.options projectWithFixes model.store
                     in
                     ( { model
                         | store = store
@@ -407,45 +391,6 @@ update msg model =
                     , Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error)
                         |> Problem.exit model.env.stderr model.options
                     )
-
-
-type ElmJsonChanges
-    = NoChanges
-    | ReloadDependencies Elm.Project.Project
-    | ReloadCompletely
-
-
-changesInElmJson :
-    Maybe (List Path)
-    ->
-        { before : Maybe { a | project : Elm.Project.Project }
-        , after : Maybe { a | project : Elm.Project.Project }
-        }
-    -> ElmJsonChanges
-changesInElmJson directoriesToAnalyze { before, after } =
-    case ( Maybe.map .project before, Maybe.map .project after ) of
-        ( Nothing, Nothing ) ->
-            NoChanges
-
-        ( Just (Elm.Project.Application a), Just ((Elm.Project.Application b) as newProject) ) ->
-            if a.dirs /= b.dirs && not (List.isEmpty (Maybe.withDefault [] directoriesToAnalyze)) then
-                ReloadCompletely
-
-            else if a.elm /= b.elm || a /= b then
-                ReloadDependencies newProject
-
-            else
-                NoChanges
-
-        ( Just (Elm.Project.Package a), Just ((Elm.Project.Package b) as newProject) ) ->
-            if a.elm /= b.elm || a.deps /= b.deps || a.testDeps /= b.testDeps then
-                ReloadDependencies newProject
-
-            else
-                NoChanges
-
-        _ ->
-            ReloadCompletely
 
 
 applyFixChanges : FileSystem -> FixPromptPayload -> Cmd Msg
