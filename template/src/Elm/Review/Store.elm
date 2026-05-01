@@ -184,15 +184,22 @@ updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependenci
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
-                        fetchSourceTasks : List (Cmd Msg)
-                        fetchSourceTasks =
-                            fetchSources fs handleProblem path elmJson directoriesToAnalyze
+                        ( newTasksCount, tasks ) =
+                            case fetchSources fs path elmJson directoriesToAnalyze of
+                                Err problem ->
+                                    ( 0
+                                    , [ handleProblem problem ]
+                                    )
 
-                        tasks : List (Cmd Msg)
-                        tasks =
-                            fetchDependencies fs packagesLocation elmJson fetchSourceTasks
+                                Ok fetchSourceTasks ->
+                                    let
+                                        fetchTasks : List (Cmd Msg)
+                                        fetchTasks =
+                                            fetchDependencies fs packagesLocation elmJson fetchSourceTasks
+                                    in
+                                    ( List.length fetchTasks, fetchTasks )
                     in
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length tasks - 1)
+                    ( { pendingTaskCount = minimum (model.pendingTaskCount + newTasksCount - 1)
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
@@ -444,26 +451,27 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
             )
 
 
-fetchSources : FileSystem -> (Problem -> Cmd Msg) -> Path -> Elm.Project.Project -> Maybe (List Path) -> List (Cmd Msg)
-fetchSources fs handleProblem path elmJson directoriesToAnalyze =
+fetchSources : FileSystem -> Path -> Elm.Project.Project -> Maybe (List Path) -> Result Problem (List (Cmd Msg))
+fetchSources fs path elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
         Nothing ->
             case elmJson of
                 Elm.Project.Application application ->
                     if List.isEmpty application.dirs then
-                        [ { title = "EMPTY SOURCE-DIRECTORIES"
-                          , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
-                          }
+                        { title = "EMPTY SOURCE-DIRECTORIES"
+                        , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
+                        }
                             |> Problem.from
                             |> Problem.withPath path
-                            |> handleProblem
-                        ]
+                            |> Err
 
                     else
                         List.map (fetchElmFiles fs) ("test" :: application.dirs)
+                            |> Ok
 
                 Elm.Project.Package _ ->
                     List.map (fetchElmFiles fs) [ "src", "test" ]
+                        |> Ok
 
         Just directoriesToAnalyze_ ->
             List.map
@@ -482,6 +490,7 @@ fetchSources fs handleProblem path elmJson directoriesToAnalyze =
                         |> Task.attempt (ReceivedElmFileListFromCliArgs fileOrDir)
                 )
                 directoriesToAnalyze_
+                |> Ok
 
 
 fetchDependencies : FileSystem -> Path -> Elm.Project.Project -> List (Cmd Msg) -> List (Cmd Msg)
