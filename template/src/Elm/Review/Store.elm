@@ -27,7 +27,6 @@ import Elm.Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.Options exposing (Options)
-import Elm.Review.RunEnvironment exposing (RunEnvironment)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
@@ -61,8 +60,8 @@ type alias PendingTaskCount =
     Int
 
 
-init : { fs : FileSystem, options : Options, runEnvironment : RunEnvironment } -> ( Model, Cmd Msg )
-init { fs, options, runEnvironment } =
+init : { fs : FileSystem, options : Options } -> ( Model, Cmd Msg )
+init { fs, options } =
     let
         tasks : List (Cmd Msg)
         tasks =
@@ -75,7 +74,7 @@ init { fs, options, runEnvironment } =
 
                   else
                     Just (fetchSuppressionFiles fs (SuppressedErrors.suppressedFolder options))
-                , Just (fetchRuleLinks fs runEnvironment)
+                , Just (fetchRuleLinks fs options)
                 ]
     in
     ( Model
@@ -90,12 +89,12 @@ init { fs, options, runEnvironment } =
     )
 
 
-refreshProjectDependencies : FileSystem -> RunEnvironment -> Elm.Project.Project -> Project -> Model -> ( Model, Cmd Msg )
-refreshProjectDependencies fs runEnvironment elmJson newProject (Model model) =
+refreshProjectDependencies : FileSystem -> Path -> Elm.Project.Project -> Project -> Model -> ( Model, Cmd Msg )
+refreshProjectDependencies fs packagesLocation elmJson newProject (Model model) =
     let
         tasks : List (Cmd Msg)
         tasks =
-            fetchDependencies fs runEnvironment elmJson []
+            fetchDependencies fs packagesLocation elmJson []
     in
     ( Model
         { pendingTaskCount = model.pendingTaskCount + List.length tasks
@@ -165,7 +164,7 @@ type alias File =
 
 type alias UpdateInput =
     { fs : FileSystem
-    , runEnvironment : RunEnvironment
+    , packagesLocation : Path
     , stderr : Console
     , ignoreProblematicDependencies : Bool
     , handleProblem : Problem -> Cmd Msg
@@ -179,7 +178,7 @@ update inputs msg (Model model) =
 
 
 updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, Cmd Msg )
-updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleProblem } msg model =
+updateInner { fs, stderr, packagesLocation, ignoreProblematicDependencies, handleProblem } msg model =
     let
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
@@ -204,7 +203,7 @@ updateInner { fs, runEnvironment, stderr, ignoreProblematicDependencies, handleP
 
                         tasks : List (Cmd Msg)
                         tasks =
-                            fetchDependencies fs runEnvironment elmJson fetchSourceTasks
+                            fetchDependencies fs packagesLocation elmJson fetchSourceTasks
                     in
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length tasks - 1)
                       , project = Project.addElmJson { path = path, raw = rawElmJson, project = elmJson } model.project
@@ -497,39 +496,39 @@ fetchSources fs handleProblem path elmJson directoriesToAnalyze =
             directoriesToAnalyze
 
 
-fetchDependencies : FileSystem -> RunEnvironment -> Elm.Project.Project -> List (Cmd Msg) -> List (Cmd Msg)
-fetchDependencies fs runEnvironment elmJson initial =
+fetchDependencies : FileSystem -> Path -> Elm.Project.Project -> List (Cmd Msg) -> List (Cmd Msg)
+fetchDependencies fs packagesLocation elmJson initial =
     case elmJson of
         Elm.Project.Application application ->
             initial
-                |> addDepsFromVersion fs runEnvironment application.depsDirect
-                |> addDepsFromVersion fs runEnvironment application.depsIndirect
-                |> addDepsFromVersion fs runEnvironment application.testDepsDirect
-                |> addDepsFromVersion fs runEnvironment application.testDepsIndirect
+                |> addDepsFromVersion fs packagesLocation application.depsDirect
+                |> addDepsFromVersion fs packagesLocation application.depsIndirect
+                |> addDepsFromVersion fs packagesLocation application.testDepsDirect
+                |> addDepsFromVersion fs packagesLocation application.testDepsIndirect
 
         Elm.Project.Package package ->
             initial
-                |> addDepsFromConstraint fs runEnvironment package.deps
-                |> addDepsFromConstraint fs runEnvironment package.testDeps
+                |> addDepsFromConstraint fs packagesLocation package.deps
+                |> addDepsFromConstraint fs packagesLocation package.testDeps
 
 
-addDepsFromVersion : FileSystem -> RunEnvironment -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
-addDepsFromVersion fs runEnvironment deps initial =
+addDepsFromVersion : FileSystem -> Path -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
+addDepsFromVersion fs packagesLocation deps initial =
     List.foldl
         (\( name, version ) acc ->
-            fetchDependency fs runEnvironment (Elm.Package.toString name) (Elm.Version.toString version) :: acc
+            fetchDependency fs packagesLocation (Elm.Package.toString name) (Elm.Version.toString version) :: acc
         )
         initial
         deps
 
 
-addDepsFromConstraint : FileSystem -> RunEnvironment -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (Cmd Msg) -> List (Cmd Msg)
-addDepsFromConstraint fs runEnvironment deps initial =
+addDepsFromConstraint : FileSystem -> Path -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (Cmd Msg) -> List (Cmd Msg)
+addDepsFromConstraint fs packagesLocation deps initial =
     List.foldl
         (\( name, constraint ) acc ->
             case Elm.Constraint.toString constraint |> String.split " " |> List.head of
                 Just minVersion ->
-                    fetchDependency fs runEnvironment (Elm.Package.toString name) minVersion :: acc
+                    fetchDependency fs packagesLocation (Elm.Package.toString name) minVersion :: acc
 
                 Nothing ->
                     acc
@@ -672,12 +671,12 @@ fetchElmFiles fs directory =
         |> Task.attempt (ReceivedElmFileList directory)
 
 
-fetchDependency : FileSystem -> RunEnvironment -> String -> String -> Cmd Msg
-fetchDependency fs runEnvironment packageName packageVersion =
+fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
+fetchDependency fs packagesLocation packageName packageVersion =
     let
         directory : String
         directory =
-            Path.join [ runEnvironment.packagesLocation, packageName, packageVersion ]
+            Path.join [ packagesLocation, packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
         (readTextFileWithPath fs (Path.join2 directory "elm.json"))
@@ -685,15 +684,15 @@ fetchDependency fs runEnvironment packageName packageVersion =
         |> Task.attempt (ReceivedDependency packageName)
 
 
-fetchRuleLinks : FileSystem -> RunEnvironment -> Cmd Msg
-fetchRuleLinks fs runEnvironment =
-    Fs.readTextFile fs (Path.join2 runEnvironment.reviewFolder "elm.json")
+fetchRuleLinks : FileSystem -> { options | reviewFolder : Path, packagesLocation : Path } -> Cmd Msg
+fetchRuleLinks fs { reviewFolder, packagesLocation } =
+    Fs.readTextFile fs (Path.join2 reviewFolder "elm.json")
         |> Task.andThen
             (\elmJson ->
                 case Decode.decodeString Elm.Project.decoder elmJson of
                     Ok (Elm.Project.Application { depsDirect, depsIndirect }) ->
                         FsExtra.mapAllAndFold
-                            (readElmJson fs runEnvironment.packagesLocation)
+                            (readElmJson fs packagesLocation)
                             (\deps dict -> List.foldl (\( name, dep ) d -> Dict.insert name dep d) dict deps)
                             Dict.empty
                             (depsDirect ++ depsIndirect)
