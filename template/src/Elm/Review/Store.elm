@@ -491,12 +491,7 @@ fetchSources fs elmJsonPath elmJson directoriesToAnalyze =
         Just directoriesToAnalyze_ ->
             List.map
                 (\fileOrDir ->
-                    if String.endsWith ".elm" fileOrDir then
-                        Task.succeed [ fileOrDir ]
-                            |> Task.attempt (ReceivedElmFileList { fromCliArgs = True, target = fileOrDir })
-
-                    else
-                        fetchElmFiles fs { fromCliArgs = True, target = fileOrDir }
+                    fetchElmFiles fs { fromCliArgs = True, target = fileOrDir }
                 )
                 directoriesToAnalyze_
                 |> Ok
@@ -752,9 +747,14 @@ fetchSuppressionFiles fs directory =
 
 fetchElmFiles : FileSystem -> SourceDirectoryInfo -> Cmd Msg
 fetchElmFiles fs sourceDirectoryInfo =
-    Fs.walkTree fs sourceDirectoryInfo.target (Just "*.elm") Fs.Any
-        |> Task.map (\( files, _ ) -> List.map (Path.join2 sourceDirectoryInfo.target) files)
-        |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
+    Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
+        (if sourceDirectoryInfo.fromCliArgs && String.endsWith ".elm" sourceDirectoryInfo.target then
+            Task.succeed [ sourceDirectoryInfo.target ]
+
+         else
+            Fs.walkTree fs sourceDirectoryInfo.target (Just "*.elm") Fs.Any
+                |> Task.map (\( files, _ ) -> List.map (Path.join2 sourceDirectoryInfo.target) files)
+        )
 
 
 fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
