@@ -69,7 +69,7 @@ init fs options =
         tasks =
             List.filterMap
                 identity
-                [ Just (fetchElmJson fs options.directoriesToAnalyze)
+                [ Just (fetchElmJson fs)
                 , Just (fetchReadme fs)
                 , if options.suppress then
                     Nothing
@@ -128,7 +128,7 @@ misconfigured the CLI's arguments."""
 
 
 type Msg
-    = ReceivedElmJson (Maybe (List Path)) String (Result Fs.FsError String)
+    = ReceivedElmJson String (Result Fs.FsError String)
     | ReceivedReadme String (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
     | ReceivedElmFileList String (Result Fs.FsError (List String))
@@ -147,10 +147,8 @@ type alias File =
 
 type alias UpdateInput =
     { fs : FileSystem
-    , packagesLocation : Path
     , stderr : Console
     , options : Options
-    , ignoreProblematicDependencies : Bool
     }
 
 
@@ -161,7 +159,7 @@ update inputs msg (Model model) =
 
 
 updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, Cmd Msg )
-updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependencies } msg model =
+updateInner { fs, stderr, options } msg model =
     let
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
@@ -180,12 +178,12 @@ updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependenci
             Problem.exit stderr options problem
     in
     case msg of
-        ReceivedElmJson directoriesToAnalyze path (Ok rawElmJson) ->
+        ReceivedElmJson path (Ok rawElmJson) ->
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
                         ( newTasksCount, tasks ) =
-                            case fetchSources fs path elmJson directoriesToAnalyze of
+                            case fetchSources fs path elmJson options.directoriesToAnalyze of
                                 Err problem ->
                                     ( 0
                                     , [ handleProblem problem ]
@@ -195,7 +193,7 @@ updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependenci
                                     let
                                         fetchTasks : List (Cmd Msg)
                                         fetchTasks =
-                                            fetchDependencies fs packagesLocation elmJson fetchSourceTasks
+                                            fetchDependencies fs options.packagesLocation elmJson fetchSourceTasks
                                     in
                                     ( List.length fetchTasks, fetchTasks )
                     in
@@ -212,7 +210,7 @@ updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependenci
                 Err _ ->
                     decrementTaskCount ()
 
-        ReceivedElmJson _ path (Err err) ->
+        ReceivedElmJson path (Err err) ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , project = model.project
               , suppressedErrors = model.suppressedErrors
@@ -264,7 +262,7 @@ updateInner { fs, stderr, options, packagesLocation, ignoreProblematicDependenci
                             )
 
                         Err ( filePath, decodeError ) ->
-                            if ignoreProblematicDependencies then
+                            if options.ignoreProblematicDependencies then
                                 decrementTaskCount ()
 
                             else
@@ -724,9 +722,9 @@ fetchElmFile fs filePath =
         |> Task.attempt (ReceivedElmFile filePath)
 
 
-fetchElmJson : FileSystem -> Maybe (List Path) -> Cmd Msg
-fetchElmJson fs directoriesToAnalyze =
-    readTextFile fs (ReceivedElmJson directoriesToAnalyze) "elm.json"
+fetchElmJson : FileSystem -> Cmd Msg
+fetchElmJson fs =
+    readTextFile fs ReceivedElmJson "elm.json"
 
 
 fetchReadme : FileSystem -> Cmd Msg
