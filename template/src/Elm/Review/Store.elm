@@ -138,6 +138,7 @@ type Msg
     | ReceivedSuppressedErrorsFile Path (Result Fs.FsError String)
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
     | GotProjectElmJsonWatchEvent
+    | GotSourceFileWatchEvent FileEvent
 
 
 type alias SourceDirectoryInfo =
@@ -464,6 +465,40 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               }
             , fetchElmJson fs
             )
+
+        GotSourceFileWatchEvent fileEvent ->
+            if String.endsWith ".elm" fileEvent.path then
+                let
+                    ( newProject, cmds ) =
+                        case FileWatcher.toEventType fileEvent.eventType of
+                            FileWatcher.Created ->
+                                ( model.project, [ fetchElmFile fs fileEvent.path ] )
+
+                            FileWatcher.Modified ->
+                                ( model.project, [ fetchElmFile fs fileEvent.path ] )
+
+                            FileWatcher.Deleted ->
+                                ( Project.removeFile fileEvent.path model.project
+                                , []
+                                )
+
+                            FileWatcher.Renamed ->
+                                ( Project.removeFile fileEvent.path model.project
+                                , [ fetchElmFile fs fileEvent.path ]
+                                )
+                in
+                ( { pendingTaskCount = model.pendingTaskCount + List.length cmds
+                  , project = newProject
+                  , suppressedErrors = model.suppressedErrors
+                  , ruleLinks = model.ruleLinks
+                  , emptySourceDirectories = model.emptySourceDirectories
+                  , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                  }
+                , Cmd.batch cmds
+                )
+
+            else
+                ( model, Cmd.none )
 
 
 fetchSources : FileSystem -> Path -> Elm.Project.Project -> Maybe (List Path) -> Result Problem (List (Cmd Msg))
@@ -871,14 +906,59 @@ readTextFileWithPath fs path =
         |> Task.map (\source -> { path = path, source = source })
 
 
-subscriptions : FileWatcher -> Model -> Sub Msg
-subscriptions fileWatcher (Model model) =
+subscriptions : FileWatcher -> Options -> Model -> Sub Msg
+subscriptions fileWatcher options (Model model) =
+    Sub.batch
+        [ watchFile fileWatcher
+            { path = "elm.json"
+            , toMsg = \_ -> GotProjectElmJsonWatchEvent
+            , recursive = False
+            , eventMask = 3
+            }
+        , watchSourceDirectories fileWatcher options model
+        ]
+
+
+watchSourceDirectories : FileWatcher -> Options -> ModelData -> Sub Msg
+watchSourceDirectories fileWatcher options model =
+    case Project.elmJson model.project of
+        Just elmJson ->
+            case filesToFetch elmJson.project options.directoriesToAnalyze of
+                Ok targets ->
+                    targets
+                        |> List.map
+                            (\{ fromCliArgs, target } ->
+                                watchFile fileWatcher
+                                    { path = target
+                                    , toMsg = GotSourceFileWatchEvent
+                                    , recursive = not (fromCliArgs && String.endsWith ".elm" target)
+                                    , eventMask = 15
+                                    }
+                            )
+                        |> Sub.batch
+
+                Err _ ->
+                    Sub.none
+
+        Nothing ->
+            Sub.none
+
+
+watchFile : FileWatcher -> { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> Sub Msg
+watchFile fileWatcher { toMsg, path, recursive, eventMask } =
     FileWatcher.watch
         fileWatcher
-        "elm.json"
-        { excludePaths = []
-        , recursive = False
+        path
+        -- If the path explicitly mentions an excluded path (e.g. "./node_modules/elm-library/src")
+        -- then re-include that path.
+        { excludePaths = List.filter (\excludePath -> not (String.contains excludePath path)) excludePaths
+        , recursive = recursive
         , coalesceMs = 100
-        , eventMask = 3
+        , eventMask = eventMask
         }
-        (\_ -> GotProjectElmJsonWatchEvent)
+        toMsg
+
+
+excludePaths : List String
+excludePaths =
+    [ ".git", "node_modules", "elm-stuff" ]
