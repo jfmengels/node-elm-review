@@ -397,51 +397,37 @@ update msg model =
         AppliedFixes { projectWithFixes, rulesWithFixes } result ->
             case result of
                 Ok () ->
-                    case
-                        changesInElmJson
-                            model.options.directoriesToAnalyze
-                            { before = Project.elmJson (Store.project model.store)
-                            , after = Project.elmJson projectWithFixes
-                            }
-                    of
-                        NoChanges ->
-                            ( { model
-                                | store = Store.setProject projectWithFixes model.store
-                                , rules = rulesWithFixes
-                                , errorsHaveBeenFixedPreviously = True
-                              }
-                            , Cmd.none
-                            )
+                    let
+                        ( store, cmd ) =
+                            case
+                                changesInElmJson
+                                    model.options.directoriesToAnalyze
+                                    { before = Project.elmJson (Store.project model.store)
+                                    , after = Project.elmJson projectWithFixes
+                                    }
+                            of
+                                NoChanges ->
+                                    ( Store.setProject projectWithFixes model.store
+                                    , Cmd.none
+                                    )
 
-                        ReloadDependencies newElmJson ->
-                            let
-                                ( store, cmd ) =
+                                ReloadDependencies newElmJson ->
                                     Store.refreshProjectDependencies model.fs model.runEnvironment newElmJson projectWithFixes model.store
-                            in
-                            ( { model
-                                | store = store
-                                , rules = rulesWithFixes
-                                , errorsHaveBeenFixedPreviously = True
-                              }
-                            , Cmd.map StoreMsg cmd
-                            )
 
-                        ReloadCompletely ->
-                            let
-                                ( store, cmd ) =
+                                ReloadCompletely ->
                                     Store.init
                                         { fs = model.fs
                                         , options = model.options
                                         , runEnvironment = model.runEnvironment
                                         }
-                            in
-                            ( { model
-                                | store = store
-                                , rules = rulesWithFixes
-                                , errorsHaveBeenFixedPreviously = True
-                              }
-                            , Cmd.map StoreMsg cmd
-                            )
+                    in
+                    ( { model
+                        | store = store
+                        , rules = rulesWithFixes
+                        , errorsHaveBeenFixedPreviously = True
+                      }
+                    , Cmd.map StoreMsg cmd
+                    )
 
                 Err error ->
                     ( model
