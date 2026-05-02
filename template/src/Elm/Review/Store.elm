@@ -224,6 +224,10 @@ updateInner { fs, stderr, options } msg model =
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
+                        previousElmJson : Maybe { path : String, raw : String, project : Elm.Project.Project }
+                        previousElmJson =
+                            Project.elmJson model.project
+
                         elmJsonData : { path : Path, raw : String, project : Elm.Project.Project }
                         elmJsonData =
                             { path = elmJsonPath, raw = rawElmJson, project = elmJson }
@@ -236,7 +240,7 @@ updateInner { fs, stderr, options } msg model =
                         fs
                         stderr
                         options
-                        (Project.elmJson model.project)
+                        previousElmJson
                         elmJsonData
                         { model
                             | pendingTaskCount = minimum (model.pendingTaskCount - 1)
@@ -610,7 +614,7 @@ isSuppressedErrorFile path =
     String.endsWith ".json" path
 
 
-elmFilesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List Path)
+elmFilesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result Problem (List Path)
 elmFilesToFetch elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
         Nothing ->
@@ -620,6 +624,8 @@ elmFilesToFetch elmJson directoriesToAnalyze =
                         { title = "EMPTY SOURCE-DIRECTORIES"
                         , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
                         }
+                            |> Problem.from Problem.Recoverable
+                            |> Problem.withPath elmJsonPath
                             |> Err
 
                     else
@@ -749,7 +755,7 @@ fetchDataOnElmJsonChange fs stderr options before after model =
         ( model, Cmd.none )
 
     else
-        case changesInElmJson options.directoriesToAnalyze { before = before, after = after } of
+        case changesInElmJson options.directoriesToAnalyze { before = Maybe.map .project before, after = after.project } of
             Ok { sourceDirectories, dependencies } ->
                 let
                     tasks : List (Cmd Msg)
@@ -802,16 +808,16 @@ type ElmJsonDependencyChanges
 changesInElmJson :
     Maybe (List Path)
     ->
-        { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
-        , after : { elmJson | raw : String, project : Elm.Project.Project }
+        { before : Maybe Elm.Project.Project
+        , after : Elm.Project.Project
         }
     -> Result Problem ElmJsonChanges
-changesInElmJson directoriesToAnalyze { before, after } =
-    sourceDirectoryChangesInElmJson directoriesToAnalyze { before = before, after = after }
+changesInElmJson directoriesToAnalyze beforeAndAfter =
+    sourceDirectoryChangesInElmJson directoriesToAnalyze beforeAndAfter
         |> Result.map
             (\sourceDirectories ->
                 { sourceDirectories = sourceDirectories
-                , dependencies = dependencyChangesInElmJson { before = before, after = after }
+                , dependencies = dependencyChangesInElmJson beforeAndAfter
                 }
             )
 
@@ -819,50 +825,29 @@ changesInElmJson directoriesToAnalyze { before, after } =
 sourceDirectoryChangesInElmJson :
     Maybe (List Path)
     ->
-        { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
-        , after : { elmJson | raw : String, project : Elm.Project.Project }
+        { before : Maybe Elm.Project.Project
+        , after : Elm.Project.Project
         }
     -> Result Problem (Maybe { added : List String, removed : List Path })
 sourceDirectoryChangesInElmJson directoriesToAnalyze { before, after } =
-    case ( Maybe.map .project before, after.project ) of
-        ( Nothing, Elm.Project.Application b ) ->
-            if List.isEmpty b.dirs then
-                Err emptySourceDirectoriesProblem
+    Result.map2 diffSourceDirectories
+        (case before of
+            Just before_ ->
+                elmFilesToFetch before_ directoriesToAnalyze
 
-            else
-                Ok (Just { added = b.dirs, removed = [] })
-
-        ( Nothing, Elm.Project.Package _ ) ->
-            Ok (Just { added = [ "src" ], removed = [] })
-
-        ( Just (Elm.Project.Application a), Elm.Project.Application b ) ->
-            if List.isEmpty b.dirs then
-                Err emptySourceDirectoriesProblem
-
-            else
-                Ok (diffSourceDirectories directoriesToAnalyze a.dirs b.dirs)
-
-        ( Just (Elm.Project.Package _), Elm.Project.Package _ ) ->
-            Ok Nothing
-
-        ( Just (Elm.Project.Application a), Elm.Project.Package _ ) ->
-            Ok (diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ])
-
-        ( Just (Elm.Project.Package _), Elm.Project.Application b ) ->
-            if List.isEmpty b.dirs then
-                Err emptySourceDirectoriesProblem
-
-            else
-                Ok (diffSourceDirectories directoriesToAnalyze [ "src" ] b.dirs)
+            Nothing ->
+                Ok []
+        )
+        (elmFilesToFetch after directoriesToAnalyze)
 
 
 dependencyChangesInElmJson :
-    { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
-    , after : { elmJson | raw : String, project : Elm.Project.Project }
+    { before : Maybe Elm.Project.Project
+    , after : Elm.Project.Project
     }
     -> ElmJsonDependencyChanges
 dependencyChangesInElmJson { before, after } =
-    case ( Maybe.map .project before, after.project ) of
+    case ( before, after ) of
         ( Nothing, (Elm.Project.Application _) as newProject ) ->
             ReloadDependenciesEntirely newProject
 
@@ -892,44 +877,30 @@ dependencyChangesInElmJson { before, after } =
             ReloadDependenciesEntirely newProject
 
 
-emptySourceDirectoriesProblem : Problem
-emptySourceDirectoriesProblem =
-    { title = "EMPTY SOURCE-DIRECTORIES"
-    , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
-    }
-        |> Problem.from Problem.Recoverable
-        |> Problem.withPath elmJsonPath
+diffSourceDirectories : List Path -> List Path -> Maybe { added : List Path, removed : List Path }
+diffSourceDirectories basePrevious baseAfter =
+    let
+        previous : List Path
+        previous =
+            List.map normalizeDirPath basePrevious
 
+        after : List Path
+        after =
+            List.map normalizeDirPath baseAfter
 
-diffSourceDirectories : Maybe (List Path) -> List Path -> List Path -> Maybe { added : List Path, removed : List Path }
-diffSourceDirectories directoriesToAnalyze basePrevious baseAfter =
-    case directoriesToAnalyze of
-        Just _ ->
-            Nothing
+        added : List Path
+        added =
+            List.filter (\dir -> not (List.member dir previous)) after
 
-        Nothing ->
-            let
-                previous : List Path
-                previous =
-                    List.map normalizeDirPath basePrevious
+        removed : List Path
+        removed =
+            List.filter (\dir -> not (List.member dir after)) previous
+    in
+    if List.isEmpty added && List.isEmpty removed then
+        Nothing
 
-                after : List Path
-                after =
-                    List.map normalizeDirPath baseAfter
-
-                added : List Path
-                added =
-                    List.filter (\dir -> not (List.member dir previous)) after
-
-                removed : List Path
-                removed =
-                    List.filter (\dir -> not (List.member dir after)) previous
-            in
-            if List.isEmpty added && List.isEmpty removed then
-                Nothing
-
-            else
-                Just { added = added, removed = removed }
+    else
+        Just { added = added, removed = removed }
 
 
 normalizeDirPath : Path -> Path
