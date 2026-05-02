@@ -202,31 +202,24 @@ updateInner { fs, stderr, options } msg model =
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
-                        ( newTasksCount, tasks ) =
-                            case fetchSources fs elmJsonPath elmJson options.directoriesToAnalyze of
-                                Err problem ->
-                                    ( 0
-                                    , [ handleProblem problem ]
-                                    )
+                        elmJsonData : { path : Path, raw : String, project : Elm.Project.Project }
+                        elmJsonData =
+                            { path = elmJsonPath, raw = rawElmJson, project = elmJson }
 
-                                Ok fetchSourceTasks ->
-                                    let
-                                        fetchTasks : List (Cmd Msg)
-                                        fetchTasks =
-                                            fetchDependencies fs options.packagesLocation elmJson fetchSourceTasks
-                                    in
-                                    ( List.length fetchTasks, fetchTasks )
+                        newProject : Project
+                        newProject =
+                            Project.addElmJson elmJsonData model.project
                     in
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount + newTasksCount - 1)
-                      , version = StoreVersion.increment model.version
-                      , project = Project.addElmJson { path = elmJsonPath, raw = rawElmJson, project = elmJson } model.project
-                      , suppressedErrors = model.suppressedErrors
-                      , ruleLinks = model.ruleLinks
-                      , emptySourceDirectories = model.emptySourceDirectories
-                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-                      }
-                    , Cmd.batch tasks
-                    )
+                    fetchDataOnElmJsonChange
+                        fs
+                        stderr
+                        options
+                        (Project.elmJson model.project)
+                        (Just elmJsonData)
+                        { model
+                            | pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                            , project = newProject
+                        }
 
                 Err _ ->
                     decrementTaskCount ()
@@ -594,25 +587,6 @@ isSuppressedErrorFile path =
     String.endsWith ".json" path
 
 
-fetchSources : FileSystem -> Path -> Elm.Project.Project -> Maybe (List Path) -> Result Problem (List (Cmd Msg))
-fetchSources fs elmJsonPath elmJson directoriesToAnalyze =
-    case filesToFetch elmJson directoriesToAnalyze of
-        Ok targets ->
-            List.map
-                (\sourceDirectoryInfo ->
-                    fetchElmFiles fs sourceDirectoryInfo
-                        |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
-                )
-                targets
-                |> Ok
-
-        Err problem ->
-            problem
-                |> Problem.from Problem.Recoverable
-                |> Problem.withPath elmJsonPath
-                |> Err
-
-
 filesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List SourceDirectoryInfo)
 filesToFetch elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
@@ -640,22 +614,6 @@ filesToFetch elmJson directoriesToAnalyze =
                 )
                 directoriesToAnalyze_
                 |> Ok
-
-
-fetchDependencies : FileSystem -> Path -> Elm.Project.Project -> List (Cmd Msg) -> List (Cmd Msg)
-fetchDependencies fs packagesLocation elmJson initial =
-    case elmJson of
-        Elm.Project.Application application ->
-            initial
-                |> addDepsFromVersion fs packagesLocation application.depsDirect
-                |> addDepsFromVersion fs packagesLocation application.depsIndirect
-                |> addDepsFromVersion fs packagesLocation application.testDepsDirect
-                |> addDepsFromVersion fs packagesLocation application.testDepsIndirect
-
-        Elm.Project.Package package ->
-            initial
-                |> addDepsFromConstraint fs packagesLocation package.deps
-                |> addDepsFromConstraint fs packagesLocation package.testDeps
 
 
 addDepsFromVersion : FileSystem -> Path -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
@@ -749,6 +707,7 @@ applyChangesFromFix fs stderr options projectWithFixes (Model model) =
             | version = StoreVersion.increment model.version
             , project = projectWithFixes
         }
+        |> Tuple.mapFirst Model
 
 
 fetchDataOnElmJsonChange :
@@ -758,15 +717,15 @@ fetchDataOnElmJsonChange :
     -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
     -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
     -> ModelData
-    -> ( Model, Cmd Msg )
+    -> ( ModelData, Cmd Msg )
 fetchDataOnElmJsonChange fs stderr options before after model =
     if Maybe.map .raw before == Maybe.map .raw after then
-        ( Model model, Cmd.none )
+        ( model, Cmd.none )
 
     else
         case changesInElmJson options.directoriesToAnalyze { before = before, after = after } of
             Err problem ->
-                ( Model model
+                ( model
                 , Problem.stop stderr
                     { color = options.color
                     , reportMode = options.reportMode
@@ -789,15 +748,14 @@ fetchDataOnElmJsonChange fs stderr options before after model =
                             |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
                             |> removeDependencies dependencies
                 in
-                ( Model
-                    { pendingTaskCount = model.pendingTaskCount + List.length tasks
-                    , version = StoreVersion.increment model.version
-                    , project = newProject
-                    , suppressedErrors = model.suppressedErrors
-                    , ruleLinks = model.ruleLinks
-                    , emptySourceDirectories = model.emptySourceDirectories
-                    , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-                    }
+                ( { pendingTaskCount = model.pendingTaskCount + List.length tasks
+                  , version = StoreVersion.increment model.version
+                  , project = newProject
+                  , suppressedErrors = model.suppressedErrors
+                  , ruleLinks = model.ruleLinks
+                  , emptySourceDirectories = model.emptySourceDirectories
+                  , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                  }
                 , Cmd.batch tasks
                 )
 
