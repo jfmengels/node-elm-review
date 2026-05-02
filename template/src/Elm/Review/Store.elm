@@ -737,10 +737,11 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
             )
 
 
-applyChangesFromFix : FileSystem -> Options -> Project -> Model -> ( Model, Cmd Msg )
-applyChangesFromFix fs options projectWithFixes (Model model) =
+applyChangesFromFix : FileSystem -> Console -> Options -> Project -> Model -> ( Model, Cmd Msg )
+applyChangesFromFix fs stderr options projectWithFixes (Model model) =
     fetchDataOnElmJsonChange
         fs
+        stderr
         options
         (Project.elmJson model.project)
         (Project.elmJson projectWithFixes)
@@ -752,42 +753,53 @@ applyChangesFromFix fs options projectWithFixes (Model model) =
 
 fetchDataOnElmJsonChange :
     FileSystem
+    -> Console
     -> Options
     -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
     -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
     -> ModelData
     -> ( Model, Cmd Msg )
-fetchDataOnElmJsonChange fs options before after model =
+fetchDataOnElmJsonChange fs stderr options before after model =
     if Maybe.map .raw before == Maybe.map .raw after then
         ( Model model, Cmd.none )
 
     else
-        let
-            { sourceDirectories, dependencies } =
-                changesInElmJson options.directoriesToAnalyze { before = before, after = after }
+        case changesInElmJson options.directoriesToAnalyze { before = before, after = after } of
+            Err problem ->
+                ( Model model
+                , Problem.stop stderr
+                    { color = options.color
+                    , reportMode = options.reportMode
+                    , debug = options.debug
+                    , attemptFutureRecovery = options.watch
+                    }
+                    problem
+                )
 
-            tasks : List (Cmd Msg)
-            tasks =
-                fetchAddedSourceDirectories fs (Maybe.map .added sourceDirectories)
-                    |> fetchAddedDependencies fs options.packagesLocation dependencies
+            Ok { sourceDirectories, dependencies } ->
+                let
+                    tasks : List (Cmd Msg)
+                    tasks =
+                        fetchAddedSourceDirectories fs (Maybe.map .added sourceDirectories)
+                            |> fetchAddedDependencies fs options.packagesLocation dependencies
 
-            newProject : Project
-            newProject =
-                model.project
-                    |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
-                    |> removeDependencies dependencies
-        in
-        ( Model
-            { pendingTaskCount = model.pendingTaskCount + List.length tasks
-            , version = StoreVersion.increment model.version
-            , project = newProject
-            , suppressedErrors = model.suppressedErrors
-            , ruleLinks = model.ruleLinks
-            , emptySourceDirectories = model.emptySourceDirectories
-            , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-            }
-        , Cmd.batch tasks
-        )
+                    newProject : Project
+                    newProject =
+                        model.project
+                            |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
+                            |> removeDependencies dependencies
+                in
+                ( Model
+                    { pendingTaskCount = model.pendingTaskCount + List.length tasks
+                    , version = StoreVersion.increment model.version
+                    , project = newProject
+                    , suppressedErrors = model.suppressedErrors
+                    , ruleLinks = model.ruleLinks
+                    , emptySourceDirectories = model.emptySourceDirectories
+                    , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                    }
+                , Cmd.batch tasks
+                )
 
 
 type alias ElmJsonChanges =
@@ -809,61 +821,90 @@ changesInElmJson :
         { before : Maybe { a | project : Elm.Project.Project }
         , after : Maybe { a | project : Elm.Project.Project }
         }
-    -> ElmJsonChanges
+    -> Result Problem ElmJsonChanges
 changesInElmJson directoriesToAnalyze { before, after } =
     if Maybe.map .raw before == Maybe.map .raw after then
-        { sourceDirectories = Nothing
-        , dependencies = NoDependencyChanges
-        }
+        Ok
+            { sourceDirectories = Nothing
+            , dependencies = NoDependencyChanges
+            }
 
     else
         case ( Maybe.map .project before, Maybe.map .project after ) of
             ( _, Nothing ) ->
-                { sourceDirectories = Nothing
-                , dependencies = NoDependencyChanges
-                }
+                Ok
+                    { sourceDirectories = Nothing
+                    , dependencies = NoDependencyChanges
+                    }
 
             ( Nothing, Just ((Elm.Project.Application b) as newProject) ) ->
-                { sourceDirectories = Just { added = b.dirs, removed = [] }
-                , dependencies = ReloadDependenciesEntirely newProject
-                }
+                if List.isEmpty b.dirs then
+                    Err emptySourceDirectoriesProblem
+
+                else
+                    Ok
+                        { sourceDirectories = Just { added = b.dirs, removed = [] }
+                        , dependencies = ReloadDependenciesEntirely newProject
+                        }
 
             ( Nothing, Just ((Elm.Project.Package _) as newProject) ) ->
-                { sourceDirectories = Just { added = [ "src" ], removed = [] }
-                , dependencies = ReloadDependenciesEntirely newProject
-                }
+                Ok
+                    { sourceDirectories = Just { added = [ "src" ], removed = [] }
+                    , dependencies = ReloadDependenciesEntirely newProject
+                    }
 
             ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
-                { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs b.dirs
-                , dependencies =
-                    case diffDependencies (a.depsDirect ++ a.depsIndirect ++ a.testDepsDirect ++ a.testDepsIndirect) (b.depsDirect ++ b.depsIndirect ++ b.testDepsDirect ++ b.testDepsIndirect) of
-                        Nothing ->
-                            NoDependencyChanges
+                if List.isEmpty b.dirs then
+                    Err emptySourceDirectoriesProblem
 
-                        Just changes ->
-                            DiffApplication changes
-                }
+                else
+                    Ok
+                        { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs b.dirs
+                        , dependencies =
+                            case diffDependencies (a.depsDirect ++ a.depsIndirect ++ a.testDepsDirect ++ a.testDepsIndirect) (b.depsDirect ++ b.depsIndirect ++ b.testDepsDirect ++ b.testDepsIndirect) of
+                                Nothing ->
+                                    NoDependencyChanges
+
+                                Just changes ->
+                                    DiffApplication changes
+                        }
 
             ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
-                { sourceDirectories = Nothing
-                , dependencies =
-                    case diffDependencies (a.deps ++ a.testDeps) (b.deps ++ b.testDeps) of
-                        Nothing ->
-                            NoDependencyChanges
+                Ok
+                    { sourceDirectories = Nothing
+                    , dependencies =
+                        case diffDependencies (a.deps ++ a.testDeps) (b.deps ++ b.testDeps) of
+                            Nothing ->
+                                NoDependencyChanges
 
-                        Just changes ->
-                            DiffPackages changes
-                }
+                            Just changes ->
+                                DiffPackages changes
+                    }
 
             ( Just (Elm.Project.Application a), Just ((Elm.Project.Package _) as newProject) ) ->
-                { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ]
-                , dependencies = ReloadDependenciesEntirely newProject
-                }
+                Ok
+                    { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ]
+                    , dependencies = ReloadDependenciesEntirely newProject
+                    }
 
             ( Just (Elm.Project.Package _), Just ((Elm.Project.Application b) as newProject) ) ->
-                { sourceDirectories = diffSourceDirectories directoriesToAnalyze [ "src" ] b.dirs
-                , dependencies = ReloadDependenciesEntirely newProject
-                }
+                if List.isEmpty b.dirs then
+                    Err emptySourceDirectoriesProblem
+
+                else
+                    Ok
+                        { sourceDirectories = diffSourceDirectories directoriesToAnalyze [ "src" ] b.dirs
+                        , dependencies = ReloadDependenciesEntirely newProject
+                        }
+
+
+emptySourceDirectoriesProblem : Problem
+emptySourceDirectoriesProblem =
+    { title = "EMPTY SOURCE-DIRECTORIES"
+    , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
+    }
+        |> Problem.from Problem.Recoverable
+        |> Problem.withPath "elm.json"
 
 
 diffSourceDirectories : Maybe (List Path) -> List Path -> List Path -> Maybe { added : List Path, removed : List Path }
