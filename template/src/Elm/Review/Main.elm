@@ -402,7 +402,12 @@ update msg model =
                 Ok () ->
                     let
                         ( store, cmd ) =
-                            Store.applyChangesFromFix model.fs model.options projectWithFixes model.store
+                            Store.applyChangesFromFix
+                                model.fs
+                                model.env.stderr
+                                model.options
+                                projectWithFixes
+                                model.store
                     in
                     ( { model
                         | store = store
