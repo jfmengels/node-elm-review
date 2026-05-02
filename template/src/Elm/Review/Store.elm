@@ -776,8 +776,8 @@ type ElmJsonDependencyChanges
 changesInElmJson :
     Maybe (List Path)
     ->
-        { before : Maybe { a | project : Elm.Project.Project }
-        , after : Maybe { a | project : Elm.Project.Project }
+        { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+        , after : Maybe { elmJson | raw : String, project : Elm.Project.Project }
         }
     -> Result Problem ElmJsonChanges
 changesInElmJson directoriesToAnalyze { before, after } =
