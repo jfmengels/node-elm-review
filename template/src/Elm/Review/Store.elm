@@ -738,30 +738,50 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
 
 
 applyChangesFromFix : FileSystem -> Options -> Project -> Model -> ( Model, Cmd Msg )
-applyChangesFromFix fs options projectWithFixes model =
-    case
-        changesInElmJson
-            options.directoriesToAnalyze
-            { before = Project.elmJson (project model)
-            , after = Project.elmJson projectWithFixes
-            }
-    of
-        NoChanges ->
-            ( setProject projectWithFixes model
-            , Cmd.none
-            )
+applyChangesFromFix fs options projectWithFixes (Model model) =
+    let
+        { sourceDirectories, dependencies } =
+            changesInElmJson
+                options.directoriesToAnalyze
+                { before = Project.elmJson model.project
+                , after = Project.elmJson projectWithFixes
+                }
 
-        ReloadDependencies newElmJson ->
-            refreshProjectDependencies fs options.packagesLocation newElmJson projectWithFixes model
+        tasks : List (Cmd Msg)
+        tasks =
+            fetchAddedSourceDirectories fs (Maybe.map .added sourceDirectories)
+                |> fetchAddedDependencies fs options.packagesLocation dependencies
 
-        ReloadCompletely ->
-            init fs options
+        newProject : Project
+        newProject =
+            projectWithFixes
+                |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
+                |> removeDependencies dependencies
+    in
+    ( Model
+        { pendingTaskCount = model.pendingTaskCount + List.length tasks
+        , version = StoreVersion.increment model.version
+        , project = newProject
+        , suppressedErrors = model.suppressedErrors
+        , ruleLinks = model.ruleLinks
+        , emptySourceDirectories = model.emptySourceDirectories
+        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+        }
+    , Cmd.batch tasks
+    )
 
 
-type ElmJsonChanges
-    = NoChanges
-    | ReloadDependencies Elm.Project.Project
-    | ReloadCompletely
+type alias ElmJsonChanges =
+    { sourceDirectories : Maybe { added : List Path, removed : List Path }
+    , dependencies : ElmJsonDependencyChanges
+    }
+
+
+type ElmJsonDependencyChanges
+    = NoDependencyChanges
+    | DiffApplication { added : List ( Elm.Package.Name, Elm.Version.Version ), removed : List Elm.Package.Name }
+    | DiffPackages { added : List ( Elm.Package.Name, Elm.Constraint.Constraint ), removed : List Elm.Package.Name }
+    | ReloadDependenciesEntirely Elm.Project.Project
 
 
 changesInElmJson :
@@ -772,49 +792,203 @@ changesInElmJson :
         }
     -> ElmJsonChanges
 changesInElmJson directoriesToAnalyze { before, after } =
-    case ( Maybe.map .project before, Maybe.map .project after ) of
-        ( Nothing, Nothing ) ->
-            NoChanges
-
-        ( Just (Elm.Project.Application a), Just ((Elm.Project.Application b) as newProject) ) ->
-            if a.dirs /= b.dirs && not (List.isEmpty (Maybe.withDefault [] directoriesToAnalyze)) then
-                ReloadCompletely
-
-            else if a.elm /= b.elm || a /= b then
-                ReloadDependencies newProject
-
-            else
-                NoChanges
-
-        ( Just (Elm.Project.Package a), Just ((Elm.Project.Package b) as newProject) ) ->
-            if a.elm /= b.elm || a.deps /= b.deps || a.testDeps /= b.testDeps then
-                ReloadDependencies newProject
-
-            else
-                NoChanges
-
-        _ ->
-            ReloadCompletely
-
-
-refreshProjectDependencies : FileSystem -> Path -> Elm.Project.Project -> Project -> Model -> ( Model, Cmd Msg )
-refreshProjectDependencies fs packagesLocation elmJson newProject (Model model) =
-    let
-        tasks : List (Cmd Msg)
-        tasks =
-            fetchDependencies fs packagesLocation elmJson []
-    in
-    ( Model
-        { pendingTaskCount = model.pendingTaskCount + List.length tasks
-        , version = StoreVersion.increment model.version
-        , project = Project.removeDependencies newProject
-        , suppressedErrors = model.suppressedErrors
-        , ruleLinks = model.ruleLinks
-        , emptySourceDirectories = model.emptySourceDirectories
-        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+    if Maybe.map .raw before == Maybe.map .raw after then
+        { sourceDirectories = Nothing
+        , dependencies = NoDependencyChanges
         }
-    , Cmd.batch tasks
-    )
+
+    else
+        case ( Maybe.map .project before, Maybe.map .project after ) of
+            ( _, Nothing ) ->
+                { sourceDirectories = Nothing
+                , dependencies = NoDependencyChanges
+                }
+
+            ( Nothing, Just ((Elm.Project.Application b) as newProject) ) ->
+                { sourceDirectories = Just { added = b.dirs, removed = [] }
+                , dependencies = ReloadDependenciesEntirely newProject
+                }
+
+            ( Nothing, Just ((Elm.Project.Package _) as newProject) ) ->
+                { sourceDirectories = Just { added = [ "src" ], removed = [] }
+                , dependencies = ReloadDependenciesEntirely newProject
+                }
+
+            ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+                { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs b.dirs
+                , dependencies =
+                    case diffDependencies (a.depsDirect ++ a.depsIndirect ++ a.testDepsDirect ++ a.testDepsIndirect) (b.depsDirect ++ b.depsIndirect ++ b.testDepsDirect ++ b.testDepsIndirect) of
+                        Nothing ->
+                            NoDependencyChanges
+
+                        Just changes ->
+                            DiffApplication changes
+                }
+
+            ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
+                { sourceDirectories = Nothing
+                , dependencies =
+                    case diffDependencies (a.deps ++ a.testDeps) (b.deps ++ b.testDeps) of
+                        Nothing ->
+                            NoDependencyChanges
+
+                        Just changes ->
+                            DiffPackages changes
+                }
+
+            ( Just (Elm.Project.Application a), Just ((Elm.Project.Package _) as newProject) ) ->
+                { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ]
+                , dependencies = ReloadDependenciesEntirely newProject
+                }
+
+            ( Just (Elm.Project.Package _), Just ((Elm.Project.Application b) as newProject) ) ->
+                { sourceDirectories = diffSourceDirectories directoriesToAnalyze [ "src" ] b.dirs
+                , dependencies = ReloadDependenciesEntirely newProject
+                }
+
+
+diffSourceDirectories : Maybe (List Path) -> List Path -> List Path -> Maybe { added : List Path, removed : List Path }
+diffSourceDirectories directoriesToAnalyze basePrevious baseAfter =
+    case directoriesToAnalyze of
+        Just _ ->
+            Nothing
+
+        Nothing ->
+            let
+                previous : List Path
+                previous =
+                    List.map normalizeDirPath basePrevious
+
+                after : List Path
+                after =
+                    List.map normalizeDirPath baseAfter
+
+                added : List Path
+                added =
+                    List.filter (\dir -> not (List.member dir previous)) after
+
+                removed : List Path
+                removed =
+                    List.filter (\dir -> not (List.member dir after)) previous
+            in
+            if List.isEmpty added && List.isEmpty removed then
+                Nothing
+
+            else
+                Just { added = added, removed = removed }
+
+
+normalizeDirPath : Path -> Path
+normalizeDirPath path =
+    if String.endsWith "/" path then
+        String.dropRight 1 path
+
+    else
+        path
+
+
+diffDependencies : List ( Elm.Package.Name, a ) -> List ( Elm.Package.Name, a ) -> Maybe { added : List ( Elm.Package.Name, a ), removed : List Elm.Package.Name }
+diffDependencies previous after =
+    let
+        added : List ( Elm.Package.Name, a )
+        added =
+            List.filter (\( name, _ ) -> not (List.any (\( name_, _ ) -> name == name_) previous)) after
+
+        removed : List ( Elm.Package.Name, a )
+        removed =
+            List.filter (\( name, _ ) -> not (List.any (\( name_, _ ) -> name == name_) after)) previous
+    in
+    if List.isEmpty added && List.isEmpty removed then
+        Nothing
+
+    else
+        Just { added = added, removed = List.map Tuple.first removed }
+
+
+fetchAddedSourceDirectories : FileSystem -> Maybe (List Path) -> List (Cmd Msg)
+fetchAddedSourceDirectories fs sourceDirectories =
+    List.map
+        (\directory ->
+            let
+                sourceDirectoryInfo : SourceDirectoryInfo
+                sourceDirectoryInfo =
+                    { fromCliArgs = False, target = directory }
+            in
+            fetchElmFiles fs sourceDirectoryInfo
+                |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
+        )
+        (Maybe.withDefault [] sourceDirectories)
+
+
+removeSourceDirectories : Maybe (List Path) -> Project -> Project
+removeSourceDirectories sourceDirectoriesToRemove previousProject =
+    case sourceDirectoriesToRemove of
+        Nothing ->
+            previousProject
+
+        Just [] ->
+            previousProject
+
+        Just removed ->
+            List.foldl
+                (\{ path } p ->
+                    if List.any (\removedDir -> String.startsWith removedDir path) removed then
+                        Project.removeModule path p
+
+                    else
+                        p
+                )
+                previousProject
+                (Project.modules previousProject)
+
+
+fetchAddedDependencies : FileSystem -> Path -> ElmJsonDependencyChanges -> List (Cmd Msg) -> List (Cmd Msg)
+fetchAddedDependencies fs packagesLocation dependencies tasks =
+    case dependencies of
+        NoDependencyChanges ->
+            tasks
+
+        DiffApplication packages ->
+            addDepsFromVersion fs packagesLocation packages.added tasks
+
+        DiffPackages packages ->
+            addDepsFromConstraint fs packagesLocation packages.added tasks
+
+        ReloadDependenciesEntirely elmJson ->
+            case elmJson of
+                Elm.Project.Application application ->
+                    tasks
+                        |> addDepsFromVersion fs packagesLocation application.depsDirect
+                        |> addDepsFromVersion fs packagesLocation application.depsIndirect
+                        |> addDepsFromVersion fs packagesLocation application.testDepsDirect
+                        |> addDepsFromVersion fs packagesLocation application.testDepsIndirect
+
+                Elm.Project.Package package ->
+                    tasks
+                        |> addDepsFromConstraint fs packagesLocation package.deps
+                        |> addDepsFromConstraint fs packagesLocation package.testDeps
+
+
+removeDependencies : ElmJsonDependencyChanges -> Project -> Project
+removeDependencies dependencies previousProject =
+    case dependencies of
+        NoDependencyChanges ->
+            previousProject
+
+        DiffApplication { removed } ->
+            List.foldl
+                (\name p -> Project.removeDependency (Elm.Package.toString name) p)
+                previousProject
+                removed
+
+        DiffPackages { removed } ->
+            List.foldl
+                (\name p -> Project.removeDependency (Elm.Package.toString name) p)
+                previousProject
+                removed
+
+        ReloadDependenciesEntirely _ ->
+            Project.removeDependencies previousProject
 
 
 setProject : Project -> Model -> Model
