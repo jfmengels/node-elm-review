@@ -132,8 +132,8 @@ misconfigured the CLI's arguments."""
 
 
 type Msg
-    = ReceivedElmJson Path (Result Fs.FsError String)
-    | ReceivedReadme Path (Result Fs.FsError String)
+    = ReceivedElmJson (Result Fs.FsError String)
+    | ReceivedReadme (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
     | ReceivedElmFileList SourceDirectoryInfo (Result Fs.FsError (List Path))
     | ReceivedElmFile Path (Result Fs.FsError String)
@@ -198,7 +198,7 @@ updateInner { fs, stderr, options } msg model =
                 problem
     in
     case msg of
-        ReceivedElmJson elmJsonPath (Ok rawElmJson) ->
+        ReceivedElmJson (Ok rawElmJson) ->
             case Decode.decodeString Elm.Project.decoder rawElmJson of
                 Ok elmJson ->
                     let
@@ -224,7 +224,7 @@ updateInner { fs, stderr, options } msg model =
                 Err _ ->
                     decrementTaskCount ()
 
-        ReceivedElmJson path (Err err) ->
+        ReceivedElmJson (Err err) ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , version = model.version
               , project = model.project
@@ -234,14 +234,14 @@ updateInner { fs, stderr, options } msg model =
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , { title = "PROBLEM READING ELM.JSON"
-              , message = \c -> "I was trying to read " ++ c Yellow "elm.json" ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+              , message = \c -> "I was trying to read " ++ c Yellow elmJsonPath ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
               }
                 |> Problem.from Problem.Recoverable
-                |> Problem.withPath path
+                |> Problem.withPath elmJsonPath
                 |> handleProblem
             )
 
-        ReceivedReadme path result ->
+        ReceivedReadme result ->
             case result of
                 Ok content ->
                     if Just content == Maybe.map .content (Project.readme model.project) then
@@ -250,7 +250,7 @@ updateInner { fs, stderr, options } msg model =
                     else
                         ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
                           , version = StoreVersion.increment model.version
-                          , project = Project.addReadme { path = path, content = content } model.project
+                          , project = Project.addReadme { path = readmePath, content = content } model.project
                           , suppressedErrors = model.suppressedErrors
                           , ruleLinks = model.ruleLinks
                           , emptySourceDirectories = model.emptySourceDirectories
@@ -862,7 +862,7 @@ emptySourceDirectoriesProblem =
     , message = \_ -> """The `source-directories` in your `elm.json` is empty. I need it to contain at least 1 directory in order to find files to analyze. The Elm compiler will need that as well anyway."""
     }
         |> Problem.from Problem.Recoverable
-        |> Problem.withPath "elm.json"
+        |> Problem.withPath elmJsonPath
 
 
 diffSourceDirectories : Maybe (List Path) -> List Path -> List Path -> Maybe { added : List Path, removed : List Path }
@@ -1069,12 +1069,22 @@ fetchSuppressionFile fs filePath =
 
 fetchElmJson : FileSystem -> Cmd Msg
 fetchElmJson fs =
-    readTextFile fs ReceivedElmJson "elm.json"
+    readTextFile fs (\_ -> ReceivedElmJson) elmJsonPath
 
 
 fetchReadme : FileSystem -> Cmd Msg
 fetchReadme fs =
-    readTextFile fs ReceivedReadme "README.md"
+    readTextFile fs (\_ -> ReceivedReadme) readmePath
+
+
+elmJsonPath : Path
+elmJsonPath =
+    "elm.json"
+
+
+readmePath : Path
+readmePath =
+    "README.md"
 
 
 fetchSuppressionFiles : FileSystem -> Path -> Cmd Msg
@@ -1201,13 +1211,13 @@ subscriptions : FileWatcher -> Options -> Model -> Sub Msg
 subscriptions fileWatcher options (Model model) =
     Sub.batch
         [ watchPath fileWatcher
-            { path = "elm.json"
+            { path = elmJsonPath
             , toMsg = \_ -> GotProjectElmJsonWatchEvent
             , recursive = False
             , eventMask = 3
             }
         , watchPath fileWatcher
-            { path = "README.md"
+            { path = readmePath
             , toMsg = GotProjectReadmeWatchEvent
             , recursive = False
             , eventMask = 7
