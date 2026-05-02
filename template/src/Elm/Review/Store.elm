@@ -724,17 +724,6 @@ fetchDataOnElmJsonChange fs stderr options before after model =
 
     else
         case changesInElmJson options.directoriesToAnalyze { before = before, after = after } of
-            Err problem ->
-                ( model
-                , Problem.stop stderr
-                    { color = options.color
-                    , reportMode = options.reportMode
-                    , debug = options.debug
-                    , attemptFutureRecovery = options.watch
-                    }
-                    problem
-                )
-
             Ok { sourceDirectories, dependencies } ->
                 let
                     tasks : List (Cmd Msg)
@@ -757,6 +746,17 @@ fetchDataOnElmJsonChange fs stderr options before after model =
                   , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                   }
                 , Cmd.batch tasks
+                )
+
+            Err problem ->
+                ( model
+                , Problem.stop stderr
+                    { color = options.color
+                    , reportMode = options.reportMode
+                    , debug = options.debug
+                    , attemptFutureRecovery = options.watch
+                    }
+                    problem
                 )
 
 
