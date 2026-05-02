@@ -788,72 +788,95 @@ changesInElmJson directoriesToAnalyze { before, after } =
             }
 
     else
-        case ( Maybe.map .project before, Maybe.map .project after ) of
-            ( _, Nothing ) ->
-                Ok
-                    { sourceDirectories = Nothing
-                    , dependencies = NoDependencyChanges
+        sourceDirectoryChangesInElmJson directoriesToAnalyze { before = before, after = after }
+            |> Result.map
+                (\sourceDirectories ->
+                    { sourceDirectories = sourceDirectories
+                    , dependencies = dependencyChangesInElmJson { before = before, after = after }
                     }
+                )
 
-            ( Nothing, Just ((Elm.Project.Application b) as newProject) ) ->
-                if List.isEmpty b.dirs then
-                    Err emptySourceDirectoriesProblem
 
-                else
-                    Ok
-                        { sourceDirectories = Just { added = b.dirs, removed = [] }
-                        , dependencies = ReloadDependenciesEntirely newProject
-                        }
+sourceDirectoryChangesInElmJson :
+    Maybe (List Path)
+    ->
+        { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+        , after : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+        }
+    -> Result Problem (Maybe { added : List String, removed : List Path })
+sourceDirectoryChangesInElmJson directoriesToAnalyze { before, after } =
+    case ( Maybe.map .project before, Maybe.map .project after ) of
+        ( _, Nothing ) ->
+            Ok Nothing
 
-            ( Nothing, Just ((Elm.Project.Package _) as newProject) ) ->
-                Ok
-                    { sourceDirectories = Just { added = [ "src" ], removed = [] }
-                    , dependencies = ReloadDependenciesEntirely newProject
-                    }
+        ( Nothing, Just (Elm.Project.Application b) ) ->
+            if List.isEmpty b.dirs then
+                Err emptySourceDirectoriesProblem
 
-            ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
-                if List.isEmpty b.dirs then
-                    Err emptySourceDirectoriesProblem
+            else
+                Ok (Just { added = b.dirs, removed = [] })
 
-                else
-                    Ok
-                        { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs b.dirs
-                        , dependencies =
-                            case diffDependencies (a.depsDirect ++ a.depsIndirect ++ a.testDepsDirect ++ a.testDepsIndirect) (b.depsDirect ++ b.depsIndirect ++ b.testDepsDirect ++ b.testDepsIndirect) of
-                                Nothing ->
-                                    NoDependencyChanges
+        ( Nothing, Just (Elm.Project.Package _) ) ->
+            Ok (Just { added = [ "src" ], removed = [] })
 
-                                Just changes ->
-                                    DiffApplication changes
-                        }
+        ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+            if List.isEmpty b.dirs then
+                Err emptySourceDirectoriesProblem
 
-            ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
-                Ok
-                    { sourceDirectories = Nothing
-                    , dependencies =
-                        case diffDependencies (a.deps ++ a.testDeps) (b.deps ++ b.testDeps) of
-                            Nothing ->
-                                NoDependencyChanges
+            else
+                Ok (diffSourceDirectories directoriesToAnalyze a.dirs b.dirs)
 
-                            Just changes ->
-                                DiffPackages changes
-                    }
+        ( Just (Elm.Project.Package _), Just (Elm.Project.Package _) ) ->
+            Ok Nothing
 
-            ( Just (Elm.Project.Application a), Just ((Elm.Project.Package _) as newProject) ) ->
-                Ok
-                    { sourceDirectories = diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ]
-                    , dependencies = ReloadDependenciesEntirely newProject
-                    }
+        ( Just (Elm.Project.Application a), Just (Elm.Project.Package _) ) ->
+            Ok (diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ])
 
-            ( Just (Elm.Project.Package _), Just ((Elm.Project.Application b) as newProject) ) ->
-                if List.isEmpty b.dirs then
-                    Err emptySourceDirectoriesProblem
+        ( Just (Elm.Project.Package _), Just (Elm.Project.Application b) ) ->
+            if List.isEmpty b.dirs then
+                Err emptySourceDirectoriesProblem
 
-                else
-                    Ok
-                        { sourceDirectories = diffSourceDirectories directoriesToAnalyze [ "src" ] b.dirs
-                        , dependencies = ReloadDependenciesEntirely newProject
-                        }
+            else
+                Ok (diffSourceDirectories directoriesToAnalyze [ "src" ] b.dirs)
+
+
+dependencyChangesInElmJson :
+    { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+    , after : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+    }
+    -> ElmJsonDependencyChanges
+dependencyChangesInElmJson { before, after } =
+    case ( Maybe.map .project before, Maybe.map .project after ) of
+        ( _, Nothing ) ->
+            NoDependencyChanges
+
+        ( Nothing, Just ((Elm.Project.Application _) as newProject) ) ->
+            ReloadDependenciesEntirely newProject
+
+        ( Nothing, Just ((Elm.Project.Package _) as newProject) ) ->
+            ReloadDependenciesEntirely newProject
+
+        ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+            case diffDependencies (a.depsDirect ++ a.depsIndirect ++ a.testDepsDirect ++ a.testDepsIndirect) (b.depsDirect ++ b.depsIndirect ++ b.testDepsDirect ++ b.testDepsIndirect) of
+                Nothing ->
+                    NoDependencyChanges
+
+                Just changes ->
+                    DiffApplication changes
+
+        ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
+            case diffDependencies (a.deps ++ a.testDeps) (b.deps ++ b.testDeps) of
+                Nothing ->
+                    NoDependencyChanges
+
+                Just changes ->
+                    DiffPackages changes
+
+        ( Just (Elm.Project.Application _), Just ((Elm.Project.Package _) as newProject) ) ->
+            ReloadDependenciesEntirely newProject
+
+        ( Just (Elm.Project.Package _), Just ((Elm.Project.Application _) as newProject) ) ->
+            ReloadDependenciesEntirely newProject
 
 
 emptySourceDirectoriesProblem : Problem
