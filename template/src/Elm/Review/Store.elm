@@ -81,9 +81,31 @@ init fs options =
                     Just (fetchSuppressionFiles fs (SuppressedErrors.suppressedFolder options))
                 , Just (fetchRuleLinks fs options)
                 ]
+
+        tasksWithFileFetch : List (Cmd Msg)
+        tasksWithFileFetch =
+            case options.directoriesToAnalyze of
+                Just directoriesToAnalyze ->
+                    List.foldl
+                        (\fileOrDir acc ->
+                            Task.attempt (ReceivedElmFileList fileOrDir)
+                                (if String.endsWith ".elm" fileOrDir then
+                                    Task.succeed [ fileOrDir ]
+
+                                 else
+                                    Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
+                                        |> Task.map (\( files, _ ) -> List.map (Path.join2 fileOrDir) files)
+                                )
+                                :: acc
+                        )
+                        tasks
+                        directoriesToAnalyze
+
+                Nothing ->
+                    tasks
     in
     ( Model
-        { pendingTaskCount = List.length tasks
+        { pendingTaskCount = List.length tasksWithFileFetch
         , version = StoreVersion.zero
         , project = Project.new
         , suppressedErrors = SuppressedErrors.empty
@@ -91,7 +113,7 @@ init fs options =
         , emptySourceDirectories = []
         , directoriesFromCliArgsWithoutFiles = []
         }
-    , Cmd.batch tasks
+    , Cmd.batch tasksWithFileFetch
     )
 
 
