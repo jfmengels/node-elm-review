@@ -964,17 +964,7 @@ diffDependencies previous after =
 
 fetchAddedSourceDirectories : FileSystem -> Maybe (List Path) -> List (Cmd Msg)
 fetchAddedSourceDirectories fs sourceDirectories =
-    List.map
-        (\directory ->
-            let
-                sourceDirectoryInfo : SourceDirectoryInfo
-                sourceDirectoryInfo =
-                    { fromCliArgs = False, target = directory }
-            in
-            fetchElmFiles fs sourceDirectoryInfo
-                |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo.target)
-        )
-        (Maybe.withDefault [] sourceDirectories)
+    List.map (fetchElmFiles fs) (Maybe.withDefault [] sourceDirectories)
 
 
 removeSourceDirectories : Maybe (List Path) -> Project -> Project
@@ -1137,14 +1127,11 @@ fetchSuppressionFiles fs suppressedDirectory =
         |> Task.attempt (ReceivedSuppressedErrorsList suppressedDirectory)
 
 
-fetchElmFiles : FileSystem -> SourceDirectoryInfo -> Task FsError (List String)
-fetchElmFiles fs sourceDirectoryInfo =
-    if sourceDirectoryInfo.fromCliArgs && String.endsWith ".elm" sourceDirectoryInfo.target then
-        Task.succeed [ sourceDirectoryInfo.target ]
-
-    else
-        Fs.walkTree fs sourceDirectoryInfo.target (Just "*.elm") Fs.Any
-            |> Task.map (\( files, _ ) -> List.map (Path.join2 sourceDirectoryInfo.target) files)
+fetchElmFiles : FileSystem -> Path -> Cmd Msg
+fetchElmFiles fs directory =
+    Fs.walkTree fs directory (Just "*.elm") Fs.Any
+        |> Task.map (\( files, _ ) -> List.map (Path.join2 directory) files)
+        |> Task.attempt (ReceivedElmFileList directory)
 
 
 fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
