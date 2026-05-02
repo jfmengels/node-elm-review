@@ -4,7 +4,7 @@ module Elm.Review.Store exposing
     , applyChangesFromFix
     , subscriptions
     , Readiness(..), checkReadiness
-    , project, setProject, updateProject
+    , project, setProject
     , suppressedErrors, setSuppressedErrors
     , ruleLinks
     )
@@ -16,7 +16,7 @@ module Elm.Review.Store exposing
 @docs applyChangesFromFix
 @docs subscriptions
 @docs Readiness, checkReadiness
-@docs project, setProject, updateProject
+@docs project, setProject
 @docs suppressedErrors, setSuppressedErrors
 @docs ruleLinks
 
@@ -29,6 +29,7 @@ import Elm.Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.Options exposing (Options)
+import Elm.Review.StoreVersion as StoreVersion exposing (StoreVersion)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
@@ -51,6 +52,7 @@ type Model
 
 type alias ModelData =
     { pendingTaskCount : PendingTaskCount
+    , version : StoreVersion
     , project : Project
     , suppressedErrors : SuppressedErrors
     , ruleLinks : Dict String String
@@ -82,6 +84,7 @@ init fs options =
     in
     ( Model
         { pendingTaskCount = List.length tasks
+        , version = StoreVersion.zero
         , project = Project.new
         , suppressedErrors = SuppressedErrors.empty
         , ruleLinks = Dict.empty
@@ -93,7 +96,7 @@ init fs options =
 
 
 type Readiness
-    = Ready
+    = Ready StoreVersion
     | Failure Problem
     | NotReady
 
@@ -125,7 +128,7 @@ misconfigured the CLI's arguments."""
             |> Failure
 
     else
-        Ready
+        Ready model.version
 
 
 type Msg
@@ -174,6 +177,7 @@ updateInner { fs, stderr, options } msg model =
         decrementTaskCount : () -> ( ModelData, Cmd Msg )
         decrementTaskCount () =
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , version = model.version
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
@@ -214,6 +218,7 @@ updateInner { fs, stderr, options } msg model =
                                     ( List.length fetchTasks, fetchTasks )
                     in
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + newTasksCount - 1)
+                      , version = StoreVersion.increment model.version
                       , project = Project.addElmJson { path = elmJsonPath, raw = rawElmJson, project = elmJson } model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
@@ -228,6 +233,7 @@ updateInner { fs, stderr, options } msg model =
 
         ReceivedElmJson path (Err err) ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , version = model.version
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
@@ -245,15 +251,20 @@ updateInner { fs, stderr, options } msg model =
         ReceivedReadme path result ->
             case result of
                 Ok content ->
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                      , project = Project.addReadme { path = path, content = content } model.project
-                      , suppressedErrors = model.suppressedErrors
-                      , ruleLinks = model.ruleLinks
-                      , emptySourceDirectories = model.emptySourceDirectories
-                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-                      }
-                    , Cmd.none
-                    )
+                    if Just content == Maybe.map .content (Project.readme model.project) then
+                        decrementTaskCount ()
+
+                    else
+                        ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                          , version = StoreVersion.increment model.version
+                          , project = Project.addReadme { path = path, content = content } model.project
+                          , suppressedErrors = model.suppressedErrors
+                          , ruleLinks = model.ruleLinks
+                          , emptySourceDirectories = model.emptySourceDirectories
+                          , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                          }
+                        , Cmd.none
+                        )
 
                 Err _ ->
                     decrementTaskCount ()
@@ -267,15 +278,20 @@ updateInner { fs, stderr, options } msg model =
                             (Decode.decodeString (Decode.list Elm.Docs.decoder) docsJson.source |> Result.mapError (Tuple.pair docsJson.path))
                     of
                         Ok dependency ->
-                            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                              , project = Project.addDependency dependency model.project
-                              , suppressedErrors = model.suppressedErrors
-                              , ruleLinks = model.ruleLinks
-                              , emptySourceDirectories = model.emptySourceDirectories
-                              , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-                              }
-                            , Cmd.none
-                            )
+                            if Just dependency == Dict.get packageName (Project.dependencies model.project) then
+                                decrementTaskCount ()
+
+                            else
+                                ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                                  , version = StoreVersion.increment model.version
+                                  , project = Project.addDependency dependency model.project
+                                  , suppressedErrors = model.suppressedErrors
+                                  , ruleLinks = model.ruleLinks
+                                  , emptySourceDirectories = model.emptySourceDirectories
+                                  , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                                  }
+                                , Cmd.none
+                                )
 
                         Err ( filePath, decodeError ) ->
                             if options.ignoreProblematicDependencies then
@@ -283,6 +299,7 @@ updateInner { fs, stderr, options } msg model =
 
                             else
                                 ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                                  , version = model.version
                                   , project = model.project
                                   , suppressedErrors = model.suppressedErrors
                                   , ruleLinks = model.ruleLinks
@@ -332,6 +349,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     \() ->
                         if fromCliArgs then
                             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , version = model.version
                               , project = model.project
                               , suppressedErrors = model.suppressedErrors
                               , ruleLinks = model.ruleLinks
@@ -352,18 +370,25 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         ReceivedElmFile path result ->
             case result of
                 Ok source ->
-                    ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                      , project = Project.addModule { path = path, source = source } model.project
-                      , suppressedErrors = model.suppressedErrors
-                      , ruleLinks = model.ruleLinks
-                      , emptySourceDirectories = model.emptySourceDirectories
-                      , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-                      }
-                    , Cmd.none
-                    )
+                    -- TODO Use version of Project.modules that returns a Dict
+                    if Just source == Maybe.map .source (find (\module_ -> module_.path == path) (Project.modules model.project)) then
+                        decrementTaskCount ()
+
+                    else
+                        ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                          , version = StoreVersion.increment model.version
+                          , project = Project.addModule { path = path, source = source } model.project
+                          , suppressedErrors = model.suppressedErrors
+                          , ruleLinks = model.ruleLinks
+                          , emptySourceDirectories = model.emptySourceDirectories
+                          , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+                          }
+                        , Cmd.none
+                        )
 
                 Err err ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , version = model.version
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
@@ -382,6 +407,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
             case result of
                 Ok files ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
+                      , version = model.version
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
@@ -409,6 +435,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     case SuppressedErrors.addFromFile path contents model.suppressedErrors of
                         Ok newSuppressedErrors ->
                             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , version = StoreVersion.increment model.version
                               , project = model.project
                               , suppressedErrors = newSuppressedErrors
                               , ruleLinks = model.ruleLinks
@@ -420,6 +447,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
                         Err problem ->
                             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                              , version = model.version
                               , project = model.project
                               , suppressedErrors = model.suppressedErrors
                               , ruleLinks = model.ruleLinks
@@ -431,6 +459,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
                 Err err ->
                     ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                      , version = model.version
                       , project = model.project
                       , suppressedErrors = model.suppressedErrors
                       , ruleLinks = model.ruleLinks
@@ -447,6 +476,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         ReceivedRuleLinks { links, fromCache } ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , version = StoreVersion.increment model.version
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = links
@@ -458,6 +488,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         GotProjectElmJsonWatchEvent ->
             ( { pendingTaskCount = model.pendingTaskCount + 1
+              , version = model.version
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
@@ -469,16 +500,17 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         GotProjectReadmeWatchEvent fileEvent ->
             let
-                ( newProject, cmd ) =
+                ( newProject, version, cmd ) =
                     if fileEvent.eventType == 4 {- file was deleted -} then
                         -- TODO Remove README.md from project
-                        ( model.project, [] )
+                        ( model.project, StoreVersion.increment model.version, [] )
 
                     else
                         {- file was added or modified -}
-                        ( model.project, [ fetchReadme fs ] )
+                        ( model.project, model.version, [ fetchReadme fs ] )
             in
             ( { pendingTaskCount = model.pendingTaskCount + List.length cmd
+              , version = version
               , project = newProject
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
@@ -491,25 +523,28 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         GotSourceFileWatchEvent fileEvent ->
             if String.endsWith ".elm" fileEvent.path then
                 let
-                    ( newProject, cmds ) =
+                    ( newProject, version, cmds ) =
                         case FileWatcher.toEventType fileEvent.eventType of
                             FileWatcher.Created ->
-                                ( model.project, [ fetchElmFile fs fileEvent.path ] )
+                                ( model.project, model.version, [ fetchElmFile fs fileEvent.path ] )
 
                             FileWatcher.Modified ->
-                                ( model.project, [ fetchElmFile fs fileEvent.path ] )
+                                ( model.project, model.version, [ fetchElmFile fs fileEvent.path ] )
 
                             FileWatcher.Deleted ->
                                 ( Project.removeFile fileEvent.path model.project
+                                , StoreVersion.increment model.version
                                 , []
                                 )
 
                             FileWatcher.Renamed ->
                                 ( Project.removeFile fileEvent.path model.project
+                                , StoreVersion.increment model.version
                                 , [ fetchElmFile fs fileEvent.path ]
                                 )
                 in
                 ( { pendingTaskCount = model.pendingTaskCount + List.length cmds
+                  , version = version
                   , project = newProject
                   , suppressedErrors = model.suppressedErrors
                   , ruleLinks = model.ruleLinks
@@ -525,15 +560,22 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         GotSuppressedFileWatchEvent fileEvent ->
             if isSuppressedErrorFile fileEvent.path then
                 let
-                    ( newSuppressedErrors, cmds ) =
+                    ( newSuppressedErrors, version, cmds ) =
                         if fileEvent.eventType == 4 {- file was deleted -} then
-                            ( SuppressedErrors.removeFromFile fileEvent.path model.suppressedErrors, [] )
+                            ( SuppressedErrors.removeFromFile fileEvent.path model.suppressedErrors
+                            , StoreVersion.increment model.version
+                            , []
+                            )
 
                         else
                             {- file was added or modified -}
-                            ( model.suppressedErrors, [ fetchSuppressionFile fs fileEvent.path ] )
+                            ( model.suppressedErrors
+                            , model.version
+                            , [ fetchSuppressionFile fs fileEvent.path ]
+                            )
                 in
                 ( { pendingTaskCount = model.pendingTaskCount + List.length cmds
+                  , version = version
                   , project = model.project
                   , suppressedErrors = newSuppressedErrors
                   , ruleLinks = model.ruleLinks
@@ -654,16 +696,20 @@ receivedElmFileList :
 receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result model =
     case result of
         Ok files ->
+            let
+                ( emptySourceDirectories, version ) =
+                    if List.isEmpty files then
+                        ( directory :: model.emptySourceDirectories, StoreVersion.increment model.version )
+
+                    else
+                        ( model.emptySourceDirectories, model.version )
+            in
             ( { pendingTaskCount = minimum (model.pendingTaskCount + List.length files - 1)
+              , version = version
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
-              , emptySourceDirectories =
-                    if List.isEmpty files then
-                        directory :: model.emptySourceDirectories
-
-                    else
-                        model.emptySourceDirectories
+              , emptySourceDirectories = emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , List.map (\filePath -> fetchElmFile fs filePath) files
@@ -675,6 +721,7 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
 
         Err err ->
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+              , version = model.version
               , project = model.project
               , suppressedErrors = model.suppressedErrors
               , ruleLinks = model.ruleLinks
@@ -759,6 +806,7 @@ refreshProjectDependencies fs packagesLocation elmJson newProject (Model model) 
     in
     ( Model
         { pendingTaskCount = model.pendingTaskCount + List.length tasks
+        , version = StoreVersion.increment model.version
         , project = Project.removeDependencies newProject
         , suppressedErrors = model.suppressedErrors
         , ruleLinks = model.ruleLinks
@@ -773,6 +821,7 @@ setProject : Project -> Model -> Model
 setProject newProject (Model model) =
     Model
         { pendingTaskCount = model.pendingTaskCount
+        , version = StoreVersion.increment model.version
         , project = newProject
         , suppressedErrors = model.suppressedErrors
         , ruleLinks = model.ruleLinks
@@ -791,18 +840,6 @@ project (Model model) =
     model.project
 
 
-updateProject : (Project -> Project) -> Model -> Model
-updateProject updateFn (Model model) =
-    Model
-        { pendingTaskCount = model.pendingTaskCount
-        , project = updateFn model.project
-        , suppressedErrors = model.suppressedErrors
-        , ruleLinks = model.ruleLinks
-        , emptySourceDirectories = model.emptySourceDirectories
-        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
-        }
-
-
 suppressedErrors : Model -> SuppressedErrors
 suppressedErrors (Model model) =
     model.suppressedErrors
@@ -812,6 +849,7 @@ setSuppressedErrors : SuppressedErrors -> Model -> Model
 setSuppressedErrors newSuppressedErrors (Model model) =
     Model
         { pendingTaskCount = model.pendingTaskCount
+        , version = StoreVersion.increment model.version
         , project = model.project
         , suppressedErrors = newSuppressedErrors
         , ruleLinks = model.ruleLinks
@@ -1040,3 +1078,21 @@ watchPath fileWatcher { toMsg, path, recursive, eventMask } =
 excludePaths : List String
 excludePaths =
     [ ".git", "node_modules", "elm-stuff" ]
+
+
+{-| Find the first element that satisfies a predicate and return
+Just that element. If none match, return Nothing.
+find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
+-}
+find : (a -> Bool) -> List a -> Maybe a
+find predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+
+            else
+                find predicate rest
