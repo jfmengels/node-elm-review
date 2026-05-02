@@ -135,7 +135,7 @@ type Msg
     = ReceivedElmJson (Result Fs.FsError String)
     | ReceivedReadme (Result Fs.FsError String)
     | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
-    | ReceivedElmFileList SourceDirectoryInfo (Result Fs.FsError (List Path))
+    | ReceivedElmFileList Path (Result Fs.FsError (List Path))
     | ReceivedElmFile Path (Result Fs.FsError String)
     | ReceivedSuppressedErrorsList Path (Result Fs.FsError (List Path))
     | ReceivedSuppressedErrorsFile Path (Result Fs.FsError String)
@@ -334,29 +334,30 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     -- TODO Download dependencies
                     decrementTaskCount ()
 
-        ReceivedElmFileList { fromCliArgs, target } result ->
+        ReceivedElmFileList path result ->
             receivedElmFileList
                 { fs = fs
                 , stderr = stderr
                 , onNotFound =
                     \() ->
-                        if fromCliArgs then
-                            ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
-                              , version = model.version
-                              , project = model.project
-                              , suppressedErrors = model.suppressedErrors
-                              , ruleLinks = model.ruleLinks
-                              , emptySourceDirectories = model.emptySourceDirectories
-                              , directoriesFromCliArgsWithoutFiles = target :: model.directoriesFromCliArgsWithoutFiles
-                              }
-                            , Cmd.none
-                            )
+                        case options.directoriesToAnalyze of
+                            Just _ ->
+                                ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
+                                  , version = model.version
+                                  , project = model.project
+                                  , suppressedErrors = model.suppressedErrors
+                                  , ruleLinks = model.ruleLinks
+                                  , emptySourceDirectories = model.emptySourceDirectories
+                                  , directoriesFromCliArgsWithoutFiles = path :: model.directoriesFromCliArgsWithoutFiles
+                                  }
+                                , Cmd.none
+                                )
 
-                        else
-                            decrementTaskCount ()
+                            Nothing ->
+                                decrementTaskCount ()
                 , handleProblem = handleProblem
                 }
-                target
+                path
                 result
                 model
 
@@ -956,7 +957,7 @@ fetchAddedSourceDirectories fs sourceDirectories =
                     { fromCliArgs = False, target = directory }
             in
             fetchElmFiles fs sourceDirectoryInfo
-                |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo)
+                |> Task.attempt (ReceivedElmFileList sourceDirectoryInfo.target)
         )
         (Maybe.withDefault [] sourceDirectories)
 
