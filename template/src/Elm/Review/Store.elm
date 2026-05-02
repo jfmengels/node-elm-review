@@ -760,13 +760,13 @@ fetchDataOnElmJsonChange fs stderr options before after model =
                 let
                     tasks : List (Cmd Msg)
                     tasks =
-                        fetchAddedSourceDirectories fs (Maybe.map .added sourceDirectories)
+                        fetchAddedSourceDirectories fs sourceDirectories.added
                             |> fetchAddedDependencies fs options.packagesLocation dependencies
 
                     newProject : Project
                     newProject =
                         model.project
-                            |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
+                            |> removeSourceDirectories sourceDirectories.removed
                             |> removeDependencies dependencies
                 in
                 ( { pendingTaskCount = model.pendingTaskCount + List.length tasks
@@ -793,7 +793,7 @@ fetchDataOnElmJsonChange fs stderr options before after model =
 
 
 type alias ElmJsonChanges =
-    { sourceDirectories : Maybe { added : List Path, removed : List Path }
+    { sourceDirectories : { added : List Path, removed : List Path }
     , dependencies : ElmJsonDependencyChanges
     }
 
@@ -828,7 +828,7 @@ sourceDirectoryChangesInElmJson :
         { before : Maybe Elm.Project.Project
         , after : Elm.Project.Project
         }
-    -> Result Problem (Maybe { added : List String, removed : List Path })
+    -> Result Problem { added : List String, removed : List Path }
 sourceDirectoryChangesInElmJson directoriesToAnalyze { before, after } =
     Result.map2 diffSourceDirectories
         (case before of
@@ -877,7 +877,7 @@ dependencyChangesInElmJson { before, after } =
             ReloadDependenciesEntirely newProject
 
 
-diffSourceDirectories : List Path -> List Path -> Maybe { added : List Path, removed : List Path }
+diffSourceDirectories : List Path -> List Path -> { added : List Path, removed : List Path }
 diffSourceDirectories basePrevious baseAfter =
     let
         previous : List Path
@@ -887,20 +887,10 @@ diffSourceDirectories basePrevious baseAfter =
         after : List Path
         after =
             List.map normalizeDirPath baseAfter
-
-        added : List Path
-        added =
-            List.filter (\dir -> not (List.member dir previous)) after
-
-        removed : List Path
-        removed =
-            List.filter (\dir -> not (List.member dir after)) previous
     in
-    if List.isEmpty added && List.isEmpty removed then
-        Nothing
-
-    else
-        Just { added = added, removed = removed }
+    { added = List.filter (\dir -> not (List.member dir previous)) after
+    , removed = List.filter (\dir -> not (List.member dir after)) previous
+    }
 
 
 normalizeDirPath : Path -> Path
@@ -930,31 +920,23 @@ diffDependencies previous after =
         Just { added = added, removed = List.map Tuple.first removed }
 
 
-fetchAddedSourceDirectories : FileSystem -> Maybe (List Path) -> List (Cmd Msg)
+fetchAddedSourceDirectories : FileSystem -> List Path -> List (Cmd Msg)
 fetchAddedSourceDirectories fs sourceDirectories =
-    List.map (fetchElmFiles fs) (Maybe.withDefault [] sourceDirectories)
+    List.map (fetchElmFiles fs) sourceDirectories
 
 
-removeSourceDirectories : Maybe (List Path) -> Project -> Project
-removeSourceDirectories sourceDirectoriesToRemove previousProject =
-    case sourceDirectoriesToRemove of
-        Nothing ->
-            previousProject
+removeSourceDirectories : List Path -> Project -> Project
+removeSourceDirectories removed previousProject =
+    List.foldl
+        (\{ path } p ->
+            if List.any (\removedDir -> String.startsWith removedDir path) removed then
+                Project.removeModule path p
 
-        Just [] ->
-            previousProject
-
-        Just removed ->
-            List.foldl
-                (\{ path } p ->
-                    if List.any (\removedDir -> String.startsWith removedDir path) removed then
-                        Project.removeModule path p
-
-                    else
-                        p
-                )
-                previousProject
-                (Project.modules previousProject)
+            else
+                p
+        )
+        previousProject
+        (Project.modules previousProject)
 
 
 fetchAddedDependencies : FileSystem -> Path -> ElmJsonDependencyChanges -> List (Cmd Msg) -> List (Cmd Msg)
