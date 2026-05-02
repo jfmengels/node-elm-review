@@ -610,8 +610,8 @@ isSuppressedErrorFile path =
     String.endsWith ".json" path
 
 
-filesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List Path)
-filesToFetch elmJson directoriesToAnalyze =
+elmFilesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List Path)
+elmFilesToFetch elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
         Nothing ->
             case elmJson of
@@ -1257,7 +1257,7 @@ watchSourceDirectories : FileWatcher -> Options -> ModelData -> Sub Msg
 watchSourceDirectories fileWatcher options model =
     case Project.elmJson model.project of
         Just elmJson ->
-            case filesToFetch elmJson.project options.directoriesToAnalyze of
+            case elmFilesToFetch elmJson.project options.directoriesToAnalyze of
                 Ok targets ->
                     targets
                         |> List.map
