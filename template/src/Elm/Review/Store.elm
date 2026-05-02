@@ -237,7 +237,7 @@ updateInner { fs, stderr, options } msg model =
                         stderr
                         options
                         (Project.elmJson model.project)
-                        (Just elmJsonData)
+                        elmJsonData
                         { model
                             | pendingTaskCount = minimum (model.pendingTaskCount - 1)
                             , project = newProject
@@ -713,17 +713,27 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
 
 applyChangesFromFix : FileSystem -> Console -> Options -> Project -> Model -> ( Model, Cmd Msg )
 applyChangesFromFix fs stderr options projectWithFixes (Model model) =
-    fetchDataOnElmJsonChange
-        fs
-        stderr
-        options
-        (Project.elmJson model.project)
-        (Project.elmJson projectWithFixes)
-        { model
-            | version = StoreVersion.increment model.version
-            , project = projectWithFixes
-        }
-        |> Tuple.mapFirst Model
+    let
+        newModel : ModelData
+        newModel =
+            { model
+                | version = StoreVersion.increment model.version
+                , project = projectWithFixes
+            }
+    in
+    case Project.elmJson projectWithFixes of
+        Just elmJson ->
+            fetchDataOnElmJsonChange
+                fs
+                stderr
+                options
+                (Project.elmJson model.project)
+                elmJson
+                newModel
+                |> Tuple.mapFirst Model
+
+        Nothing ->
+            ( Model newModel, Cmd.none )
 
 
 fetchDataOnElmJsonChange :
@@ -731,11 +741,11 @@ fetchDataOnElmJsonChange :
     -> Console
     -> Options
     -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
-    -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
+    -> { elmJson | raw : String, project : Elm.Project.Project }
     -> ModelData
     -> ( ModelData, Cmd Msg )
 fetchDataOnElmJsonChange fs stderr options before after model =
-    if Maybe.map .raw before == Maybe.map .raw after then
+    if Maybe.map .raw before == Just after.raw then
         ( model, Cmd.none )
 
     else
@@ -793,62 +803,52 @@ changesInElmJson :
     Maybe (List Path)
     ->
         { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
-        , after : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+        , after : { elmJson | raw : String, project : Elm.Project.Project }
         }
     -> Result Problem ElmJsonChanges
 changesInElmJson directoriesToAnalyze { before, after } =
-    if Maybe.map .raw before == Maybe.map .raw after then
-        Ok
-            { sourceDirectories = Nothing
-            , dependencies = NoDependencyChanges
-            }
-
-    else
-        sourceDirectoryChangesInElmJson directoriesToAnalyze { before = before, after = after }
-            |> Result.map
-                (\sourceDirectories ->
-                    { sourceDirectories = sourceDirectories
-                    , dependencies = dependencyChangesInElmJson { before = before, after = after }
-                    }
-                )
+    sourceDirectoryChangesInElmJson directoriesToAnalyze { before = before, after = after }
+        |> Result.map
+            (\sourceDirectories ->
+                { sourceDirectories = sourceDirectories
+                , dependencies = dependencyChangesInElmJson { before = before, after = after }
+                }
+            )
 
 
 sourceDirectoryChangesInElmJson :
     Maybe (List Path)
     ->
         { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
-        , after : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+        , after : { elmJson | raw : String, project : Elm.Project.Project }
         }
     -> Result Problem (Maybe { added : List String, removed : List Path })
 sourceDirectoryChangesInElmJson directoriesToAnalyze { before, after } =
-    case ( Maybe.map .project before, Maybe.map .project after ) of
-        ( _, Nothing ) ->
-            Ok Nothing
-
-        ( Nothing, Just (Elm.Project.Application b) ) ->
+    case ( Maybe.map .project before, after.project ) of
+        ( Nothing, Elm.Project.Application b ) ->
             if List.isEmpty b.dirs then
                 Err emptySourceDirectoriesProblem
 
             else
                 Ok (Just { added = b.dirs, removed = [] })
 
-        ( Nothing, Just (Elm.Project.Package _) ) ->
+        ( Nothing, Elm.Project.Package _ ) ->
             Ok (Just { added = [ "src" ], removed = [] })
 
-        ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+        ( Just (Elm.Project.Application a), Elm.Project.Application b ) ->
             if List.isEmpty b.dirs then
                 Err emptySourceDirectoriesProblem
 
             else
                 Ok (diffSourceDirectories directoriesToAnalyze a.dirs b.dirs)
 
-        ( Just (Elm.Project.Package _), Just (Elm.Project.Package _) ) ->
+        ( Just (Elm.Project.Package _), Elm.Project.Package _ ) ->
             Ok Nothing
 
-        ( Just (Elm.Project.Application a), Just (Elm.Project.Package _) ) ->
+        ( Just (Elm.Project.Application a), Elm.Project.Package _ ) ->
             Ok (diffSourceDirectories directoriesToAnalyze a.dirs [ "src" ])
 
-        ( Just (Elm.Project.Package _), Just (Elm.Project.Application b) ) ->
+        ( Just (Elm.Project.Package _), Elm.Project.Application b ) ->
             if List.isEmpty b.dirs then
                 Err emptySourceDirectoriesProblem
 
@@ -858,21 +858,18 @@ sourceDirectoryChangesInElmJson directoriesToAnalyze { before, after } =
 
 dependencyChangesInElmJson :
     { before : Maybe { elmJson | raw : String, project : Elm.Project.Project }
-    , after : Maybe { elmJson | raw : String, project : Elm.Project.Project }
+    , after : { elmJson | raw : String, project : Elm.Project.Project }
     }
     -> ElmJsonDependencyChanges
 dependencyChangesInElmJson { before, after } =
-    case ( Maybe.map .project before, Maybe.map .project after ) of
-        ( _, Nothing ) ->
-            NoDependencyChanges
-
-        ( Nothing, Just ((Elm.Project.Application _) as newProject) ) ->
+    case ( Maybe.map .project before, after.project ) of
+        ( Nothing, (Elm.Project.Application _) as newProject ) ->
             ReloadDependenciesEntirely newProject
 
-        ( Nothing, Just ((Elm.Project.Package _) as newProject) ) ->
+        ( Nothing, (Elm.Project.Package _) as newProject ) ->
             ReloadDependenciesEntirely newProject
 
-        ( Just (Elm.Project.Application a), Just (Elm.Project.Application b) ) ->
+        ( Just (Elm.Project.Application a), Elm.Project.Application b ) ->
             case diffDependencies (a.depsDirect ++ a.depsIndirect ++ a.testDepsDirect ++ a.testDepsIndirect) (b.depsDirect ++ b.depsIndirect ++ b.testDepsDirect ++ b.testDepsIndirect) of
                 Nothing ->
                     NoDependencyChanges
@@ -880,7 +877,7 @@ dependencyChangesInElmJson { before, after } =
                 Just changes ->
                     DiffApplication changes
 
-        ( Just (Elm.Project.Package a), Just (Elm.Project.Package b) ) ->
+        ( Just (Elm.Project.Package a), Elm.Project.Package b ) ->
             case diffDependencies (a.deps ++ a.testDeps) (b.deps ++ b.testDeps) of
                 Nothing ->
                     NoDependencyChanges
@@ -888,10 +885,10 @@ dependencyChangesInElmJson { before, after } =
                 Just changes ->
                     DiffPackages changes
 
-        ( Just (Elm.Project.Application _), Just ((Elm.Project.Package _) as newProject) ) ->
+        ( Just (Elm.Project.Application _), (Elm.Project.Package _) as newProject ) ->
             ReloadDependenciesEntirely newProject
 
-        ( Just (Elm.Project.Package _), Just ((Elm.Project.Application _) as newProject) ) ->
+        ( Just (Elm.Project.Package _), (Elm.Project.Application _) as newProject ) ->
             ReloadDependenciesEntirely newProject
 
 
