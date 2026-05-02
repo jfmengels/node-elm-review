@@ -588,7 +588,7 @@ isSuppressedErrorFile path =
     String.endsWith ".json" path
 
 
-filesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List SourceDirectoryInfo)
+filesToFetch : Elm.Project.Project -> Maybe (List Path) -> Result ProblemSimple (List Path)
 filesToFetch elmJson directoriesToAnalyze =
     case directoriesToAnalyze of
         Nothing ->
@@ -601,20 +601,13 @@ filesToFetch elmJson directoriesToAnalyze =
                             |> Err
 
                     else
-                        List.map (\directory -> { fromCliArgs = False, target = directory }) ("test" :: application.dirs)
-                            |> Ok
+                        Ok ("test" :: application.dirs)
 
                 Elm.Project.Package _ ->
-                    List.map (\directory -> { fromCliArgs = False, target = directory }) [ "src", "test" ]
-                        |> Ok
+                    Ok [ "src", "test" ]
 
         Just directoriesToAnalyze_ ->
-            List.map
-                (\fileOrDir ->
-                    { fromCliArgs = True, target = fileOrDir }
-                )
-                directoriesToAnalyze_
-                |> Ok
+            Ok directoriesToAnalyze_
 
 
 addDepsFromVersion : FileSystem -> Path -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
@@ -1259,11 +1252,11 @@ watchSourceDirectories fileWatcher options model =
                 Ok targets ->
                     targets
                         |> List.map
-                            (\{ fromCliArgs, target } ->
+                            (\path ->
                                 watchPath fileWatcher
-                                    { path = target
+                                    { path = path
                                     , toMsg = GotSourceFileWatchEvent
-                                    , recursive = not (fromCliArgs && String.endsWith ".elm" target)
+                                    , recursive = options.directoriesToAnalyze == Nothing || not (String.endsWith ".elm" path)
                                     , eventMask = 15
                                     }
                             )
