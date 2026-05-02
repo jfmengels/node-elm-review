@@ -739,36 +739,55 @@ receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result m
 
 applyChangesFromFix : FileSystem -> Options -> Project -> Model -> ( Model, Cmd Msg )
 applyChangesFromFix fs options projectWithFixes (Model model) =
-    let
-        { sourceDirectories, dependencies } =
-            changesInElmJson
-                options.directoriesToAnalyze
-                { before = Project.elmJson model.project
-                , after = Project.elmJson projectWithFixes
-                }
-
-        tasks : List (Cmd Msg)
-        tasks =
-            fetchAddedSourceDirectories fs (Maybe.map .added sourceDirectories)
-                |> fetchAddedDependencies fs options.packagesLocation dependencies
-
-        newProject : Project
-        newProject =
-            projectWithFixes
-                |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
-                |> removeDependencies dependencies
-    in
-    ( Model
-        { pendingTaskCount = model.pendingTaskCount + List.length tasks
-        , version = StoreVersion.increment model.version
-        , project = newProject
-        , suppressedErrors = model.suppressedErrors
-        , ruleLinks = model.ruleLinks
-        , emptySourceDirectories = model.emptySourceDirectories
-        , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+    fetchDataOnElmJsonChange
+        fs
+        options
+        (Project.elmJson model.project)
+        (Project.elmJson projectWithFixes)
+        { model
+            | version = StoreVersion.increment model.version
+            , project = projectWithFixes
         }
-    , Cmd.batch tasks
-    )
+
+
+fetchDataOnElmJsonChange :
+    FileSystem
+    -> Options
+    -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
+    -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
+    -> ModelData
+    -> ( Model, Cmd Msg )
+fetchDataOnElmJsonChange fs options before after model =
+    if Maybe.map .raw before == Maybe.map .raw after then
+        ( Model model, Cmd.none )
+
+    else
+        let
+            { sourceDirectories, dependencies } =
+                changesInElmJson options.directoriesToAnalyze { before = before, after = after }
+
+            tasks : List (Cmd Msg)
+            tasks =
+                fetchAddedSourceDirectories fs (Maybe.map .added sourceDirectories)
+                    |> fetchAddedDependencies fs options.packagesLocation dependencies
+
+            newProject : Project
+            newProject =
+                model.project
+                    |> removeSourceDirectories (Maybe.map .removed sourceDirectories)
+                    |> removeDependencies dependencies
+        in
+        ( Model
+            { pendingTaskCount = model.pendingTaskCount + List.length tasks
+            , version = StoreVersion.increment model.version
+            , project = newProject
+            , suppressedErrors = model.suppressedErrors
+            , ruleLinks = model.ruleLinks
+            , emptySourceDirectories = model.emptySourceDirectories
+            , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
+            }
+        , Cmd.batch tasks
+        )
 
 
 type alias ElmJsonChanges =
