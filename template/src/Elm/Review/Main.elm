@@ -13,6 +13,7 @@ import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.Store as Store
+import Elm.Review.StoreVersion as StoreVersion exposing (StoreVersion)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
@@ -60,6 +61,7 @@ type alias Model =
 
     --
     , store : Store.Model
+    , lastReviewedStoreVersion : StoreVersion
     , promptId : PromptId
 
     --
@@ -163,6 +165,7 @@ initWithOptions env fs options rulesFromConfig =
             , fs = fs
             , options = options
             , store = store
+            , lastReviewedStoreVersion = StoreVersion.zero
             , promptId = PromptId 0
             , rules = rules
             , isInitialRun = True
@@ -458,8 +461,11 @@ handleFixRefused fixPromptKind model =
 startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
     case Store.checkReadiness model.store of
-        Store.Ready ->
-            if model.options.suppress then
+        Store.Ready version ->
+            if version == model.lastReviewedStoreVersion then
+                unchanged
+
+            else if model.options.suppress then
                 let
                     res : { model : Model, result : RunReviewResult }
                     res =
