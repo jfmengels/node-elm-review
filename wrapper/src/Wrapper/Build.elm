@@ -27,6 +27,7 @@ import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
+import Wrapper.ProcessEnv as ProcessEnv exposing (ProcessEnv)
 import Wrapper.ProjectPaths as ProjectPaths
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
@@ -164,7 +165,7 @@ buildCreatedProject fs os reviewFolder options buildData =
             |> Task.mapError (processingErrorToProblem "while building and copying template files")
         , createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
-        , compileProjectUsingElmRun os reviewFolder buildFolder buildData.reviewAppPath
+        , compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder buildData.reviewAppPath
             |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
         ]
 
@@ -444,8 +445,8 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
             Ok application
 
 
-compileProjectUsingElmRun : ProcessCapability -> Path -> Path -> String -> Task Problem ()
-compileProjectUsingElmRun os reviewFolder buildFolder reviewAppPath =
+compileProjectUsingElmRun : ProcessCapability -> ProcessEnv -> Path -> Path -> String -> Task Problem ()
+compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
     Process.run os
         -- TODO Get run from somewhere
         "run"
@@ -458,7 +459,7 @@ compileProjectUsingElmRun os reviewFolder buildFolder reviewAppPath =
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
-        , env = Nothing
+        , env = Just (ProcessEnv.asProcessOptions processEnv)
         , cwd = Nothing
         , stdin = Process.NullStdin
         , stdout = Process.NullStdout
