@@ -97,8 +97,7 @@ buildProject fs os options reviewFolder elmHomePath =
                                                 fs
                                                 os
                                                 reviewFolder
-                                                (ProjectPaths.buildFolder options.projectPaths "review-project")
-                                                options.localElmReview
+                                                options
                                                 buildData
                                     )
                                 |> Task.map (\() -> buildData)
@@ -135,15 +134,19 @@ reuseExistingReviewApp fs forceBuild reviewAppPath =
             |> Task.onError (\_ -> Task.succeed False)
 
 
-buildCreatedProject : FileSystem -> ProcessCapability -> Path -> Path -> Maybe Path -> BuildData -> Task Problem ()
-buildCreatedProject fs os reviewFolder buildFolder localElmReview buildData =
+buildCreatedProject : FileSystem -> ProcessCapability -> Path -> ReviewOptions -> BuildData -> Task Problem ()
+buildCreatedProject fs os reviewFolder options buildData =
     let
+        buildFolder : Path
+        buildFolder =
+            ProjectPaths.buildFolder options.projectPaths "review-project"
+
         localElmReviewTasks : { setUp : Task Problem (), cleanUp : Task Problem () }
         localElmReviewTasks =
             createSymLinkForLocalElmReview fs
                 os
                 { buildFolder = buildFolder
-                , localElmReview = localElmReview
+                , localElmReview = options.localElmReview
                 , packagesLocation = buildData.packagesLocation
                 , elmReviewVersion = buildData.elmReviewVersion
                 }
