@@ -1,12 +1,12 @@
 module Wrapper.ProcessEnv exposing
     ( ProcessEnv, from
-    , get
+    , asProcessEnv
     )
 
 {-|
 
 @docs ProcessEnv, from
-@docs get
+@docs asProcessOptions
 
 -}
 
@@ -22,6 +22,6 @@ from =
     ProcessEnv
 
 
-get : String -> ProcessEnv -> Maybe String
-get key (ProcessEnv dict) =
-    Dict.get key dict
+asProcessEnv : ProcessEnv -> List ( String, String )
+asProcessEnv (ProcessEnv processEnv) =
+    Dict.toList processEnv
