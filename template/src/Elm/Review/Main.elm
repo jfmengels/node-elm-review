@@ -974,113 +974,109 @@ encodePosition position =
 
 applyFixesAfterReview : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
 applyFixesAfterReview ({ model, result } as input) =
-    if Dict.isEmpty result.fixedErrors then
-        makeReport (Store.suppressedErrors model.store) input
-
-    else
-        case Project.diffV2 { before = Store.project model.store, after = result.project } of
-            [] ->
-                makeReport (Store.suppressedErrors model.store) input
-
-            diffs ->
-                sendFixPrompt diffs result model
-
-
-sendFixPrompt : List FixedFile -> RunReviewResult -> Model -> ( Model, Cmd Msg )
-sendFixPrompt diffs result model =
     case numberOfErrors result.fixedErrors of
         Nothing ->
-            ( model, Cmd.none )
+            makeReport (Store.suppressedErrors model.store) input
 
         Just nbErrors ->
+            case Project.diffV2 { before = Store.project model.store, after = result.project } of
+                [] ->
+                    makeReport (Store.suppressedErrors model.store) input
+
+                diffs ->
+                    sendFixPrompt diffs result nbErrors model
+
+
+sendFixPrompt : List FixedFile -> RunReviewResult -> NumberOfErrors -> Model -> ( Model, Cmd Msg )
+sendFixPrompt diffs result nbErrors model =
+    let
+        changedFiles : List { filePath : Path, source : String }
+        changedFiles =
+            List.filterMap
+                (\{ path, diff } ->
+                    case diff of
+                        Project.Edited { after } ->
+                            Just
+                                { filePath = path
+                                , source = after
+                                }
+
+                        Project.Removed ->
+                            Nothing
+                )
+                diffs
+
+        removedFiles : List Path
+        removedFiles =
+            List.filterMap
+                (\{ path, diff } ->
+                    case diff of
+                        Project.Edited _ ->
+                            Nothing
+
+                        Project.Removed ->
+                            Just path
+                )
+                diffs
+
+        fixKind : FixPromptKind
+        fixKind =
+            case nbErrors of
+                OneError _ error ->
+                    FixSingle error
+
+                MultipleErrors _ ->
+                    FixAll
+
+        fixPayload : FixPromptPayload
+        fixPayload =
+            { kind = fixKind
+            , projectWithFixes = result.project
+            , rulesWithFixes = result.rules
+            , changedFiles = changedFiles
+            , removedFiles = removedFiles
+            }
+    in
+    case shouldPromptForFix model of
+        Just stdin ->
             let
-                changedFiles : List { filePath : Path, source : String }
-                changedFiles =
-                    List.filterMap
-                        (\{ path, diff } ->
-                            case diff of
-                                Project.Edited { after } ->
-                                    Just
-                                        { filePath = path
-                                        , source = after
-                                        }
-
-                                Project.Removed ->
-                                    Nothing
-                        )
-                        diffs
-
-                removedFiles : List Path
-                removedFiles =
-                    List.filterMap
-                        (\{ path, diff } ->
-                            case diff of
-                                Project.Edited _ ->
-                                    Nothing
-
-                                Project.Removed ->
-                                    Just path
-                        )
-                        diffs
-
-                fixKind : FixPromptKind
-                fixKind =
+                proposal : List Reporter.TextContent
+                proposal =
                     case nbErrors of
-                        OneError _ error ->
-                            FixSingle error
+                        OneError filePath error ->
+                            Reporter.formatSingleFixProposal
+                                model.options
+                                (pathAndSource (Store.project model.store) filePath)
+                                (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
+                                diffs
 
                         MultipleErrors _ ->
-                            FixAll
+                            confirmationForMultipleFixesPrompt model diffs result.fixedErrors
 
-                fixPayload : FixPromptPayload
-                fixPayload =
-                    { kind = fixKind
-                    , projectWithFixes = result.project
-                    , rulesWithFixes = result.rules
-                    , changedFiles = changedFiles
-                    , removedFiles = removedFiles
-                    }
+                promptId : PromptId
+                promptId =
+                    incrementPrompt model.promptId
             in
-            case shouldPromptForFix model of
-                Just stdin ->
-                    let
-                        proposal : List Reporter.TextContent
-                        proposal =
-                            case nbErrors of
-                                OneError filePath error ->
-                                    Reporter.formatSingleFixProposal
-                                        model.options
-                                        (pathAndSource (Store.project model.store) filePath)
-                                        (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
-                                        diffs
+            ( { model | promptId = promptId }
+            , Prompt.prompt
+                stdin
+                model.env.stdout
+                { color = model.options.color
+                , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
+                , question =
+                    \_ ->
+                        case nbErrors of
+                            OneError _ _ ->
+                                "Do you wish to apply this fix?"
 
-                                MultipleErrors _ ->
-                                    confirmationForMultipleFixesPrompt model diffs result.fixedErrors
+                            MultipleErrors numberOfFixedErrors ->
+                                "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
+                }
+                |> Cmd.map (FixPromptMsg promptId fixPayload)
+            )
 
-                        promptId : PromptId
-                        promptId =
-                            incrementPrompt model.promptId
-                    in
-                    ( { model | promptId = promptId }
-                    , Prompt.prompt
-                        stdin
-                        model.env.stdout
-                        { color = model.options.color
-                        , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
-                        , question =
-                            \_ ->
-                                case nbErrors of
-                                    OneError _ _ ->
-                                        "Do you wish to apply this fix?"
-
-                                    MultipleErrors numberOfFixedErrors ->
-                                        "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
-                        }
-                        |> Cmd.map (FixPromptMsg promptId fixPayload)
-                    )
-
-                Nothing ->
-                    ( model, applyFixChanges model.fs fixPayload )
+        Nothing ->
+            ( model, applyFixChanges model.fs fixPayload )
 
 
 shouldPromptForFix : Model -> Maybe Stdin
