@@ -11,6 +11,7 @@ import Wrapper.Flag as Flag exposing (Argument(..), Flag)
 import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewPackageOptions, NewRuleOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+import Wrapper.ProcessEnv as ProcessEnv
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
@@ -167,6 +168,7 @@ toReviewOptions env color options projectRoot =
     -- TODO Make this relative to CWD
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , watchConfig = options.watchConfig
+    , processEnv = ProcessEnv.from env
     }
 
 
