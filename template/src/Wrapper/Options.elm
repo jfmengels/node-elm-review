@@ -26,6 +26,7 @@ import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode)
 import Wrapper.Options.RuleType exposing (RuleType)
+import Wrapper.ProcessEnv exposing (ProcessEnv)
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
@@ -42,6 +43,7 @@ type alias ReviewOptions =
     , reviewAppFlags : List String
     , localElmReview : Maybe Path
     , watchConfig : Bool
+    , processEnv : ProcessEnv
     }
 
 

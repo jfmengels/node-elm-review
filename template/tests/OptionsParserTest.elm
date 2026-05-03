@@ -8,6 +8,7 @@ import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
 import Wrapper.Options as Options exposing (ReviewOptions)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
+import Wrapper.ProcessEnv as ProcessEnv
 import Wrapper.ProjectPaths as ProjectPaths
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
@@ -97,6 +98,7 @@ emptyOptions =
     , reviewAppFlags = []
     , localElmReview = Nothing
     , watchConfig = False
+    , processEnv = ProcessEnv.from Dict.empty
     }
 
 
