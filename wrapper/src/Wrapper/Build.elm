@@ -162,7 +162,7 @@ buildCreatedProject fs os reviewFolder options buildData =
               from = "/Users/m1/dev/node-elm-review/template/src"
             , to = buildFolder
             }
-            |> Task.mapError (processingErrorToProblem "while building and copying template files")
+            |> Task.mapError (processErrorToProblem "while building and copying template files")
         , createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
         , compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder buildData.reviewAppPath
@@ -268,8 +268,8 @@ fsErrorToProblem stepDescription error =
     Problem.unexpectedError stepDescription (FsExtra.errorToString error)
 
 
-processingErrorToProblem : String -> ProcessError -> Problem
-processingErrorToProblem stepDescription error =
+processErrorToProblem : String -> ProcessError -> Problem
+processErrorToProblem stepDescription error =
     Problem.unexpectedError stepDescription (ProcessExtra.errorToString error)
 
 
@@ -447,7 +447,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
 
 compileProjectUsingElmRun : ProcessCapability -> ProcessEnv -> Path -> Path -> String -> Task Problem ()
 compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
-    Process.run os
+    ProcessExtra.runButFailOnError os
         -- TODO Get run from somewhere
         "run"
         { args =
@@ -465,17 +465,25 @@ compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
         , stdout = Process.NullStdout
         , stderr = Process.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = Process.TruncateOutput }
         }
-        |> Task.mapError (processingErrorToProblem "while building the review application binary")
-        |> Task.andThen
-            (\{ exitCode, stderr } ->
-                if exitCode == 0 then
-                    Task.succeed ()
+        |> Task.mapError
+            (\error ->
+                case error of
+                    ProcessExtra.ProcessError processError ->
+                        processErrorToProblem "while building the review application binary" processError
 
-                else
-                    compilationError reviewFolder stderr
-                        |> Problem.from Problem.Recoverable
-                        |> Task.fail
+                    ProcessExtra.CommandNotFound ->
+                        { title = "COMMAND NOT FOUND"
+
+                        -- TODO Make "run not found" helper more helpful, e.g. by adding installations details.
+                        , message = \c -> "I could not find the " ++ c Yellow "run" ++ " executable. Is it installed on your system?"
+                        }
+                            |> Problem.from Problem.Recoverable
+
+                    ProcessExtra.CommandFailed completed ->
+                        compilationError reviewFolder completed.stderr
+                            |> Problem.from Problem.Recoverable
             )
+        |> Task.map (\_ -> ())
 
 
 compilationError : Path -> Maybe String -> ProblemSimple
@@ -493,8 +501,6 @@ compilationError reviewFolder stderr =
                 Just message ->
                     message
     in
-    -- TODO Improve the error message when elm-run could not be found.
-    -- TODO Right now there's no message indicating that.
     if String.contains "DEBUG REMNANTS" output then
         { title = "DEBUG IN CONFIGURATION"
         , message = \c -> "You are using the " ++ c Yellow "Debug" ++ " module in your configuration or rules, but I am compiling in optimized mode. Either remove those uses or run elm-review with " ++ c Yellow "--debug" ++ "."
