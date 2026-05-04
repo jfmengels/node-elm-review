@@ -16,6 +16,7 @@ import Elm.Project
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem, ProblemSimple)
+import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import Fs exposing (FileSystem, FsError)
@@ -216,13 +217,11 @@ updateHelp msg model =
         ConfigElmJsonWasModified ->
             -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
             -- TODO Check if the important parts of file has changed
-            -- TODO Show a message to the user? (depends on report mode)
             restartBuild model
 
         ConfigSourceFileWasModified fileEvent ->
             if String.endsWith ".elm" fileEvent.path then
                 -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
-                -- TODO Show a message to the user? (depends on report mode)
                 restartBuild model
 
             else
@@ -246,7 +245,16 @@ restartBuild model =
     in
     ( { model | buildId = buildId, pid = Nothing }
     , Cmd.batch
-        [ startBuild model.fs model.os model.options elmHomePath buildId
+        [ case model.options.reportMode of
+            ReportMode.HumanReadable ->
+                Cli.println model.stdout "Your configuration has changed. Restarting elm-review with the new one."
+
+            ReportMode.Json ->
+                Cmd.none
+
+            ReportMode.NDJson ->
+                Cmd.none
+        , startBuild model.fs model.os model.options elmHomePath buildId
         , case model.pid of
             Just pid ->
                 -- TODO Send softer signal that waits until any file writes are done and exits.
