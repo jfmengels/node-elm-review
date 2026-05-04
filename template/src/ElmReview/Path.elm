@@ -1,18 +1,16 @@
 module ElmReview.Path exposing
     ( Path
     , baseName, dirname
-    , join, joinArray, join2
+    , join, join2
     )
 
 {-| Utilities to work with paths.
 
 @docs Path
 @docs baseName, dirname
-@docs join, joinArray, join2
+@docs join, join2
 
 -}
-
-import Array exposing (Array)
 
 
 type alias Path =
@@ -73,8 +71,3 @@ join2 a b =
 join : List Path -> Path
 join list =
     List.foldr join2 "." list
-
-
-joinArray : Array Path -> Path
-joinArray list =
-    Array.foldr join2 "." list
