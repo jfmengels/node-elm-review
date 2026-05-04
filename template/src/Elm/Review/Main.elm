@@ -426,15 +426,6 @@ update msg model =
 
 applyFixChanges : FileSystem -> FixPromptPayload -> Cmd Msg
 applyFixChanges fs fixPayload =
-    -- TODO
-    -- Support multi file fixes
-    -- Remove fixAllProject from Model?
-    -- Remove Prompt module?
-    -- From JS: askConfirmationToFixWithOptions
-    --   - Check if elm.json was modified
-    --      - Refetch source-dependencies / dependencies if they changed
-    -- From Elm: UserConfirmedFix confirmation ->
-    --   - ???
     Task.map2 always
         (fixPayload.changedFiles
             -- TODO Format Elm files
