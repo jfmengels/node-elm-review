@@ -292,7 +292,7 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
             else
                 ( reviewAppPath, reviewAppFlags )
     in
-    Process.spawn os
+    ProcessExtra.runButFailOnError os
         cmd
         { args = args
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
@@ -302,9 +302,22 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
         , stderr = Process.InheritStderr
         }
         |> Task.mapError
-            (\err ->
-                Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
-                    |> Problem.withPath reviewAppPath
+            (\error ->
+                case error of
+                    ProcessExtra.ProcessError processError ->
+                        Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString processError)
+                            |> Problem.withPath reviewAppPath
+
+                    ProcessExtra.CommandNotFound ->
+                        { title = "COMMAND NOT FOUND"
+
+                        -- TODO Make "run not found" helper more helpful, e.g. by adding installations details.
+                        , message = \c -> "I could not find the " ++ c Yellow "run" ++ " executable. Is it installed on your system?"
+                        }
+                            |> Problem.from Problem.Recoverable
+
+                    ProcessExtra.CommandFailed completed ->
+                        Problem.unexpectedError "when running the review application" (Maybe.withDefault "No output from host-cli" completed.stderr)
             )
         |> Task.map .pid
         |> Task.attempt SpawnedReviewProcess
