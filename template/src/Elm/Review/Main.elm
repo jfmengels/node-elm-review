@@ -33,7 +33,7 @@ import Review.Project as Project exposing (Project)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
-import Task
+import Task exposing (Task)
 import Worker.Capabilities exposing (FileWatcher)
 
 
@@ -87,7 +87,7 @@ type Msg
     = StoreMsg Store.Msg
     | WroteSuppressionFiles (Result Problem ())
     | FixPromptMsg PromptId FixPromptPayload Prompt.Msg
-    | AppliedFixes FixPromptPayload (Result Fs.FsError ())
+    | AppliedFixes FixPromptPayload (Result Problem ())
 
 
 type alias FixPromptPayload =
@@ -417,10 +417,9 @@ update msg model =
                     , Cmd.map StoreMsg cmd
                     )
 
-                Err error ->
+                Err problem ->
                     ( model
-                    , Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error)
-                        |> stopBecauseOfProblem model
+                    , stopBecauseOfProblem model problem
                     )
 
 
@@ -429,10 +428,18 @@ applyFixChanges fs fixPayload =
     Task.map2 always
         (fixPayload.changedFiles
             -- TODO Format Elm files
-            |> TaskExtra.mapAllAndIgnore (\{ filePath, source } -> Fs.writeTextFile fs filePath source)
+            |> TaskExtra.mapAllAndIgnore (\changedFile -> writeChangedFile fs changedFile)
         )
-        (TaskExtra.mapAllAndIgnore (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles)
+        (TaskExtra.mapAllAndIgnore (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles
+            |> Task.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsExtra.errorToString error))
+        )
         |> Task.attempt (AppliedFixes fixPayload)
+
+
+writeChangedFile : FileSystem -> { filePath : Path, source : String } -> Task Problem ()
+writeChangedFile fs { filePath, source } =
+    Fs.writeTextFile fs filePath source
+        |> Task.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error))
 
 
 handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
