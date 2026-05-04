@@ -42,20 +42,25 @@ type alias BuildData =
     }
 
 
-build : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem BuildData
-build fs os options elmHomePath =
+build : FileSystem -> ProcessCapability -> ReviewOptions -> Task Problem BuildData
+build fs os options =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildProject fs os options reviewFolder elmHomePath
+            buildProject fs os options reviewFolder
 
         Options.Remote remoteTemplate ->
             FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate options.debug
-                |> Task.andThen (\reviewFolder -> buildProject fs os options reviewFolder elmHomePath)
+                |> Task.andThen (\reviewFolder -> buildProject fs os options reviewFolder)
 
 
-buildProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Path -> Task Problem BuildData
-buildProject fs os options reviewFolder elmHomePath =
+buildProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem BuildData
+buildProject fs os options reviewFolder =
     let
+        -- TODO Get from somewhere
+        elmHomePath : String
+        elmHomePath =
+            "/Users/m1/.elm"
+
         elmJsonPath : String
         elmJsonPath =
             Path.join2 reviewFolder "elm.json"

@@ -67,11 +67,6 @@ type Msg
 init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
 init { stdout, stderr } { fs, os } options =
     let
-        -- TODO Get from somewhere
-        elmHomePath : String
-        elmHomePath =
-            "/Users/m1/.elm"
-
         buildId : BuildId
         buildId =
             BuildId 0
@@ -86,7 +81,7 @@ init { stdout, stderr } { fs, os } options =
         , pid = Nothing
         , watch = Nothing
         }
-    , startBuild fs os options elmHomePath buildId
+    , startBuild fs os options buildId
     )
 
 
@@ -234,11 +229,6 @@ updateHelp msg model =
 restartBuild : ModelData -> ( ModelData, Cmd Msg )
 restartBuild model =
     let
-        -- TODO Get from somewhere
-        elmHomePath : String
-        elmHomePath =
-            "/Users/m1/.elm"
-
         buildId : BuildId
         buildId =
             incrementBuild model.buildId
@@ -254,7 +244,7 @@ restartBuild model =
 
             ReportMode.NDJson ->
                 Cmd.none
-        , startBuild model.fs model.os model.options elmHomePath buildId
+        , startBuild model.fs model.os model.options buildId
         , case model.pid of
             Just pid ->
                 -- TODO Send softer signal that waits until any file writes are done and exits.
@@ -268,10 +258,10 @@ restartBuild model =
     )
 
 
-startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> BuildId -> Cmd Msg
-startBuild fs os options elmHomePath buildId =
+startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> BuildId -> Cmd Msg
+startBuild fs os options buildId =
     verifyElmJsonExists fs options.projectPaths
-        |> Task.andThen (\() -> Build.build fs os options elmHomePath)
+        |> Task.andThen (\() -> Build.build fs os options)
         |> Task.attempt (BuildCompleted buildId)
 
 
