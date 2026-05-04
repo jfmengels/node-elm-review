@@ -19,7 +19,7 @@ import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
-import ElmRun.OsExtra as OsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
@@ -191,7 +191,7 @@ createTemplateConfiguration fs os reviewPath remoteTemplate debug =
                                                         { from = Path.join2 templateConfigPath directory
                                                         , to = Path.join2 reviewPath directory
                                                         }
-                                                        |> Task.mapError (\error -> Problem.unexpectedError ("copying the template's " ++ directory ++ " source directory") (OsExtra.errorToString error))
+                                                        |> Task.mapError (\error -> Problem.unexpectedError ("copying the template's " ++ directory ++ " source directory") (ProcessExtra.errorToString error))
                                                 )
                                                 elmJson.dirs
                                             )

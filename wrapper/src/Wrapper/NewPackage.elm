@@ -25,7 +25,7 @@ import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
-import ElmRun.OsExtra as OsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
 import Json.Encode as Encode
@@ -187,7 +187,7 @@ createProject input { fs, os, options } =
               from = "/Users/m1/dev/node-elm-review/new-package/github"
             , to = Path.join2 input.packageName ".github/"
             }
-            |> Task.mapError (\error -> Problem.unexpectedError "while copying the GitHub Actions" (OsExtra.errorToString error))
+            |> Task.mapError (\error -> Problem.unexpectedError "while copying the GitHub Actions" (ProcessExtra.errorToString error))
 
         -- TODO
         --, createElmReviewConfiguration fs input

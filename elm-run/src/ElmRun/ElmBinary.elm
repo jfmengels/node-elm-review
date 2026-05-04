@@ -1,7 +1,7 @@
 module ElmRun.ElmBinary exposing (findElmVersion)
 
 import Elm.Version exposing (Version)
-import ElmRun.OsExtra as OsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
 import Task exposing (Task)
@@ -9,7 +9,7 @@ import Task exposing (Task)
 
 findElmVersion : ProcessCapability -> Task x Version
 findElmVersion os =
-    OsExtra.which os "elm"
+    ProcessExtra.which os "elm"
         |> Task.andThen
             (\maybeElmBinary ->
                 case maybeElmBinary of
