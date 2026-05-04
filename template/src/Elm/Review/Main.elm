@@ -27,6 +27,7 @@ import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Encode as Encode
+import Os exposing (ProcessCapability)
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
 import Review.Project as Project exposing (Project)
@@ -57,6 +58,7 @@ main =
 type alias Model =
     { env : Env
     , fs : FileSystem
+    , os : ProcessCapability
     , options : Options
 
     --
@@ -106,11 +108,11 @@ type FixPromptKind
 
 init : Env -> ( ModelWrapper, Cmd Msg )
 init env =
-    case Result.map2 Tuple.pair (requireFs env) (Options.parse env.args) of
-        Ok ( fs, options ) ->
+    case Result.map2 Tuple.pair (requireCapabilities env) (Options.parse env.args) of
+        Ok ( capabilities, options ) ->
             case computeRulesToRun env options of
                 Ok rulesFromConfig ->
-                    initWithOptions env fs options rulesFromConfig
+                    initWithOptions env capabilities options rulesFromConfig
 
                 Err cmd ->
                     ( Done, cmd )
@@ -121,16 +123,18 @@ init env =
             )
 
 
-requireFs : Env -> Result Problem FileSystem
-requireFs env =
-    Result.mapError
-        (\err ->
-            Problem.from Problem.Unrecoverable
-                { title = "MISSING CAPABILITIES"
-                , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
-                }
-        )
+requireCapabilities : Env -> Result Problem { fs : FileSystem, os : ProcessCapability }
+requireCapabilities env =
+    Result.map2 (\fs os -> { fs = fs, os = os })
         (Fs.require env)
+        (Os.requireProcess env)
+        |> Result.mapError
+            (\err ->
+                Problem.from Problem.Unrecoverable
+                    { title = "MISSING CAPABILITIES"
+                    , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
+                    }
+            )
 
 
 roughFormatOptions : List String -> Problem.FormatOptions { attemptFutureRecovery : Bool }
@@ -147,8 +151,8 @@ roughFormatOptions args =
     }
 
 
-initWithOptions : Env -> FileSystem -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
-initWithOptions env fs options rulesFromConfig =
+initWithOptions : Env -> { fs : FileSystem, os : ProcessCapability } -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
+initWithOptions env { fs, os } options rulesFromConfig =
     let
         rules : List Rule
         rules =
@@ -163,6 +167,7 @@ initWithOptions env fs options rulesFromConfig =
         model =
             { env = env
             , fs = fs
+            , os = os
             , options = options
             , store = store
             , lastReviewedStoreVersion = StoreVersion.zero
