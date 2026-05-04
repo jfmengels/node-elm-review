@@ -29,6 +29,7 @@ import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
 import Json.Encode as Encode
 import Os exposing (ProcessCapability)
+import Os.Process as Process
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
 import Review.Project as Project exposing (Project)
@@ -390,7 +391,7 @@ update msg model =
             if promptId == model.promptId then
                 case Prompt.update fixPromptMsg of
                     Prompt.Accepted ->
-                        ( model, applyFixChanges model.fs payload )
+                        ( model, applyFixChanges model.fs model.os model.options payload )
 
                     Prompt.TriggerCmd cmd ->
                         ( model
@@ -429,12 +430,11 @@ update msg model =
                     )
 
 
-applyFixChanges : FileSystem -> FixPromptPayload -> Cmd Msg
-applyFixChanges fs fixPayload =
+applyFixChanges : FileSystem -> ProcessCapability -> Options -> FixPromptPayload -> Cmd Msg
+applyFixChanges fs os options fixPayload =
     Task.map2 always
         (fixPayload.changedFiles
-            -- TODO Format Elm files
-            |> TaskExtra.mapAllAndIgnore (\changedFile -> writeChangedFile fs changedFile)
+            |> TaskExtra.mapAllAndIgnore (\changedFile -> writeChangedFile fs os options changedFile)
         )
         (TaskExtra.mapAllAndIgnore (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles
             |> Task.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsExtra.errorToString error))
@@ -442,10 +442,54 @@ applyFixChanges fs fixPayload =
         |> Task.attempt (AppliedFixes fixPayload)
 
 
-writeChangedFile : FileSystem -> { filePath : Path, source : String } -> Task Problem ()
-writeChangedFile fs { filePath, source } =
-    Fs.writeTextFile fs filePath source
-        |> Task.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error))
+writeChangedFile : FileSystem -> ProcessCapability -> Options -> { filePath : Path, source : String } -> Task Problem ()
+writeChangedFile fs os options { filePath, source } =
+    if String.endsWith "*.elm" filePath then
+        Fs.writeTextFile fs filePath source
+            |> Task.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error))
+
+    else
+        ProcessExtra.runButFailOnError os
+            (Maybe.withDefault "elm-format" options.elmFormatPath)
+            { args = [ "--elm-version=0.19", "--stdin", "--output", filePath ]
+            , cwd = Nothing
+            , env = Nothing
+            , stdin = Process.TextStdin source
+            , stdout = ProcessExtra.stdoutSpec options.debug
+            , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
+            }
+            |> Task.mapError
+                (\error ->
+                    case error of
+                        ProcessExtra.ProcessError processError ->
+                            Problem.unexpectedError "while applying automatic fixes and running elm-format" (ProcessExtra.errorToString processError)
+
+                        ProcessExtra.CommandNotFound ->
+                            elmFormatNotFoundError options.elmFormatPath
+
+                        ProcessExtra.CommandFailed { stderr } ->
+                            Problem.unexpectedError ("while formatting " ++ filePath ++ " with elm-format") (Maybe.withDefault "No output from elm-format." stderr)
+                )
+            |> Task.map (\_ -> ())
+
+
+elmFormatNotFoundError elmFormatPath =
+    { title = "ELM-FORMAT NOT FOUND"
+    , message =
+        \c ->
+            case elmFormatPath of
+                Just path ->
+                    "I could not find the executable for " ++ c MagentaBright "elm-format" ++ " at the location you specified: \n  " ++ path
+
+                Nothing ->
+                    "I could not find the executable for " ++ c MagentaBright "elm-format" ++ """
+
+A few options:
+- Install it globally.
+- Add it to your project through `npm`.
+- Specify the path using """ ++ c Cyan "--elm-format-path <path-to-elm-format>" ++ "."
+    }
+        |> Problem.from Problem.Unrecoverable
 
 
 handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
@@ -1080,7 +1124,7 @@ sendFixPrompt diffs result nbErrors model =
             )
 
         Nothing ->
-            ( model, applyFixChanges model.fs fixPayload )
+            ( model, applyFixChanges model.fs model.os model.options fixPayload )
 
 
 shouldPromptForFix : Model -> Maybe Stdin
