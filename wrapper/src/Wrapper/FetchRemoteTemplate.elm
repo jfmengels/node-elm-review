@@ -41,7 +41,7 @@ checkoutGitRepository fs os remoteTemplate debug =
                 , cwd = Just repoFolder
                 , env = Nothing
                 , stdin = Process.NullStdin
-                , stdout = stdoutSpec debug
+                , stdout = OsExtra.stdoutSpec debug
                 , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 }
                 |> Task.mapError (\error -> OsExtra.errorToString error)
@@ -81,15 +81,6 @@ checkoutGitRepository fs os remoteTemplate debug =
     Task.map2 (\() () -> Path.join2 repoFolder (Maybe.withDefault "." remoteTemplate.pathToFolder))
         (createRepoIfNecessary fs git remoteTemplate repoFolder)
         (pullAndCheckout { git = git, gitCapture = gitCapture } remoteTemplate)
-
-
-stdoutSpec : Bool -> Process.StdoutSpec
-stdoutSpec debug =
-    if debug then
-        Process.InheritStdout
-
-    else
-        Process.NullStdout
 
 
 createRepoIfNecessary : FileSystem -> (List String -> Task String ()) -> RemoteTemplate -> Path -> Task Problem ()
