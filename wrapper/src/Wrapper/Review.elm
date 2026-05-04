@@ -250,6 +250,7 @@ restartBuild model =
         , case model.pid of
             Just pid ->
                 -- TODO Send softer signal that waits until any file writes are done and exits.
+                --      Requires a Subscription in the review app that listens to signals
                 Process.kill model.os pid 9
                     |> Task.attempt (\_ -> KilledReviewProcess)
 
