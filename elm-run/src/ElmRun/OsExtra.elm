@@ -1,4 +1,14 @@
-module ElmRun.OsExtra exposing (errorToString, which)
+module ElmRun.OsExtra exposing
+    ( errorToString, stdoutSpec
+    , which
+    )
+
+{-|
+
+@docs errorToString, stdoutSpec
+@docs which
+
+-}
 
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
@@ -16,6 +26,15 @@ errorToString err =
 
         Process.ProcessError message ->
             message
+
+
+stdoutSpec : Bool -> Process.StdoutSpec
+stdoutSpec debug =
+    if debug then
+        Process.InheritStdout
+
+    else
+        Process.NullStdout
 
 
 {-| Find the path to a command.
