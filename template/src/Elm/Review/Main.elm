@@ -23,6 +23,7 @@ import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
 import ElmRun.FsExtra as FsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))

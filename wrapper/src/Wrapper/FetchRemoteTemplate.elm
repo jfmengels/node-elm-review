@@ -9,7 +9,7 @@ module Wrapper.FetchRemoteTemplate exposing (checkoutGitRepository)
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
-import ElmRun.OsExtra as OsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
@@ -41,10 +41,10 @@ checkoutGitRepository fs os remoteTemplate debug =
                 , cwd = Just repoFolder
                 , env = Nothing
                 , stdin = Process.NullStdin
-                , stdout = OsExtra.stdoutSpec debug
+                , stdout = ProcessExtra.stdoutSpec debug
                 , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 }
-                |> Task.mapError (\error -> OsExtra.errorToString error)
+                |> Task.mapError (\error -> ProcessExtra.errorToString error)
                 |> Task.andThen
                     (\{ exitCode, stderr } ->
                         if exitCode == 0 then
@@ -67,7 +67,7 @@ checkoutGitRepository fs os remoteTemplate debug =
                 , stdout = Process.CaptureStdout { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 }
-                |> Task.mapError OsExtra.errorToString
+                |> Task.mapError ProcessExtra.errorToString
                 |> Task.andThen
                     (\result ->
                         if result.exitCode == 0 then

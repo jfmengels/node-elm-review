@@ -1,4 +1,4 @@
-module ElmRun.OsExtra exposing
+module ElmRun.ProcessExtra exposing
     ( errorToString, stdoutSpec
     , which
     )

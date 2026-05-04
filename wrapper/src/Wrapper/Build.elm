@@ -13,7 +13,7 @@ import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
-import ElmRun.OsExtra as OsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
@@ -209,7 +209,7 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
                       FsExtra.copyDirectory os { from = localElmReview_, to = packagePath }
                         |> Task.mapError
                             (\error ->
-                                Problem.unexpectedError ("while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath) (OsExtra.errorToString error)
+                                Problem.unexpectedError ("while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath) (ProcessExtra.errorToString error)
                             )
                     ]
             , cleanUp =
@@ -270,7 +270,7 @@ fsErrorToProblem stepDescription error =
 
 processingErrorToProblem : String -> ProcessError -> Problem
 processingErrorToProblem stepDescription error =
-    Problem.unexpectedError stepDescription (OsExtra.errorToString error)
+    Problem.unexpectedError stepDescription (ProcessExtra.errorToString error)
 
 
 addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )

@@ -17,7 +17,7 @@ import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions, Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
-import ElmRun.OsExtra as OsExtra
+import ElmRun.ProcessExtra as ProcessExtra
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
@@ -188,7 +188,7 @@ updateHelp msg model =
                 Ok pid ->
                     ( { model | pid = Just pid }
                     , Process.wait model.os pid
-                        |> Task.mapError (\error -> Debug.todo ("Spawn error " ++ OsExtra.errorToString error))
+                        |> Task.mapError (\error -> Debug.todo ("Spawn error " ++ ProcessExtra.errorToString error))
                         |> Task.attempt (ReviewProcessEnded pid)
                     )
 
@@ -304,7 +304,7 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
         }
         |> Task.mapError
             (\err ->
-                Problem.unexpectedError "when running the review application" (OsExtra.errorToString err)
+                Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
                     |> Problem.withPath reviewAppPath
             )
         |> Task.map .pid
