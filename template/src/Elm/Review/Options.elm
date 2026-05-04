@@ -35,6 +35,7 @@ type alias Options =
     , supportsColor : Bool
     , color : Color.Support
     , debug : Bool
+    , elmFormatPath : Maybe Path
     , packagesLocation : String
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
@@ -63,6 +64,7 @@ type alias InternalOptions =
     , watch : Bool
     , color : Color.Support
     , debug : Bool
+    , elmFormatPath : Maybe Path
     , packagesLocation : Path
     , reviewFolder : Path
     , usesRemoteTemplate : Bool
@@ -99,6 +101,7 @@ toOptions options =
     , supportsColor = Color.doesSupportColor options.color
     , color = options.color
     , debug = options.debug
+    , elmFormatPath = options.elmFormatPath
     , packagesLocation = options.packagesLocation
     , reviewFolder = options.reviewFolder
     , usesRemoteTemplate = options.usesRemoteTemplate
@@ -170,6 +173,9 @@ applyArg arg flags =
 
         [ "--explain-fix-failure" ] ->
             Ok { flags | fixExplanation = FixOptions.Detailed }
+
+        [ "--elm-format-path", elmFormatPath ] ->
+            Ok { flags | elmFormatPath = Just elmFormatPath }
 
         [ "--extract" ] ->
             Ok { flags | enableExtract = True }
@@ -257,6 +263,7 @@ default =
     , color = Color.yesColors
     , debug = False
     , namespace = "cli"
+    , elmFormatPath = Nothing
     , packagesLocation = "0.19.1"
     , reviewFolder = "review"
     , usesRemoteTemplate = False

@@ -33,7 +33,6 @@ type alias InternalOptions =
     , remoteTemplate : Maybe { raw : String, remoteTemplate : RemoteTemplate }
     , elmJsonPath : Maybe String
     , compilerPath : Maybe String
-    , elmFormatPath : Maybe String
     , prefill : Maybe String
     , namespace : String
     , flagsNotToUseAnymore : Set String
@@ -66,7 +65,6 @@ initialOptions =
     , remoteTemplate = Nothing
     , elmJsonPath = Nothing
     , compilerPath = Nothing
-    , elmFormatPath = Nothing
     , prefill = Nothing
     , namespace = "cli"
     , restOfArgs = []
