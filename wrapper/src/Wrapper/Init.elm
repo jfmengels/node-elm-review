@@ -215,13 +215,12 @@ but I could not find a """ ++ c Yellow elmJsonPath ++ """ file in it.
 
 I need this file to determine the rest of the configuration."""
     }
-        |> Problem.from Problem.Recoverable
+        |> Problem.from Problem.Unrecoverable
 
 
 parseElmJson : RemoteTemplate -> String -> String -> Result Problem Elm.Project.ApplicationInfo
 parseElmJson remoteTemplate elmJsonPath rawElmJson =
     -- TODO This is quite a bit of duplication with Build.parseElmJson. Could we share some of the code?
-    -- TODO Review errors coming out of this function, especially wrt to templates
     case Decode.decodeString Elm.Project.decoder rawElmJson of
         Err error ->
             Err (Problem.invalidElmJson elmJsonPath (Options.Remote remoteTemplate) error)
@@ -248,7 +247,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
     elm-review --template """ ++ remoteTemplate.repoName ++ "/example" ++ referenceAsUrl ++ """
     elm-review --template """ ++ remoteTemplate.repoName ++ "/review" ++ referenceAsUrl
             }
-                |> Problem.from Problem.Recoverable
+                |> Problem.from Problem.Unrecoverable
                 |> Err
 
         Ok (Elm.Project.Application application) ->
@@ -256,7 +255,7 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
             case MinVersion.validateDependencyVersion (Options.Remote remoteTemplate) Nothing application of
                 Err problem ->
                     problem
-                        |> Problem.from Problem.Recoverable
+                        |> Problem.from Problem.Unrecoverable
                         |> Problem.withPath elmJsonPath
                         |> Err
 
