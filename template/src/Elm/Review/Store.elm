@@ -141,6 +141,7 @@ misconfigured the CLI's arguments."""
             |> Failure
 
     else if List.isEmpty (Project.modules model.project) then
+        -- TODO Use version of Project.modules so that the check is fast
         { title = "NO FILES FOUND"
         , message =
             \_ -> """I could not find any files in this project. I looked in these folders:
