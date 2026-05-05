@@ -62,13 +62,13 @@ alwaysRun finallyTask task =
         |> Task.onError
             (\error ->
                 finallyTask
-                    |> Task.onError (\_ -> Task.fail error)
+                    |> Task.mapError (\_ -> error)
                     |> Task.andThen (\_ -> Task.fail error)
             )
         |> Task.andThen
             (\value ->
                 finallyTask
-                    |> Task.andThen (\_ -> Task.succeed value)
+                    |> Task.map (\_ -> value)
                     |> Task.onError (\_ -> Task.succeed value)
             )
 

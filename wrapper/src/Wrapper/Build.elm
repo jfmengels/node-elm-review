@@ -65,9 +65,9 @@ buildProject fs os options reviewFolder =
             Path.join2 reviewFolder "elm.json"
     in
     readReviewElmJson fs options.reviewProject elmJsonPath
-        |> Task.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson |> TaskExtra.resultToTask)
+        |> Task.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson.application |> TaskExtra.resultToTask)
         |> Task.andThen
-            (\{ raw, application, elmReviewVersion } ->
+            (\{ application, elmReviewVersion } ->
                 FolderHash.hashApplication fs reviewFolder options.localElmReview application
                     |> Task.mapError (fsErrorToProblem "while building and hashing source-directories")
                     |> Task.andThen
@@ -110,10 +110,10 @@ buildProject fs os options reviewFolder =
             )
 
 
-validateElmReviewVersion : ReviewOptions -> Path -> { raw : String, application : Elm.Project.ApplicationInfo } -> Result Problem { raw : String, application : Elm.Project.ApplicationInfo, elmReviewVersion : Version }
+validateElmReviewVersion : ReviewOptions -> Path -> Elm.Project.ApplicationInfo -> Result Problem { application : Elm.Project.ApplicationInfo, elmReviewVersion : Version }
 validateElmReviewVersion options elmJsonPath elmJson =
     -- TODO For templates, try to upgrade dependencies if they don't match
-    case MinVersion.validateDependencyVersion options.reviewProject options.localElmReview elmJson.application of
+    case MinVersion.validateDependencyVersion options.reviewProject options.localElmReview elmJson of
         Err problem ->
             problem
                 |> Problem.from Problem.Recoverable
@@ -122,8 +122,7 @@ validateElmReviewVersion options elmJsonPath elmJson =
 
         Ok version ->
             Ok
-                { raw = elmJson.raw
-                , application = elmJson.application
+                { application = elmJson
                 , elmReviewVersion = version
                 }
 
