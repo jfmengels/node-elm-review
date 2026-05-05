@@ -278,7 +278,7 @@ processErrorToProblem stepDescription error =
 
 addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
 addReviewAppDependencies initialDependencies =
-    -- TODO Use a real solver algorithm
+    -- TODO Use a real solver algorithm that respects the `--offline` flag
     let
         alreadyPresent : Set String
         alreadyPresent =
