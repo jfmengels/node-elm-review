@@ -26,7 +26,7 @@ import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError)
+import Fs exposing (FileSystem)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Platform exposing (Task)

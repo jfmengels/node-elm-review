@@ -156,8 +156,7 @@ toReviewOptions env color options projectRoot =
                 , namespace = options.namespace
                 }
     in
-    { subcommand = options.subcommand
-    , projectPaths = projectPaths
+    { projectPaths = projectPaths
     , reportMode = options.reportMode
     , forceBuild = options.forceBuild
     , debug = options.debug

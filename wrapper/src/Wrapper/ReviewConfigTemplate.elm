@@ -74,14 +74,6 @@ createNewReviewElmJson elmVersion addParentSourceDirectory =
 """
 
 
-initTemplatePath : Path -> Path
-initTemplatePath templatePath =
-    Path.join2
-        -- TODO Use path relative to this binary
-        "/Users/m1/dev/node-elm-review/init-templates"
-        templatePath
-
-
 reviewConfig : Maybe String -> String
 reviewConfig maybeRuleName =
     let

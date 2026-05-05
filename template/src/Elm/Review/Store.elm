@@ -34,7 +34,7 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
-import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
@@ -167,12 +167,6 @@ type Msg
     | GotProjectReadmeWatchEvent FileEvent
     | GotSourceFileWatchEvent FileEvent
     | GotSuppressedFileWatchEvent FileEvent
-
-
-type alias SourceDirectoryInfo =
-    { fromCliArgs : Bool
-    , target : Path
-    }
 
 
 type alias File =
@@ -364,7 +358,6 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         ReceivedElmFileList path result ->
             receivedElmFileList
                 { fs = fs
-                , stderr = stderr
                 , onNotFound =
                     \() ->
                         case options.directoriesToAnalyze of
@@ -666,7 +659,6 @@ addDepsFromConstraint fs packagesLocation deps initial =
 
 receivedElmFileList :
     { fs : FileSystem
-    , stderr : Console
     , onNotFound : () -> ( ModelData, Cmd Msg )
     , handleProblem : Problem -> Cmd Msg
     }
@@ -674,7 +666,7 @@ receivedElmFileList :
     -> Result FsError (List Path)
     -> ModelData
     -> ( ModelData, Cmd Msg )
-receivedElmFileList { fs, stderr, onNotFound, handleProblem } directory result model =
+receivedElmFileList { fs, onNotFound, handleProblem } directory result model =
     case result of
         Ok files ->
             let

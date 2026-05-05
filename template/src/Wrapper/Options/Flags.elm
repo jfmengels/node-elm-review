@@ -2,7 +2,6 @@ module Wrapper.Options.Flags exposing
     ( flags
     , buildFlag, buildFlagArgs, buildFlags
     , flagsByName
-    , templateFlag
     )
 
 {-|
@@ -10,8 +9,6 @@ module Wrapper.Options.Flags exposing
 @docs flags
 @docs buildFlag, buildFlagArgs, buildFlags
 @docs flagsByName
-
-@docs templateFlag
 
 -}
 

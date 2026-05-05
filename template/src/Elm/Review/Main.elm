@@ -20,7 +20,7 @@ import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
-import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra

@@ -33,8 +33,7 @@ import Wrapper.Subcommand exposing (Subcommand)
 
 
 type alias ReviewOptions =
-    { subcommand : Maybe Subcommand
-    , reportMode : ReportMode
+    { reportMode : ReportMode
     , projectPaths : ProjectPaths
     , debug : Bool
     , forceBuild : Bool

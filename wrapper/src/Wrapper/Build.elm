@@ -9,7 +9,7 @@ module Wrapper.Build exposing (build, BuildData)
 import Elm.Package
 import Elm.Project
 import Elm.Version exposing (Version)
-import ElmReview.Color exposing (Color(..), Colorize)
+import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
@@ -29,7 +29,6 @@ import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
 import Wrapper.ProcessEnv as ProcessEnv exposing (ProcessEnv)
 import Wrapper.ProjectPaths as ProjectPaths
-import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
 type alias BuildData =

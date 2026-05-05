@@ -1,11 +1,11 @@
 module Wrapper.MinVersion exposing
-    ( validate, validateDependencyVersion
+    ( validateDependencyVersion
     , supportedRange
     )
 
 {-|
 
-@docs validate, validateDependencyVersion
+@docs validateDependencyVersion
 @docs supportedRange
 
 -}

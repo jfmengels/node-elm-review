@@ -25,11 +25,12 @@ all =
                     |> expectReview emptyOptions
         , test "Parse subcommand init" <|
             \() ->
-                { env = Dict.empty
-                , args = [ "init" ]
-                }
-                    |> OptionsParser.parse
-                    |> expectReview { emptyOptions | subcommand = Just Subcommand.Init }
+                case OptionsParser.parse { env = Dict.empty, args = [ "init" ] } of
+                    Init _ ->
+                        Expect.pass
+
+                    parsed ->
+                        Expect.fail ("Unexpected parsed subcommand: " ++ Debug.toString parsed)
         , test "Consider unknown args as directories to analyze" <|
             \() ->
                 { env = Dict.empty
@@ -84,8 +85,7 @@ all =
 
 emptyOptions : ReviewOptions
 emptyOptions =
-    { subcommand = Nothing
-    , projectPaths =
+    { projectPaths =
         ProjectPaths.from
             { projectRoot = "."
             , namespace = "cli"
