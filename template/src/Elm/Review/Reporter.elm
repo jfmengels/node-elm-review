@@ -1,8 +1,8 @@
 module Elm.Review.Reporter exposing
     ( Error, File, FilePath(..), Source(..), TextContent
     , Mode(..), DetailsMode(..), formatReport, formatIndividualError
-    , formatFixProposals
-    , FileWithError, Range, compareRange, formatConfigurationErrors, formatSingleFixProposal
+    , formatSingleFixProposal, formatFixProposals
+    , FileWithError, Range, compareRange, formatConfigurationErrors
     )
 
 {-| Formats the result of `elm-review` in a nice human-readable way.
@@ -20,7 +20,7 @@ module Elm.Review.Reporter exposing
 
 # Fix
 
-@docs formatFixProposal, formatFixProposals
+@docs formatSingleFixProposal, formatFixProposals
 
 -}
 
