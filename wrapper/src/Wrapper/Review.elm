@@ -11,17 +11,17 @@ module Wrapper.Review exposing
 -}
 
 import Capabilities exposing (Console, FileWatcher)
-import Cli exposing (Env)
+import Cli
 import Elm.Project
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
-import ElmReview.Problem as Problem exposing (FormatOptions, Problem, ProblemSimple)
+import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
-import Fs exposing (FileSystem, FsError)
+import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
+import Os.Process as Process
 import Task exposing (Task)
 import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 import Worker.Process exposing (ProcessId)

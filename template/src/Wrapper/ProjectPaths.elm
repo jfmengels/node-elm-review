@@ -1,19 +1,18 @@
 module Wrapper.ProjectPaths exposing
     ( ProjectPaths, from
-    , projectRoot, reviewApp, buildFolder, templateElmModulePath
+    , projectRoot, reviewApp, buildFolder
     )
 
 {-|
 
 @docs ProjectPaths, from
-@docs projectRoot, reviewApp, buildFolder, templateElmModulePath
+@docs projectRoot, reviewApp, buildFolder
 
 -}
 
 import Elm.Review.CliVersion as CliVersion
 import ElmReview.Path as Path exposing (Path)
 import Wrapper.Hash as Hash exposing (Hash)
-import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
 type ProjectPaths
@@ -48,30 +47,6 @@ buildFolder projectPaths subFolder =
         [ elmStuff projectPaths
         , "build-project"
         , subFolder
-        ]
-
-
-templateElmModulePath :
-    { options | projectPaths : ProjectPaths, debug : Bool }
-    -> RemoteTemplate
-    -> String
-    -> Path
-templateElmModulePath { projectPaths, debug } remoteTemplate commit =
-    Path.join
-        [ elmStuff projectPaths
-        , "review-applications"
-        , remoteTemplate.repoName
-        , Maybe.withDefault "___root___" remoteTemplate.pathToFolder
-        , String.concat
-            [ commit
-            , if debug then
-                "-debug"
-
-              else
-                ""
-
-            -- TODO?  localElmReview ? "-local" : ""
-            ]
         ]
 
 

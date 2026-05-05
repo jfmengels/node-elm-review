@@ -20,14 +20,14 @@ import Elm.Project
 import Elm.Review.CliVersion as CliVersion
 import Elm.Version as Version
 import ElmReview.Color as Color exposing (Color(..), Colorize)
-import ElmReview.Path as Path exposing (Path)
+import ElmReview.Path as Path
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError)
+import Fs exposing (FileSystem)
 import Json.Encode as Encode
 import Os exposing (ProcessCapability)
 import Platform exposing (Task)

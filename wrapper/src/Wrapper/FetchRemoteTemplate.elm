@@ -8,18 +8,14 @@ module Wrapper.FetchRemoteTemplate exposing (checkoutGitRepository)
 
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
-import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
+import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem)
 import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
+import Os.Process as Process
 import Task exposing (Task)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
-
-
-type alias CommitHash =
-    String
 
 
 checkoutGitRepository : FileSystem -> ProcessCapability -> RemoteTemplate -> Bool -> Task Problem Path

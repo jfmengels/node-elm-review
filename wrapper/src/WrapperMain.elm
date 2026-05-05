@@ -1,4 +1,4 @@
-module WrapperMain exposing (main)
+module WrapperMain exposing (Model, Msg, main)
 
 import Array exposing (Array)
 import Cli exposing (Env)
@@ -6,7 +6,7 @@ import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
-import ElmReview.Problem as Problem exposing (FormatOptions, Problem)
+import ElmReview.Problem as Problem exposing (FormatOptions)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import Fs exposing (FileSystem, FsError)
@@ -291,24 +291,6 @@ getCwd fs env =
 
         Nothing ->
             Task.fail (Fs.NotFound ".")
-
-
-{-| Find the first element that satisfies a predicate and return
-Just that element. If none match, return Nothing.
-find (\\num -> num > 5) [2, 4, 6, 8] == Just 6
--}
-find : (a -> Bool) -> List a -> Maybe a
-find predicate list =
-    case list of
-        [] ->
-            Nothing
-
-        first :: rest ->
-            if predicate first then
-                Just first
-
-            else
-                find predicate rest
 
 
 subscriptions : Model -> Sub Msg
