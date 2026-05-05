@@ -301,6 +301,8 @@ addReviewAppDependencies initialDependencies =
         [ ( "elm/json", "1.1.4" )
         , ( "elm/regex", "1.0.0" )
         , ( "elm/parser", "1.1.0" )
+        , ( "elm/http", "2.0.0" )
+        , ( "elm/file", "1.0.5" )
         , ( "stil4m/elm-syntax", "7.3.9" )
         , ( "elm/project-metadata-utils", "1.0.2" )
         , ( "elm-run/cli", "1.0.0" )

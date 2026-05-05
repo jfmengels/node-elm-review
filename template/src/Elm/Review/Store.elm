@@ -38,6 +38,7 @@ import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.TaskExtra as FsExtra
 import Fs exposing (FileSystem, FsError(..))
+import Http
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
@@ -1079,11 +1080,6 @@ fetchElmFiles fs directory =
 
 fetchDependency : FileSystem -> Options -> String -> String -> Cmd Msg
 fetchDependency fs options packageName packageVersion =
-    let
-        directory : String
-        directory =
-            Path.join [ options.packagesLocation, packageName, packageVersion ]
-    in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
         (findOrDownloadPackageFile fs options packageName packageVersion "elm.json")
         (findOrDownloadPackageFile fs options packageName packageVersion "docs.json")
@@ -1092,8 +1088,44 @@ fetchDependency fs options packageName packageVersion =
 
 findOrDownloadPackageFile : FileSystem -> Options -> String -> String -> String -> Task FsError File
 findOrDownloadPackageFile fs options packageName packageVersion fileName =
-    readTextFileWithPath fs
-        (Path.join [ options.packagesLocation, packageName, packageVersion, fileName ])
+    let
+        path : Path
+        path =
+            Path.join [ options.packagesLocation, packageName, packageVersion, fileName ]
+    in
+    Fs.readTextFile fs path
+        |> Task.onError
+            (\error ->
+                if options.offline then
+                    Task.fail error
+
+                else
+                    -- TODO Try to download the package like the Elm compiler would, not just a single file
+                    readFromPackagesWebsite packageName packageVersion fileName
+                        |> Task.mapError (\_ -> error)
+            )
+        |> Task.map (\source -> { path = path, source = source })
+
+
+readFromPackagesWebsite : String -> String -> String -> Task () String
+readFromPackagesWebsite packageName packageVersion fileName =
+    Http.task
+        { method = "GET"
+        , url = "https://package.elm-lang.org/packages/" ++ packageName ++ "/" ++ packageVersion ++ "" ++ fileName
+        , headers = []
+        , body = Http.emptyBody
+        , resolver =
+            Http.stringResolver
+                (\response ->
+                    case response of
+                        Http.GoodStatus_ _ body ->
+                            Ok body
+
+                        _ ->
+                            Err ()
+                )
+        , timeout = Nothing
+        }
 
 
 fetchRuleLinks : FileSystem -> { options | reviewFolder : Path, packagesLocation : Path } -> Cmd Msg
@@ -1174,12 +1206,6 @@ readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String 
 readTextFile fs toMsg path =
     Fs.readTextFile fs path
         |> Task.attempt (\result -> toMsg path result)
-
-
-readTextFileWithPath : FileSystem -> String -> Task FsError File
-readTextFileWithPath fs path =
-    Fs.readTextFile fs path
-        |> Task.map (\source -> { path = path, source = source })
 
 
 subscriptions : FileWatcher -> Options -> Model -> Sub Msg
