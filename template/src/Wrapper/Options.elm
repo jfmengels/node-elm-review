@@ -5,6 +5,7 @@ module Wrapper.Options exposing
     , InitOptions
     , NewRuleOptions
     , NewPackageOptions
+    , PrepareOfflineOptions
     )
 
 {-|
@@ -18,6 +19,7 @@ module Wrapper.Options exposing
 
 @docs NewRuleOptions
 @docs NewPackageOptions
+@docs PrepareOfflineOptions
 
 -}
 
@@ -84,4 +86,17 @@ type alias NewPackageOptions =
     , debug : Bool
     , color : Color.Support
     , ruleType : Maybe RuleType
+    }
+
+
+type alias PrepareOfflineOptions =
+    { reportMode : ReportMode
+    , projectPaths : ProjectPaths
+    , debug : Bool
+    , forceBuild : Bool
+    , offline : Bool
+    , reviewProject : ReviewProject
+    , color : Color.Support
+    , localElmReview : Maybe Path
+    , processEnv : ProcessEnv
     }

@@ -9,7 +9,7 @@ module Wrapper.Build exposing (build, BuildData)
 import Elm.Package
 import Elm.Project
 import Elm.Version exposing (Version)
-import ElmReview.Color exposing (Color(..))
+import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
@@ -28,7 +28,7 @@ import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
 import Wrapper.ProcessEnv as ProcessEnv exposing (ProcessEnv)
-import Wrapper.ProjectPaths as ProjectPaths
+import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 
 
 type alias BuildData =
@@ -41,7 +41,20 @@ type alias BuildData =
     }
 
 
-build : FileSystem -> ProcessCapability -> ReviewOptions -> Task Problem BuildData
+type alias BuildOptions options =
+    { options
+        | projectPaths : ProjectPaths
+        , debug : Bool
+        , forceBuild : Bool
+        , offline : Bool
+        , color : Color.Support
+        , reviewProject : ReviewProject
+        , localElmReview : Maybe Path
+        , processEnv : ProcessEnv
+    }
+
+
+build : FileSystem -> ProcessCapability -> BuildOptions options -> Task Problem BuildData
 build fs os options =
     case options.reviewProject of
         Options.Local reviewFolder ->
@@ -52,7 +65,7 @@ build fs os options =
                 |> Task.andThen (\reviewFolder -> buildProject fs os options reviewFolder)
 
 
-buildProject : FileSystem -> ProcessCapability -> ReviewOptions -> Path -> Task Problem BuildData
+buildProject : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Task Problem BuildData
 buildProject fs os options reviewFolder =
     let
         -- TODO Get from somewhere
@@ -110,7 +123,7 @@ buildProject fs os options reviewFolder =
             )
 
 
-validateElmReviewVersion : ReviewOptions -> Path -> Elm.Project.ApplicationInfo -> Result Problem { application : Elm.Project.ApplicationInfo, elmReviewVersion : Version }
+validateElmReviewVersion : BuildOptions options -> Path -> Elm.Project.ApplicationInfo -> Result Problem { application : Elm.Project.ApplicationInfo, elmReviewVersion : Version }
 validateElmReviewVersion options elmJsonPath elmJson =
     -- TODO For templates, try to upgrade dependencies if they don't match
     case MinVersion.validateDependencyVersion options.reviewProject options.localElmReview elmJson of
@@ -138,7 +151,7 @@ reuseExistingReviewApp fs forceBuild reviewAppPath =
             |> Task.onError (\_ -> Task.succeed False)
 
 
-buildCreatedProject : FileSystem -> ProcessCapability -> Path -> ReviewOptions -> BuildData -> Task Problem ()
+buildCreatedProject : FileSystem -> ProcessCapability -> Path -> BuildOptions options -> BuildData -> Task Problem ()
 buildCreatedProject fs os reviewFolder options buildData =
     let
         buildFolder : Path
