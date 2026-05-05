@@ -17,6 +17,7 @@ import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage
 import Wrapper.NewRule as NewRule
 import Wrapper.Options.Parser as OptionsParser
+import Wrapper.PrepareOffline as PrepareOffline
 import Wrapper.Review as Review
 
 
@@ -36,6 +37,7 @@ type Model
     | Init Init.Model
     | NewRule NewRule.Model
     | NewPackage NewPackage.Model
+    | PrepareOffline PrepareOffline.Model
 
 
 type alias LoadingModel =
@@ -53,6 +55,7 @@ type Msg
     | InitMsg Init.Msg
     | NewRuleMsg NewRule.Msg
     | NewPackageMsg NewPackage.Msg
+    | PrepareOfflineMsg PrepareOffline.Msg
 
 
 init : Env -> ( Model, Cmd Msg )
@@ -164,6 +167,17 @@ handleCliArgsParseResult env { fs, os } result =
             in
             ( NewPackage newPackageModel, Cmd.map NewPackageMsg cmd )
 
+        OptionsParser.PrepareOffline options ->
+            let
+                ( prepareOfflineModel, cmd ) =
+                    PrepareOffline.init env
+                        { fs = fs
+                        , os = os
+                        }
+                        options
+            in
+            ( PrepareOffline prepareOfflineModel, Cmd.map PrepareOfflineMsg cmd )
+
 
 requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
 requireCapabilities env =
@@ -225,6 +239,17 @@ update msg model =
                     ( model
                     , NewRule.update newRuleMsg newRuleModel
                         |> Cmd.map NewRuleMsg
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        PrepareOfflineMsg prepareOfflineMsg ->
+            case model of
+                PrepareOffline prepareOfflineModel ->
+                    ( model
+                    , PrepareOffline.update prepareOfflineMsg prepareOfflineModel
+                        |> Cmd.map PrepareOfflineMsg
                     )
 
                 _ ->

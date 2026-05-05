@@ -1,7 +1,7 @@
 module ElmReview.Problem exposing
     ( Problem, from, Recovery(..), withPath
     , ProblemSimple
-    , invalidElmJson, unexpectedError, notImplementedYet
+    , invalidElmJson, unexpectedError
     , stop
     , FormatOptions
     , unwrapFOR_TESTS
@@ -12,7 +12,7 @@ module ElmReview.Problem exposing
 @docs Problem, from, Recovery, withPath
 @docs ProblemSimple
 
-@docs invalidElmJson, unexpectedError, notImplementedYet
+@docs invalidElmJson, unexpectedError
 
 @docs stop
 
@@ -209,13 +209,5 @@ to fix the issue.
 Below is the error that was encountered.
 --------------------------------------------------------------------------------
 """ ++ message
-    }
-        |> from Unrecoverable
-
-
-notImplementedYet : String -> Problem
-notImplementedYet featureDescription =
-    { title = "FEATURE IS NOT IMPLEMENTED YET"
-    , message = \_ -> featureDescription ++ " is not implemented yet."
     }
         |> from Unrecoverable

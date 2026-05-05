@@ -127,6 +127,9 @@ expectReview expected received =
         NewPackage options ->
             Expect.fail ("Unexpected parsing of new-package subcommand " ++ Debug.toString options)
 
+        PrepareOffline options ->
+            Expect.fail ("Unexpected parsing of prepare-offline subcommand " ++ Debug.toString options)
+
         ParseError _ problem ->
             let
                 { title, message } =
@@ -155,6 +158,9 @@ expectHelp expectedSubcommand received =
 
         NewPackage options ->
             Expect.fail ("Unexpected parsing of new-package subcommand " ++ Debug.toString options)
+
+        PrepareOffline options ->
+            Expect.fail ("Unexpected parsing of prepare-offline subcommand " ++ Debug.toString options)
 
         NeedElmJsonPath _ ->
             Expect.fail "Unexpected parse success without help"

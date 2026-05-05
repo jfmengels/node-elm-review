@@ -8,7 +8,7 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import Set
 import Wrapper.Flag as Flag exposing (Argument(..), Flag)
-import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewPackageOptions, NewRuleOptions, ReviewOptions)
+import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewPackageOptions, NewRuleOptions, PrepareOfflineOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
 import Wrapper.ProcessEnv as ProcessEnv
@@ -30,6 +30,7 @@ type OptionsParseResult
     | Init InitOptions
     | NewRule NewRuleOptions
     | NewPackage NewPackageOptions
+    | PrepareOffline PrepareOfflineOptions
     | ParseError (Problem.FormatOptions {}) Problem
 
 
@@ -123,8 +124,7 @@ I recommend you try to gain network access and try again."""
                         Just Subcommand.PrepareOffline ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Problem.notImplementedYet "prepare-offline subcommand"
-                                        |> parseError
+                                    PrepareOffline (toPrepareOfflineOptions env color options (Path.dirname elmJsonPath))
                                 )
 
 
@@ -172,6 +172,30 @@ toReviewOptions env color options projectRoot =
     }
 
 
+toPrepareOfflineOptions : Dict String String -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
+toPrepareOfflineOptions env color options projectRoot =
+    let
+        projectPaths : ProjectPaths
+        projectPaths =
+            ProjectPaths.from
+                { projectRoot = projectRoot
+                , namespace = options.namespace
+                }
+    in
+    { reportMode = options.reportMode
+    , projectPaths = projectPaths
+    , debug = options.debug
+    , forceBuild = options.forceBuild
+    , offline = False
+    , color = color
+    , reviewProject = reviewProject projectRoot options
+
+    -- TODO Make this relative to CWD
+    , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
+    , processEnv = ProcessEnv.from env
+    }
+
+
 reviewProject : Path -> InternalOptions -> Options.ReviewProject
 reviewProject projectRoot options =
     case options.remoteTemplate of
@@ -179,12 +203,17 @@ reviewProject projectRoot options =
             Options.Remote remoteTemplate
 
         Nothing ->
-            case options.configPath of
-                Just config ->
-                    Options.Local config
+            Options.Local (localConfigPath projectRoot options.configPath)
 
-                Nothing ->
-                    Options.Local (Path.join2 projectRoot "review")
+
+localConfigPath : Path -> Maybe Path -> Path
+localConfigPath projectRoot configPath =
+    case configPath of
+        Just config ->
+            config
+
+        Nothing ->
+            Path.join2 projectRoot "review"
 
 
 reviewAppFlags : Color.Support -> InternalOptions -> List String
