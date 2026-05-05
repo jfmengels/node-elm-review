@@ -632,23 +632,23 @@ elmFilesToFetch elmJson directoriesToAnalyze =
             Ok directoriesToAnalyze_
 
 
-addDepsFromVersion : FileSystem -> Path -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
-addDepsFromVersion fs packagesLocation deps initial =
+addDepsFromVersion : FileSystem -> Options -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
+addDepsFromVersion fs options deps initial =
     List.foldl
         (\( name, version ) acc ->
-            fetchDependency fs packagesLocation (Elm.Package.toString name) (Elm.Version.toString version) :: acc
+            fetchDependency fs options (Elm.Package.toString name) (Elm.Version.toString version) :: acc
         )
         initial
         deps
 
 
-addDepsFromConstraint : FileSystem -> Path -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (Cmd Msg) -> List (Cmd Msg)
-addDepsFromConstraint fs packagesLocation deps initial =
+addDepsFromConstraint : FileSystem -> Options -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (Cmd Msg) -> List (Cmd Msg)
+addDepsFromConstraint fs options deps initial =
     List.foldl
         (\( name, constraint ) acc ->
             case Elm.Constraint.toString constraint |> String.split " " |> List.head of
                 Just minVersion ->
-                    fetchDependency fs packagesLocation (Elm.Package.toString name) minVersion :: acc
+                    fetchDependency fs options (Elm.Package.toString name) minVersion :: acc
 
                 Nothing ->
                     acc
@@ -754,7 +754,7 @@ fetchDataOnElmJsonChange fs stderr options before after model =
                     tasks : List (Cmd Msg)
                     tasks =
                         fetchAddedSourceDirectories fs sourceDirectories.added
-                            |> fetchAddedDependencies fs options.packagesLocation dependencies
+                            |> fetchAddedDependencies fs options dependencies
 
                     newProject : Project
                     newProject =
@@ -932,31 +932,31 @@ removeSourceDirectories removed previousProject =
         (Project.modules previousProject)
 
 
-fetchAddedDependencies : FileSystem -> Path -> ElmJsonDependencyChanges -> List (Cmd Msg) -> List (Cmd Msg)
-fetchAddedDependencies fs packagesLocation dependencies tasks =
+fetchAddedDependencies : FileSystem -> Options -> ElmJsonDependencyChanges -> List (Cmd Msg) -> List (Cmd Msg)
+fetchAddedDependencies fs options dependencies tasks =
     case dependencies of
         NoDependencyChanges ->
             tasks
 
         DiffApplication packages ->
-            addDepsFromVersion fs packagesLocation packages.added tasks
+            addDepsFromVersion fs options packages.added tasks
 
         DiffPackages packages ->
-            addDepsFromConstraint fs packagesLocation packages.added tasks
+            addDepsFromConstraint fs options packages.added tasks
 
         ReloadDependenciesEntirely elmJson ->
             case elmJson of
                 Elm.Project.Application application ->
                     tasks
-                        |> addDepsFromVersion fs packagesLocation application.depsDirect
-                        |> addDepsFromVersion fs packagesLocation application.depsIndirect
-                        |> addDepsFromVersion fs packagesLocation application.testDepsDirect
-                        |> addDepsFromVersion fs packagesLocation application.testDepsIndirect
+                        |> addDepsFromVersion fs options application.depsDirect
+                        |> addDepsFromVersion fs options application.depsIndirect
+                        |> addDepsFromVersion fs options application.testDepsDirect
+                        |> addDepsFromVersion fs options application.testDepsIndirect
 
                 Elm.Project.Package package ->
                     tasks
-                        |> addDepsFromConstraint fs packagesLocation package.deps
-                        |> addDepsFromConstraint fs packagesLocation package.testDeps
+                        |> addDepsFromConstraint fs options package.deps
+                        |> addDepsFromConstraint fs options package.testDeps
 
 
 removeDependencies : ElmJsonDependencyChanges -> Project -> Project
@@ -1077,12 +1077,12 @@ fetchElmFiles fs directory =
         |> Task.attempt (ReceivedElmFileList directory)
 
 
-fetchDependency : FileSystem -> Path -> String -> String -> Cmd Msg
-fetchDependency fs packagesLocation packageName packageVersion =
+fetchDependency : FileSystem -> Options -> String -> String -> Cmd Msg
+fetchDependency fs options packageName packageVersion =
     let
         directory : String
         directory =
-            Path.join [ packagesLocation, packageName, packageVersion ]
+            Path.join [ options.packagesLocation, packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
         (readTextFileWithPath fs (Path.join2 directory "elm.json"))
