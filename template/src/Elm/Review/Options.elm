@@ -41,6 +41,7 @@ type alias Options =
     , usesRemoteTemplate : Bool
     , namespace : String
     , directoriesToAnalyze : Maybe (List Path)
+    , offline : Bool
     }
 
 
@@ -70,6 +71,7 @@ type alias InternalOptions =
     , usesRemoteTemplate : Bool
     , namespace : String
     , directoriesToAnalyze : Maybe (List Path)
+    , offline : Bool
     }
 
 
@@ -107,6 +109,7 @@ toOptions options =
     , usesRemoteTemplate = options.usesRemoteTemplate
     , namespace = options.namespace
     , directoriesToAnalyze = options.directoriesToAnalyze
+    , offline = options.offline
     }
 
 
@@ -231,6 +234,9 @@ applyArg arg flags =
         [ "--template" ] ->
             Ok { flags | usesRemoteTemplate = True }
 
+        [ "--offline" ] ->
+            Ok { flags | offline = True }
+
         [ "--dirs-to-analyze", dirs ] ->
             Ok { flags | directoriesToAnalyze = Just (String.split "," dirs) }
 
@@ -268,6 +274,7 @@ default =
     , reviewFolder = "review"
     , usesRemoteTemplate = False
     , directoriesToAnalyze = Nothing
+    , offline = False
     }
 
 
