@@ -416,7 +416,7 @@ computeExposedModules : Module.Name -> Elm.Project.Exposed -> Maybe Elm.Project.
 computeExposedModules ruleModuleName exposed =
     case exposed of
         Elm.Project.ExposedList exposedModules ->
-            if List.any (\mod -> ruleModuleName == mod) exposedModules then
+            if List.member ruleModuleName exposedModules then
                 Nothing
 
             else
@@ -426,7 +426,7 @@ computeExposedModules ruleModuleName exposed =
                     |> Just
 
         Elm.Project.ExposedDict sections ->
-            if List.any (\( _, exposedModules ) -> List.any (\mod -> ruleModuleName == mod) exposedModules) sections then
+            if List.any (\( _, exposedModules ) -> List.member ruleModuleName exposedModules) sections then
                 Nothing
 
             else
