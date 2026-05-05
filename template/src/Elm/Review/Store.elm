@@ -1085,9 +1085,15 @@ fetchDependency fs options packageName packageVersion =
             Path.join [ options.packagesLocation, packageName, packageVersion ]
     in
     Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
-        (readTextFileWithPath fs (Path.join2 directory "elm.json"))
-        (readTextFileWithPath fs (Path.join2 directory "docs.json"))
+        (findOrDownloadPackageFile fs options packageName packageVersion "elm.json")
+        (findOrDownloadPackageFile fs options packageName packageVersion "docs.json")
         |> Task.attempt (ReceivedDependency packageName)
+
+
+findOrDownloadPackageFile : FileSystem -> Options -> String -> String -> String -> Task FsError File
+findOrDownloadPackageFile fs options packageName packageVersion fileName =
+    readTextFileWithPath fs
+        (Path.join [ options.packagesLocation, packageName, packageVersion, fileName ])
 
 
 fetchRuleLinks : FileSystem -> { options | reviewFolder : Path, packagesLocation : Path } -> Cmd Msg
