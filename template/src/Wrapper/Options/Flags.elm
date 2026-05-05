@@ -400,13 +400,13 @@ flags =
     , { name = "offline"
       , argument =
             ArgumentAbsent
-                (\_ options ->
+                (\flagName options ->
                     case options.remoteTemplate of
                         Just { raw } ->
                             markProblem (\_ -> commandRequiresNetworkAccess raw) options
 
                         Nothing ->
-                            { options | offline = True }
+                            addToReviewAppFlags flagName { options | offline = True }
                 )
       , display =
             Just
