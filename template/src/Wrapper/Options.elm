@@ -37,6 +37,7 @@ type alias ReviewOptions =
     , projectPaths : ProjectPaths
     , debug : Bool
     , forceBuild : Bool
+    , offline : Bool
     , color : Color.Support
     , reviewProject : ReviewProject
     , reviewAppFlags : List String
@@ -61,6 +62,7 @@ type alias HelpOptions =
 type alias InitOptions =
     { configPath : Path
     , remoteTemplate : Maybe RemoteTemplate
+    , offline : Bool
     , forTests : Bool
     , debug : Bool
     , color : Color.Support

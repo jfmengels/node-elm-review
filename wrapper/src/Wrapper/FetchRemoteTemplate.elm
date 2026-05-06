@@ -18,8 +18,8 @@ import Task exposing (Task)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
-checkoutGitRepository : FileSystem -> ProcessCapability -> RemoteTemplate -> Bool -> Task Problem Path
-checkoutGitRepository fs os remoteTemplate debug =
+checkoutGitRepository : FileSystem -> ProcessCapability -> Bool -> RemoteTemplate -> Bool -> Task Problem Path
+checkoutGitRepository fs os offline remoteTemplate debug =
     let
         repoFolder : Path
         repoFolder =
@@ -75,12 +75,12 @@ checkoutGitRepository fs os remoteTemplate debug =
                 |> Task.mapError (\error -> "$ git " ++ String.join " " args ++ "\n\n" ++ error)
     in
     Task.map2 (\() () -> Path.join2 repoFolder (Maybe.withDefault "." remoteTemplate.pathToFolder))
-        (createRepoIfNecessary fs git remoteTemplate repoFolder)
-        (pullAndCheckout { git = git, gitCapture = gitCapture } remoteTemplate)
+        (createRepoIfNecessary fs git offline remoteTemplate repoFolder)
+        (pullAndCheckout { git = git, gitCapture = gitCapture } offline remoteTemplate)
 
 
-createRepoIfNecessary : FileSystem -> (List String -> Task String ()) -> RemoteTemplate -> Path -> Task Problem ()
-createRepoIfNecessary fs git remoteTemplate repoFolder =
+createRepoIfNecessary : FileSystem -> (List String -> Task String ()) -> Bool -> RemoteTemplate -> Path -> Task Problem ()
+createRepoIfNecessary fs git offline remoteTemplate repoFolder =
     Fs.stat fs (Path.join2 repoFolder ".git")
         |> TaskExtra.toResultTask
         |> Task.andThen
@@ -91,7 +91,17 @@ createRepoIfNecessary fs git remoteTemplate repoFolder =
 
                     Err _ ->
                         -- First time checkout out the repo, let's create it
-                        createRepo fs git remoteTemplate repoFolder
+                        if offline then
+                            { title = "BRANCH OR COMMIT NOT FOUND"
+                            , message = \c -> "You requested to run with the template at the " ++ c Yellow remoteTemplate.repoName ++ " but this is the first time using it. I therefore require network access, but you requested to run " ++ c Cyan "--offline" ++ """.
+                            
+Please acquire network access and re-run without """ ++ c Cyan "--offline" ++ ", or select another configuration to use."
+                            }
+                                |> Problem.from Problem.Unrecoverable
+                                |> Task.fail
+
+                        else
+                            createRepo fs git remoteTemplate repoFolder
             )
 
 
@@ -107,7 +117,7 @@ createRepo fs git remoteTemplate repoFolder =
             |> Task.onError (\_ -> Task.succeed ())
         , git [ "init" ]
 
-        -- TODO
+        -- TODO Support sparse-checkout to check out less files
         -- , git [ "sparse-checkout", "set", "--no-cone", "'!/*'", "'**/*.elm'", "'**/elm.json'", "'!**/tests/**/*.elm'" ]
         , git [ "remote", "add", "origin", repository ]
         ]
@@ -125,18 +135,27 @@ type alias Git =
     }
 
 
-pullAndCheckout : Git -> RemoteTemplate -> Task Problem ()
-pullAndCheckout { git, gitCapture } remoteTemplate =
-    remoteTemplate.reference
-        |> TaskExtra.otherwise (\() -> findRemoteDefaultBranch gitCapture remoteTemplate)
-        |> Task.andThen
-            (\reference ->
-                Task.map2 (\() () -> ())
-                    (fetchGitReference git reference remoteTemplate)
-                    (git [ "switch", "--discard-changes", reference ]
-                        |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template's code" error)
-                    )
-            )
+pullAndCheckout : Git -> Bool -> RemoteTemplate -> Task Problem ()
+pullAndCheckout { git, gitCapture } offline remoteTemplate =
+    if offline then
+        getDefaultBranchFromLocalInformation gitCapture
+            |> Task.andThen (\reference -> switchToBranch git reference)
+
+    else
+        remoteTemplate.reference
+            |> TaskExtra.otherwise (\() -> findRemoteDefaultBranch gitCapture remoteTemplate)
+            |> Task.andThen
+                (\reference ->
+                    Task.map2 (\() () -> ())
+                        (fetchGitReference git reference remoteTemplate)
+                        (switchToBranch git reference)
+                )
+
+
+switchToBranch : (List String -> Task String ()) -> String -> Task Problem ()
+switchToBranch git reference =
+    git [ "switch", "--discard-changes", reference ]
+        |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template's code" error)
 
 
 fetchGitReference : (List String -> Task String ()) -> String -> RemoteTemplate -> Task Problem ()
@@ -173,7 +192,7 @@ Please check the spelling and make sure it has been pushed."""
 findRemoteDefaultBranch : (List String -> Task String String) -> RemoteTemplate -> Task Problem String
 findRemoteDefaultBranch gitCapture remoteTemplate =
     gitCapture [ "remote", "show", "origin" ]
-        |> Task.mapError
+        |> Task.onError
             (\error ->
                 if String.contains "repository not found" (String.toLower error) then
                     { title = "REPOSITORY NOT FOUND"
@@ -182,11 +201,24 @@ findRemoteDefaultBranch gitCapture remoteTemplate =
 Check the spelling and make sure it is a public repository, as I can't work with private ones at the moment."""
                     }
                         |> Problem.from Problem.Unrecoverable
+                        |> Task.fail
 
                 else
-                    Problem.unexpectedError "while trying to figure out the remote template's default Git branch" error
+                    getDefaultBranchFromLocalInformation gitCapture
+                        |> Task.mapError (\_ -> Problem.unexpectedError "while trying to figure out the remote template's default Git branch" error)
             )
         |> Task.andThen (\output -> headBranchName output |> TaskExtra.resultToTask)
+
+
+getDefaultBranchFromLocalInformation : (List String -> Task String String) -> Task Problem String
+getDefaultBranchFromLocalInformation gitCapture =
+    gitCapture [ "symbolic-ref", "--short", "refs/remotes/origin/HEAD" ]
+        |> Task.mapError
+            (\error ->
+                Problem.unexpectedError "while trying to figure out the remote template's default Git branch offline" error
+            )
+        -- Output is "origin/<branchname>\n"
+        |> Task.map (\output -> String.dropLeft 7 (String.trim output))
 
 
 headBranchName : String -> Result Problem String

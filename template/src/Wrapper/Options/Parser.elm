@@ -159,6 +159,7 @@ toReviewOptions env color options projectRoot =
     { projectPaths = projectPaths
     , reportMode = options.reportMode
     , forceBuild = options.forceBuild
+    , offline = options.offline
     , debug = options.debug
     , color = color
     , reviewProject = reviewProject projectRoot options
@@ -233,6 +234,7 @@ toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions
 toInitOptions color options projectRoot =
     { configPath = Path.join2 projectRoot "review"
     , remoteTemplate = Maybe.map .remoteTemplate options.remoteTemplate
+    , offline = options.offline
     , forTests = options.forTests
     , debug = options.debug
     , color = color

@@ -48,7 +48,7 @@ build fs os options =
             buildProject fs os options reviewFolder
 
         Options.Remote remoteTemplate ->
-            FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate options.debug
+            FetchRemoteTemplate.checkoutGitRepository fs os options.offline remoteTemplate options.debug
                 |> Task.andThen (\reviewFolder -> buildProject fs os options reviewFolder)
 
 
