@@ -91,6 +91,7 @@ emptyOptions =
             , namespace = "cli"
             }
     , forceBuild = False
+    , offline = False
     , color = Color.yesColors
     , debug = False
     , reportMode = ReportMode.HumanReadable

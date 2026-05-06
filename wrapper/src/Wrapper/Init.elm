@@ -139,7 +139,7 @@ createConfiguration fs os options =
                 |> Task.attempt CreatedFiles
 
         Just remoteTemplate ->
-            createTemplateConfiguration fs os options.configPath remoteTemplate options.debug
+            createTemplateConfiguration fs os options.configPath options.offline remoteTemplate options.debug
                 |> Task.attempt CreatedFiles
 
 
@@ -150,9 +150,9 @@ createDefaultConfiguration fs os reviewPath =
         |> Task.mapError (\error -> Problem.unexpectedError "while creating files" (FsExtra.errorToString error))
 
 
-createTemplateConfiguration : FileSystem -> ProcessCapability -> Path -> RemoteTemplate -> Bool -> Task Problem ()
-createTemplateConfiguration fs os reviewPath remoteTemplate debug =
-    FetchRemoteTemplate.checkoutGitRepository fs os remoteTemplate debug
+createTemplateConfiguration : FileSystem -> ProcessCapability -> Path -> Bool -> RemoteTemplate -> Bool -> Task Problem ()
+createTemplateConfiguration fs os reviewPath offline remoteTemplate debug =
+    FetchRemoteTemplate.checkoutGitRepository fs os offline remoteTemplate debug
         |> Task.andThen
             (\templateConfigPath ->
                 let

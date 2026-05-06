@@ -398,16 +398,7 @@ flags =
       , display = Nothing
       }
     , { name = "offline"
-      , argument =
-            ArgumentAbsent
-                (\flagName options ->
-                    case options.remoteTemplate of
-                        Just { raw } ->
-                            markProblem (\_ -> commandRequiresNetworkAccess raw) options
-
-                        Nothing ->
-                            addToReviewAppFlags flagName { options | offline = True }
-                )
+      , argument = ArgumentAbsent (\flagName options -> addToReviewAppFlags flagName { options | offline = True })
       , display =
             Just
                 { color = Cyan
@@ -679,11 +670,7 @@ templateFlag =
                         Nothing ->
                             case RemoteTemplate.fromString arg of
                                 Ok remoteTemplate ->
-                                    if options.offline then
-                                        Err (Just (commandRequiresNetworkAccess arg))
-
-                                    else
-                                        Ok (addToReviewAppFlags flagName { options | remoteTemplate = Just { raw = arg, remoteTemplate = remoteTemplate } })
+                                    Ok (addToReviewAppFlags flagName { options | remoteTemplate = Just { raw = arg, remoteTemplate = remoteTemplate } })
 
                                 Err () ->
                                     Err (Just (remoteTemplateError arg))
@@ -734,24 +721,6 @@ Here is the documentation for this flag:
 
 """ ++ buildFlag c Nothing templateFlag
     }
-
-
-commandRequiresNetworkAccess : String -> ProblemSimple
-commandRequiresNetworkAccess rawRemoteTemplate =
-    { title = "COMMAND REQUIRES NETWORK ACCESS"
-    , message = offlineRemoteTemplateErrorMessage rawRemoteTemplate
-    }
-
-
-offlineRemoteTemplateErrorMessage : String -> Colorize -> String
-offlineRemoteTemplateErrorMessage rawTemplateValue c =
-    "I can't use " ++ c Cyan "--template" ++ " in " ++ c Cyan "offline" ++ """ mode, as I need network access to download the external template.
-
-If you have the configuration locally on your computer, you can run it by pointing to it with """ ++ c Yellow "--config" ++ """.
-
-Otherwise, I recommend you try to gain network access and initialize your configuration to be able to run it offline afterwards:
-
-""" ++ c Yellow ("    elm-review init --template " ++ rawTemplateValue)
 
 
 incompatibleFlags : Flag -> Flag -> ProblemSimple
