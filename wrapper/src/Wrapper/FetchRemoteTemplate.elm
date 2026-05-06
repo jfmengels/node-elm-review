@@ -132,37 +132,41 @@ pullAndCheckout { git, gitCapture } remoteTemplate =
         |> Task.andThen
             (\reference ->
                 Task.map2 (\() () -> ())
-                    (git [ "fetch", "origin", reference, "--depth=1" ]
-                        |> Task.mapError
-                            (\error ->
-                                let
-                                    searchableError : String
-                                    searchableError =
-                                        String.toLower error
-                                in
-                                if String.contains "repository not found" searchableError then
-                                    { title = "REPOSITORY NOT FOUND"
-                                    , message = \c -> "I could not find the " ++ c Yellow remoteTemplate.repoName ++ """ repository.
-
-Check the spelling and make sure it is a public repository, as I can't work with private ones at the moment."""
-                                    }
-                                        |> Problem.from Problem.Unrecoverable
-
-                                else if String.contains "couldn't find remote ref" searchableError then
-                                    { title = "BRANCH OR COMMIT NOT FOUND"
-                                    , message = \c -> "I found the " ++ c Yellow remoteTemplate.repoName ++ " repository, but I could not find the branch or commit " ++ c Yellow reference ++ """.
-
-Please check the spelling and make sure it has been pushed."""
-                                    }
-                                        |> Problem.from Problem.Unrecoverable
-
-                                else
-                                    Problem.unexpectedError ("while fetching the contents of " ++ reference ++ " in the template") error
-                            )
-                    )
+                    (fetchGitReference git reference remoteTemplate)
                     (git [ "switch", "--discard-changes", reference ]
                         |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template's code" error)
                     )
+            )
+
+
+fetchGitReference : (List String -> Task String ()) -> String -> RemoteTemplate -> Task Problem ()
+fetchGitReference git reference remoteTemplate =
+    git [ "fetch", "origin", reference, "--depth=1" ]
+        |> Task.mapError
+            (\error ->
+                let
+                    searchableError : String
+                    searchableError =
+                        String.toLower error
+                in
+                if String.contains "repository not found" searchableError then
+                    { title = "REPOSITORY NOT FOUND"
+                    , message = \c -> "I could not find the " ++ c Yellow remoteTemplate.repoName ++ """ repository.
+
+Check the spelling and make sure it is a public repository, as I can't work with private ones at the moment."""
+                    }
+                        |> Problem.from Problem.Unrecoverable
+
+                else if String.contains "couldn't find remote ref" searchableError then
+                    { title = "BRANCH OR COMMIT NOT FOUND"
+                    , message = \c -> "I found the " ++ c Yellow remoteTemplate.repoName ++ " repository, but I could not find the branch or commit " ++ c Yellow reference ++ """.
+
+Please check the spelling and make sure it has been pushed."""
+                    }
+                        |> Problem.from Problem.Unrecoverable
+
+                else
+                    Problem.unexpectedError ("while fetching the contents of " ++ reference ++ " in the template") error
             )
 
 
