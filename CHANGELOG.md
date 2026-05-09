@@ -8,6 +8,7 @@
 - Made import cycle error look better for modules with names that are only a single character.
 - Fix prepare-offline help text.
 - Breaking change for local dev testing: Replaced `LOCAL_ELM_REVIEW_SRC=/path/to/elm-review/src` by `LOCAL_ELM_REVIEW=/path/to/elm-review`.
+- When running `elm-review new-package`, the `LICENSE` file will now not be generated automatically. Instead, a manual step has been added in the generated `MAINTENANCE.md` file.
 
 ## [2.13.5] - 2025-12-30
 
