@@ -86,8 +86,13 @@ init env =
                 binaryRoot : Path
                 binaryRoot =
                     "/Users/m1/dev/node-elm-review"
+
+                -- TODO Get elmHomePath from somewhere
+                elmHomePath : String
+                elmHomePath =
+                    "/Users/m1/.elm"
             in
-            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot)
+            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath)
 
 
 handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( Model, Cmd Msg )

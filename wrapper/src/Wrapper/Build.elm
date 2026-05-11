@@ -52,6 +52,7 @@ type alias BuildOptions options =
         , localElmReview : Maybe Path
         , processEnv : ProcessEnv
         , binaryRoot : Path
+        , elmHomePath : Path
     }
 
 
@@ -69,11 +70,6 @@ build fs os options =
 buildProject : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Task Problem BuildData
 buildProject fs os options reviewFolder =
     let
-        -- TODO Get from somewhere
-        elmHomePath : String
-        elmHomePath =
-            "/Users/m1/.elm"
-
         elmJsonPath : String
         elmJsonPath =
             Path.join2 reviewFolder "elm.json"
@@ -93,7 +89,7 @@ buildProject fs os options reviewFolder =
 
                                 packagesLocation : Path
                                 packagesLocation =
-                                    Path.join [ elmHomePath, Elm.Version.toString application.elm, "packages" ]
+                                    Path.join [ options.elmHomePath, Elm.Version.toString application.elm, "packages" ]
 
                                 buildData : BuildData
                                 buildData =
