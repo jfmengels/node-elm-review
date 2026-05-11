@@ -15,7 +15,6 @@ export type OptionsBase = {
 };
 
 export type Options = OptionsBase & {
-  forTests: boolean;
   version: boolean;
   help: boolean;
   fix: boolean;

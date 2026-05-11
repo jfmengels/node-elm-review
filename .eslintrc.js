@@ -101,7 +101,6 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': [
       'warn',
       {
-        'ts-expect-error': {descriptionFormat: '^\\(TS\\d+\\): .+$'},
         'ts-check': false
       }
     ],

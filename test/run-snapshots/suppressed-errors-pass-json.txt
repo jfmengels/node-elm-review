@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "cliVersion": "2.13.5",
+  "cliVersion": "<version>",
   "type": "review-errors",
   "errors": [
     {
