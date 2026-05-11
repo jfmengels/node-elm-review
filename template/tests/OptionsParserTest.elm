@@ -1,7 +1,8 @@
 module OptionsParserTest exposing (all)
 
-import Dict
+import Dict exposing (Dict)
 import ElmReview.Color as Color
+import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem
 import ElmReview.ReportMode as ReportMode
 import Expect exposing (Expectation)
@@ -21,11 +22,11 @@ all =
                 { env = Dict.empty
                 , args = []
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> expectReview emptyOptions
         , test "Parse subcommand init" <|
             \() ->
-                case OptionsParser.parse { env = Dict.empty, args = [ "init" ] } of
+                case parse { env = Dict.empty, args = [ "init" ] } of
                     Init _ ->
                         Expect.pass
 
@@ -36,49 +37,49 @@ all =
                 { env = Dict.empty
                 , args = [ "unknown", "other" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> expectReview { emptyOptions | reviewAppFlags = [ "--dirs-to-analyze=other,unknown" ] }
         , test "Enter help mode if --help is used" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "--help" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> expectHelp Nothing
         , test "Enter help mode for init if `init --help` is used" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "init", "--help" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> expectHelp (Just Subcommand.Init)
         , test "--help can be used before the subcommand" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "--help", "init" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> expectHelp (Just Subcommand.Init)
         , test "Enter help mode by using the -h shorthand" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "-h" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> expectHelp Nothing
         , test "Enter version mode by using --version" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "--version" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> Expect.equal ShowVersion
         , test "Enter version mode by using the -v shorthand" <|
             \() ->
                 { env = Dict.empty
                 , args = [ "-v" ]
                 }
-                    |> OptionsParser.parse
+                    |> parse
                     |> Expect.equal ShowVersion
         ]
 
@@ -100,7 +101,18 @@ emptyOptions =
     , localElmReview = Nothing
     , watchConfig = False
     , processEnv = ProcessEnv.from Dict.empty
+    , binaryRoot = binaryRoot
     }
+
+
+parse : { env | args : List String, env : Dict String String } -> OptionsParseResult
+parse args =
+    OptionsParser.parse args binaryRoot
+
+
+binaryRoot : Path
+binaryRoot =
+    "/root"
 
 
 expectReview : ReviewOptions -> OptionsParseResult -> Expectation

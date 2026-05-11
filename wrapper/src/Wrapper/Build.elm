@@ -51,6 +51,7 @@ type alias BuildOptions options =
         , reviewProject : ReviewProject
         , localElmReview : Maybe Path
         , processEnv : ProcessEnv
+        , binaryRoot : Path
     }
 
 
@@ -174,12 +175,11 @@ buildCreatedProject fs os reviewFolder options buildData =
         , Fs.createDirectory fs (Path.dirname buildData.reviewAppPath)
             |> Task.mapError (fsErrorToProblem "while building and creating temporary directory")
         , FsExtra.copyDirectory os
-            { -- TODO Use path relative to this binary
-              from = "/Users/m1/dev/node-elm-review/template/src"
+            { from = Path.join2 options.binaryRoot "template/src"
             , to = buildFolder
             }
             |> Task.mapError (processErrorToProblem "while building and copying template files")
-        , createTemplateElmJson fs reviewFolder buildFolder buildData.reviewElmJson
+        , createTemplateElmJson fs reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
         , compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder buildData.reviewAppPath
             |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
@@ -238,19 +238,9 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
             }
 
 
-createTemplateElmJson : FileSystem -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
-createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
+createTemplateElmJson : FileSystem -> Path -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
+createTemplateElmJson fs reviewFolder binaryRoot buildFolder reviewElmJson =
     let
-        astCodecSrc : Path
-        astCodecSrc =
-            -- TODO Use path relative to this binary
-            "/Users/m1/dev/node-elm-review/ast-codec/src"
-
-        elmRunSrc : Path
-        elmRunSrc =
-            -- TODO Use path relative to this binary
-            "/Users/m1/dev/node-elm-review/elm-run/src"
-
         dependencies : List ( Elm.Package.Name, Elm.Version.Version )
         dependencies =
             reviewElmJson.depsDirect
@@ -262,8 +252,8 @@ createTemplateElmJson fs reviewFolder buildFolder reviewElmJson =
             { reviewElmJson
                 | dirs =
                     "src"
-                        :: Path.join2 reviewFolder elmRunSrc
-                        :: Path.join2 reviewFolder astCodecSrc
+                        :: Path.join2 binaryRoot "elm-run/src"
+                        :: Path.join2 binaryRoot "ast-codec/src"
                         :: List.map (\dir -> Path.join2 reviewFolder dir) reviewElmJson.dirs
                 , depsDirect = dependencies
                 , depsIndirect = []
