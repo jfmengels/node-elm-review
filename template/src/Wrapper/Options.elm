@@ -47,6 +47,7 @@ type alias ReviewOptions =
     , watchConfig : Bool
     , processEnv : ProcessEnv
     , binaryRoot : Path
+    , elmHomePath : Path
     }
 
 
@@ -102,4 +103,5 @@ type alias PrepareOfflineOptions =
     , localElmReview : Maybe Path
     , processEnv : ProcessEnv
     , binaryRoot : Path
+    , elmHomePath : Path
     }

@@ -102,17 +102,23 @@ emptyOptions =
     , watchConfig = False
     , processEnv = ProcessEnv.from Dict.empty
     , binaryRoot = binaryRoot
+    , elmHomePath = elmHomePath
     }
 
 
 parse : { env | args : List String, env : Dict String String } -> OptionsParseResult
 parse args =
-    OptionsParser.parse args binaryRoot
+    OptionsParser.parse args binaryRoot elmHomePath
 
 
 binaryRoot : Path
 binaryRoot =
     "/root"
+
+
+elmHomePath : Path
+elmHomePath =
+    "/.elm"
 
 
 expectReview : ReviewOptions -> OptionsParseResult -> Expectation

@@ -16,10 +16,10 @@ import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
-parse : { env | args : List String, env : Dict String String } -> Path -> OptionsParseResult
-parse { args, env } binaryRoot =
+parse : { env | args : List String, env : Dict String String } -> Path -> Path -> OptionsParseResult
+parse { args, env } binaryRoot elmHomePath =
     parseHelp args initialOptions
-        |> toOptions env binaryRoot
+        |> toOptions env binaryRoot elmHomePath
 
 
 type OptionsParseResult
@@ -34,8 +34,8 @@ type OptionsParseResult
     | ParseError (Problem.FormatOptions {}) Problem
 
 
-toOptions : Dict String String -> Path -> InternalOptions -> OptionsParseResult
-toOptions env binaryRoot options =
+toOptions : Dict String String -> Path -> Path -> InternalOptions -> OptionsParseResult
+toOptions env binaryRoot elmHomePath options =
     if options.version then
         ShowVersion
 
@@ -80,13 +80,13 @@ toOptions env binaryRoot options =
                         Nothing ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env binaryRoot color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot elmHomePath color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Suppress ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env binaryRoot color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot elmHomePath color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Init ->
@@ -124,7 +124,7 @@ I recommend you try to gain network access and try again."""
                         Just Subcommand.PrepareOffline ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot color options (Path.dirname elmJsonPath))
+                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot elmHomePath color options (Path.dirname elmJsonPath))
                                 )
 
 
@@ -146,8 +146,8 @@ requiresElmJsonPath options color createOptions =
             createOptions elmJsonPath
 
 
-toReviewOptions : Dict String String -> Path -> Color.Support -> InternalOptions -> Path -> ReviewOptions
-toReviewOptions env binaryRoot color options projectRoot =
+toReviewOptions : Dict String String -> Path -> Path -> Color.Support -> InternalOptions -> Path -> ReviewOptions
+toReviewOptions env binaryRoot elmHomePath color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -170,11 +170,12 @@ toReviewOptions env binaryRoot color options projectRoot =
     , watchConfig = options.watchConfig
     , processEnv = ProcessEnv.from env
     , binaryRoot = binaryRoot
+    , elmHomePath = elmHomePath
     }
 
 
-toPrepareOfflineOptions : Dict String String -> Path -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
-toPrepareOfflineOptions env binaryRoot color options projectRoot =
+toPrepareOfflineOptions : Dict String String -> Path -> Path -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
+toPrepareOfflineOptions env binaryRoot elmHomePath color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -195,6 +196,7 @@ toPrepareOfflineOptions env binaryRoot color options projectRoot =
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , processEnv = ProcessEnv.from env
     , binaryRoot = binaryRoot
+    , elmHomePath = elmHomePath
     }
 
 
