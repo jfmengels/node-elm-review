@@ -26,6 +26,7 @@ import Wrapper.FetchRemoteTemplate as FetchRemoteTemplate
 import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
+import Wrapper.OptimizeJs as OptimizeJs
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
 import Wrapper.OutputTarget as OutputTarget exposing (OutputTarget)
 import Wrapper.ProcessEnv as ProcessEnv exposing (ProcessEnv)
@@ -180,7 +181,7 @@ buildCreatedProject fs os reviewFolder options buildData =
             |> Task.mapError (processErrorToProblem "while building and copying template files")
         , createTemplateElmJson fs reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
-        , compileProject os options reviewFolder buildFolder buildData.reviewAppPath
+        , compileProject fs os options reviewFolder buildFolder buildData.reviewAppPath
             |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
         ]
 
@@ -452,18 +453,18 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
             Ok application
 
 
-compileProject : ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
-compileProject os options reviewFolder buildFolder reviewAppPath =
+compileProject : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
+compileProject fs os options reviewFolder buildFolder reviewAppPath =
     case options.outputTarget of
         OutputTarget.JavaScriptTarget ->
-            compileProjectUsingElmMake os options reviewFolder buildFolder reviewAppPath
+            compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath
 
         OutputTarget.ElmRunTarget ->
             compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder reviewAppPath
 
 
-compileProjectUsingElmMake : ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
-compileProjectUsingElmMake os options reviewFolder buildFolder reviewAppPath =
+compileProjectUsingElmMake : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
+compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath =
     let
         elmBinary : Path
         elmBinary =
@@ -505,7 +506,7 @@ compileProjectUsingElmMake os options reviewFolder buildFolder reviewAppPath =
                         compilationError reviewFolder completed.stderr
                             |> Problem.from Problem.Recoverable
             )
-        |> Task.map (\_ -> ())
+        |> Task.andThen (\_ -> OptimizeJs.optimize fs options.debug reviewAppPath)
 
 
 elmNotFoundError : { usedPath : Path, elmCompilerPath : Maybe Path } -> Problem
