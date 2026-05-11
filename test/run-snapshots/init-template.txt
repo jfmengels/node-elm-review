@@ -1,9 +1,9 @@
-All done! I have created a review project at review/ for you.
+All done! I have created a review project at <local-path>/test/run-snapshots/init-template-project/review/ for you.
 
 You chose to use someone's review configuration which can be great to get started
 but don't forget to review the configuration to make sure it fits your needs,
 both by removing rules you disagree with and by finding new rules to aid you.
-You can do so by editing review/src/ReviewConfig.elm.
+You can do so by editing <local-path>/test/run-snapshots/init-template-project/review/src/ReviewConfig.elm.
 
 I recommend you take a look at the following documents:
   - How to configure elm-review: https://github.com/jfmengels/elm-review/#Configuration
