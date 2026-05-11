@@ -81,7 +81,13 @@ init env =
             )
 
         Ok capabilities ->
-            handleCliArgsParseResult env capabilities (OptionsParser.parse env)
+            let
+                -- TODO Get binaryRoot path from somewhere
+                binaryRoot : Path
+                binaryRoot =
+                    "/Users/m1/dev/node-elm-review"
+            in
+            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot)
 
 
 handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( Model, Cmd Msg )

@@ -16,10 +16,10 @@ import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
-parse : { env | args : List String, env : Dict String String } -> OptionsParseResult
-parse { args, env } =
+parse : { env | args : List String, env : Dict String String } -> Path -> OptionsParseResult
+parse { args, env } binaryRoot =
     parseHelp args initialOptions
-        |> toOptions env
+        |> toOptions env binaryRoot
 
 
 type OptionsParseResult
@@ -34,8 +34,8 @@ type OptionsParseResult
     | ParseError (Problem.FormatOptions {}) Problem
 
 
-toOptions : Dict String String -> InternalOptions -> OptionsParseResult
-toOptions env options =
+toOptions : Dict String String -> Path -> InternalOptions -> OptionsParseResult
+toOptions env binaryRoot options =
     if options.version then
         ShowVersion
 
@@ -80,13 +80,13 @@ toOptions env options =
                         Nothing ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Suppress ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Init ->
@@ -119,12 +119,12 @@ I recommend you try to gain network access and try again."""
                                     |> parseError
 
                             else
-                                NewPackage (toNewPackageOptions color options)
+                                NewPackage (toNewPackageOptions binaryRoot color options)
 
                         Just Subcommand.PrepareOffline ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    PrepareOffline (toPrepareOfflineOptions env color options (Path.dirname elmJsonPath))
+                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot color options (Path.dirname elmJsonPath))
                                 )
 
 
@@ -146,8 +146,8 @@ requiresElmJsonPath options color createOptions =
             createOptions elmJsonPath
 
 
-toReviewOptions : Dict String String -> Color.Support -> InternalOptions -> Path -> ReviewOptions
-toReviewOptions env color options projectRoot =
+toReviewOptions : Dict String String -> Path -> Color.Support -> InternalOptions -> Path -> ReviewOptions
+toReviewOptions env binaryRoot color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -169,11 +169,12 @@ toReviewOptions env color options projectRoot =
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , watchConfig = options.watchConfig
     , processEnv = ProcessEnv.from env
+    , binaryRoot = binaryRoot
     }
 
 
-toPrepareOfflineOptions : Dict String String -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
-toPrepareOfflineOptions env color options projectRoot =
+toPrepareOfflineOptions : Dict String String -> Path -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
+toPrepareOfflineOptions env binaryRoot color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -193,6 +194,7 @@ toPrepareOfflineOptions env color options projectRoot =
     -- TODO Make this relative to CWD
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , processEnv = ProcessEnv.from env
+    , binaryRoot = binaryRoot
     }
 
 
@@ -299,12 +301,13 @@ toNewRuleOptionsHelp color options projectRoot newRuleName =
     }
 
 
-toNewPackageOptions : Color.Support -> InternalOptions -> NewPackageOptions
-toNewPackageOptions color options =
+toNewPackageOptions : Path -> Color.Support -> InternalOptions -> NewPackageOptions
+toNewPackageOptions binaryRoot color options =
     { forTests = options.forTests
     , debug = options.debug
     , color = color
     , ruleType = options.ruleType
+    , binaryRoot = binaryRoot
     }
 
 

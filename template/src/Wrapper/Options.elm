@@ -46,6 +46,7 @@ type alias ReviewOptions =
     , localElmReview : Maybe Path
     , watchConfig : Bool
     , processEnv : ProcessEnv
+    , binaryRoot : Path
     }
 
 
@@ -86,6 +87,7 @@ type alias NewPackageOptions =
     , debug : Bool
     , color : Color.Support
     , ruleType : Maybe RuleType
+    , binaryRoot : Path
     }
 
 
@@ -99,4 +101,5 @@ type alias PrepareOfflineOptions =
     , color : Color.Support
     , localElmReview : Maybe Path
     , processEnv : ProcessEnv
+    , binaryRoot : Path
     }

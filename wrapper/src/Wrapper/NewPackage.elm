@@ -183,8 +183,7 @@ createProject input { fs, os, options } =
         , Fs.createDirectory fs (Path.join2 input.packageName ".github/workflows/")
             |> Task.mapError (\error -> Problem.unexpectedError "while creating the .github/workflows folder" (FsExtra.errorToString error))
         , FsExtra.copyDirectory os
-            { -- TODO Use path relative to this binary
-              from = "/Users/m1/dev/node-elm-review/new-package/github"
+            { from = Path.join2 options.binaryRoot "new-package/github"
             , to = Path.join2 input.packageName ".github/"
             }
             |> Task.mapError (\error -> Problem.unexpectedError "while copying the GitHub Actions" (ProcessExtra.errorToString error))
