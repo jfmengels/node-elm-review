@@ -482,7 +482,7 @@ compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath 
 
               else
                 "--optimize"
-            , "src/Elm/Review/Main.elm"
+            , "src/Elm/Review/NodeMain.elm"
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
