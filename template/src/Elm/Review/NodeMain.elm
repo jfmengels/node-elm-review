@@ -27,6 +27,7 @@ import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
 import ElmRun.TaskExtra as TaskExtra
 import Fs exposing (FileSystem, FsError(..))
+import Json.Decode as Decode
 import Json.Encode as Encode
 import Os exposing (ProcessCapability)
 import Os.Process as Process
@@ -44,13 +45,19 @@ import Worker.Capabilities exposing (FileWatcher)
 -- PROGRAM
 
 
-main : Cli.Program ModelWrapper Msg
+main : Program Flags ModelWrapper Msg
 main =
-    Cli.program
+    Platform.worker
         { init = init
         , update = updateWrapper
         , subscriptions = subscriptions
         }
+
+
+type alias Flags =
+    { reviewAppFlags : List String
+    , logger : Decode.Value
+    }
 
 
 
@@ -110,9 +117,14 @@ type FixPromptKind
     | FixAll
 
 
-init : Env -> ( ModelWrapper, Cmd Msg )
-init env =
-    case Result.map2 Tuple.pair (requireCapabilities env) (Options.parse env.args) of
+init : Flags -> ( ModelWrapper, Cmd Msg )
+init flags =
+    let
+        env : Env
+        env =
+            Debug.todo "elm-run env"
+    in
+    case Result.map2 Tuple.pair (requireCapabilities env) (Options.parse flags.reviewAppFlags) of
         Ok ( capabilities, options ) ->
             case computeRulesToRun env options of
                 Ok rulesFromConfig ->
@@ -123,7 +135,7 @@ init env =
 
         Err err ->
             ( Done
-            , Problem.stop env.stderr (roughFormatOptions env.args) err
+            , Problem.stop env.stderr (roughFormatOptions flags.reviewAppFlags) err
             )
 
 
