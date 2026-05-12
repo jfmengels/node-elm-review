@@ -374,7 +374,7 @@ flags =
                 { argName = "<path-to-elm-format>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \flagName arg options -> addToReviewAppFlagsWithArg flagName arg options
+                , apply = addToReviewAppFlagsWithArg
                 }
       , display =
             Just
