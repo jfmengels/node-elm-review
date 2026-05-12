@@ -179,7 +179,7 @@ buildCreatedProject fs os reviewFolder options buildData =
             , to = buildFolder
             }
             |> Task.mapError (processErrorToProblem "while building and copying template files")
-        , createTemplateElmJson fs reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
+        , createTemplateElmJson fs options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
         , compileProject fs os options reviewFolder buildFolder buildData.reviewAppPath
             |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
@@ -238,14 +238,14 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
             }
 
 
-createTemplateElmJson : FileSystem -> Path -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
-createTemplateElmJson fs reviewFolder binaryRoot buildFolder reviewElmJson =
+createTemplateElmJson : FileSystem -> OutputTarget -> Path -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
+createTemplateElmJson fs outputTarget reviewFolder binaryRoot buildFolder reviewElmJson =
     let
         dependencies : List ( Elm.Package.Name, Elm.Version.Version )
         dependencies =
             reviewElmJson.depsDirect
                 ++ reviewElmJson.depsIndirect
-                |> addReviewAppDependencies
+                |> addReviewAppDependencies outputTarget
 
         elmJson : Elm.Project.ApplicationInfo
         elmJson =
@@ -279,8 +279,8 @@ processErrorToProblem stepDescription error =
     Problem.unexpectedError stepDescription (ProcessExtra.errorToString error)
 
 
-addReviewAppDependencies : List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
-addReviewAppDependencies initialDependencies =
+addReviewAppDependencies : OutputTarget -> List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )
+addReviewAppDependencies outputTarget initialDependencies =
     -- TODO Use a real solver algorithm that respects the `--offline` flag
     let
         alreadyPresent : Set String
@@ -301,24 +301,32 @@ addReviewAppDependencies initialDependencies =
                         Debug.todo "Report error"
         )
         initialDependencies
-        [ ( "elm/json", "1.1.4" )
-        , ( "elm/regex", "1.0.0" )
-        , ( "elm/parser", "1.1.0" )
-        , ( "elm/http", "2.0.0" )
-        , ( "elm/file", "1.0.5" )
-        , ( "stil4m/elm-syntax", "7.3.9" )
-        , ( "elm/project-metadata-utils", "1.0.2" )
-        , ( "elm-run/cli", "1.0.0" )
-        , ( "elm-run/fs", "1.0.0" )
-        , ( "elm-run/os", "1.0.0" )
-        , ( "elm-run/worker", "1.0.0" )
-        , ( "elm-run/capabilities", "1.0.0" )
-        , ( "elm-run/log", "1.0.0" )
-        , ( "elm-run/stdio", "1.0.0" )
-        , ( "robinheghan/fnv1a", "1.0.0" )
-        , ( "rtfeldman/elm-hex", "1.0.0" )
-        , ( "stil4m/structured-writer", "1.0.3" )
-        ]
+        ([ ( "elm/json", "1.1.4" )
+         , ( "elm/regex", "1.0.0" )
+         , ( "elm/parser", "1.1.0" )
+         , ( "elm/http", "2.0.0" )
+         , ( "elm/file", "1.0.5" )
+         , ( "stil4m/elm-syntax", "7.3.9" )
+         , ( "elm/project-metadata-utils", "1.0.2" )
+         , ( "robinheghan/fnv1a", "1.0.0" )
+         , ( "rtfeldman/elm-hex", "1.0.0" )
+         , ( "stil4m/structured-writer", "1.0.3" )
+         ]
+            ++ (case outputTarget of
+                    OutputTarget.JavaScriptTarget ->
+                        []
+
+                    OutputTarget.ElmRunTarget ->
+                        [ ( "elm-run/cli", "1.0.0" )
+                        , ( "elm-run/fs", "1.0.0" )
+                        , ( "elm-run/os", "1.0.0" )
+                        , ( "elm-run/worker", "1.0.0" )
+                        , ( "elm-run/capabilities", "1.0.0" )
+                        , ( "elm-run/log", "1.0.0" )
+                        , ( "elm-run/stdio", "1.0.0" )
+                        ]
+               )
+        )
 
 
 readReviewElmJson : FileSystem -> ReviewProject -> Path -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
