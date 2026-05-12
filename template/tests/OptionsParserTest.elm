@@ -102,6 +102,7 @@ emptyOptions =
     , localElmReview = Nothing
     , watchConfig = False
     , processEnv = ProcessEnv.from Dict.empty
+    , elmCompilerPath = Nothing
     , binaryRoot = binaryRoot
     , elmHomePath = elmHomePath
     , outputTarget = outputTarget

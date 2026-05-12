@@ -51,6 +51,7 @@ type alias BuildOptions options =
         , color : Color.Support
         , reviewProject : ReviewProject
         , localElmReview : Maybe Path
+        , elmCompilerPath : Maybe Path
         , processEnv : ProcessEnv
         , binaryRoot : Path
         , elmHomePath : Path
