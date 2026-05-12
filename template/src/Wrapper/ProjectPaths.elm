@@ -13,6 +13,7 @@ module Wrapper.ProjectPaths exposing
 import Elm.Review.CliVersion as CliVersion
 import ElmReview.Path as Path exposing (Path)
 import Wrapper.Hash as Hash exposing (Hash)
+import Wrapper.OutputTarget as OutputTarget exposing (OutputTarget)
 
 
 type ProjectPaths
@@ -32,12 +33,22 @@ projectRoot (ProjectPaths paths) =
     paths.projectRoot
 
 
-reviewApp : ProjectPaths -> Hash -> Path
-reviewApp projectPaths hash =
+reviewApp : ProjectPaths -> OutputTarget -> Hash -> Path
+reviewApp projectPaths outputTarget hash =
+    let
+        extension : String
+        extension =
+            case outputTarget of
+                OutputTarget.JavaScriptTarget ->
+                    ".js"
+
+                OutputTarget.ElmRunTarget ->
+                    ""
+    in
     Path.join
         [ elmStuff projectPaths
         , "review-applications"
-        , Hash.toString hash
+        , Hash.toString hash ++ extension
         ]
 
 

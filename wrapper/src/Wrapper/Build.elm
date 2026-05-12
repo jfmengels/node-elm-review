@@ -27,7 +27,7 @@ import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
-import Wrapper.OutputTarget exposing (OutputTarget)
+import Wrapper.OutputTarget as OutputTarget exposing (OutputTarget)
 import Wrapper.ProcessEnv as ProcessEnv exposing (ProcessEnv)
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 
@@ -88,7 +88,7 @@ buildProject fs os options reviewFolder =
                             let
                                 reviewAppPath : Path
                                 reviewAppPath =
-                                    ProjectPaths.reviewApp options.projectPaths appHash
+                                    ProjectPaths.reviewApp options.projectPaths options.outputTarget appHash
 
                                 packagesLocation : Path
                                 packagesLocation =
@@ -180,7 +180,7 @@ buildCreatedProject fs os reviewFolder options buildData =
             |> Task.mapError (processErrorToProblem "while building and copying template files")
         , createTemplateElmJson fs reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
-        , compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder buildData.reviewAppPath
+        , compileProject os options reviewFolder buildFolder buildData.reviewAppPath
             |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
         ]
 
@@ -450,6 +450,82 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
 
         Ok (Elm.Project.Application application) ->
             Ok application
+
+
+compileProject : ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
+compileProject os options reviewFolder buildFolder reviewAppPath =
+    case options.outputTarget of
+        OutputTarget.JavaScriptTarget ->
+            compileProjectUsingElmMake os options reviewFolder buildFolder reviewAppPath
+
+        OutputTarget.ElmRunTarget ->
+            compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder reviewAppPath
+
+
+compileProjectUsingElmMake : ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
+compileProjectUsingElmMake os options reviewFolder buildFolder reviewAppPath =
+    let
+        elmBinary : Path
+        elmBinary =
+            -- TODO Apply `backwardsCompatiblePath` from `elm-binary.js`?
+            Maybe.withDefault "elm" options.elmCompilerPath
+    in
+    ProcessExtra.runButFailOnError os
+        elmBinary
+        { args =
+            [ "make"
+            , "--trust-always"
+            , "--output"
+            , reviewAppPath
+            , if options.debug then
+                "--debug"
+
+              else
+                "--optimize"
+            , "src/Elm/Review/Main.elm"
+            ]
+
+        -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
+        , env = Just (ProcessEnv.asProcessOptions options.processEnv)
+        , cwd = Just buildFolder
+        , stdin = Process.NullStdin
+        , stdout = Process.NullStdout
+        , stderr = Process.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = Process.TruncateOutput }
+        }
+        |> Task.mapError
+            (\error ->
+                case error of
+                    ProcessExtra.ProcessError processError ->
+                        processErrorToProblem "while building the review application binary" processError
+
+                    ProcessExtra.CommandNotFound ->
+                        elmNotFoundError { usedPath = elmBinary, elmCompilerPath = options.elmCompilerPath }
+
+                    ProcessExtra.CommandFailed completed ->
+                        compilationError reviewFolder completed.stderr
+                            |> Problem.from Problem.Recoverable
+            )
+        |> Task.map (\_ -> ())
+
+
+elmNotFoundError : { usedPath : Path, elmCompilerPath : Maybe Path } -> Problem
+elmNotFoundError { usedPath, elmCompilerPath } =
+    { title = "ELM NOT FOUND"
+    , message =
+        \c ->
+            case elmCompilerPath of
+                Nothing ->
+                    "I could not find the executable for the " ++ c MagentaBright "elm" ++ """ compiler.
+
+A few options:
+- Install it globally
+- Specify the path using """ ++ c Cyan "--compiler <path-to-elm>"
+
+                Just elmCompilerPath_ ->
+                    "I could not find the executable for the " ++ c MagentaBright "elm" ++ " compiler at the location you specified:\n  " ++ elmCompilerPath_
+    }
+        |> Problem.from Problem.Unrecoverable
+        |> Problem.withPath usedPath
 
 
 compileProjectUsingElmRun : ProcessCapability -> ProcessEnv -> Path -> Path -> String -> Task Problem ()
