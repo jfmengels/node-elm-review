@@ -265,15 +265,15 @@ startBuild fs os options buildId =
         |> Task.attempt (BuildCompleted buildId)
 
 
-runReviewProcess :
-    ModelData
-    ->
-        { reviewAppPath : Path
-        , reviewElmJson : Elm.Project.ApplicationInfo
-        , reviewFolder : Path
-        , packagesLocation : Path
-        }
-    -> Cmd Msg
+type alias RunReviewOptions =
+    { reviewAppPath : Path
+    , reviewElmJson : Elm.Project.ApplicationInfo
+    , reviewFolder : Path
+    , packagesLocation : Path
+    }
+
+
+runReviewProcess : ModelData -> RunReviewOptions -> Cmd Msg
 runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
     let
         reviewAppFlags : List String
