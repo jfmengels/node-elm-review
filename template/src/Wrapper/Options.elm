@@ -28,6 +28,7 @@ import ElmReview.Color as Color
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode exposing (ReportMode)
 import Wrapper.Options.RuleType exposing (RuleType)
+import Wrapper.OutputTarget exposing (OutputTarget)
 import Wrapper.ProcessEnv exposing (ProcessEnv)
 import Wrapper.ProjectPaths exposing (ProjectPaths)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
@@ -48,6 +49,7 @@ type alias ReviewOptions =
     , processEnv : ProcessEnv
     , binaryRoot : Path
     , elmHomePath : Path
+    , outputTarget : OutputTarget
     }
 
 
@@ -104,4 +106,5 @@ type alias PrepareOfflineOptions =
     , processEnv : ProcessEnv
     , binaryRoot : Path
     , elmHomePath : Path
+    , outputTarget : OutputTarget
     }

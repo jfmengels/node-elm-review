@@ -27,6 +27,7 @@ import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (ReviewOptions, ReviewProject)
+import Wrapper.OutputTarget exposing (OutputTarget)
 import Wrapper.ProcessEnv as ProcessEnv exposing (ProcessEnv)
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 
@@ -53,6 +54,7 @@ type alias BuildOptions options =
         , processEnv : ProcessEnv
         , binaryRoot : Path
         , elmHomePath : Path
+        , outputTarget : OutputTarget
     }
 
 

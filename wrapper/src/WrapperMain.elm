@@ -17,6 +17,7 @@ import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage
 import Wrapper.NewRule as NewRule
 import Wrapper.Options.Parser as OptionsParser
+import Wrapper.OutputTarget as OutputTarget
 import Wrapper.PrepareOffline as PrepareOffline
 import Wrapper.Review as Review
 
@@ -92,7 +93,7 @@ init env =
                 elmHomePath =
                     "/Users/m1/.elm"
             in
-            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath)
+            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath OutputTarget.ElmRunTarget)
 
 
 handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( Model, Cmd Msg )
