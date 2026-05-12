@@ -1,7 +1,7 @@
 module Elm.Review.Main exposing (ModelWrapper, Msg, main)
 
 import Array exposing (Array)
-import Capabilities exposing (Stdin)
+import Capabilities exposing (Console, Stdin)
 import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Project
@@ -58,7 +58,9 @@ main =
 
 
 type alias Model =
-    { env : Env
+    { stdin : Maybe Stdin
+    , stdout : Console
+    , stderr : Console
     , fs : FileSystem
     , os : ProcessCapability
     , options : Options
@@ -167,7 +169,9 @@ initWithOptions env { fs, os } options rulesFromConfig =
 
         model : Model
         model =
-            { env = env
+            { stdin = env.stdin
+            , stdout = env.stdout
+            , stderr = env.stderr
             , fs = fs
             , os = os
             , options = options
@@ -264,7 +268,7 @@ I recommend you take a look at the following documents:
                         -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
                         Cmd.batch
                             [ printJson
-                                env
+                                env.stdout
                                 options.debug
                                 (encodeConfigurationErrors options configurationErrors)
                                 (Encode.object [])
@@ -274,7 +278,7 @@ I recommend you take a look at the following documents:
 
                     NDJson ->
                         Cmd.batch
-                            [ printNDJson env (encodeConfigurationErrorsForNDJson options configurationErrors)
+                            [ printNDJson env.stdout (encodeConfigurationErrorsForNDJson options configurationErrors)
                             , Cli.exit 1
                             ]
                             |> Err
@@ -349,7 +353,7 @@ updateWrapper msg wrapper =
 stopBecauseOfProblem : Model -> Problem -> Cmd msg
 stopBecauseOfProblem model problem =
     Problem.stop
-        model.env.stderr
+        model.stderr
         { color = model.options.color
         , reportMode = model.options.reportMode
         , debug = model.options.debug
@@ -366,7 +370,7 @@ update msg model =
                 ( store, cmd ) =
                     Store.update
                         { fs = model.fs
-                        , stderr = model.env.stderr
+                        , stderr = model.stderr
                         , options = model.options
                         }
                         storeMsg
@@ -411,7 +415,7 @@ update msg model =
                         ( store, cmd ) =
                             Store.applyChangesFromFix
                                 model.fs
-                                model.env.stderr
+                                model.stderr
                                 model.options
                                 projectWithFixes
                                 model.store
@@ -538,7 +542,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                             Cmd.none
                     , case model.options.reportMode of
                         HumanReadable ->
-                            Cli.println model.env.stdout
+                            Cli.println model.stdout
                                 ("I created suppressions files in "
                                     ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
                                 )
@@ -749,7 +753,7 @@ printReport previousSuppressedErrors result model =
                     }
                     filesWithError
                     |> Text.toAnsi model.options.supportsColor
-                    |> Cli.println model.env.stdout
+                    |> Cli.println model.stdout
 
             Json ->
                 let
@@ -770,7 +774,7 @@ printReport previousSuppressedErrors result model =
                             errorsByFile
                 in
                 printJson
-                    model.env
+                    model.stdout
                     model.options.debug
                     errors
                     (Encode.dict identity identity result.extracts)
@@ -790,7 +794,7 @@ printReport previousSuppressedErrors result model =
                             }
                             ruleLinks
                         )
-                    |> printNDJson model.env
+                    |> printNDJson model.stdout
         , if model.options.watch then
             Cmd.none
 
@@ -802,8 +806,8 @@ printReport previousSuppressedErrors result model =
         ]
 
 
-printJson : Env -> Bool -> Encode.Value -> Encode.Value -> Cmd msg
-printJson env debug errors extracts =
+printJson : Console -> Bool -> Encode.Value -> Encode.Value -> Cmd msg
+printJson stdout debug errors extracts =
     let
         indent : Int
         indent =
@@ -821,15 +825,15 @@ printJson env debug errors extracts =
         , ( "extracts", extracts )
         ]
         |> Encode.encode indent
-        |> Cli.println env.stdout
+        |> Cli.println stdout
 
 
-printNDJson : Env -> List Encode.Value -> Cmd msg
-printNDJson env lines =
+printNDJson : Console -> List Encode.Value -> Cmd msg
+printNDJson stdout lines =
     lines
         |> List.map (Encode.encode 0)
         |> String.join "\n"
-        |> Cli.println env.stdout
+        |> Cli.println stdout
 
 
 encodeErrorByFile :
@@ -1108,7 +1112,7 @@ sendFixPrompt diffs result nbErrors model =
             ( { model | promptId = promptId }
             , Prompt.prompt
                 stdin
-                model.env.stdout
+                model.stdout
                 { color = model.options.color
                 , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
                 , question =
@@ -1131,7 +1135,7 @@ shouldPromptForFix : Model -> Maybe Stdin
 shouldPromptForFix model =
     if model.options.skipFixPrompt then
         -- If there's no stdin, assume the reply is yes.
-        model.env.stdin
+        model.stdin
 
     else
         Nothing
