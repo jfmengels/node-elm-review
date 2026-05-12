@@ -27,6 +27,7 @@ import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 import Worker.Process exposing (ProcessId)
 import Wrapper.Build as Build
 import Wrapper.Options as Options exposing (ReviewOptions)
+import Wrapper.OutputTarget as OutputTarget
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 
 
@@ -172,6 +173,7 @@ updateHelp msg model =
                             , reviewFolder = Path.dirname elmJsonPath
                             , packagesLocation = packagesLocation
                             }
+                            |> Task.attempt SpawnedReviewProcess
                         )
 
                     Err problem ->
@@ -273,8 +275,57 @@ type alias RunReviewOptions =
     }
 
 
-runReviewProcess : ModelData -> RunReviewOptions -> Cmd Msg
-runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
+runReviewProcess : ModelData -> RunReviewOptions -> Task Problem ProcessId
+runReviewProcess model runReviewOptions =
+    case model.options.outputTarget of
+        OutputTarget.JavaScriptTarget ->
+            runReviewProcessWithNodeJs model runReviewOptions
+
+        OutputTarget.ElmRunTarget ->
+            runReviewProcessWithElmRun model runReviewOptions
+
+
+runReviewProcessWithNodeJs : ModelData -> RunReviewOptions -> Task Problem ProcessId
+runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
+    let
+        reviewAppFlags : List String
+        reviewAppFlags =
+            ("--review-folder=" ++ reviewFolder)
+                :: ("--packages-location=" ++ packagesLocation)
+                :: options.reviewAppFlags
+    in
+    ProcessExtra.runButFailOnError os
+        "node"
+        { args = reviewAppPath :: reviewAppFlags
+        , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
+        , env = Nothing
+        , stdin = Process.InheritStdin
+        , stdout = Process.InheritStdout
+        , stderr = Process.InheritStderr
+        }
+        |> Task.mapError
+            (\error ->
+                case error of
+                    ProcessExtra.ProcessError processError ->
+                        Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString processError)
+                            |> Problem.withPath reviewAppPath
+
+                    ProcessExtra.CommandNotFound ->
+                        { title = "COMMAND NOT FOUND"
+
+                        -- TODO Make "node not found" helper more helpful?
+                        , message = \c -> "I could not find the " ++ c Yellow "node" ++ " executable. Is it installed on your system?"
+                        }
+                            |> Problem.from Problem.Unrecoverable
+
+                    ProcessExtra.CommandFailed completed ->
+                        Problem.unexpectedError "when running the review application" (Maybe.withDefault "No output from node" completed.stderr)
+            )
+        |> Task.map .pid
+
+
+runReviewProcessWithElmRun : ModelData -> RunReviewOptions -> Task Problem ProcessId
+runReviewProcessWithElmRun { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
     let
         reviewAppFlags : List String
         reviewAppFlags =
@@ -314,13 +365,12 @@ runReviewProcess { os, options } { reviewAppPath, reviewElmJson, reviewFolder, p
                         -- TODO Make "run not found" helper more helpful, e.g. by adding installations details.
                         , message = \c -> "I could not find the " ++ c Yellow "run" ++ " executable. Is it installed on your system?"
                         }
-                            |> Problem.from Problem.Recoverable
+                            |> Problem.from Problem.Unrecoverable
 
                     ProcessExtra.CommandFailed completed ->
                         Problem.unexpectedError "when running the review application" (Maybe.withDefault "No output from host-cli" completed.stderr)
             )
         |> Task.map .pid
-        |> Task.attempt SpawnedReviewProcess
 
 
 subscriptions : Model -> Sub Msg

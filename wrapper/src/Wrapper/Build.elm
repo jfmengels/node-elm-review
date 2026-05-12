@@ -475,7 +475,6 @@ compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath 
         elmBinary
         { args =
             [ "make"
-            , "--trust-always"
             , "--output"
             , reviewAppPath
             , if options.debug then
