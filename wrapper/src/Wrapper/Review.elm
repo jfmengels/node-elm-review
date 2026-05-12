@@ -296,7 +296,7 @@ runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, revie
     in
     ProcessExtra.runButFailOnError os
         "node"
-        { args = reviewAppPath :: reviewAppFlags
+        { args = Path.join2 options.binaryRoot "elm-app-worker2.js" :: reviewAppPath :: reviewAppFlags
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
         , env = Nothing
         , stdin = Process.InheritStdin
