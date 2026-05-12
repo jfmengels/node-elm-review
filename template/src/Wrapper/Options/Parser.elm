@@ -11,15 +11,16 @@ import Wrapper.Flag as Flag exposing (Argument(..), Flag)
 import Wrapper.Options as Options exposing (HelpOptions, InitOptions, NewPackageOptions, NewRuleOptions, PrepareOfflineOptions, ReviewOptions)
 import Wrapper.Options.Flags as Flags
 import Wrapper.Options.InternalOptions exposing (InternalOptions, initialOptions)
+import Wrapper.OutputTarget exposing (OutputTarget)
 import Wrapper.ProcessEnv as ProcessEnv
 import Wrapper.ProjectPaths as ProjectPaths exposing (ProjectPaths)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
-parse : { env | args : List String, env : Dict String String } -> Path -> Path -> OptionsParseResult
-parse { args, env } binaryRoot elmHomePath =
+parse : { env | args : List String, env : Dict String String } -> Path -> Path -> OutputTarget -> OptionsParseResult
+parse { args, env } binaryRoot elmHomePath outputTarget =
     parseHelp args initialOptions
-        |> toOptions env binaryRoot elmHomePath
+        |> toOptions env binaryRoot elmHomePath outputTarget
 
 
 type OptionsParseResult
@@ -34,8 +35,8 @@ type OptionsParseResult
     | ParseError (Problem.FormatOptions {}) Problem
 
 
-toOptions : Dict String String -> Path -> Path -> InternalOptions -> OptionsParseResult
-toOptions env binaryRoot elmHomePath options =
+toOptions : Dict String String -> Path -> Path -> OutputTarget -> InternalOptions -> OptionsParseResult
+toOptions env binaryRoot elmHomePath outputTarget options =
     if options.version then
         ShowVersion
 
@@ -80,13 +81,13 @@ toOptions env binaryRoot elmHomePath options =
                         Nothing ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env binaryRoot elmHomePath color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot elmHomePath outputTarget color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Suppress ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env binaryRoot elmHomePath color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot elmHomePath outputTarget color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Init ->
@@ -124,7 +125,7 @@ I recommend you try to gain network access and try again."""
                         Just Subcommand.PrepareOffline ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot elmHomePath color options (Path.dirname elmJsonPath))
+                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot elmHomePath outputTarget color options (Path.dirname elmJsonPath))
                                 )
 
 
@@ -146,8 +147,8 @@ requiresElmJsonPath options color createOptions =
             createOptions elmJsonPath
 
 
-toReviewOptions : Dict String String -> Path -> Path -> Color.Support -> InternalOptions -> Path -> ReviewOptions
-toReviewOptions env binaryRoot elmHomePath color options projectRoot =
+toReviewOptions : Dict String String -> Path -> Path -> OutputTarget -> Color.Support -> InternalOptions -> Path -> ReviewOptions
+toReviewOptions env binaryRoot elmHomePath outputTarget color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -171,11 +172,12 @@ toReviewOptions env binaryRoot elmHomePath color options projectRoot =
     , processEnv = ProcessEnv.from env
     , binaryRoot = binaryRoot
     , elmHomePath = elmHomePath
+    , outputTarget = outputTarget
     }
 
 
-toPrepareOfflineOptions : Dict String String -> Path -> Path -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
-toPrepareOfflineOptions env binaryRoot elmHomePath color options projectRoot =
+toPrepareOfflineOptions : Dict String String -> Path -> Path -> OutputTarget -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
+toPrepareOfflineOptions env binaryRoot elmHomePath outputTarget color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -197,6 +199,7 @@ toPrepareOfflineOptions env binaryRoot elmHomePath color options projectRoot =
     , processEnv = ProcessEnv.from env
     , binaryRoot = binaryRoot
     , elmHomePath = elmHomePath
+    , outputTarget = outputTarget
     }
 
 

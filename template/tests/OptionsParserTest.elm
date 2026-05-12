@@ -9,6 +9,7 @@ import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
 import Wrapper.Options as Options exposing (ReviewOptions)
 import Wrapper.Options.Parser as OptionsParser exposing (OptionsParseResult(..))
+import Wrapper.OutputTarget as OutputTarget exposing (OutputTarget)
 import Wrapper.ProcessEnv as ProcessEnv
 import Wrapper.ProjectPaths as ProjectPaths
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
@@ -103,12 +104,13 @@ emptyOptions =
     , processEnv = ProcessEnv.from Dict.empty
     , binaryRoot = binaryRoot
     , elmHomePath = elmHomePath
+    , outputTarget = outputTarget
     }
 
 
 parse : { env | args : List String, env : Dict String String } -> OptionsParseResult
 parse args =
-    OptionsParser.parse args binaryRoot elmHomePath
+    OptionsParser.parse args binaryRoot elmHomePath outputTarget
 
 
 binaryRoot : Path
@@ -119,6 +121,11 @@ binaryRoot =
 elmHomePath : Path
 elmHomePath =
     "/.elm"
+
+
+outputTarget : OutputTarget
+outputTarget =
+    OutputTarget.ElmRunTarget
 
 
 expectReview : ReviewOptions -> OptionsParseResult -> Expectation
