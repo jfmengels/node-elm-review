@@ -93,7 +93,7 @@ init env =
                 elmHomePath =
                     "/Users/m1/.elm"
             in
-            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath OutputTarget.ElmRunTarget)
+            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath OutputTarget.JavaScriptTarget)
 
 
 handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( Model, Cmd Msg )
