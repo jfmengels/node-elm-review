@@ -47,6 +47,7 @@ type alias ReviewOptions =
     , localElmReview : Maybe Path
     , watchConfig : Bool
     , processEnv : ProcessEnv
+    , elmCompilerPath : Maybe Path
     , binaryRoot : Path
     , elmHomePath : Path
     , outputTarget : OutputTarget
@@ -104,6 +105,7 @@ type alias PrepareOfflineOptions =
     , color : Color.Support
     , localElmReview : Maybe Path
     , processEnv : ProcessEnv
+    , elmCompilerPath : Maybe Path
     , binaryRoot : Path
     , elmHomePath : Path
     , outputTarget : OutputTarget

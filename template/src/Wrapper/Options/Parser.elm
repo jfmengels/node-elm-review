@@ -170,6 +170,7 @@ toReviewOptions env binaryRoot elmHomePath outputTarget color options projectRoo
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , watchConfig = options.watchConfig
     , processEnv = ProcessEnv.from env
+    , elmCompilerPath = options.elmCompilerPath
     , binaryRoot = binaryRoot
     , elmHomePath = elmHomePath
     , outputTarget = outputTarget
@@ -197,6 +198,7 @@ toPrepareOfflineOptions env binaryRoot elmHomePath outputTarget color options pr
     -- TODO Make this relative to CWD
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , processEnv = ProcessEnv.from env
+    , elmCompilerPath = options.elmCompilerPath
     , binaryRoot = binaryRoot
     , elmHomePath = elmHomePath
     , outputTarget = outputTarget

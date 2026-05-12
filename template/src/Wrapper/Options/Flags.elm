@@ -153,7 +153,7 @@ flags =
                 { argName = "<path-to-elm>"
                 , mayBeUsedSeveralTimes = False
                 , usesEquals = False
-                , apply = \_ arg options -> Ok { options | compilerPath = Just arg }
+                , apply = \_ arg options -> Ok { options | elmCompilerPath = Just arg }
                 }
       , display =
             Just
