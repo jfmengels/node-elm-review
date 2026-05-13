@@ -9,7 +9,7 @@ convert `Testable.Cmd` into a core `Cmd` with the `Testable` module.
 -}
 
 import Elm.Review.Testable.Internal as Internal
-import Elm.Review.Testable.Task as Task
+import Elm.Review.Testable.TTask as Task
 
 
 {-| -}

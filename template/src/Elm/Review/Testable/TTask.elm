@@ -1,4 +1,4 @@
-module Elm.Review.Testable.Task exposing
+module Elm.Review.Testable.TTask exposing
     ( succeed, fail
     , map
     , andThen
