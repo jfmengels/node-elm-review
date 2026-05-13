@@ -12,6 +12,7 @@ module Wrapper.Init exposing
 
 import Elm.Project
 import Elm.Review.ElmBinary as ElmBinary
+import Elm.Review.Prompt as Prompt
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
@@ -25,7 +26,6 @@ import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
-import ElmRun.Prompt as Prompt
 import Json.Decode as Decode
 import Wrapper.FetchRemoteTemplate as FetchRemoteTemplate
 import Wrapper.MinVersion as MinVersion

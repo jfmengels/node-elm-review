@@ -15,6 +15,7 @@ import Elm.Review.Color
 import Elm.Review.FixOptions as FixOptions
 import Elm.Review.InitError as InitError exposing (InitError)
 import Elm.Review.Options as Options exposing (Options)
+import Elm.Review.Prompt as Prompt
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
 import Elm.Review.Store as Store
@@ -37,7 +38,6 @@ import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
 import ElmRun.ProcessExtra as ProcessExtra
-import ElmRun.Prompt as Prompt
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
