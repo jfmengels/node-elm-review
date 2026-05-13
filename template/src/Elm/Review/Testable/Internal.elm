@@ -10,7 +10,7 @@ module Elm.Review.Testable.Internal exposing
 
 -}
 
-import Elm.Review.Testable.Fs exposing (FsError)
+import Elm.Review.Testable.Fs exposing (FsError, MatchKind)
 import ElmReview.Path exposing (Path)
 
 
@@ -23,6 +23,7 @@ type Cmd msg
 type Task error value
     = ImmediateTask (TaskResult error value)
     | CreateDirectory Path (Result FsError () -> TaskResult error value)
+    | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
 
 
 type TaskResult error value

@@ -194,6 +194,9 @@ transform tx source =
         Internal.CreateDirectory path onResult ->
             Internal.CreateDirectory path (onResult >> tx)
 
+        Internal.WalkTree path pattern matchKind onResult ->
+            Internal.WalkTree path pattern matchKind (onResult >> tx)
+
 
 
 -- Commands
