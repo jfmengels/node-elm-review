@@ -1,10 +1,10 @@
-module Elm.Review.ElmRunEffects exposing (effects, subEffects)
+module ElmRun.Effects exposing (effects, subEffects)
 
 import Capabilities exposing (Console, FileWatcher, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Elm.Review.Testable exposing (Effects)
 import Elm.Review.Testable.CliData as CliData
-import Elm.Review.Testable.FileWatchData as FileWatcherData exposing (FileEvent, WatchOptions)
+import Elm.Review.Testable.FileWatchData exposing (FileEvent, WatchOptions)
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError, SpawnError)
 import Elm.Review.Testable.StdinData as StdinData

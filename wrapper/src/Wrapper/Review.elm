@@ -20,14 +20,13 @@ import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TCmd, TSub, TTask)
 import Elm.Review.Testable.Process as Process
-import Elm.Review.Testable.ProcessData as ProcessData
+import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessId)
 import Elm.Review.Testable.TSub as TSub
 import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode
-import Worker.Process exposing (ProcessId)
 import Wrapper.Build as Build
 import Wrapper.Options as Options exposing (ReviewOptions)
 import Wrapper.OutputTarget as OutputTarget
