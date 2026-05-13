@@ -1,10 +1,9 @@
 module Elm.Review.Testable.TTask exposing
-    ( succeed, fail
+    ( TTask, succeed, fail
     , map
     , andThen
     , mapError, onError, toMaybe, toResult
     , perform
-    , TTask
     )
 
 {-| `Testable.Task` is a replacement for the core `Task` module. You can use it
@@ -14,7 +13,7 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 
 # Basics
 
-@docs Task, succeed, fail
+@docs TTask, succeed, fail
 
 
 # Mapping

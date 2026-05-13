@@ -1,13 +1,12 @@
 module Elm.Review.Testable.Internal exposing
     ( Cmd(..)
-    , TaskResult(..), resultFromResult
-    , TTask(..)
+    , TTask(..), TaskResult(..), resultFromResult
     )
 
 {-|
 
 @docs Cmd
-@docs Task, TaskResult, resultFromResult
+@docs TTask, TaskResult, resultFromResult
 
 -}
 
