@@ -14,7 +14,7 @@ import Elm.Review.Testable.TTask as Task
 
 {-| -}
 type alias Cmd msg =
-    Internal.Cmd msg
+    Internal.TCmd msg
 
 
 {-| -}
