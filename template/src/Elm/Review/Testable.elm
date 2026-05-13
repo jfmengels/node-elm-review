@@ -24,7 +24,7 @@ import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
 import Elm.Review.Testable.ProcessData exposing (ProcessError)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
-import Elm.Review.Testable.Task as TestableTask
+import Elm.Review.Testable.TTask as TestableTask
 import ElmReview.Path exposing (Path)
 import Task as PlatformTask
 
