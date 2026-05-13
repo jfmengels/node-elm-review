@@ -12,6 +12,7 @@ import ElmReview.Color as Color
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import Fs as ElmRunFs exposing (FileSystem, FsError(..))
+import Http
 import Os exposing (ProcessCapability)
 import Os.Process as ElmRunProcess
 import Task exposing (Task)
@@ -148,6 +149,9 @@ effects fs os stdout stderr =
     , copyDirectory = copyDirectory os
     , walkTree = \path pattern matchKind -> ElmRunFs.walkTree fs path pattern (mapMatchKind matchKind) |> Task.map Tuple.first |> Task.mapError mapFsError
 
+    -- Http
+    , httpGet = httpGet
+
     -- Stdin / Stdout
     , readKey = Debug.todo "effects: readKey"
     , println = mapConsole stdout stderr >> ElmRunCli.println
@@ -159,6 +163,27 @@ effects fs os stdout stderr =
     , waitProcess = ElmRunProcess.wait os >> Task.mapError mapProcessError
     , killProcess = \pid signal -> ElmRunProcess.kill os pid signal |> Task.mapError mapProcessError
     }
+
+
+httpGet : String -> Task () String
+httpGet url =
+    Http.task
+        { method = "GET"
+        , url = url
+        , headers = []
+        , body = Http.emptyBody
+        , resolver =
+            Http.stringResolver
+                (\response ->
+                    case response of
+                        Http.GoodStatus_ _ body ->
+                            Ok body
+
+                        _ ->
+                            Err ()
+                )
+        , timeout = Nothing
+        }
 
 
 mapFsError : ElmRunFs.FsError -> FsData.FsError
