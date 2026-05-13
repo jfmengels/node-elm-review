@@ -477,7 +477,7 @@ writeChangedFile fs os options { filePath, source } =
             |> Task.mapError
                 (\error ->
                     case error of
-                        ProcessExtra.ProcessError processError ->
+                        ProcessExtra.ProcessRunError processError ->
                             Problem.unexpectedError "while applying automatic fixes and running elm-format" (ProcessExtra.errorToString processError)
 
                         ProcessExtra.CommandNotFound ->

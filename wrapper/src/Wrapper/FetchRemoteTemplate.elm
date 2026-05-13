@@ -69,7 +69,7 @@ fromGitError args error =
         errorDetails : String
         errorDetails =
             case error of
-                ProcessExtra.ProcessError processError ->
+                ProcessExtra.ProcessRunError processError ->
                     ProcessExtra.errorToString processError
 
                 ProcessExtra.CommandNotFound ->

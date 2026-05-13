@@ -186,7 +186,7 @@ buildCreatedProject fs os reviewFolder options buildData =
                             "while building and copying template files"
                     in
                     case error of
-                        ProcessExtra.ProcessError processError ->
+                        ProcessExtra.ProcessRunError processError ->
                             processErrorToProblem stepDescription processError
 
                         ProcessExtra.CommandNotFound ->
@@ -247,7 +247,7 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
                                         "while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath
                                 in
                                 case error of
-                                    ProcessExtra.ProcessError processError ->
+                                    ProcessExtra.ProcessRunError processError ->
                                         processErrorToProblem stepDescription processError
 
                                     ProcessExtra.CommandNotFound ->
@@ -532,7 +532,7 @@ compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath 
         |> Task.mapError
             (\error ->
                 case error of
-                    ProcessExtra.ProcessError processError ->
+                    ProcessExtra.ProcessRunError processError ->
                         processErrorToProblem "while building the review application binary" processError
 
                     ProcessExtra.CommandNotFound ->
@@ -588,7 +588,7 @@ compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
         |> Task.mapError
             (\error ->
                 case error of
-                    ProcessExtra.ProcessError processError ->
+                    ProcessExtra.ProcessRunError processError ->
                         processErrorToProblem "while building the review application binary" processError
 
                     ProcessExtra.CommandNotFound ->

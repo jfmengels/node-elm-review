@@ -39,7 +39,7 @@ stdoutSpec debug =
 
 type SpawnError
     = CommandNotFound
-    | ProcessError ProcessError
+    | ProcessRunError ProcessError
     | CommandFailed Process.Completed
 
 
@@ -52,7 +52,7 @@ runButFailOnError :
     -> Task SpawnError Process.Completed
 runButFailOnError os command spawnOptions =
     Process.run os command spawnOptions
-        |> Task.mapError ProcessError
+        |> Task.mapError ProcessRunError
         |> Task.andThen
             (\completed ->
                 if completed.exitCode == 0 then
