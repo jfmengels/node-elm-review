@@ -14,7 +14,6 @@ import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmRun.ProcessExtra as ProcessExtra
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 

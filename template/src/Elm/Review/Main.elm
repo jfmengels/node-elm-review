@@ -37,7 +37,6 @@ import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
-import ElmRun.ProcessExtra as ProcessExtra
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)

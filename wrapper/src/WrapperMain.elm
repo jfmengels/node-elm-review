@@ -14,7 +14,6 @@ import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions)
-import ElmRun.FsExtra as FsExtra
 import Wrapper.Help as Help
 import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage

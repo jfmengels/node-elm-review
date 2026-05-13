@@ -28,7 +28,6 @@ import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
-import ElmRun.FsExtra as FsExtra
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Regex exposing (Regex)
