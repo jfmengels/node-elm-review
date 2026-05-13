@@ -1,6 +1,9 @@
-module Elm.Review.NodeEffects exposing (effects)
+module Elm.Review.NodeEffects exposing (effects, subEffects)
 
 import Elm.Review.Testable exposing (Effects)
+import Elm.Review.Testable.FileWatchData exposing (FileEvent, WatchOptions)
+import Elm.Review.Testable.TSub exposing (SubEffects)
+import ElmReview.Path exposing (Path)
 
 
 effects : Effects
@@ -29,3 +32,14 @@ effects =
     , waitProcess = \pid -> Debug.todo "waitProcess"
     , killProcess = \pid signal -> Debug.todo "killProcess"
     }
+
+
+subEffects : SubEffects msg
+subEffects =
+    { watchFiles = watchFiles
+    }
+
+
+watchFiles : Path -> WatchOptions -> (FileEvent -> msg) -> Sub msg
+watchFiles path watchOptions toMsg =
+    Sub.none

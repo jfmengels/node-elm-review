@@ -1,6 +1,7 @@
 module Elm.Review.Testable.Internal exposing
     ( TCmd(..)
     , TTask(..), TaskResult(..), resultFromResult
+    , TSub(..)
     )
 
 {-|
@@ -11,6 +12,7 @@ module Elm.Review.Testable.Internal exposing
 -}
 
 import Elm.Review.Testable.CliData exposing (Console)
+import Elm.Review.Testable.FileWatchData exposing (FileEvent, WatchOptions)
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
@@ -53,6 +55,11 @@ type TaskResult error value
     = Success value
     | Failure error
     | Continue (TTask error value)
+
+
+type TSub msg
+    = SubBatch (List (TSub msg))
+    | WatchFiles String WatchOptions (FileEvent -> msg)
 
 
 resultFromResult : Result error value -> TaskResult error value

@@ -9,6 +9,7 @@ import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData exposing (FsError)
 import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
@@ -296,12 +297,12 @@ getCwd env =
             TTask.fail (FsData.NotFound ".")
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> TSub Msg
 subscriptions model =
     case model of
         Review reviewModel ->
             Review.subscriptions reviewModel
-                |> Sub.map ReviewMsg
+                |> TSub.map ReviewMsg
 
         _ ->
-            Sub.none
+            TSub.none

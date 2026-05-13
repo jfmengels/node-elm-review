@@ -32,10 +32,13 @@ import Elm.Review.Options exposing (Options)
 import Elm.Review.StoreVersion as StoreVersion exposing (StoreVersion)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
 import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.FileWatchData as FileWatchData exposing (FileEvent)
+import Elm.Review.Testable.FileWatcher as FileWatcher
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData exposing (FsError)
 import Elm.Review.Testable.Http as Http
 import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
@@ -45,8 +48,6 @@ import ElmRun.FsExtra as FsExtra
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
-import Worker.Capabilities exposing (FileWatcher)
-import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 
 
 type Model
@@ -531,20 +532,20 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
             if String.endsWith ".elm" fileEvent.path then
                 let
                     ( newProject, version, cmds ) =
-                        case FileWatcher.toEventType fileEvent.eventType of
-                            FileWatcher.Created ->
+                        case FileWatchData.toEventType fileEvent.eventType of
+                            FileWatchData.Created ->
                                 ( model.project, model.version, [ fetchElmFile fileEvent.path ] )
 
-                            FileWatcher.Modified ->
+                            FileWatchData.Modified ->
                                 ( model.project, model.version, [ fetchElmFile fileEvent.path ] )
 
-                            FileWatcher.Deleted ->
+                            FileWatchData.Deleted ->
                                 ( Project.removeFile fileEvent.path model.project
                                 , StoreVersion.increment model.version
                                 , []
                                 )
 
-                            FileWatcher.Renamed ->
+                            FileWatchData.Renamed ->
                                 ( Project.removeFile fileEvent.path model.project
                                 , StoreVersion.increment model.version
                                 , [ fetchElmFile fileEvent.path ]
@@ -1179,54 +1180,53 @@ readTextFile toMsg path =
         |> TTask.attempt (\result -> toMsg path result)
 
 
-subscriptions : FileWatcher -> Options -> Model -> Sub Msg
-subscriptions fileWatcher options (Model model) =
-    Sub.batch
-        [ watchPath fileWatcher
+subscriptions : Options -> Model -> TSub Msg
+subscriptions options (Model model) =
+    TSub.batch
+        [ watchPath
             { path = elmJsonPath
             , toMsg = \_ -> GotProjectElmJsonWatchEvent
             , recursive = False
             , eventMask = 3
             }
-        , watchPath fileWatcher
+        , watchPath
             { path = readmePath
             , toMsg = GotProjectReadmeWatchEvent
             , recursive = False
             , eventMask = 7
             }
-        , watchSourceDirectories fileWatcher options model
-        , watchSuppressedFiles fileWatcher options
+        , watchSourceDirectories options model
+        , watchSuppressedFiles options
         ]
 
 
-watchSourceDirectories : FileWatcher -> Options -> ModelData -> Sub Msg
-watchSourceDirectories fileWatcher options model =
+watchSourceDirectories : Options -> ModelData -> TSub Msg
+watchSourceDirectories options model =
     case Project.elmJson model.project of
         Just elmJson ->
             case elmFilesToFetch elmJson.project options.directoriesToAnalyze of
                 Ok targets ->
-                    targets
-                        |> List.map
-                            (\path ->
-                                watchPath fileWatcher
-                                    { path = path
-                                    , toMsg = GotSourceFileWatchEvent
-                                    , recursive = options.directoriesToAnalyze == Nothing || not (String.endsWith ".elm" path)
-                                    , eventMask = 15
-                                    }
-                            )
-                        |> Sub.batch
+                    TSub.mapBatch
+                        (\path ->
+                            watchPath
+                                { path = path
+                                , toMsg = GotSourceFileWatchEvent
+                                , recursive = options.directoriesToAnalyze == Nothing || not (String.endsWith ".elm" path)
+                                , eventMask = 15
+                                }
+                        )
+                        targets
 
                 Err _ ->
-                    Sub.none
+                    TSub.none
 
         Nothing ->
-            Sub.none
+            TSub.none
 
 
-watchSuppressedFiles : FileWatcher -> Options -> Sub Msg
-watchSuppressedFiles fileWatcher options =
-    watchPath fileWatcher
+watchSuppressedFiles : Options -> TSub Msg
+watchSuppressedFiles options =
+    watchPath
         { path = SuppressedErrors.suppressedFolder options
         , toMsg = GotSuppressedFileWatchEvent
         , recursive = False -- TODO Should this be True?
@@ -1234,10 +1234,9 @@ watchSuppressedFiles fileWatcher options =
         }
 
 
-watchPath : FileWatcher -> { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> Sub Msg
-watchPath fileWatcher { toMsg, path, recursive, eventMask } =
+watchPath : { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> TSub Msg
+watchPath { toMsg, path, recursive, eventMask } =
     FileWatcher.watch
-        fileWatcher
         path
         -- If the path explicitly mentions an excluded path (e.g. "./node_modules/elm-library/src")
         -- then re-include that path.
