@@ -20,7 +20,7 @@ module Elm.Review.Testable exposing
 -}
 
 import Elm.Review.Testable.Cmd as TestableCmd
-import Elm.Review.Testable.Fs exposing (FsError)
+import Elm.Review.Testable.Fs exposing (FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
 import Elm.Review.Testable.Task as TestableTask
 import ElmReview.Path exposing (Path)
@@ -28,7 +28,9 @@ import Task as PlatformTask
 
 
 type alias Effects =
-    { createDirectory : Path -> PlatformTask.Task FsError ()
+    { -- File system
+      createDirectory : Path -> PlatformTask.Task FsError ()
+    , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
     }
 
 
@@ -77,6 +79,12 @@ task effects testableTask =
 
         Internal.CreateDirectory path onResult ->
             effects.createDirectory path
+                |> toResultTask
+                |> PlatformTask.map onResult
+                |> (\result -> PlatformTask.andThen (taskResult effects) result)
+
+        Internal.WalkTree path pattern matchKind onResult ->
+            effects.walkTree path pattern matchKind
                 |> toResultTask
                 |> PlatformTask.map onResult
                 |> (\result -> PlatformTask.andThen (taskResult effects) result)
