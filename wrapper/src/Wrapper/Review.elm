@@ -287,7 +287,7 @@ runReviewProcessWithNodeJs options { reviewAppPath, reviewElmJson, reviewFolder,
     in
     Process.spawn
         "node"
-        { args = Path.join2 options.binaryRoot "elm-app-worker2.js" :: reviewAppPath :: reviewAppFlags
+        { args = Path.join2 options.binaryRoot "lib/elm-app-worker2.js" :: reviewAppPath :: reviewAppFlags
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
         , env = Nothing
         , stdin = Process.InheritStdin
