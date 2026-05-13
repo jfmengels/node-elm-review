@@ -1,11 +1,11 @@
 module Elm.Review.Testable.Internal exposing
-    ( Cmd(..)
+    ( TCmd(..)
     , TTask(..), TaskResult(..), resultFromResult
     )
 
 {-|
 
-@docs Cmd
+@docs TCmd
 @docs TTask, TaskResult, resultFromResult
 
 -}
@@ -16,10 +16,10 @@ import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import ElmReview.Path exposing (Path)
 
 
-type Cmd msg
+type TCmd msg
     = None
     | TaskCmd (TTask msg msg)
-    | Batch (List (Cmd msg))
+    | Batch (List (TCmd msg))
 
 
 {-| "TTask" stands for "Testable Task".
