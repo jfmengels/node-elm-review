@@ -14,6 +14,7 @@ import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Color
 import Elm.Review.FixOptions as FixOptions
+import Elm.Review.InitError as InitError exposing (InitError)
 import Elm.Review.Options as Options exposing (Options)
 import Elm.Review.RefusedErrorFixes as RefusedErrorFixes exposing (RefusedErrorFixes)
 import Elm.Review.Reporter as Reporter
@@ -33,7 +34,7 @@ import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmReview.ReportMode exposing (ReportMode(..))
+import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
@@ -129,27 +130,44 @@ initWithOptions stdin options rulesFromConfig =
     )
 
 
-init : Maybe Stdin -> Options -> Result (TCmd Msg) ( Model, TCmd Msg )
-init stdin options =
-    computeRulesToRun options
-        |> Result.map
-            (\rulesFromConfig ->
-                initWithOptions stdin options rulesFromConfig
-            )
+init : Maybe Stdin -> List String -> InitError ( Model, TCmd Msg )
+init stdin args =
+    case Options.parse args of
+        Ok options ->
+            computeRulesToRun options
+                |> InitError.map
+                    (\rulesFromConfig ->
+                        initWithOptions stdin options rulesFromConfig
+                    )
+
+        Err problem ->
+            InitError.Problem (roughFormatOptions args) problem
 
 
-computeRulesToRun : Options -> Result (TCmd msg) (List Rule)
+roughFormatOptions : List String -> Problem.FormatOptions {}
+roughFormatOptions args =
+    { color = Color.noColors
+    , reportMode =
+        if List.member "--report=json" args || List.member "--report=ndjson" args then
+            ReportMode.Json
+
+        else
+            ReportMode.HumanReadable
+    , debug = List.member "--debug" args
+    , attemptFutureRecovery = False
+    }
+
+
+computeRulesToRun : Options -> InitError (List Rule)
 computeRulesToRun options =
     let
-        stopBecauseOfProblem_ : Problem -> TCmd msg
-        stopBecauseOfProblem_ problem =
-            Problem.stop
-                { color = options.color
-                , reportMode = options.reportMode
-                , debug = options.debug
-                , attemptFutureRecovery = False
-                }
-                problem
+        problemFormatOptions : () -> Problem.FormatOptions {}
+        problemFormatOptions () =
+            { color = options.color
+            , reportMode = options.reportMode
+            , debug = options.debug
+            , attemptFutureRecovery = False
+            }
 
         rulesWithIds : List Rule
         rulesWithIds =
@@ -182,8 +200,7 @@ I recommend you take a look at the following documents:
   - When to write or enable a rule: https://github.com/jfmengels/elm-review/#when-to-write-or-enable-a-rule"""
         }
             |> Problem.from Problem.Recoverable
-            |> stopBecauseOfProblem_
-            |> Err
+            |> InitError.Problem (problemFormatOptions ())
 
     else if not (List.isEmpty filterNames) then
         unknownRulesFilterMessage
@@ -193,48 +210,37 @@ I recommend you take a look at the following documents:
                     |> Set.toList
             , filterNames = filterNames
             }
-            |> stopBecauseOfProblem_
-            |> Err
+            |> InitError.Problem (problemFormatOptions ())
 
     else
         case List.filterMap getConfigurationError config of
             (_ :: _) as configurationErrors ->
                 case options.reportMode of
                     HumanReadable ->
-                        TCmd.batch
-                            [ Reporter.formatConfigurationErrors
-                                { detailsMode = options.detailsMode
-                                , configurationErrors = configurationErrors
-                                }
-                                |> Text.toAnsi options.supportsColor
-                                |> Cli.printlnStdout
-                            , Cli.exit 1
-                            ]
-                            |> Err
+                        Reporter.formatConfigurationErrors
+                            { detailsMode = options.detailsMode
+                            , configurationErrors = configurationErrors
+                            }
+                            |> Text.toAnsi options.supportsColor
+                            |> InitError.StringProblem
 
                     Json ->
                         -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
-                        TCmd.batch
-                            [ printJson
-                                options.debug
-                                (encodeConfigurationErrors options configurationErrors)
-                                (Encode.object [])
-                            , Cli.exit 1
-                            ]
-                            |> Err
+                        printJson
+                            options.debug
+                            (encodeConfigurationErrors options configurationErrors)
+                            (Encode.object [])
+                            |> InitError.StringProblem
 
                     NDJson ->
-                        TCmd.batch
-                            [ printNDJson (encodeConfigurationErrorsForNDJson options configurationErrors)
-                            , Cli.exit 1
-                            ]
-                            |> Err
+                        printNDJson (encodeConfigurationErrorsForNDJson options configurationErrors)
+                            |> InitError.StringProblem
 
             [] ->
                 List.map
                     (Rule.ignoreErrorsForDirectories options.ignoredDirs >> Rule.ignoreErrorsForFiles options.ignoredFiles)
                     rulesFromConfig
-                    |> Ok
+                    |> InitError.Success
 
 
 getConfigurationError : Rule -> Maybe Reporter.Error
@@ -707,6 +713,7 @@ printReport previousSuppressedErrors result model =
                     model.options.debug
                     errors
                     (Encode.dict identity identity result.extracts)
+                    |> Cli.printlnStdout
 
             NDJson ->
                 let
@@ -724,6 +731,7 @@ printReport previousSuppressedErrors result model =
                             ruleLinks
                         )
                     |> printNDJson
+                    |> Cli.printlnStdout
         , if model.options.watch then
             TCmd.none
 
@@ -735,7 +743,7 @@ printReport previousSuppressedErrors result model =
         ]
 
 
-printJson : Bool -> Encode.Value -> Encode.Value -> TCmd msg
+printJson : Bool -> Encode.Value -> Encode.Value -> String
 printJson debug errors extracts =
     let
         indent : Int
@@ -754,15 +762,13 @@ printJson debug errors extracts =
         , ( "extracts", extracts )
         ]
         |> Encode.encode indent
-        |> Cli.printlnStdout
 
 
-printNDJson : List Encode.Value -> TCmd msg
+printNDJson : List Encode.Value -> String
 printNDJson lines =
     lines
         |> List.map (Encode.encode 0)
         |> String.join "\n"
-        |> Cli.printlnStdout
 
 
 encodeErrorByFile :

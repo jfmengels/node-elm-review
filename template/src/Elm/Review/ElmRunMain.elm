@@ -3,8 +3,8 @@ module Elm.Review.ElmRunMain exposing (main)
 import Capabilities exposing (Console, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Elm.Review.ElmRunEffects as ElmRunEffects
+import Elm.Review.InitError as InitError
 import Elm.Review.Main as Main
-import Elm.Review.Options as Options
 import Elm.Review.Testable as Testable exposing (Effects)
 import ElmReview.Color as Color
 import ElmReview.Problem as Problem exposing (Problem)
@@ -38,10 +38,10 @@ main =
 
 init : Env -> ( ModelWrapper, Cmd Main.Msg )
 init env =
-    case Result.map2 Tuple.pair (requireCapabilities env) (Options.parse env.args) of
-        Ok ( { fs, os }, options ) ->
-            case Main.init env.stdin options of
-                Ok ( mainModel, cmd ) ->
+    case requireCapabilities env of
+        Ok { fs, os } ->
+            case Main.init env.stdin env.args of
+                InitError.Success ( mainModel, cmd ) ->
                     ( Running
                         { fs = fs
                         , os = os
@@ -52,14 +52,22 @@ init env =
                     , Testable.cmd (ElmRunEffects.effects fs os env.stdout env.stderr) cmd
                     )
 
-                Err cmd ->
+                InitError.Problem formatOptions problem ->
                     ( Done
-                    , Testable.cmd (ElmRunEffects.effects fs os env.stdout env.stderr) cmd
+                    , stop env.stderr formatOptions problem
                     )
 
-        Err err ->
+                InitError.StringProblem string ->
+                    ( Done
+                    , Cmd.batch
+                        [ ElmRunCli.println env.stdout string
+                        , ElmRunCli.exit 1
+                        ]
+                    )
+
+        Err problem ->
             ( Done
-            , stop env.stderr (roughFormatOptions env.args) err
+            , stop env.stderr (roughFormatOptions env.args) problem
             )
 
 
