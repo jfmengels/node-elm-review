@@ -22,6 +22,7 @@ type ModelWrapper model
 type alias Model model =
     { fs : FileSystem
     , os : ProcessCapability
+    , stdin : Maybe Stdin
     , stdout : Console
     , stderr : Console
     , mainModel : model
@@ -64,11 +65,12 @@ init initFn env =
                     ( Running
                         { fs = fs
                         , os = os
+                        , stdin = env.stdin
                         , stdout = env.stdout
                         , stderr = env.stderr
                         , mainModel = mainModel
                         }
-                    , Testable.cmd (ElmRunEffects.effects fs os env.stdout env.stderr) cmd
+                    , Testable.cmd (ElmRunEffects.effects fs os env.stdin env.stdout env.stderr) cmd
                     )
 
                 InitError.Problem formatOptions problem ->
@@ -96,7 +98,7 @@ update updateFn msg modelWrapper =
         Done ->
             ( Done, Cmd.none )
 
-        Running { fs, os, stdout, stderr, mainModel } ->
+        Running { fs, os, stdin, stdout, stderr, mainModel } ->
             let
                 ( newMainModel, cmd ) =
                     updateFn msg mainModel
@@ -104,11 +106,12 @@ update updateFn msg modelWrapper =
             ( Running
                 { fs = fs
                 , os = os
+                , stdin = stdin
                 , stdout = stdout
                 , stderr = stderr
                 , mainModel = newMainModel
                 }
-            , Testable.cmd (ElmRunEffects.effects fs os stdout stderr) cmd
+            , Testable.cmd (ElmRunEffects.effects fs os stdin stdout stderr) cmd
             )
 
 
