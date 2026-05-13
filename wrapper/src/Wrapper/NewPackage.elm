@@ -16,6 +16,7 @@ import Elm.Module as Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.CliVersion as CliVersion
+import Elm.Review.ElmBinary as ElmBinary
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
@@ -28,7 +29,6 @@ import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
-import ElmRun.ElmBinary as ElmBinary
 import ElmRun.ProcessExtra as ProcessExtra
 import Json.Encode as Encode
 import Wrapper.MinVersion as MinVersion
