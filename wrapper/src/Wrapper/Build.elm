@@ -293,7 +293,7 @@ createTemplateElmJson outputTarget reviewFolder binaryRoot buildFolder reviewElm
 
 fsErrorToProblem : String -> FsError -> Problem
 fsErrorToProblem stepDescription error =
-    Problem.unexpectedError stepDescription (FsExtra.errorToString error)
+    Problem.unexpectedError stepDescription (FsData.errorToString error)
 
 
 processErrorToProblem : String -> ProcessError -> Problem

@@ -7,11 +7,11 @@ module Wrapper.OptimizeJs exposing (optimize)
 -}
 
 import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TTask)
 import Elm.Review.Testable.TTask as TTask
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmRun.FsExtra as FsExtra
 
 
 optimize : Bool -> Path -> TTask Problem ()
@@ -21,7 +21,7 @@ optimize debug elmModulePath =
 
     else
         Fs.readTextFile elmModulePath
-            |> TTask.mapError (\error -> Problem.unexpectedError "while trying to read the generated Elm file" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while trying to read the generated Elm file" (FsData.errorToString error))
             |> TTask.andThen
                 (\initialSource ->
                     let
@@ -45,7 +45,7 @@ optimize debug elmModulePath =
                         initialSource
                         replacements
                         |> Fs.writeTextFile elmModulePath
-                        |> TTask.mapError (\error -> Problem.unexpectedError "while trying to optimize the generated Elm file" (FsExtra.errorToString error))
+                        |> TTask.mapError (\error -> Problem.unexpectedError "while trying to optimize the generated Elm file" (FsData.errorToString error))
                 )
 
 

@@ -107,7 +107,7 @@ Since you specified this path, I'm assuming that you misconfigured the CLI's arg
 
                             _ ->
                                 { title = "PROBLEM READING ELM.JSON"
-                                , message = \c -> "I was trying to read " ++ c Yellow elmJsonPath ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString error
+                                , message = \c -> "I was trying to read " ++ c Yellow elmJsonPath ++ " but encountered a problem:\n\n" ++ FsData.errorToString error
                                 }
                 in
                 problem

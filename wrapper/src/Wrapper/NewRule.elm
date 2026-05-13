@@ -158,7 +158,7 @@ run elmJson ruleModuleName ruleType (Model { options }) =
             |> TTask.andThen (\() -> Fs.writeTextFile srcFilePath (newSourceFile elmJson ruleName ruleType))
             |> TTask.mapError
                 (\err ->
-                    Problem.unexpectedError "while writing source file for new rule" (FsExtra.errorToString err)
+                    Problem.unexpectedError "while writing source file for new rule" (FsData.errorToString err)
                         |> Problem.withPath srcFilePath
                 )
         )
@@ -166,7 +166,7 @@ run elmJson ruleModuleName ruleType (Model { options }) =
             |> TTask.andThen (\() -> Fs.writeTextFile testsFilePath (newTestFile ruleName))
             |> TTask.mapError
                 (\err ->
-                    Problem.unexpectedError "while writing test file for new rule" (FsExtra.errorToString err)
+                    Problem.unexpectedError "while writing test file for new rule" (FsData.errorToString err)
                         |> Problem.withPath testsFilePath
                 )
         )
@@ -398,7 +398,7 @@ exposeRuleAsPartOfElmReviewPackage elmJsonPath pkg ruleModuleName =
                 |> Fs.writeTextFile elmJsonPath
                 |> TTask.mapError
                     (\err ->
-                        Problem.unexpectedError "while adding the new rule to elm.json's \"exposed-modules\"" (FsExtra.errorToString err)
+                        Problem.unexpectedError "while adding the new rule to elm.json's \"exposed-modules\"" (FsData.errorToString err)
                             |> Problem.withPath elmJsonPath
                     )
 
@@ -466,7 +466,7 @@ injectRuleInReadme options pkg ruleName =
                             |> Fs.writeTextFile readmePath
                             |> TTask.mapError
                                 (\err ->
-                                    Problem.unexpectedError "while adding the new rule to the README" (FsExtra.errorToString err)
+                                    Problem.unexpectedError "while adding the new rule to the README" (FsData.errorToString err)
                                         |> Problem.withPath readmePath
                                 )
                             |> TTask.map (\() -> warnings)
@@ -475,7 +475,7 @@ injectRuleInReadme options pkg ruleName =
                         TTask.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but could not find such a file." ]
 
                     Err error ->
-                        TTask.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but encountered a problem while doing so:\n\n" ++ FsExtra.errorToString error ]
+                        TTask.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but encountered a problem while doing so:\n\n" ++ FsData.errorToString error ]
             )
 
 
@@ -577,7 +577,7 @@ ruleDescription packageName packageVersion ruleName =
 injectRuleInPreviewFolders : Path -> Elm.Project.PackageInfo -> String -> TTask Problem (List Warning)
 injectRuleInPreviewFolders reviewFolder pkg ruleName =
     Fs.walkTree reviewFolder (Just "elm.json") FsData.Any
-        |> TTask.mapError (\error -> Problem.unexpectedError "while searching for preview folders" (FsExtra.errorToString error))
+        |> TTask.mapError (\error -> Problem.unexpectedError "while searching for preview folders" (FsData.errorToString error))
         |> TTask.andThen
             (\files ->
                 files
@@ -608,7 +608,7 @@ injectRuleInPreview previewFolder pkg ruleName =
             (\maybeContent ->
                 case maybeContent of
                     Err error ->
-                        TTask.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it:\n\n" ++ FsExtra.errorToString error ]
+                        TTask.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it:\n\n" ++ FsData.errorToString error ]
 
                     Ok content ->
                         let
@@ -625,7 +625,7 @@ injectRuleInPreview previewFolder pkg ruleName =
                             Fs.writeTextFile filePath (String.join "\n" result.lines)
                                 |> TTask.mapError
                                     (\error ->
-                                        Problem.unexpectedError ("while trying to update the " ++ previewFolder ++ "/ preview configuration") (FsExtra.errorToString error)
+                                        Problem.unexpectedError ("while trying to update the " ++ previewFolder ++ "/ preview configuration") (FsData.errorToString error)
                                             |> Problem.withPath filePath
                                     )
                                 |> TTask.map (\_ -> [])

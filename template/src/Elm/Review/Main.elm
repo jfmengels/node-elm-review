@@ -23,6 +23,7 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TCmd, TSub, TTask)
 import Elm.Review.Testable.Process as Process
 import Elm.Review.Testable.ProcessData as ProcessData exposing (SpawnError)
@@ -35,7 +36,6 @@ import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
-import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
 import Json.Encode as Encode
@@ -376,7 +376,7 @@ applyFixChanges options fixPayload =
             |> TTask.mapAllAndIgnore (\changedFile -> writeChangedFile options changedFile)
         )
         (TTask.mapAllAndIgnore (\filePath -> Fs.deleteFile filePath) fixPayload.removedFiles
-            |> TTask.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsData.errorToString error))
         )
         |> TTask.attempt (AppliedFixes fixPayload)
 
@@ -385,7 +385,7 @@ writeChangedFile : Options -> { filePath : Path, source : String } -> TTask Prob
 writeChangedFile options { filePath, source } =
     if String.endsWith "*.elm" filePath then
         Fs.writeTextFile filePath source
-            |> TTask.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsData.errorToString error))
 
     else
         Process.run

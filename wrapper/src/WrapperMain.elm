@@ -261,7 +261,7 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
                 |> InitError.Problem loading.formatOptions
 
         Err error ->
-            Problem.unexpectedError "when trying to find your project root" (FsExtra.errorToString error)
+            Problem.unexpectedError "when trying to find your project root" (FsData.errorToString error)
                 |> InitError.Problem loading.formatOptions
 
 

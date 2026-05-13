@@ -19,6 +19,7 @@ import Elm.Review.CliVersion as CliVersion
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.ProcessData as ProcessData
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
@@ -28,7 +29,6 @@ import ElmReview.Path as Path
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
-import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import Json.Encode as Encode
 import Wrapper.MinVersion as MinVersion
@@ -141,15 +141,15 @@ createProject input options =
     in
     TTask.sequence
         [ -- Rule source file
-          FsExtra.createFileAndItsDirectory
+          Fs.createFileAndItsDirectory
             (Path.join [ input.packageName, "src", String.replace "." "/" ruleName ++ ".elm" ])
             (NewRule.newSourceFile elmJson ruleName input.ruleType)
-            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's source file" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's source file" (FsData.errorToString error))
         , -- Rule test file
-          FsExtra.createFileAndItsDirectory
+          Fs.createFileAndItsDirectory
             (Path.join [ input.packageName, "tests", String.replace "." "/" ruleName ++ "Test.elm" ])
             (NewRule.newTestFile ruleName)
-            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's test file" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's test file" (FsData.errorToString error))
         , -- elm.json
           createElmJsonFile elmJson input
         , -- package.json
@@ -161,16 +161,16 @@ createProject input options =
         , -- preview/
           ElmBinary.findElmVersion
             |> TTask.andThen (\elmVersion -> ReviewConfigTemplate.create elmVersion (Path.join2 input.packageName "preview") (Just ruleName))
-            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the preview folder's configuration" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the preview folder's configuration" (FsData.errorToString error))
         , -- .gitignore
           Fs.writeTextFile (Path.join2 input.packageName ".gitignore") (gitIgnore ())
-            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's .gitignore file" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's .gitignore file" (FsData.errorToString error))
         , -- GitHub actions and issue template
           -- TODO Use write instead of copy?
           Fs.createDirectory (Path.join2 input.packageName ".github/ISSUE_TEMPLATE/")
-            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/ISSUE_TEMPLATE folder" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/ISSUE_TEMPLATE folder" (FsData.errorToString error))
         , Fs.createDirectory (Path.join2 input.packageName ".github/workflows/")
-            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/workflows folder" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/workflows folder" (FsData.errorToString error))
         , Fs.copyDirectory
             { from = Path.join2 options.binaryRoot "new-package/github"
             , to = Path.join2 input.packageName ".github/"
@@ -212,7 +212,7 @@ createElmJsonFile elmJson input =
                 |> Encode.encode 4
     in
     Fs.writeTextFile (Path.join2 input.packageName "elm.json") packageElmJson
-        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm.json file" (FsExtra.errorToString error))
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm.json file" (FsData.errorToString error))
 
 
 createElmJson : Input -> Elm.Project.Project
@@ -273,7 +273,7 @@ createPackageJsonFile input =
                 |> Encode.encode 4
     in
     Fs.writeTextFile (Path.join2 input.packageName "package.json") packageElmJson
-        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's package.json file" (FsExtra.errorToString error))
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's package.json file" (FsData.errorToString error))
 
 
 packageJson : Input -> Encode.Value
@@ -334,13 +334,13 @@ createElmToolingJson input =
                 |> Encode.encode 4
     in
     Fs.writeTextFile (Path.join2 input.packageName "elm-tooling.json") elmToolingJson
-        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm-tooling.json file" (FsExtra.errorToString error))
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm-tooling.json file" (FsData.errorToString error))
 
 
 createReadme : Input -> TTask Problem ()
 createReadme input =
     Fs.writeTextFile (Path.join2 input.packageName "README.md") (readme input)
-        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's README file" (FsExtra.errorToString error))
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's README file" (FsData.errorToString error))
 
 
 readme : Input -> String

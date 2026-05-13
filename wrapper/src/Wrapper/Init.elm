@@ -138,7 +138,7 @@ createDefaultConfiguration : Path -> TTask Problem ()
 createDefaultConfiguration reviewPath =
     ElmBinary.findElmVersion
         |> TTask.andThen (\elmVersion -> ReviewConfigTemplate.create elmVersion reviewPath Nothing)
-        |> TTask.mapError (\error -> Problem.unexpectedError "while creating files" (FsExtra.errorToString error))
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating files" (FsData.errorToString error))
 
 
 createTemplateConfiguration : Path -> Bool -> RemoteTemplate -> Bool -> TTask Problem ()
@@ -174,7 +174,7 @@ createTemplateConfiguration reviewPath offline remoteTemplate debug =
                                         TTask.map2
                                             (\() () -> ())
                                             (Fs.writeTextFile (Path.join2 reviewPath "elm.json") rawElmJson
-                                                |> TTask.mapError (\error -> Problem.unexpectedError "writing the template's elm.json file" (FsExtra.errorToString error))
+                                                |> TTask.mapError (\error -> Problem.unexpectedError "writing the template's elm.json file" (FsData.errorToString error))
                                             )
                                             (TTask.mapAllAndIgnore
                                                 (\directory ->

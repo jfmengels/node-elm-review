@@ -2,6 +2,7 @@ module Elm.Review.Testable.FsData exposing
     ( FileStat
     , FsError(..)
     , MatchKind(..)
+    , errorToString
     )
 
 
@@ -28,3 +29,16 @@ type alias FileStat =
     , size : Int
     , modifiedTime : Int
     }
+
+
+errorToString : FsError -> String
+errorToString fsError =
+    case fsError of
+        NotFound path ->
+            "File not found: " ++ path
+
+        PermissionDenied ->
+            "Permission denied"
+
+        IoError msg ->
+            "Unknown error: " ++ msg

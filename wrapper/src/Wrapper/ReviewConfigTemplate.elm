@@ -5,13 +5,12 @@ import Elm.Review.Testable.FsData exposing (FsError)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version exposing (Version)
 import ElmReview.Path as Path exposing (Path)
-import ElmRun.FsExtra as FsExtra
 
 
 create : Version -> Path -> Maybe String -> TTask FsError ()
 create elmVersion directory maybeRuleName =
     TTask.sequence
-        [ FsExtra.createFileAndItsDirectory
+        [ Fs.createFileAndItsDirectory
             (Path.join2 directory "src/ReviewConfig.elm")
             (reviewConfig maybeRuleName)
         , Fs.writeTextFile
