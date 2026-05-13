@@ -33,7 +33,7 @@ type TTask error value
     | DeleteFile Path (Result FsError () -> TaskResult error value)
     | CreateDirectory Path (Result FsError () -> TaskResult error value)
     | RemoveDirectory Path (Result FsError () -> TaskResult error value)
-    | CopyDirectory { from : Path, to : Path } (Result ProcessError () -> TaskResult error value)
+    | CopyDirectory { from : Path, to : Path } (Result SpawnError () -> TaskResult error value)
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
       -- Stdin
     | ReadKey (Result StdinError Key -> TaskResult error value)
