@@ -17,8 +17,6 @@ import Elm.Version exposing (Version)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
-import ElmRun.FsExtra as FsExtra
-import ElmRun.ProcessExtra as ProcessExtra
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Set exposing (Set)
