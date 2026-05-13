@@ -1,4 +1,4 @@
-module ElmRun.Prompt exposing
+module Elm.Review.Prompt exposing
     ( prompt
     , Msg, update
     , PromptResult(..)
@@ -8,6 +8,7 @@ module ElmRun.Prompt exposing
 
 @docs prompt
 @docs Msg, update
+@docs PromptResult
 
 -}
 
