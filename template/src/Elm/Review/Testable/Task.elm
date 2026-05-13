@@ -1,9 +1,10 @@
 module Elm.Review.Testable.Task exposing
-    ( Task, succeed, fail
+    ( succeed, fail
     , map
     , andThen
     , mapError, onError, toMaybe, toResult
     , perform
+    , TTask
     )
 
 {-| `Testable.Task` is a replacement for the core `Task` module. You can use it
@@ -40,15 +41,10 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult(..))
 
 
-{-| Represents asynchronous effects that may fail. It is useful for stuff like
-HTTP.
-For example, maybe we have a task with the type (`Task String User`). This means
-that when we perform the task, it will either fail with a `String` message or
-succeed with a `User`. So this could represent a task that is asking a server
-for a certain user.
+{-| "TTask" stands for "Testable Task".
 -}
-type alias Task error value =
-    Internal.Task error value
+type alias TTask error value =
+    Internal.TTask error value
 
 
 {-| A task that succeeds immediately when run.
@@ -56,7 +52,7 @@ type alias Task error value =
     succeed 42 -- results in 42
 
 -}
-succeed : a -> Task x a
+succeed : a -> TTask x a
 succeed value =
     Internal.ImmediateTask (Success value)
 
@@ -66,7 +62,7 @@ succeed value =
     fail "file not found" : Task String a
 
 -}
-fail : x -> Task x a
+fail : x -> TTask x a
 fail error =
     Internal.ImmediateTask (Failure error)
 
@@ -76,7 +72,7 @@ fail error =
     map sqrt (succeed 9) == succeed 3
 
 -}
-map : (a -> b) -> Task x a -> Task x b
+map : (a -> b) -> TTask x a -> TTask x b
 map f source =
     transform (resultMap f) source
 
@@ -95,7 +91,7 @@ This is useful for chaining tasks together. Maybe you need to get a user from
 your servers _and then_ lookup their picture once you know their name.
 
 -}
-andThen : (a -> Task x b) -> Task x a -> Task x b
+andThen : (a -> TTask x b) -> TTask x a -> TTask x b
 andThen next source =
     transform (resultAndThen next) source
 
@@ -116,7 +112,7 @@ types to match up.
         sequence [ mapError Http serverTask, mapError WebGL textureTask ]
 
 -}
-mapError : (x -> y) -> Task x a -> Task y a
+mapError : (x -> y) -> TTask x a -> TTask y a
 mapError f task =
     transform
         (\res ->
@@ -135,12 +131,12 @@ mapError f task =
 
 {-| TODO Describe onError
 -}
-onError : (x -> Task y a) -> Task x a -> Task y a
+onError : (x -> TTask y a) -> TTask x a -> TTask y a
 onError next source =
     transform (resultOnError next) source
 
 
-resultOnError : (x -> Task y a) -> TaskResult x a -> TaskResult y a
+resultOnError : (x -> TTask y a) -> TaskResult x a -> TaskResult y a
 resultOnError f source =
     case source of
         Success value ->
@@ -164,7 +160,7 @@ of type `x` it promotes the failure to a `Nothing` and turns all successes into
 This means you can handle the error with the `Maybe` module instead.
 
 -}
-toMaybe : Task x a -> Task never (Maybe a)
+toMaybe : TTask x a -> TTask never (Maybe a)
 toMaybe source =
     transform (resultToResult >> resultMap Result.toMaybe) source
 
@@ -180,12 +176,12 @@ of type `x` it promotes the failure to an `Err` and turns all successes into
 This means you can handle the error with the `Result` module instead.
 
 -}
-toResult : Task x a -> Task never (Result x a)
+toResult : TTask x a -> TTask never (Result x a)
 toResult source =
     transform resultToResult source
 
 
-transform : (TaskResult x a -> TaskResult y b) -> Task x a -> Task y b
+transform : (TaskResult x a -> TaskResult y b) -> TTask x a -> TTask y b
 transform tx source =
     case source of
         Internal.ImmediateTask result ->
@@ -231,7 +227,7 @@ provide functions to tag the two possible outcomes of the task. It can fail or
 succeed, but either way, you need to have a message to feed back into your
 application.
 -}
-perform : (Result x a -> msg) -> Task x a -> Internal.Cmd msg
+perform : (Result x a -> msg) -> TTask x a -> Internal.Cmd msg
 perform toMessage task =
     task
         |> toResult
@@ -256,7 +252,7 @@ resultMap f source =
             Continue (map f next)
 
 
-resultAndThen : (a -> Task x b) -> TaskResult x a -> TaskResult x b
+resultAndThen : (a -> TTask x b) -> TaskResult x a -> TaskResult x b
 resultAndThen f source =
     case source of
         Success value ->
