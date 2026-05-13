@@ -294,11 +294,11 @@ provide functions to tag the two possible outcomes of the task. It can fail or
 succeed, but either way, you need to have a message to feed back into your
 application.
 -}
-perform : (Result x a -> msg) -> TTask x a -> Internal.TCmd msg
+perform : (a -> msg) -> TTask Never a -> Internal.TCmd msg
 perform toMessage task =
     task
-        |> toResult
         |> map toMessage
+        |> mapError Basics.never
         |> Internal.TaskCmd
 
 
