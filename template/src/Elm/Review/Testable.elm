@@ -20,7 +20,7 @@ module Elm.Review.Testable exposing
 -}
 
 import Elm.Review.Testable.Cmd as TestableCmd
-import Elm.Review.Testable.Fs exposing (FsError, MatchKind)
+import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
 import Elm.Review.Testable.Task as TestableTask
 import ElmReview.Path exposing (Path)
@@ -29,7 +29,12 @@ import Task as PlatformTask
 
 type alias Effects =
     { -- File system
-      createDirectory : Path -> PlatformTask.Task FsError ()
+      readTextFile : Path -> PlatformTask.Task FsError String
+    , writeTextFile : Path -> String -> PlatformTask.Task FsError ()
+    , stat : Path -> PlatformTask.Task FsError FileStat
+    , deleteFile : Path -> PlatformTask.Task FsError ()
+    , createDirectory : Path -> PlatformTask.Task FsError ()
+    , removeDirectory : Path -> PlatformTask.Task FsError ()
     , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
     }
 
@@ -77,17 +82,42 @@ task effects testableTask =
         Internal.ImmediateTask result ->
             taskResult effects result
 
+        -- File system
+        Internal.Stat path onResult ->
+            effects.stat path
+                |> handle effects onResult
+
+        Internal.ReadTextFile path onResult ->
+            effects.readTextFile path
+                |> handle effects onResult
+
+        Internal.WriteTextFile path string onResult ->
+            effects.writeTextFile path string
+                |> handle effects onResult
+
+        Internal.DeleteFile path onResult ->
+            effects.deleteFile path
+                |> handle effects onResult
+
         Internal.CreateDirectory path onResult ->
             effects.createDirectory path
-                |> toResultTask
-                |> PlatformTask.map onResult
-                |> (\result -> PlatformTask.andThen (taskResult effects) result)
+                |> handle effects onResult
+
+        Internal.RemoveDirectory path onResult ->
+            effects.removeDirectory path
+                |> handle effects onResult
 
         Internal.WalkTree path pattern matchKind onResult ->
             effects.walkTree path pattern matchKind
-                |> toResultTask
-                |> PlatformTask.map onResult
-                |> (\result -> PlatformTask.andThen (taskResult effects) result)
+                |> handle effects onResult
+
+
+handle : Effects -> (Result x value -> TaskResult error a) -> PlatformTask.Task x value -> PlatformTask.Task error a
+handle effects onResult source =
+    source
+        |> toResultTask
+        |> PlatformTask.map onResult
+        |> (\result -> PlatformTask.andThen (taskResult effects) result)
 
 
 toResultTask : PlatformTask.Task x value -> PlatformTask.Task never (Result x value)
