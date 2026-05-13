@@ -2,9 +2,9 @@ module Elm.Review.ElmRunProgram exposing (Config, Program, program)
 
 import Capabilities exposing (Console, Stdin)
 import Cli as ElmRunCli exposing (Env)
+import Dict exposing (Dict)
 import Elm.Review.ElmRunEffects as ElmRunEffects
 import Elm.Review.InitError as InitError
-import Elm.Review.Main as Main
 import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.Internal exposing (TCmd)
 import ElmReview.Color as Color
@@ -29,9 +29,16 @@ type alias Model model =
 
 
 type alias Config model msg =
-    { init : Maybe Stdin -> List String -> InitError.InitError ( model, TCmd msg )
+    { init : Flags -> InitError.InitError ( model, TCmd msg )
     , update : msg -> model -> ( model, TCmd msg )
     , subscriptions : model -> Sub msg
+    }
+
+
+type alias Flags =
+    { args : List String
+    , env : Dict String String
+    , stdin : Maybe Stdin
     }
 
 
@@ -48,11 +55,11 @@ program config =
         }
 
 
-init : (Maybe Stdin -> List String -> InitError.InitError ( model, TCmd msg )) -> Env -> ( ModelWrapper model, Cmd msg )
+init : (Flags -> InitError.InitError ( model, TCmd msg )) -> Env -> ( ModelWrapper model, Cmd msg )
 init initFn env =
     case requireCapabilities env of
         Ok { fs, os } ->
-            case initFn env.stdin env.args of
+            case initFn { args = env.args, env = env.env, stdin = env.stdin } of
                 InitError.Success ( mainModel, cmd ) ->
                     ( Running
                         { fs = fs

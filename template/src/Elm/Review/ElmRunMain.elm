@@ -7,7 +7,7 @@ import Elm.Review.Main as Main
 main : ElmRunProgram.Program Main.Model Main.Msg
 main =
     ElmRunProgram.program
-        { init = Main.init
+        { init = \flags -> Main.init flags.stdin flags.args
         , update = Main.update
         , subscriptions = Main.subscriptions
         }
