@@ -1,4 +1,10 @@
-module Elm.Review.Main exposing (Model, Msg, computeRulesToRun, initWithOptions, subscriptions, update)
+module Elm.Review.Main exposing
+    ( Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    )
 
 import Array exposing (Array)
 import Capabilities exposing (Console, Stdin)
@@ -90,11 +96,11 @@ type FixPromptKind
 
 
 initWithOptions :
-    { env | stdin : Maybe Stdin, stdout : Console, stderr : Console }
+    Maybe Stdin
     -> Options
     -> List Rule
     -> ( Model, TCmd Msg )
-initWithOptions env options rulesFromConfig =
+initWithOptions stdin options rulesFromConfig =
     let
         rules : List Rule
         rules =
@@ -107,7 +113,7 @@ initWithOptions env options rulesFromConfig =
 
         model : Model
         model =
-            { stdin = env.stdin
+            { stdin = stdin
             , options = options
             , store = store
             , lastReviewedStoreVersion = StoreVersion.zero
@@ -121,6 +127,15 @@ initWithOptions env options rulesFromConfig =
     ( model
     , TCmd.map StoreMsg storeCmd
     )
+
+
+init : Maybe Stdin -> Options -> Result (TCmd Msg) ( Model, TCmd Msg )
+init stdin options =
+    computeRulesToRun options
+        |> Result.map
+            (\rulesFromConfig ->
+                initWithOptions stdin options rulesFromConfig
+            )
 
 
 computeRulesToRun : Options -> Result (TCmd msg) (List Rule)
