@@ -1,8 +1,9 @@
 module ElmRun.TaskExtra exposing
     ( sequence, mapAllAndFold, mapAllAndIgnore
-    , resultToTask, toResultTask
+    , toResultTask
     , otherwise
     , alwaysRun
+    , fromResult
     )
 
 {-|
@@ -17,8 +18,8 @@ module ElmRun.TaskExtra exposing
 import Task exposing (Task)
 
 
-resultToTask : Result x a -> Task x a
-resultToTask result =
+fromResult : Result x a -> Task x a
+fromResult result =
     case result of
         Ok value ->
             Task.succeed value

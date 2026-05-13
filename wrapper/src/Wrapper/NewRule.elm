@@ -85,7 +85,7 @@ readReviewElmJson fs pathToElmJson_ =
             (\elmJsonRaw ->
                 Decode.decodeString Elm.Project.decoder elmJsonRaw
                     |> Result.mapError (\error -> Problem.invalidElmJson pathToElmJson_ (Options.Local "") error)
-                    |> TaskExtra.resultToTask
+                    |> TaskExtra.fromResult
             )
 
 

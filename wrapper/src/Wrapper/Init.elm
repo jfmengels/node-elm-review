@@ -177,7 +177,7 @@ createTemplateConfiguration fs os reviewPath offline remoteTemplate debug =
                     |> Task.andThen
                         (\rawElmJson ->
                             parseElmJson remoteTemplate elmJsonPath rawElmJson
-                                |> TaskExtra.resultToTask
+                                |> TaskExtra.fromResult
                                 |> Task.andThen
                                     (\elmJson ->
                                         Task.map2
