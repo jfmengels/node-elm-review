@@ -7,7 +7,7 @@ import WrapperMain
 main : Node.Program.Program WrapperMain.Model WrapperMain.Msg
 main =
     Node.Program.program
-        { init = \{ env, args, stdinSupported } -> WrapperMain.init env args stdinSupported
+        { init = \{ env, args } -> WrapperMain.init env args True
         , update = WrapperMain.update
         , subscriptions = WrapperMain.subscriptions
         }
