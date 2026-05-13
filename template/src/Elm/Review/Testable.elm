@@ -48,7 +48,9 @@ type alias Effects =
 
     -- Process
     , runProcess : String -> SpawnOptions -> PlatformTask.Task SpawnError Completed
-    , spawnProcess : String -> SpawnOptions -> PlatformTask.Task SpawnError ProcessId
+    , spawnProcess : String -> SpawnOptions -> PlatformTask.Task ProcessError ProcessId
+    , waitProcess : ProcessId -> PlatformTask.Task ProcessError Completed
+    , killProcess : ProcessId -> Int -> PlatformTask.Task ProcessError ()
     }
 
 
@@ -148,6 +150,14 @@ task effects testableTask =
 
         Internal.SpawnProcess command spawnOptions onResult ->
             effects.spawnProcess command spawnOptions
+                |> handle effects onResult
+
+        Internal.WaitProcess processId onResult ->
+            effects.waitProcess processId
+                |> handle effects onResult
+
+        Internal.KillProcess processId signal onResult ->
+            effects.killProcess processId signal
                 |> handle effects onResult
 
 

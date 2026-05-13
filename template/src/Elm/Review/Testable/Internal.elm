@@ -42,7 +42,9 @@ type TTask error value
     | ReadKey (Result StdinError Key -> TaskResult error value)
       -- Process
     | RunProcess String SpawnOptions (Result SpawnError Completed -> TaskResult error value)
-    | SpawnProcess String SpawnOptions (Result SpawnError ProcessId -> TaskResult error value)
+    | SpawnProcess String SpawnOptions (Result ProcessError ProcessId -> TaskResult error value)
+    | WaitProcess ProcessId (Result ProcessError Completed -> TaskResult error value)
+    | KillProcess ProcessId Int (Result ProcessError () -> TaskResult error value)
 
 
 type TaskResult error value

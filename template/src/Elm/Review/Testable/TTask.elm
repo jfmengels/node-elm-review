@@ -283,6 +283,12 @@ transform tx source =
         Internal.SpawnProcess command spawnOptions onResult ->
             Internal.SpawnProcess command spawnOptions (onResult >> tx)
 
+        Internal.WaitProcess processId onResult ->
+            Internal.WaitProcess processId (onResult >> tx)
+
+        Internal.KillProcess processId signal onResult ->
+            Internal.KillProcess processId signal (onResult >> tx)
+
 
 
 -- Commands
