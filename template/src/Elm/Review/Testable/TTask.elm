@@ -7,7 +7,7 @@ module Elm.Review.Testable.TTask exposing
     , alwaysRun
     , otherwise
     , mapError, onError, toMaybe, toResult
-    , perform
+    , attempt, perform
     )
 
 {-| `Testable.Task` is a replacement for the core `Task` module. You can use it
@@ -45,7 +45,7 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 
 # Commands
 
-@docs perform
+@docs attempt, perform
 
 -}
 
@@ -296,6 +296,20 @@ application.
 -}
 perform : (Result x a -> msg) -> TTask x a -> Internal.Cmd msg
 perform toMessage task =
+    task
+        |> toResult
+        |> map toMessage
+        |> Internal.TaskCmd
+
+
+{-| Command the runtime system to perform a task. The most important argument
+is the `Task` which describes what you want to happen. But you also need to
+provide functions to tag the two possible outcomes of the task. It can fail or
+succeed, but either way, you need to have a message to feed back into your
+application.
+-}
+attempt : (Result x a -> msg) -> TTask x a -> Internal.Cmd msg
+attempt toMessage task =
     task
         |> toResult
         |> map toMessage
