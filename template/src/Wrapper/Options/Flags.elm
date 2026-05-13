@@ -249,7 +249,7 @@ flags =
                 }
       }
     , { name = "benchmark-info"
-      , argument = ArgumentAbsent (\_ options -> { options | showBenchmark = True })
+      , argument = ArgumentAbsent addToReviewAppFlags
       , display =
             Just
                 { color = Cyan
