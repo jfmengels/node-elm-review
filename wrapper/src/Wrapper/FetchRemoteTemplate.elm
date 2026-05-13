@@ -37,7 +37,7 @@ checkoutGitRepository offline remoteTemplate debug =
                 , cwd = Just repoFolder
                 , env = Nothing
                 , stdin = ProcessData.NullStdin
-                , stdout = ProcessExtra.stdoutSpec debug
+                , stdout = ProcessData.stdoutSpec debug
                 , stderr = ProcessData.CaptureStderr { maxBytes = 1024, onOverflow = ProcessData.TruncateOutput }
                 }
                 |> TTask.mapError (\error -> fromGitError args error)
@@ -70,7 +70,7 @@ fromGitError args error =
         errorDetails =
             case error of
                 ProcessData.ProcessRunError processError ->
-                    ProcessExtra.errorToString processError
+                    ProcessData.errorToString processError
 
                 ProcessData.CommandNotFound ->
                     "Command `git` not found"
