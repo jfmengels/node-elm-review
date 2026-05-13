@@ -210,6 +210,9 @@ transform tx source =
         Internal.RemoveDirectory path onResult ->
             Internal.RemoveDirectory path (onResult >> tx)
 
+        Internal.CopyDirectory targets onResult ->
+            Internal.CopyDirectory targets (onResult >> tx)
+
         Internal.WalkTree path pattern matchKind onResult ->
             Internal.WalkTree path pattern matchKind (onResult >> tx)
 
