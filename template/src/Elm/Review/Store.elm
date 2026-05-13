@@ -31,18 +31,20 @@ import Elm.Project
 import Elm.Review.Options exposing (Options)
 import Elm.Review.StoreVersion as StoreVersion exposing (StoreVersion)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData exposing (FsError)
+import Elm.Review.Testable.Http as Http
+import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
-import ElmRun.TaskExtra as FsExtra
-import Fs exposing (FileSystem, FsError(..))
-import Http
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
-import Task exposing (Task)
 import Worker.Capabilities exposing (Console, FileWatcher)
 import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 
@@ -66,36 +68,36 @@ type alias PendingTaskCount =
     Int
 
 
-init : FileSystem -> Options -> ( Model, Cmd Msg )
-init fs options =
+init : Options -> ( Model, TCmd Msg )
+init options =
     let
-        tasks : List (Cmd Msg)
+        tasks : List (TCmd Msg)
         tasks =
             List.filterMap
                 identity
-                [ Just (fetchElmJson fs)
-                , Just (fetchReadme fs)
+                [ Just fetchElmJson
+                , Just fetchReadme
                 , if options.suppress then
                     Nothing
 
                   else
-                    Just (fetchSuppressionFiles fs (SuppressedErrors.suppressedFolder options))
-                , Just (fetchRuleLinks fs options)
+                    Just (fetchSuppressionFiles (SuppressedErrors.suppressedFolder options))
+                , Just (fetchRuleLinks options)
                 ]
 
-        tasksWithFileFetch : List (Cmd Msg)
+        tasksWithFileFetch : List (TCmd Msg)
         tasksWithFileFetch =
             case options.directoriesToAnalyze of
                 Just directoriesToAnalyze ->
                     List.foldl
                         (\fileOrDir acc ->
-                            Task.attempt (ReceivedElmFileList fileOrDir)
+                            TTask.attempt (ReceivedElmFileList fileOrDir)
                                 (if String.endsWith ".elm" fileOrDir then
-                                    Task.succeed [ fileOrDir ]
+                                    TTask.succeed [ fileOrDir ]
 
                                  else
-                                    Fs.walkTree fs fileOrDir (Just "*.elm") Fs.Any
-                                        |> Task.map (\( files, _ ) -> List.map (Path.join2 fileOrDir) files)
+                                    Fs.walkTree fileOrDir (Just "*.elm") FsData.Any
+                                        |> TTask.map (\files -> List.map (Path.join2 fileOrDir) files)
                                 )
                                 :: acc
                         )
@@ -114,7 +116,7 @@ init fs options =
         , emptySourceDirectories = []
         , directoriesFromCliArgsWithoutFiles = []
         }
-    , Cmd.batch tasksWithFileFetch
+    , TCmd.batch tasksWithFileFetch
     )
 
 
@@ -156,13 +158,13 @@ misconfigured the CLI's arguments."""
 
 
 type Msg
-    = ReceivedElmJson (Result Fs.FsError String)
-    | ReceivedReadme (Result Fs.FsError String)
-    | ReceivedDependency String (Result Fs.FsError { elmJson : File, docsJson : File })
-    | ReceivedElmFileList Path (Result Fs.FsError (List Path))
-    | ReceivedElmFile Path (Result Fs.FsError String)
-    | ReceivedSuppressedErrorsList Path (Result Fs.FsError (List Path))
-    | ReceivedSuppressedErrorsFile Path (Result Fs.FsError String)
+    = ReceivedElmJson (Result FsData.FsError String)
+    | ReceivedReadme (Result FsData.FsError String)
+    | ReceivedDependency String (Result FsData.FsError { elmJson : File, docsJson : File })
+    | ReceivedElmFileList Path (Result FsData.FsError (List Path))
+    | ReceivedElmFile Path (Result FsData.FsError String)
+    | ReceivedSuppressedErrorsList Path (Result FsData.FsError (List Path))
+    | ReceivedSuppressedErrorsFile Path (Result FsData.FsError String)
     | ReceivedRuleLinks { links : Dict String String, fromCache : Bool }
     | GotProjectElmJsonWatchEvent
     | GotProjectReadmeWatchEvent FileEvent
@@ -177,22 +179,21 @@ type alias File =
 
 
 type alias UpdateInput =
-    { fs : FileSystem
-    , stderr : Console
+    { stderr : Console
     , options : Options
     }
 
 
-update : UpdateInput -> Msg -> Model -> ( Model, Cmd Msg )
+update : UpdateInput -> Msg -> Model -> ( Model, TCmd Msg )
 update inputs msg (Model model) =
     updateInner inputs msg model
         |> Tuple.mapFirst Model
 
 
-updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, Cmd Msg )
-updateInner { fs, stderr, options } msg model =
+updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, TCmd Msg )
+updateInner { stderr, options } msg model =
     let
-        decrementTaskCount : () -> ( ModelData, Cmd Msg )
+        decrementTaskCount : () -> ( ModelData, TCmd Msg )
         decrementTaskCount () =
             ( { pendingTaskCount = minimum (model.pendingTaskCount - 1)
               , version = model.version
@@ -202,12 +203,12 @@ updateInner { fs, stderr, options } msg model =
               , emptySourceDirectories = model.emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
-            , Cmd.none
+            , TCmd.none
             )
 
-        handleProblem : Problem -> Cmd msg
+        handleProblem : Problem -> TCmd msg
         handleProblem problem =
-            Problem.stop stderr
+            Problem.stop
                 { color = options.color
                 , reportMode = options.reportMode
                 , debug = options.debug
@@ -233,8 +234,6 @@ updateInner { fs, stderr, options } msg model =
                             Project.addElmJson elmJsonData model.project
                     in
                     fetchDataOnElmJsonChange
-                        fs
-                        stderr
                         options
                         previousElmJson
                         elmJsonData
@@ -278,7 +277,7 @@ updateInner { fs, stderr, options } msg model =
                           , emptySourceDirectories = model.emptySourceDirectories
                           , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                           }
-                        , Cmd.none
+                        , TCmd.none
                         )
 
                 Err _ ->
@@ -305,7 +304,7 @@ updateInner { fs, stderr, options } msg model =
                                   , emptySourceDirectories = model.emptySourceDirectories
                                   , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                                   }
-                                , Cmd.none
+                                , TCmd.none
                                 )
 
                         Err ( filePath, decodeError ) ->
@@ -358,8 +357,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
         ReceivedElmFileList path result ->
             receivedElmFileList
-                { fs = fs
-                , onNotFound =
+                { onNotFound =
                     \() ->
                         case options.directoriesToAnalyze of
                             Just _ ->
@@ -371,7 +369,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                   , emptySourceDirectories = model.emptySourceDirectories
                                   , directoriesFromCliArgsWithoutFiles = path :: model.directoriesFromCliArgsWithoutFiles
                                   }
-                                , Cmd.none
+                                , TCmd.none
                                 )
 
                             Nothing ->
@@ -398,7 +396,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                           , emptySourceDirectories = model.emptySourceDirectories
                           , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                           }
-                        , Cmd.none
+                        , TCmd.none
                         )
 
                 Err err ->
@@ -431,13 +429,13 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       }
                     , List.map
                         (\filePath ->
-                            fetchSuppressionFile fs (Path.join2 suppressedDirectory filePath)
+                            fetchSuppressionFile (Path.join2 suppressedDirectory filePath)
                         )
                         files
-                        |> Cmd.batch
+                        |> TCmd.batch
                     )
 
-                Err (Fs.NotFound _) ->
+                Err (FsData.NotFound _) ->
                     decrementTaskCount ()
 
                 Err _ ->
@@ -457,7 +455,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                               , emptySourceDirectories = model.emptySourceDirectories
                               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                               }
-                            , Cmd.none
+                            , TCmd.none
                             )
 
                         Err problem ->
@@ -498,7 +496,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , emptySourceDirectories = model.emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
-            , Cmd.none
+            , TCmd.none
             )
 
         GotProjectElmJsonWatchEvent ->
@@ -510,7 +508,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , emptySourceDirectories = model.emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
-            , fetchElmJson fs
+            , fetchElmJson
             )
 
         GotProjectReadmeWatchEvent fileEvent ->
@@ -522,7 +520,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
 
                     else
                         {- file was added or modified -}
-                        ( model.project, model.version, [ fetchReadme fs ] )
+                        ( model.project, model.version, [ fetchReadme ] )
             in
             ( { pendingTaskCount = model.pendingTaskCount + List.length cmd
               , version = version
@@ -532,7 +530,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
               , emptySourceDirectories = model.emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
-            , Cmd.batch cmd
+            , TCmd.batch cmd
             )
 
         GotSourceFileWatchEvent fileEvent ->
@@ -541,10 +539,10 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     ( newProject, version, cmds ) =
                         case FileWatcher.toEventType fileEvent.eventType of
                             FileWatcher.Created ->
-                                ( model.project, model.version, [ fetchElmFile fs fileEvent.path ] )
+                                ( model.project, model.version, [ fetchElmFile fileEvent.path ] )
 
                             FileWatcher.Modified ->
-                                ( model.project, model.version, [ fetchElmFile fs fileEvent.path ] )
+                                ( model.project, model.version, [ fetchElmFile fileEvent.path ] )
 
                             FileWatcher.Deleted ->
                                 ( Project.removeFile fileEvent.path model.project
@@ -555,7 +553,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             FileWatcher.Renamed ->
                                 ( Project.removeFile fileEvent.path model.project
                                 , StoreVersion.increment model.version
-                                , [ fetchElmFile fs fileEvent.path ]
+                                , [ fetchElmFile fileEvent.path ]
                                 )
                 in
                 ( { pendingTaskCount = model.pendingTaskCount + List.length cmds
@@ -566,11 +564,11 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                   , emptySourceDirectories = model.emptySourceDirectories
                   , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                   }
-                , Cmd.batch cmds
+                , TCmd.batch cmds
                 )
 
             else
-                ( model, Cmd.none )
+                ( model, TCmd.none )
 
         GotSuppressedFileWatchEvent fileEvent ->
             if isSuppressedErrorFile fileEvent.path then
@@ -586,7 +584,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             {- file was added or modified -}
                             ( model.suppressedErrors
                             , model.version
-                            , [ fetchSuppressionFile fs fileEvent.path ]
+                            , [ fetchSuppressionFile fileEvent.path ]
                             )
                 in
                 ( { pendingTaskCount = model.pendingTaskCount + List.length cmds
@@ -597,11 +595,11 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                   , emptySourceDirectories = model.emptySourceDirectories
                   , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                   }
-                , Cmd.batch cmds
+                , TCmd.batch cmds
                 )
 
             else
-                ( model, Cmd.none )
+                ( model, TCmd.none )
 
 
 isSuppressedErrorFile : Path -> Bool
@@ -633,23 +631,23 @@ elmFilesToFetch elmJson directoriesToAnalyze =
             Ok directoriesToAnalyze_
 
 
-addDepsFromVersion : FileSystem -> Options -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (Cmd Msg) -> List (Cmd Msg)
-addDepsFromVersion fs options deps initial =
+addDepsFromVersion : Options -> List ( Elm.Package.Name, Elm.Version.Version ) -> List (TCmd Msg) -> List (TCmd Msg)
+addDepsFromVersion options deps initial =
     List.foldl
         (\( name, version ) acc ->
-            fetchDependency fs options (Elm.Package.toString name) (Elm.Version.toString version) :: acc
+            fetchDependency options (Elm.Package.toString name) (Elm.Version.toString version) :: acc
         )
         initial
         deps
 
 
-addDepsFromConstraint : FileSystem -> Options -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (Cmd Msg) -> List (Cmd Msg)
-addDepsFromConstraint fs options deps initial =
+addDepsFromConstraint : Options -> List ( Elm.Package.Name, Elm.Constraint.Constraint ) -> List (TCmd Msg) -> List (TCmd Msg)
+addDepsFromConstraint options deps initial =
     List.foldl
         (\( name, constraint ) acc ->
             case Elm.Constraint.toString constraint |> String.split " " |> List.head of
                 Just minVersion ->
-                    fetchDependency fs options (Elm.Package.toString name) minVersion :: acc
+                    fetchDependency options (Elm.Package.toString name) minVersion :: acc
 
                 Nothing ->
                     acc
@@ -659,15 +657,14 @@ addDepsFromConstraint fs options deps initial =
 
 
 receivedElmFileList :
-    { fs : FileSystem
-    , onNotFound : () -> ( ModelData, Cmd Msg )
-    , handleProblem : Problem -> Cmd Msg
+    { onNotFound : () -> ( ModelData, TCmd Msg )
+    , handleProblem : Problem -> TCmd Msg
     }
     -> Path
     -> Result FsError (List Path)
     -> ModelData
-    -> ( ModelData, Cmd Msg )
-receivedElmFileList { fs, onNotFound, handleProblem } directory result model =
+    -> ( ModelData, TCmd Msg )
+receivedElmFileList { onNotFound, handleProblem } directory result model =
     case result of
         Ok files ->
             let
@@ -686,11 +683,11 @@ receivedElmFileList { fs, onNotFound, handleProblem } directory result model =
               , emptySourceDirectories = emptySourceDirectories
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
-            , List.map (\filePath -> fetchElmFile fs filePath) files
-                |> Cmd.batch
+            , List.map (\filePath -> fetchElmFile filePath) files
+                |> TCmd.batch
             )
 
-        Err (Fs.NotFound _) ->
+        Err (FsData.NotFound _) ->
             onNotFound ()
 
         Err err ->
@@ -711,8 +708,8 @@ receivedElmFileList { fs, onNotFound, handleProblem } directory result model =
             )
 
 
-applyChangesFromFix : FileSystem -> Console -> Options -> Project -> Model -> ( Model, Cmd Msg )
-applyChangesFromFix fs stderr options projectWithFixes (Model model) =
+applyChangesFromFix : Options -> Project -> Model -> ( Model, TCmd Msg )
+applyChangesFromFix options projectWithFixes (Model model) =
     let
         newModel : ModelData
         newModel =
@@ -724,8 +721,6 @@ applyChangesFromFix fs stderr options projectWithFixes (Model model) =
     case Project.elmJson projectWithFixes of
         Just elmJson ->
             fetchDataOnElmJsonChange
-                fs
-                stderr
                 options
                 (Project.elmJson model.project)
                 elmJson
@@ -733,29 +728,27 @@ applyChangesFromFix fs stderr options projectWithFixes (Model model) =
                 |> Tuple.mapFirst Model
 
         Nothing ->
-            ( Model newModel, Cmd.none )
+            ( Model newModel, TCmd.none )
 
 
 fetchDataOnElmJsonChange :
-    FileSystem
-    -> Console
-    -> Options
+    Options
     -> Maybe { elmJson | raw : String, project : Elm.Project.Project }
     -> { elmJson | raw : String, project : Elm.Project.Project }
     -> ModelData
-    -> ( ModelData, Cmd Msg )
-fetchDataOnElmJsonChange fs stderr options before after model =
+    -> ( ModelData, TCmd Msg )
+fetchDataOnElmJsonChange options before after model =
     if Maybe.map .raw before == Just after.raw then
-        ( model, Cmd.none )
+        ( model, TCmd.none )
 
     else
         case changesInElmJson options.directoriesToAnalyze { before = Maybe.map .project before, after = after.project } of
             Ok { sourceDirectories, dependencies } ->
                 let
-                    tasks : List (Cmd Msg)
+                    tasks : List (TCmd Msg)
                     tasks =
-                        fetchAddedSourceDirectories fs sourceDirectories.added
-                            |> fetchAddedDependencies fs options dependencies
+                        fetchAddedSourceDirectories sourceDirectories.added
+                            |> fetchAddedDependencies options dependencies
 
                     newProject : Project
                     newProject =
@@ -771,12 +764,12 @@ fetchDataOnElmJsonChange fs stderr options before after model =
                   , emptySourceDirectories = model.emptySourceDirectories
                   , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                   }
-                , Cmd.batch tasks
+                , TCmd.batch tasks
                 )
 
             Err problem ->
                 ( model
-                , Problem.stop stderr
+                , Problem.stop
                     { color = options.color
                     , reportMode = options.reportMode
                     , debug = options.debug
@@ -914,9 +907,9 @@ diffDependencies previous after =
         Just { added = added, removed = List.map Tuple.first removed }
 
 
-fetchAddedSourceDirectories : FileSystem -> List Path -> List (Cmd Msg)
-fetchAddedSourceDirectories fs sourceDirectories =
-    List.map (fetchElmFiles fs) sourceDirectories
+fetchAddedSourceDirectories : List Path -> List (TCmd Msg)
+fetchAddedSourceDirectories sourceDirectories =
+    List.map fetchElmFiles sourceDirectories
 
 
 removeSourceDirectories : List Path -> Project -> Project
@@ -933,31 +926,31 @@ removeSourceDirectories removed previousProject =
         (Project.modules previousProject)
 
 
-fetchAddedDependencies : FileSystem -> Options -> ElmJsonDependencyChanges -> List (Cmd Msg) -> List (Cmd Msg)
-fetchAddedDependencies fs options dependencies tasks =
+fetchAddedDependencies : Options -> ElmJsonDependencyChanges -> List (TCmd Msg) -> List (TCmd Msg)
+fetchAddedDependencies options dependencies tasks =
     case dependencies of
         NoDependencyChanges ->
             tasks
 
         DiffApplication packages ->
-            addDepsFromVersion fs options packages.added tasks
+            addDepsFromVersion options packages.added tasks
 
         DiffPackages packages ->
-            addDepsFromConstraint fs options packages.added tasks
+            addDepsFromConstraint options packages.added tasks
 
         ReloadDependenciesEntirely elmJson ->
             case elmJson of
                 Elm.Project.Application application ->
                     tasks
-                        |> addDepsFromVersion fs options application.depsDirect
-                        |> addDepsFromVersion fs options application.depsIndirect
-                        |> addDepsFromVersion fs options application.testDepsDirect
-                        |> addDepsFromVersion fs options application.testDepsIndirect
+                        |> addDepsFromVersion options application.depsDirect
+                        |> addDepsFromVersion options application.depsIndirect
+                        |> addDepsFromVersion options application.testDepsDirect
+                        |> addDepsFromVersion options application.testDepsIndirect
 
                 Elm.Project.Package package ->
                     tasks
-                        |> addDepsFromConstraint fs options package.deps
-                        |> addDepsFromConstraint fs options package.testDeps
+                        |> addDepsFromConstraint options package.deps
+                        |> addDepsFromConstraint options package.testDeps
 
 
 removeDependencies : ElmJsonDependencyChanges -> Project -> Project
@@ -1028,26 +1021,26 @@ ruleLinks (Model model) =
     model.ruleLinks
 
 
-fetchElmFile : FileSystem -> Path -> Cmd Msg
-fetchElmFile fs filePath =
-    Fs.readTextFile fs filePath
-        |> Task.attempt (ReceivedElmFile filePath)
+fetchElmFile : Path -> TCmd Msg
+fetchElmFile filePath =
+    Fs.readTextFile filePath
+        |> TTask.attempt (ReceivedElmFile filePath)
 
 
-fetchSuppressionFile : FileSystem -> Path -> Cmd Msg
-fetchSuppressionFile fs filePath =
-    Fs.readTextFile fs filePath
-        |> Task.attempt (ReceivedSuppressedErrorsFile filePath)
+fetchSuppressionFile : Path -> TCmd Msg
+fetchSuppressionFile filePath =
+    Fs.readTextFile filePath
+        |> TTask.attempt (ReceivedSuppressedErrorsFile filePath)
 
 
-fetchElmJson : FileSystem -> Cmd Msg
-fetchElmJson fs =
-    readTextFile fs (\_ -> ReceivedElmJson) elmJsonPath
+fetchElmJson : TCmd Msg
+fetchElmJson =
+    readTextFile (\_ -> ReceivedElmJson) elmJsonPath
 
 
-fetchReadme : FileSystem -> Cmd Msg
-fetchReadme fs =
-    readTextFile fs (\_ -> ReceivedReadme) readmePath
+fetchReadme : TCmd Msg
+fetchReadme =
+    readTextFile (\_ -> ReceivedReadme) readmePath
 
 
 elmJsonPath : Path
@@ -1060,96 +1053,80 @@ readmePath =
     "README.md"
 
 
-fetchSuppressionFiles : FileSystem -> Path -> Cmd Msg
-fetchSuppressionFiles fs suppressedDirectory =
-    Fs.walkTree fs suppressedDirectory (Just "*.json") Fs.Any
-        |> Task.map
-            (\( files, _ ) ->
+fetchSuppressionFiles : Path -> TCmd Msg
+fetchSuppressionFiles suppressedDirectory =
+    Fs.walkTree suppressedDirectory (Just "*.json") FsData.Any
+        |> TTask.map
+            (\files ->
                 -- Remove leading "./"
                 List.map (String.dropLeft 2) files
             )
-        |> Task.attempt (ReceivedSuppressedErrorsList suppressedDirectory)
+        |> TTask.attempt (ReceivedSuppressedErrorsList suppressedDirectory)
 
 
-fetchElmFiles : FileSystem -> Path -> Cmd Msg
-fetchElmFiles fs directory =
-    Fs.walkTree fs directory (Just "*.elm") Fs.Any
-        |> Task.map (\( files, _ ) -> List.map (Path.join2 directory) files)
-        |> Task.attempt (ReceivedElmFileList directory)
+fetchElmFiles : Path -> TCmd Msg
+fetchElmFiles directory =
+    Fs.walkTree directory (Just "*.elm") FsData.Any
+        |> TTask.map (\files -> List.map (Path.join2 directory) files)
+        |> TTask.attempt (ReceivedElmFileList directory)
 
 
-fetchDependency : FileSystem -> Options -> String -> String -> Cmd Msg
-fetchDependency fs options packageName packageVersion =
-    Task.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
-        (findOrDownloadPackageFile fs options packageName packageVersion "elm.json")
-        (findOrDownloadPackageFile fs options packageName packageVersion "docs.json")
-        |> Task.attempt (ReceivedDependency packageName)
+fetchDependency : Options -> String -> String -> TCmd Msg
+fetchDependency options packageName packageVersion =
+    TTask.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
+        (findOrDownloadPackageFile options packageName packageVersion "elm.json")
+        (findOrDownloadPackageFile options packageName packageVersion "docs.json")
+        |> TTask.attempt (ReceivedDependency packageName)
 
 
-findOrDownloadPackageFile : FileSystem -> Options -> String -> String -> String -> Task FsError File
-findOrDownloadPackageFile fs options packageName packageVersion fileName =
+findOrDownloadPackageFile : Options -> String -> String -> String -> TTask FsError File
+findOrDownloadPackageFile options packageName packageVersion fileName =
     let
         path : Path
         path =
             Path.join [ options.packagesLocation, packageName, packageVersion, fileName ]
     in
-    Fs.readTextFile fs path
-        |> Task.onError
+    Fs.readTextFile path
+        |> TTask.onError
             (\error ->
                 if options.offline then
-                    Task.fail error
+                    TTask.fail error
 
                 else
                     -- TODO Try to download the package like the Elm compiler would, not just a single file
                     readFromPackagesWebsite packageName packageVersion fileName
-                        |> Task.mapError (\_ -> error)
+                        |> TTask.mapError (\_ -> error)
             )
-        |> Task.map (\source -> { path = path, source = source })
+        |> TTask.map (\source -> { path = path, source = source })
 
 
-readFromPackagesWebsite : String -> String -> String -> Task () String
+readFromPackagesWebsite : String -> String -> String -> TTask () String
 readFromPackagesWebsite packageName packageVersion fileName =
-    Http.task
-        { method = "GET"
-        , url = "https://package.elm-lang.org/packages/" ++ packageName ++ "/" ++ packageVersion ++ "" ++ fileName
-        , headers = []
-        , body = Http.emptyBody
-        , resolver =
-            Http.stringResolver
-                (\response ->
-                    case response of
-                        Http.GoodStatus_ _ body ->
-                            Ok body
-
-                        _ ->
-                            Err ()
-                )
-        , timeout = Nothing
-        }
+    Http.get ("https://package.elm-lang.org/packages/" ++ packageName ++ "/" ++ packageVersion ++ "" ++ fileName)
 
 
-fetchRuleLinks : FileSystem -> { options | reviewFolder : Path, packagesLocation : Path } -> Cmd Msg
-fetchRuleLinks fs { reviewFolder, packagesLocation } =
-    Fs.readTextFile fs (Path.join2 reviewFolder "elm.json")
-        |> Task.andThen
+fetchRuleLinks : { options | reviewFolder : Path, packagesLocation : Path } -> TCmd Msg
+fetchRuleLinks { reviewFolder, packagesLocation } =
+    Fs.readTextFile (Path.join2 reviewFolder "elm.json")
+        |> TTask.andThen
             (\elmJson ->
                 case Decode.decodeString Elm.Project.decoder elmJson of
                     Ok (Elm.Project.Application { depsDirect, depsIndirect }) ->
-                        FsExtra.mapAllAndFold
-                            (readElmJson fs packagesLocation)
+                        TTask.mapAllAndFold
+                            (readElmJson packagesLocation)
                             (\deps dict -> List.foldl (\( name, dep ) d -> Dict.insert name dep d) dict deps)
                             Dict.empty
                             (depsDirect ++ depsIndirect)
 
                     _ ->
-                        Task.succeed Dict.empty
+                        TTask.succeed Dict.empty
             )
-        |> Task.onError (\_ -> Task.succeed Dict.empty)
-        |> Task.perform (\links -> ReceivedRuleLinks { links = links, fromCache = False })
+        |> TTask.onError (\_ -> TTask.succeed Dict.empty)
+        |> TTask.perform (\links -> ReceivedRuleLinks { links = links, fromCache = False })
 
 
-readElmJson : FileSystem -> Path -> ( Elm.Package.Name, Elm.Version.Version ) -> Task x (List ( String, String ))
-readElmJson fs packagesLocation ( rawPackageName, rawPackageVersion ) =
+readElmJson : Path -> ( Elm.Package.Name, Elm.Version.Version ) -> TTask x (List ( String, String ))
+readElmJson packagesLocation ( rawPackageName, rawPackageVersion ) =
     let
         packageName : String
         packageName =
@@ -1160,8 +1137,8 @@ readElmJson fs packagesLocation ( rawPackageName, rawPackageVersion ) =
             Elm.Version.toString rawPackageVersion
     in
     Path.join [ packagesLocation, packageName, packageVersion, "elm.json" ]
-        |> Fs.readTextFile fs
-        |> Task.map
+        |> Fs.readTextFile
+        |> TTask.map
             (\elmJson ->
                 case Decode.decodeString Elm.Project.decoder elmJson of
                     Ok (Elm.Project.Package package) ->
@@ -1174,7 +1151,7 @@ readElmJson fs packagesLocation ( rawPackageName, rawPackageVersion ) =
                     _ ->
                         []
             )
-        |> Task.onError (\_ -> Task.succeed [])
+        |> TTask.onError (\_ -> TTask.succeed [])
 
 
 packageDependsOnElmReview : Elm.Project.Deps version -> Bool
@@ -1202,10 +1179,10 @@ linkToModule dependencyName packageVersion rawModuleName =
     ( moduleName, "https://package.elm-lang.org/packages/" ++ dependencyName ++ "/" ++ packageVersion ++ "/" ++ String.replace "." "-" moduleName )
 
 
-readTextFile : FileSystem -> (String -> Result FsError String -> msg) -> String -> Cmd msg
-readTextFile fs toMsg path =
-    Fs.readTextFile fs path
-        |> Task.attempt (\result -> toMsg path result)
+readTextFile : (String -> Result FsError String -> msg) -> String -> TCmd msg
+readTextFile toMsg path =
+    Fs.readTextFile path
+        |> TTask.attempt (\result -> toMsg path result)
 
 
 subscriptions : FileWatcher -> Options -> Model -> Sub Msg

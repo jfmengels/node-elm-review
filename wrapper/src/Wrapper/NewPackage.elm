@@ -11,13 +11,18 @@ module Wrapper.NewPackage exposing
 -}
 
 import Capabilities exposing (Console, Stdin)
-import Cli
 import Elm.Constraint
 import Elm.License as License exposing (License)
 import Elm.Module as Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.CliVersion as CliVersion
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.ProcessData as ProcessData
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version as Version
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path
@@ -26,12 +31,7 @@ import ElmReview.ReportMode as ReportMode
 import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem)
 import Json.Encode as Encode
-import Os exposing (ProcessCapability)
-import Platform exposing (Task)
-import Task
 import Wrapper.MinVersion as MinVersion
 import Wrapper.NewRule as NewRule
 import Wrapper.Options exposing (NewPackageOptions)
@@ -47,8 +47,6 @@ type alias ModelData =
     { stdout : Console
     , stderr : Console
     , stdin : Maybe Stdin
-    , fs : FileSystem
-    , os : ProcessCapability
     , options : NewPackageOptions
     }
 
@@ -72,18 +70,16 @@ type alias Warning =
     Colorize -> String
 
 
-init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> NewPackageOptions -> ( Model, Cmd Msg )
-init { stdout, stderr, stdin } { fs, os } options =
+init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> NewPackageOptions -> ( Model, TCmd Msg )
+init { stdout, stderr, stdin } options =
     ( Model
         { stdout = stdout
         , stderr = stderr
         , stdin = stdin
-        , fs = fs
-        , os = os
         , options = options
         }
     , -- TODO Remove hardcoded values
-      Task.succeed
+      TTask.succeed
         { authorName = "jfmengels"
         , packageName = "elm-review-yes"
         , fullPackageName =
@@ -103,16 +99,16 @@ init { stdout, stderr, stdin } { fs, os } options =
         , ruleType = RuleType.ModuleRule
         , license = License.bsd3
         }
-        |> Task.perform GotUserInput
+        |> TTask.perform GotUserInput
     )
 
 
-update : Msg -> Model -> Cmd Msg
+update : Msg -> Model -> TCmd Msg
 update msg (Model model) =
     case msg of
         GotUserInput input ->
-            createProject input model
-                |> Task.attempt Done
+            createProject input model.options
+                |> TTask.attempt Done
 
         Done result ->
             case result of
@@ -122,13 +118,13 @@ update msg (Model model) =
                         c =
                             Color.toAnsi model.options.color
                     in
-                    Cmd.batch
-                        [ Cli.println model.stdout (successMessage c)
+                    TCmd.batch
+                        [ Cli.printlnStdout (successMessage c)
                         , Cli.exit 0
                         ]
 
                 Err problem ->
-                    Problem.stop model.stderr
+                    Problem.stop
                         { color = model.options.color
                         , reportMode = ReportMode.HumanReadable
                         , debug = model.options.debug
@@ -137,8 +133,8 @@ update msg (Model model) =
                         problem
 
 
-createProject : Input -> ModelData -> Task Problem ()
-createProject input { fs, os, options } =
+createProject : Input -> NewPackageOptions -> TTask Problem ()
+createProject input options =
     let
         elmJson : Elm.Project.Project
         elmJson =
@@ -148,45 +144,43 @@ createProject input { fs, os, options } =
         ruleName =
             Module.toString input.ruleName
     in
-    TaskExtra.sequence
+    TTask.sequence
         [ -- Rule source file
           FsExtra.createFileAndItsDirectory
-            fs
             (Path.join [ input.packageName, "src", String.replace "." "/" ruleName ++ ".elm" ])
             (NewRule.newSourceFile elmJson ruleName input.ruleType)
-            |> Task.mapError (\error -> Problem.unexpectedError "while creating the new rule's source file" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's source file" (FsExtra.errorToString error))
         , -- Rule test file
           FsExtra.createFileAndItsDirectory
-            fs
             (Path.join [ input.packageName, "tests", String.replace "." "/" ruleName ++ "Test.elm" ])
             (NewRule.newTestFile ruleName)
-            |> Task.mapError (\error -> Problem.unexpectedError "while creating the new rule's test file" (FsExtra.errorToString error))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's test file" (FsExtra.errorToString error))
         , -- elm.json
-          createElmJsonFile fs elmJson input
+          createElmJsonFile elmJson input
         , -- package.json
-          createPackageJsonFile fs input
+          createPackageJsonFile input
         , -- elm-tooling.json
-          createElmToolingJson fs input
+          createElmToolingJson input
         , -- README.md
-          createReadme fs input
+          createReadme input
         , -- preview/
-          ElmBinary.findElmVersion os
-            |> Task.andThen (\elmVersion -> ReviewConfigTemplate.create fs elmVersion (Path.join2 input.packageName "preview") (Just ruleName))
-            |> Task.mapError (\error -> Problem.unexpectedError "while creating the preview folder's configuration" (FsExtra.errorToString error))
+          ElmBinary.findElmVersion
+            |> TTask.andThen (\elmVersion -> ReviewConfigTemplate.create elmVersion (Path.join2 input.packageName "preview") (Just ruleName))
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the preview folder's configuration" (FsExtra.errorToString error))
         , -- .gitignore
-          Fs.writeTextFile fs (Path.join2 input.packageName ".gitignore") (gitIgnore ())
-            |> Task.mapError (\error -> Problem.unexpectedError "while creating the new package's .gitignore file" (FsExtra.errorToString error))
+          Fs.writeTextFile (Path.join2 input.packageName ".gitignore") (gitIgnore ())
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's .gitignore file" (FsExtra.errorToString error))
         , -- GitHub actions and issue template
           -- TODO Use write instead of copy?
-          Fs.createDirectory fs (Path.join2 input.packageName ".github/ISSUE_TEMPLATE/")
-            |> Task.mapError (\error -> Problem.unexpectedError "while creating the .github/ISSUE_TEMPLATE folder" (FsExtra.errorToString error))
-        , Fs.createDirectory fs (Path.join2 input.packageName ".github/workflows/")
-            |> Task.mapError (\error -> Problem.unexpectedError "while creating the .github/workflows folder" (FsExtra.errorToString error))
-        , FsExtra.copyDirectory os
+          Fs.createDirectory (Path.join2 input.packageName ".github/ISSUE_TEMPLATE/")
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/ISSUE_TEMPLATE folder" (FsExtra.errorToString error))
+        , Fs.createDirectory (Path.join2 input.packageName ".github/workflows/")
+            |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/workflows folder" (FsExtra.errorToString error))
+        , Fs.copyDirectory
             { from = Path.join2 options.binaryRoot "new-package/github"
             , to = Path.join2 input.packageName ".github/"
             }
-            |> Task.mapError
+            |> TTask.mapError
                 (\error ->
                     let
                         stepDescription : String
@@ -194,27 +188,27 @@ createProject input { fs, os, options } =
                             "while copying the GitHub Actions"
                     in
                     case error of
-                        ProcessExtra.ProcessRunError processError ->
+                        ProcessData.ProcessRunError processError ->
                             Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
 
-                        ProcessExtra.CommandNotFound ->
+                        ProcessData.CommandNotFound ->
                             Problem.unexpectedError stepDescription "Command `cp` not found"
 
-                        ProcessExtra.CommandFailed completed ->
+                        ProcessData.CommandFailed completed ->
                             Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
                 )
 
         -- TODO
-        --, createElmReviewConfiguration fs input
-        --, createLicense fs input
-        --, createMaintenanceScripts fs input
-        --, createPackageTests fs input
-        --, createCheckPreviewCompile fs input
+        --, createElmReviewConfiguration  input
+        --, createLicense  input
+        --, createMaintenanceScripts  input
+        --, createPackageTests  input
+        --, createCheckPreviewCompile  input
         ]
 
 
-createElmJsonFile : FileSystem -> Elm.Project.Project -> Input -> Task Problem ()
-createElmJsonFile fs elmJson input =
+createElmJsonFile : Elm.Project.Project -> Input -> TTask Problem ()
+createElmJsonFile elmJson input =
     let
         packageElmJson : String
         packageElmJson =
@@ -222,8 +216,8 @@ createElmJsonFile fs elmJson input =
                 |> Elm.Project.encode
                 |> Encode.encode 4
     in
-    Fs.writeTextFile fs (Path.join2 input.packageName "elm.json") packageElmJson
-        |> Task.mapError (\error -> Problem.unexpectedError "while creating the new package's elm.json file" (FsExtra.errorToString error))
+    Fs.writeTextFile (Path.join2 input.packageName "elm.json") packageElmJson
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm.json file" (FsExtra.errorToString error))
 
 
 createElmJson : Input -> Elm.Project.Project
@@ -275,16 +269,16 @@ toElmJsonDeps deps =
         deps
 
 
-createPackageJsonFile : FileSystem -> Input -> Task Problem ()
-createPackageJsonFile fs input =
+createPackageJsonFile : Input -> TTask Problem ()
+createPackageJsonFile input =
     let
         packageElmJson : String
         packageElmJson =
             packageJson input
                 |> Encode.encode 4
     in
-    Fs.writeTextFile fs (Path.join2 input.packageName "package.json") packageElmJson
-        |> Task.mapError (\error -> Problem.unexpectedError "while creating the new package's package.json file" (FsExtra.errorToString error))
+    Fs.writeTextFile (Path.join2 input.packageName "package.json") packageElmJson
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's package.json file" (FsExtra.errorToString error))
 
 
 packageJson : Input -> Encode.Value
@@ -321,15 +315,15 @@ packageJsonDevDependencies () =
     , ( "elm-review", "^" ++ CliVersion.version )
     , ( "elm-test", "^0.19.1-revision17" )
     , ( "elm-tooling", "^1.17.0" )
-    , ( "fs-extra", "^9.0.0" )
+    , ( "-extra", "^9.0.0" )
     , ( "npm-run-all", "^4.1.5" )
     , ( "tinyglobby", "^0.2.16" )
     ]
         |> List.map (\( name, script ) -> ( name, Encode.string script ))
 
 
-createElmToolingJson : FileSystem -> Input -> Task Problem ()
-createElmToolingJson fs input =
+createElmToolingJson : Input -> TTask Problem ()
+createElmToolingJson input =
     let
         elmToolingJson : String
         elmToolingJson =
@@ -344,14 +338,14 @@ createElmToolingJson fs input =
                 ]
                 |> Encode.encode 4
     in
-    Fs.writeTextFile fs (Path.join2 input.packageName "elm-tooling.json") elmToolingJson
-        |> Task.mapError (\error -> Problem.unexpectedError "while creating the new package's elm-tooling.json file" (FsExtra.errorToString error))
+    Fs.writeTextFile (Path.join2 input.packageName "elm-tooling.json") elmToolingJson
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm-tooling.json file" (FsExtra.errorToString error))
 
 
-createReadme : FileSystem -> Input -> Task Problem ()
-createReadme fs input =
-    Fs.writeTextFile fs (Path.join2 input.packageName "README.md") (readme input)
-        |> Task.mapError (\error -> Problem.unexpectedError "while creating the new package's README file" (FsExtra.errorToString error))
+createReadme : Input -> TTask Problem ()
+createReadme input =
+    Fs.writeTextFile (Path.join2 input.packageName "README.md") (readme input)
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's README file" (FsExtra.errorToString error))
 
 
 readme : Input -> String

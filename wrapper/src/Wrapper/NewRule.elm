@@ -14,10 +14,15 @@ module Wrapper.NewRule exposing
 -}
 
 import Capabilities exposing (Console, Stdin)
-import Cli
 import Elm.Module as Module
 import Elm.Package
 import Elm.Project
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import Elm.Version
 import ElmReview.Color as Color exposing (Color(..), Colorize)
@@ -25,13 +30,9 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Platform exposing (Task)
 import Regex exposing (Regex)
-import Task
 import Wrapper.Options as Options exposing (NewRuleOptions)
 import Wrapper.Options.RuleType as RuleType exposing (RuleType)
 
@@ -44,7 +45,6 @@ type alias ModelData =
     { stdout : Console
     , stderr : Console
     , stdin : Maybe Stdin
-    , fs : FileSystem
     , options : NewRuleOptions
     }
 
@@ -58,34 +58,34 @@ type alias Warning =
     Colorize -> String
 
 
-readReviewElmJson : FileSystem -> Path -> Task Problem Elm.Project.Project
-readReviewElmJson fs pathToElmJson_ =
-    Fs.readTextFile fs pathToElmJson_
-        |> Task.mapError
+readReviewElmJson : Path -> TTask Problem Elm.Project.Project
+readReviewElmJson pathToElmJson_ =
+    Fs.readTextFile pathToElmJson_
+        |> TTask.mapError
             (\error ->
                 case error of
-                    Fs.NotFound _ ->
+                    FsData.NotFound _ ->
                         Problem.from Problem.Recoverable
                             { title = "COULD NOT FIND ELM.JSON"
                             , message = couldNotFindElmJsonMessage pathToElmJson_
                             }
 
-                    Fs.PermissionDenied ->
+                    FsData.PermissionDenied ->
                         Problem.from Problem.Recoverable
                             { title = "PERMISSION DENIED"
                             , message = \c -> "I could not read " ++ c Yellow pathToElmJson_ ++ " file due to missing permissions."
                             }
                             |> Problem.withPath pathToElmJson_
 
-                    Fs.IoError err ->
+                    FsData.IoError err ->
                         Problem.unexpectedError "when trying to read the elm.json file" err
                             |> Problem.withPath pathToElmJson_
             )
-        |> Task.andThen
+        |> TTask.andThen
             (\elmJsonRaw ->
                 Decode.decodeString Elm.Project.decoder elmJsonRaw
                     |> Result.mapError (\error -> Problem.invalidElmJson pathToElmJson_ (Options.Local "") error)
-                    |> TaskExtra.fromResult
+                    |> TTask.fromResult
             )
 
 
@@ -96,8 +96,8 @@ couldNotFindElmJsonMessage pathToElmJson_ c =
 You can run """ ++ c Cyan "elm-review new-package" ++ " to get started with a new project designed to publish review rules."
 
 
-init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> FileSystem -> NewRuleOptions -> ( Model, Cmd Msg )
-init { stdout, stderr, stdin } fs options =
+init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> NewRuleOptions -> ( Model, TCmd Msg )
+init { stdout, stderr, stdin } options =
     let
         pathToElmJson_ : String
         pathToElmJson_ =
@@ -107,11 +107,10 @@ init { stdout, stderr, stdin } fs options =
         { stdout = stdout
         , stderr = stderr
         , stdin = stdin
-        , fs = fs
         , options = options
         }
-    , readReviewElmJson fs pathToElmJson_
-        |> Task.attempt GotElmJson
+    , readReviewElmJson pathToElmJson_
+        |> TTask.attempt GotElmJson
     )
 
 
@@ -120,7 +119,7 @@ pathToElmJson options =
     Path.join2 options.reviewFolder "elm.json"
 
 
-validateOrElsePromptForRuleType : Elm.Project.Project -> Module.Name -> Maybe RuleType -> Model -> Cmd Msg
+validateOrElsePromptForRuleType : Elm.Project.Project -> Module.Name -> Maybe RuleType -> Model -> TCmd Msg
 validateOrElsePromptForRuleType elmJson ruleName maybeRuleType model =
     case maybeRuleType of
         Just ruleType ->
@@ -130,18 +129,18 @@ validateOrElsePromptForRuleType elmJson ruleName maybeRuleType model =
             promptForRuleType ()
 
 
-promptForRuleName : () -> Cmd Msg
+promptForRuleName : () -> TCmd Msg
 promptForRuleName () =
     Debug.todo "promptForRuleName"
 
 
-promptForRuleType : () -> Cmd Msg
+promptForRuleType : () -> TCmd Msg
 promptForRuleType () =
     Debug.todo "promptForRuleType"
 
 
-run : Elm.Project.Project -> Module.Name -> RuleType -> Model -> Cmd Msg
-run elmJson ruleModuleName ruleType (Model { fs, options }) =
+run : Elm.Project.Project -> Module.Name -> RuleType -> Model -> TCmd Msg
+run elmJson ruleModuleName ruleType (Model { options }) =
     let
         ruleName : String
         ruleName =
@@ -159,18 +158,18 @@ run elmJson ruleModuleName ruleType (Model { fs, options }) =
         testsFilePath =
             Path.join (options.reviewFolder :: "tests" :: ruleNameSegments) ++ "Test.elm"
     in
-    Task.map3 (\() () warnings -> warnings)
-        (Fs.createDirectory fs (Path.dirname srcFilePath)
-            |> Task.andThen (\() -> Fs.writeTextFile fs srcFilePath (newSourceFile elmJson ruleName ruleType))
-            |> Task.mapError
+    TTask.map3 (\() () warnings -> warnings)
+        (Fs.createDirectory (Path.dirname srcFilePath)
+            |> TTask.andThen (\() -> Fs.writeTextFile srcFilePath (newSourceFile elmJson ruleName ruleType))
+            |> TTask.mapError
                 (\err ->
                     Problem.unexpectedError "while writing source file for new rule" (FsExtra.errorToString err)
                         |> Problem.withPath srcFilePath
                 )
         )
-        (Fs.createDirectory fs (Path.dirname testsFilePath)
-            |> Task.andThen (\() -> Fs.writeTextFile fs testsFilePath (newTestFile ruleName))
-            |> Task.mapError
+        (Fs.createDirectory (Path.dirname testsFilePath)
+            |> TTask.andThen (\() -> Fs.writeTextFile testsFilePath (newTestFile ruleName))
+            |> TTask.mapError
                 (\err ->
                     Problem.unexpectedError "while writing test file for new rule" (FsExtra.errorToString err)
                         |> Problem.withPath testsFilePath
@@ -178,19 +177,19 @@ run elmJson ruleModuleName ruleType (Model { fs, options }) =
         )
         (case elmJson of
             Elm.Project.Application _ ->
-                Task.succeed []
+                TTask.succeed []
 
             Elm.Project.Package pkg ->
                 if String.contains "/elm-review-" (Elm.Package.toString pkg.name) then
-                    Task.map3 (\() w1 w2 -> List.append w1 w2)
-                        (exposeRuleAsPartOfElmReviewPackage fs (pathToElmJson options) pkg ruleModuleName)
-                        (injectRuleInReadme fs options pkg ruleName)
-                        (injectRuleInPreviewFolders fs options.reviewFolder pkg ruleName)
+                    TTask.map3 (\() w1 w2 -> List.append w1 w2)
+                        (exposeRuleAsPartOfElmReviewPackage (pathToElmJson options) pkg ruleModuleName)
+                        (injectRuleInReadme options pkg ruleName)
+                        (injectRuleInPreviewFolders options.reviewFolder pkg ruleName)
 
                 else
-                    Task.succeed []
+                    TTask.succeed []
         )
-        |> Task.attempt (Done ruleModuleName)
+        |> TTask.attempt (Done ruleModuleName)
 
 
 newSourceFile : Elm.Project.Project -> String -> RuleType -> String
@@ -393,23 +392,23 @@ a = 1
 """
 
 
-exposeRuleAsPartOfElmReviewPackage : FileSystem -> Path -> Elm.Project.PackageInfo -> Module.Name -> Task Problem ()
-exposeRuleAsPartOfElmReviewPackage fs elmJsonPath pkg ruleModuleName =
+exposeRuleAsPartOfElmReviewPackage : Path -> Elm.Project.PackageInfo -> Module.Name -> TTask Problem ()
+exposeRuleAsPartOfElmReviewPackage elmJsonPath pkg ruleModuleName =
     case computeExposedModules ruleModuleName pkg.exposed of
         Just exposed ->
             { pkg | exposed = exposed }
                 |> Elm.Project.Package
                 |> Elm.Project.encode
                 |> Encode.encode 4
-                |> Fs.writeTextFile fs elmJsonPath
-                |> Task.mapError
+                |> Fs.writeTextFile elmJsonPath
+                |> TTask.mapError
                     (\err ->
                         Problem.unexpectedError "while adding the new rule to elm.json's \"exposed-modules\"" (FsExtra.errorToString err)
                             |> Problem.withPath elmJsonPath
                     )
 
         Nothing ->
-            Task.succeed ()
+            TTask.succeed ()
 
 
 computeExposedModules : Module.Name -> Elm.Project.Exposed -> Maybe Elm.Project.Exposed
@@ -450,16 +449,16 @@ computeExposedModules ruleModuleName exposed =
                             |> Just
 
 
-injectRuleInReadme : FileSystem -> NewRuleOptions -> Elm.Project.PackageInfo -> String -> Task Problem (List Warning)
-injectRuleInReadme fs options pkg ruleName =
+injectRuleInReadme : NewRuleOptions -> Elm.Project.PackageInfo -> String -> TTask Problem (List Warning)
+injectRuleInReadme options pkg ruleName =
     let
         readmePath : Path
         readmePath =
             Path.join2 options.reviewFolder "README.md"
     in
-    Fs.readTextFile fs readmePath
-        |> TaskExtra.toResultTask
-        |> Task.andThen
+    Fs.readTextFile readmePath
+        |> TTask.toResultTask
+        |> TTask.andThen
             (\readmeFileRead ->
                 case readmeFileRead of
                     Ok readmeContent ->
@@ -469,19 +468,19 @@ injectRuleInReadme fs options pkg ruleName =
                         in
                         lines
                             |> String.join "\n"
-                            |> Fs.writeTextFile fs readmePath
-                            |> Task.mapError
+                            |> Fs.writeTextFile readmePath
+                            |> TTask.mapError
                                 (\err ->
                                     Problem.unexpectedError "while adding the new rule to the README" (FsExtra.errorToString err)
                                         |> Problem.withPath readmePath
                                 )
-                            |> Task.map (\() -> warnings)
+                            |> TTask.map (\() -> warnings)
 
-                    Err (Fs.NotFound _) ->
-                        Task.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but could not find such a file." ]
+                    Err (FsData.NotFound _) ->
+                        TTask.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but could not find such a file." ]
 
                     Err error ->
-                        Task.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but encountered a problem while doing so:\n\n" ++ FsExtra.errorToString error ]
+                        TTask.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but encountered a problem while doing so:\n\n" ++ FsExtra.errorToString error ]
             )
 
 
@@ -580,41 +579,41 @@ ruleDescription packageName packageVersion ruleName =
     "- [`" ++ ruleName ++ "`](https://package.elm-lang.org/packages/" ++ packageName ++ "/" ++ packageVersion ++ "/" ++ ruleNameAsUrl ++ ") - Reports REPLACEME."
 
 
-injectRuleInPreviewFolders : FileSystem -> Path -> Elm.Project.PackageInfo -> String -> Task Problem (List Warning)
-injectRuleInPreviewFolders fs reviewFolder pkg ruleName =
-    Fs.walkTree fs reviewFolder (Just "elm.json") Fs.Any
-        |> Task.mapError (\error -> Problem.unexpectedError "while searching for preview folders" (FsExtra.errorToString error))
-        |> Task.andThen
-            (\( files, _ ) ->
+injectRuleInPreviewFolders : Path -> Elm.Project.PackageInfo -> String -> TTask Problem (List Warning)
+injectRuleInPreviewFolders reviewFolder pkg ruleName =
+    Fs.walkTree reviewFolder (Just "elm.json") FsData.Any
+        |> TTask.mapError (\error -> Problem.unexpectedError "while searching for preview folders" (FsExtra.errorToString error))
+        |> TTask.andThen
+            (\files ->
                 files
                     |> List.filter
                         (\filePath ->
                             String.startsWith "./preview" filePath
                                 && not (String.contains "/elm-stuff/" filePath)
                         )
-                    |> TaskExtra.mapAllAndFold
+                    |> TTask.mapAllAndFold
                         (\filePath ->
-                            injectRuleInPreview fs (Path.dirname (Path.join2 reviewFolder filePath)) pkg ruleName
+                            injectRuleInPreview (Path.dirname (Path.join2 reviewFolder filePath)) pkg ruleName
                         )
                         (++)
                         []
             )
 
 
-injectRuleInPreview : FileSystem -> Path -> Elm.Project.PackageInfo -> String -> Task Problem (List Warning)
-injectRuleInPreview fs previewFolder pkg ruleName =
+injectRuleInPreview : Path -> Elm.Project.PackageInfo -> String -> TTask Problem (List Warning)
+injectRuleInPreview previewFolder pkg ruleName =
     let
         filePath : Path
         filePath =
             Path.join [ previewFolder, "src", "ReviewConfig.elm" ]
     in
-    Fs.readTextFile fs filePath
-        |> TaskExtra.toResultTask
-        |> Task.andThen
+    Fs.readTextFile filePath
+        |> TTask.toResultTask
+        |> TTask.andThen
             (\maybeContent ->
                 case maybeContent of
                     Err error ->
-                        Task.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it:\n\n" ++ FsExtra.errorToString error ]
+                        TTask.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it:\n\n" ++ FsExtra.errorToString error ]
 
                     Ok content ->
                         let
@@ -628,16 +627,16 @@ injectRuleInPreview fs previewFolder pkg ruleName =
                                     }
                         in
                         if List.isEmpty result.warnings then
-                            Fs.writeTextFile fs filePath (String.join "\n" result.lines)
-                                |> Task.mapError
+                            Fs.writeTextFile filePath (String.join "\n" result.lines)
+                                |> TTask.mapError
                                     (\error ->
                                         Problem.unexpectedError ("while trying to update the " ++ previewFolder ++ "/ preview configuration") (FsExtra.errorToString error)
                                             |> Problem.withPath filePath
                                     )
-                                |> Task.map (\_ -> [])
+                                |> TTask.map (\_ -> [])
 
                         else
-                            Task.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it." ]
+                            TTask.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it." ]
             )
 
 
@@ -739,7 +738,7 @@ insertRuleInConfigList target ruleName someRuleName fileModification =
                 )
 
 
-update : Msg -> Model -> Cmd Msg
+update : Msg -> Model -> TCmd Msg
 update msg (Model model) =
     case msg of
         GotElmJson (Ok elmJson) ->
@@ -751,7 +750,7 @@ update msg (Model model) =
                     promptForRuleName ()
 
         GotElmJson (Err problem) ->
-            Problem.stop model.stderr
+            Problem.stop
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug
@@ -781,13 +780,13 @@ update msg (Model model) =
                                     |> String.join "\n\n"
                                )
             in
-            Cmd.batch
-                [ Cli.println model.stdout (successMessage ++ "!" ++ warningsMessage)
+            TCmd.batch
+                [ Cli.printlnStdout (successMessage ++ "!" ++ warningsMessage)
                 , Cli.exit 0
                 ]
 
         Done _ (Err problem) ->
-            Problem.stop model.stderr
+            Problem.stop
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug

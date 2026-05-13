@@ -2,16 +2,16 @@ module Wrapper.FolderHash exposing (hashApplication)
 
 import Elm.Package
 import Elm.Project
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version
 import ElmReview.Path as Path exposing (Path)
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem)
-import Task exposing (Task)
 import Wrapper.Hash as Hash exposing (Hash)
 
 
-hashApplication : FileSystem -> Path -> Maybe Path -> Elm.Project.ApplicationInfo -> Task x Hash
-hashApplication fs reviewFolder localElmReview application =
+hashApplication : Path -> Maybe Path -> Elm.Project.ApplicationInfo -> TTask x Hash
+hashApplication reviewFolder localElmReview application =
     let
         sourceDirectories : List Path
         sourceDirectories =
@@ -32,35 +32,35 @@ hashApplication fs reviewFolder localElmReview application =
                 |> List.map (\( pkgName, version ) -> ( Elm.Package.toString pkgName, Elm.Version.toString version ))
                 |> hashList (\( pkgName, version ) -> pkgName ++ ":" ++ version ++ ";") Hash.initial
     in
-    TaskExtra.mapAllAndFold
+    TTask.mapAllAndFold
         (\directory ->
             let
                 dirPath : Path
                 dirPath =
                     Path.join2 reviewFolder directory
             in
-            Fs.walkTree fs dirPath (Just "*.elm") Fs.Any
-                |> Task.andThen (\( files, _ ) -> readFiles fs dirPath files)
-                |> Task.onError (\_ -> Task.succeed [])
+            Fs.walkTree dirPath (Just "*.elm") FsData.Any
+                |> TTask.andThen (\files -> readFiles dirPath files)
+                |> TTask.onError (\_ -> TTask.succeed [])
         )
         (++)
         []
         sourceDirectories
-        |> Task.map (\files -> hashList Tuple.second elmJsonHash files)
+        |> TTask.map (\files -> hashList Tuple.second elmJsonHash files)
 
 
-readFiles : FileSystem -> Path -> List Path -> Task x (List ( Path, String ))
-readFiles fs dirPath files =
-    TaskExtra.mapAllAndFold
+readFiles : Path -> List Path -> TTask x (List ( Path, String ))
+readFiles dirPath files =
+    TTask.mapAllAndFold
         (\file ->
             let
                 path : Path
                 path =
                     Path.join2 dirPath file
             in
-            Fs.readTextFile fs path
-                |> Task.map (\content -> Just ( file, content ))
-                |> Task.onError (\_ -> Task.succeed Nothing)
+            Fs.readTextFile path
+                |> TTask.map (\content -> Just ( file, content ))
+                |> TTask.onError (\_ -> TTask.succeed Nothing)
         )
         maybeCons
         []

@@ -12,30 +12,30 @@ module ElmRun.FsExtra exposing
 
 -}
 
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData exposing (FsError)
+import Elm.Review.Testable.Process as Process
+import Elm.Review.Testable.ProcessData as ProcessData exposing (SpawnError)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Path as Path exposing (Path)
-import ElmRun.ProcessExtra as ProcessExtra exposing (SpawnError)
-import Fs exposing (FileSystem, FsError)
-import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
-import Task exposing (Task)
 
 
-createFileAndItsDirectory : FileSystem -> Path -> String -> Task FsError ()
-createFileAndItsDirectory fs path content =
-    Fs.createDirectory fs (Path.dirname path)
-        |> Task.andThen (\() -> Fs.writeTextFile fs path content)
+createFileAndItsDirectory : Path -> String -> TTask FsError ()
+createFileAndItsDirectory path content =
+    Fs.createDirectory (Path.dirname path)
+        |> TTask.andThen (\() -> Fs.writeTextFile path content)
 
 
 errorToString : FsError -> String
 errorToString fsError =
     case fsError of
-        Fs.NotFound path ->
+        FsData.NotFound path ->
             "File not found: " ++ path
 
-        Fs.PermissionDenied ->
+        FsData.PermissionDenied ->
             "Permission denied"
 
-        Fs.IoError msg ->
+        FsData.IoError msg ->
             "Unknown error: " ++ msg
 
 
@@ -44,15 +44,15 @@ errorToString fsError =
 TODO Also remove the dependency to elm-run/os in Build.addReviewAppDependencies
 
 -}
-copyDirectory : ProcessCapability -> { from : String, to : String } -> Task SpawnError ()
-copyDirectory os { from, to } =
-    ProcessExtra.runButFailOnError os
+copyDirectory : { from : String, to : String } -> TTask SpawnError ()
+copyDirectory { from, to } =
+    Process.run
         "cp"
         { cwd = Nothing
         , env = Nothing
         , args = [ "-R", from, to ]
-        , stdin = Process.NullStdin
-        , stdout = Process.NullStdout
-        , stderr = Process.NullStderr
+        , stdin = ProcessData.NullStdin
+        , stdout = ProcessData.NullStdout
+        , stderr = ProcessData.NullStderr
         }
-        |> Task.map (\_ -> ())
+        |> TTask.map (\_ -> ())

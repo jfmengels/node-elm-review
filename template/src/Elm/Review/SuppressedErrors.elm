@@ -17,20 +17,20 @@ module Elm.Review.SuppressedErrors exposing
 
 import Dict exposing (Dict)
 import Elm.Review.Options exposing (Options)
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData exposing (FsError)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Options as ReviewOptions exposing (ReviewOptions)
 import Review.Rule as Rule
 import Set exposing (Set)
-import Task exposing (Task)
 
 
 suppressedFolder : Options -> Path
@@ -280,8 +280,8 @@ encodeFileSuppression ( nbSuppressedErrors, path ) =
 -- WRITE
 
 
-write : FileSystem -> Options -> List String -> SuppressedErrors -> Maybe (Task Problem ())
-write fs options ruleNames suppressedErrors =
+write : Options -> List String -> SuppressedErrors -> Maybe (TTask Problem ())
+write options ruleNames suppressedErrors =
     if options.usesRemoteTemplate && not options.suppress then
         Nothing
 
@@ -295,20 +295,20 @@ write fs options ruleNames suppressedErrors =
             suppressedErrorsFolder =
                 suppressedFolder options
         in
-        TaskExtra.sequence
+        TTask.sequence
             [ if deleteAllRules then
-                Fs.removeDirectory fs suppressedErrorsFolder
-                    |> Task.onError (\_ -> Task.succeed ())
+                Fs.removeDirectory suppressedErrorsFolder
+                    |> TTask.onError (\_ -> TTask.succeed ())
 
               else
-                Task.succeed ()
-            , Fs.createDirectory fs suppressedErrorsFolder
-                |> Task.onError (\_ -> Task.succeed ())
+                TTask.succeed ()
+            , Fs.createDirectory suppressedErrorsFolder
+                |> TTask.onError (\_ -> TTask.succeed ())
             , suppressedErrors
                 |> suppressionsX ruleNames
-                |> TaskExtra.mapAllAndIgnore (\suppressions -> writeFile fs suppressedErrorsFolder deleteAllRules suppressions)
+                |> TTask.mapAllAndIgnore (\suppressions -> writeFile suppressedErrorsFolder deleteAllRules suppressions)
             ]
-            |> Task.mapError
+            |> TTask.mapError
                 (\err ->
                     Problem.from Problem.Recoverable
                         { title = "PROBLEM WRITING SUPPRESSION FILES"
@@ -318,8 +318,8 @@ write fs options ruleNames suppressedErrors =
             |> Just
 
 
-writeFile : FileSystem -> Path -> Bool -> ( String, List ( Int, Path ) ) -> Task FsError ()
-writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
+writeFile : Path -> Bool -> ( String, List ( Int, Path ) ) -> TTask FsError ()
+writeFile suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
     let
         filePath : Path
         filePath =
@@ -327,14 +327,14 @@ writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
     in
     if List.isEmpty list then
         if deleteAllRules then
-            Task.succeed ()
+            TTask.succeed ()
 
         else
-            Fs.deleteFile fs filePath
+            Fs.deleteFile filePath
 
     else
-        Fs.readTextFile fs filePath
-            |> Task.andThen
+        Fs.readTextFile filePath
+            |> TTask.andThen
                 (\previousContents ->
                     let
                         contents : String
@@ -342,10 +342,10 @@ writeFile fs suppressedErrorsFolder deleteAllRules ( ruleName, list ) =
                             formatSuppressionFile list
                     in
                     if previousContents == contents then
-                        Task.succeed ()
+                        TTask.succeed ()
 
                     else
-                        Fs.writeTextFile fs filePath contents
+                        Fs.writeTextFile filePath contents
                 )
 
 

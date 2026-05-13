@@ -6,22 +6,23 @@ module Wrapper.OptimizeJs exposing (optimize)
 
 -}
 
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.Internal exposing (TTask)
+import Elm.Review.Testable.TTask as TTask
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.FsExtra as FsExtra
-import Fs exposing (FileSystem)
-import Task exposing (Task)
 
 
-optimize : FileSystem -> Bool -> Path -> Task Problem ()
-optimize fs debug elmModulePath =
+optimize : Bool -> Path -> TTask Problem ()
+optimize debug elmModulePath =
     if debug then
-        Task.succeed ()
+        TTask.succeed ()
 
     else
-        Fs.readTextFile fs elmModulePath
-            |> Task.mapError (\error -> Problem.unexpectedError "while trying to read the generated Elm file" (FsExtra.errorToString error))
-            |> Task.andThen
+        Fs.readTextFile elmModulePath
+            |> TTask.mapError (\error -> Problem.unexpectedError "while trying to read the generated Elm file" (FsExtra.errorToString error))
+            |> TTask.andThen
                 (\initialSource ->
                     let
                         replacements : List (List Optimization)
@@ -43,8 +44,8 @@ optimize fs debug elmModulePath =
                         )
                         initialSource
                         replacements
-                        |> Fs.writeTextFile fs elmModulePath
-                        |> Task.mapError (\error -> Problem.unexpectedError "while trying to optimize the generated Elm file" (FsExtra.errorToString error))
+                        |> Fs.writeTextFile elmModulePath
+                        |> TTask.mapError (\error -> Problem.unexpectedError "while trying to optimize the generated Elm file" (FsExtra.errorToString error))
                 )
 
 

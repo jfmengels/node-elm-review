@@ -1,7 +1,6 @@
 module WrapperMain exposing (Model, Msg, main)
 
 import Array exposing (Array)
-import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
 import ElmReview.Color as Color exposing (Color(..))
@@ -9,9 +8,7 @@ import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
-import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
-import Task exposing (Task)
 import Wrapper.Help as Help
 import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage
@@ -106,16 +103,16 @@ handleCliArgsParseResult env { fs, os } result =
 
         OptionsParser.ShowHelp options ->
             ( Done
-            , Cmd.batch
-                [ Cli.println env.stdout (Help.show options)
+            , TCmd.batch
+                [ Cli.printlnStdout (Help.show options)
                 , Cli.exit 0
                 ]
             )
 
         OptionsParser.ShowVersion ->
             ( Done
-            , Cmd.batch
-                [ Cli.println env.stdout CliVersion.version
+            , TCmd.batch
+                [ Cli.printlnStdout CliVersion.version
                 , Cli.exit 0
                 ]
             )
@@ -277,7 +274,7 @@ foundNearestElmJson loading result =
                 loading
                 (loading.toOptions { elmJsonPath = elmJsonPath })
 
-        Err (Fs.NotFound _) ->
+        Err (FsData.NotFound _) ->
             ( Done
             , { title = "COULD NOT FIND ELM.JSON"
               , message =
@@ -298,10 +295,10 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
             )
 
 
-findNearestElmJson : FileSystem -> Array String -> Task FsError Path
+findNearestElmJson : Array String -> Task FsError Path
 findNearestElmJson fs pathSegments =
     if Array.isEmpty pathSegments then
-        Task.fail (Fs.NotFound "")
+        Task.fail (FsData.NotFound "")
 
     else
         let
@@ -318,7 +315,7 @@ findNearestElmJson fs pathSegments =
                 )
 
 
-getCwd : FileSystem -> Dict String String -> Task FsError Path
+getCwd : Dict String String -> Task FsError Path
 getCwd fs env =
     -- TODO Replace this by the following when fixed.
     -- Fs.toSandboxRel fs path "."
@@ -327,7 +324,7 @@ getCwd fs env =
             Task.succeed path
 
         Nothing ->
-            Task.fail (Fs.NotFound ".")
+            Task.fail (FsData.NotFound ".")
 
 
 subscriptions : Model -> Sub Msg

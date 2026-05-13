@@ -8,20 +8,20 @@ module Wrapper.Build exposing (build, BuildData)
 
 import Elm.Package
 import Elm.Project
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData exposing (FsError)
+import Elm.Review.Testable.Process as Process
+import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version exposing (Version)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
 import Set exposing (Set)
-import Task exposing (Task)
 import Wrapper.FetchRemoteTemplate as FetchRemoteTemplate
 import Wrapper.FolderHash as FolderHash
 import Wrapper.Hash exposing (Hash)
@@ -60,31 +60,31 @@ type alias BuildOptions options =
     }
 
 
-build : FileSystem -> ProcessCapability -> BuildOptions options -> Task Problem BuildData
-build fs os options =
+build : BuildOptions options -> TTask Problem BuildData
+build options =
     case options.reviewProject of
         Options.Local reviewFolder ->
-            buildProject fs os options reviewFolder
+            buildProject options reviewFolder
 
         Options.Remote remoteTemplate ->
-            FetchRemoteTemplate.checkoutGitRepository fs os options.offline remoteTemplate options.debug
-                |> Task.andThen (\reviewFolder -> buildProject fs os options reviewFolder)
+            FetchRemoteTemplate.checkoutGitRepository options.offline remoteTemplate options.debug
+                |> TTask.andThen (\reviewFolder -> buildProject options reviewFolder)
 
 
-buildProject : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Task Problem BuildData
-buildProject fs os options reviewFolder =
+buildProject : BuildOptions options -> Path -> TTask Problem BuildData
+buildProject options reviewFolder =
     let
         elmJsonPath : String
         elmJsonPath =
             Path.join2 reviewFolder "elm.json"
     in
-    readReviewElmJson fs options.reviewProject elmJsonPath
-        |> Task.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson.application |> TaskExtra.fromResult)
-        |> Task.andThen
+    readReviewElmJson options.reviewProject elmJsonPath
+        |> TTask.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson.application |> TTask.fromResult)
+        |> TTask.andThen
             (\{ application, elmReviewVersion } ->
-                FolderHash.hashApplication fs reviewFolder options.localElmReview application
-                    |> Task.mapError (fsErrorToProblem "while building and hashing source-directories")
-                    |> Task.andThen
+                FolderHash.hashApplication reviewFolder options.localElmReview application
+                    |> TTask.mapError (fsErrorToProblem "while building and hashing source-directories")
+                    |> TTask.andThen
                         (\appHash ->
                             let
                                 reviewAppPath : Path
@@ -105,21 +105,19 @@ buildProject fs os options reviewFolder =
                                     , appHash = appHash
                                     }
                             in
-                            reuseExistingReviewApp fs options.forceBuild reviewAppPath
-                                |> Task.andThen
+                            reuseExistingReviewApp options.forceBuild reviewAppPath
+                                |> TTask.andThen
                                     (\exists ->
                                         if exists then
-                                            Task.succeed ()
+                                            TTask.succeed ()
 
                                         else
                                             buildCreatedProject
-                                                fs
-                                                os
                                                 reviewFolder
                                                 options
                                                 buildData
                                     )
-                                |> Task.map (\() -> buildData)
+                                |> TTask.map (\() -> buildData)
                         )
             )
 
@@ -141,44 +139,43 @@ validateElmReviewVersion options elmJsonPath elmJson =
                 }
 
 
-reuseExistingReviewApp : FileSystem -> Bool -> String -> Task x Bool
-reuseExistingReviewApp fs forceBuild reviewAppPath =
+reuseExistingReviewApp : Bool -> String -> TTask x Bool
+reuseExistingReviewApp forceBuild reviewAppPath =
     if forceBuild then
-        Task.succeed False
+        TTask.succeed False
 
     else
-        Fs.stat fs reviewAppPath
-            |> Task.map (\_ -> True)
-            |> Task.onError (\_ -> Task.succeed False)
+        Fs.stat reviewAppPath
+            |> TTask.map (\_ -> True)
+            |> TTask.onError (\_ -> TTask.succeed False)
 
 
-buildCreatedProject : FileSystem -> ProcessCapability -> Path -> BuildOptions options -> BuildData -> Task Problem ()
-buildCreatedProject fs os reviewFolder options buildData =
+buildCreatedProject : Path -> BuildOptions options -> BuildData -> TTask Problem ()
+buildCreatedProject reviewFolder options buildData =
     let
         buildFolder : Path
         buildFolder =
             ProjectPaths.buildFolder options.projectPaths "review-project"
 
-        localElmReviewTasks : { setUp : Task Problem (), cleanUp : Task Problem () }
+        localElmReviewTasks : { setUp : TTask Problem (), cleanUp : TTask Problem () }
         localElmReviewTasks =
-            createSymLinkForLocalElmReview fs
-                os
+            createSymLinkForLocalElmReview
                 { buildFolder = buildFolder
                 , localElmReview = options.localElmReview
                 , packagesLocation = buildData.packagesLocation
                 , elmReviewVersion = buildData.elmReviewVersion
                 }
     in
-    TaskExtra.sequence
-        [ Fs.createDirectory fs (Path.join2 buildFolder "src")
-            |> Task.mapError (fsErrorToProblem "while building and creating temporary source directory")
-        , Fs.createDirectory fs (Path.dirname buildData.reviewAppPath)
-            |> Task.mapError (fsErrorToProblem "while building and creating temporary directory")
-        , FsExtra.copyDirectory os
+    TTask.sequence
+        [ Fs.createDirectory (Path.join2 buildFolder "src")
+            |> TTask.mapError (fsErrorToProblem "while building and creating temporary source directory")
+        , Fs.createDirectory (Path.dirname buildData.reviewAppPath)
+            |> TTask.mapError (fsErrorToProblem "while building and creating temporary directory")
+        , Fs.copyDirectory
             { from = Path.join2 options.binaryRoot "template/src"
             , to = buildFolder
             }
-            |> Task.mapError
+            |> TTask.mapError
                 (\error ->
                     let
                         stepDescription : String
@@ -186,36 +183,33 @@ buildCreatedProject fs os reviewFolder options buildData =
                             "while building and copying template files"
                     in
                     case error of
-                        ProcessExtra.ProcessRunError processError ->
+                        ProcessData.ProcessRunError processError ->
                             processErrorToProblem stepDescription processError
 
-                        ProcessExtra.CommandNotFound ->
+                        ProcessData.CommandNotFound ->
                             Problem.unexpectedError stepDescription "Command `cp` not found"
 
-                        ProcessExtra.CommandFailed completed ->
+                        ProcessData.CommandFailed completed ->
                             Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
                 )
-        , createTemplateElmJson fs options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
+        , createTemplateElmJson options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
-        , compileProject fs os options reviewFolder buildFolder buildData.reviewAppPath
-            |> TaskExtra.alwaysRun localElmReviewTasks.cleanUp
+        , compileProject options reviewFolder buildFolder buildData.reviewAppPath
+            |> TTask.alwaysRun localElmReviewTasks.cleanUp
         ]
 
 
 createSymLinkForLocalElmReview :
-    FileSystem
-    -> ProcessCapability
-    ->
-        { buildFolder : Path
-        , localElmReview : Maybe Path
-        , packagesLocation : Path
-        , elmReviewVersion : Version
-        }
-    -> { setUp : Task Problem (), cleanUp : Task x () }
-createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLocation, elmReviewVersion } =
+    { buildFolder : Path
+    , localElmReview : Maybe Path
+    , packagesLocation : Path
+    , elmReviewVersion : Version
+    }
+    -> { setUp : TTask Problem (), cleanUp : TTask x () }
+createSymLinkForLocalElmReview { buildFolder, localElmReview, packagesLocation, elmReviewVersion } =
     case localElmReview of
         Nothing ->
-            { setUp = Task.succeed (), cleanUp = Task.succeed () }
+            { setUp = TTask.succeed (), cleanUp = TTask.succeed () }
 
         Just localElmReview_ ->
             let
@@ -228,18 +222,18 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
                     Path.join2 buildFolder "elm-stuff"
             in
             { setUp =
-                TaskExtra.sequence
+                TTask.sequence
                     [ -- TODO Move code rather than delete it?
-                      -- Fs.createTempDirectory fs "elm-review"
-                      Fs.removeDirectory fs packagePath
-                        |> Task.onError (\_ -> Task.succeed ())
-                    , Fs.removeDirectory fs elmStuffForBuild
-                        |> Task.onError (\_ -> Task.succeed ())
-                    , Fs.deleteFile fs (Path.join2 localElmReview_ "artifacts.dat")
-                        |> Task.onError (\_ -> Task.succeed ())
+                      -- Fs.createTempDirectory  "elm-review"
+                      Fs.removeDirectory packagePath
+                        |> TTask.onError (\_ -> TTask.succeed ())
+                    , Fs.removeDirectory elmStuffForBuild
+                        |> TTask.onError (\_ -> TTask.succeed ())
+                    , Fs.deleteFile (Path.join2 localElmReview_ "artifacts.dat")
+                        |> TTask.onError (\_ -> TTask.succeed ())
                     , -- TODO Create a symlink instead
-                      FsExtra.copyDirectory os { from = localElmReview_, to = packagePath }
-                        |> Task.mapError
+                      Fs.copyDirectory { from = localElmReview_, to = packagePath }
+                        |> TTask.mapError
                             (\error ->
                                 let
                                     stepDescription : String
@@ -247,28 +241,28 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
                                         "while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath
                                 in
                                 case error of
-                                    ProcessExtra.ProcessRunError processError ->
+                                    ProcessData.ProcessRunError processError ->
                                         processErrorToProblem stepDescription processError
 
-                                    ProcessExtra.CommandNotFound ->
+                                    ProcessData.CommandNotFound ->
                                         Problem.unexpectedError stepDescription "Command `cp` not found"
 
-                                    ProcessExtra.CommandFailed completed ->
+                                    ProcessData.CommandFailed completed ->
                                         Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
                             )
                     ]
             , cleanUp =
-                TaskExtra.sequence
-                    [ Fs.removeDirectory fs packagePath
-                        |> Task.onError (\_ -> Task.succeed ())
-                    , Fs.removeDirectory fs elmStuffForBuild
-                        |> Task.onError (\_ -> Task.succeed ())
+                TTask.sequence
+                    [ Fs.removeDirectory packagePath
+                        |> TTask.onError (\_ -> TTask.succeed ())
+                    , Fs.removeDirectory elmStuffForBuild
+                        |> TTask.onError (\_ -> TTask.succeed ())
                     ]
             }
 
 
-createTemplateElmJson : FileSystem -> OutputTarget -> Path -> Path -> Path -> Elm.Project.ApplicationInfo -> Task Problem ()
-createTemplateElmJson fs outputTarget reviewFolder binaryRoot buildFolder reviewElmJson =
+createTemplateElmJson : OutputTarget -> Path -> Path -> Path -> Elm.Project.ApplicationInfo -> TTask Problem ()
+createTemplateElmJson outputTarget reviewFolder binaryRoot buildFolder reviewElmJson =
     let
         dependencies : List ( Elm.Package.Name, Elm.Version.Version )
         dependencies =
@@ -291,11 +285,10 @@ createTemplateElmJson fs outputTarget reviewFolder binaryRoot buildFolder review
             }
     in
     Fs.writeTextFile
-        fs
         (Path.join2 buildFolder "elm.json")
         (Elm.Project.encode (Elm.Project.Application elmJson) |> Encode.encode 2)
-        |> Task.map (always ())
-        |> Task.mapError (fsErrorToProblem "while building and writing the review application's elm.json")
+        |> TTask.map (always ())
+        |> TTask.mapError (fsErrorToProblem "while building and writing the review application's elm.json")
 
 
 fsErrorToProblem : String -> FsError -> Problem
@@ -358,27 +351,27 @@ addReviewAppDependencies outputTarget initialDependencies =
         )
 
 
-readReviewElmJson : FileSystem -> ReviewProject -> Path -> Task Problem { raw : String, application : Elm.Project.ApplicationInfo }
-readReviewElmJson fs reviewProject elmJsonPath =
-    fetchElmJson fs reviewProject elmJsonPath
-        |> Task.andThen
+readReviewElmJson : ReviewProject -> Path -> TTask Problem { raw : String, application : Elm.Project.ApplicationInfo }
+readReviewElmJson reviewProject elmJsonPath =
+    fetchElmJson reviewProject elmJsonPath
+        |> TTask.andThen
             (\rawElmJson ->
                 parseElmJson reviewProject elmJsonPath rawElmJson
                     |> Result.map (\application -> { raw = rawElmJson, application = application })
-                    |> TaskExtra.fromResult
+                    |> TTask.fromResult
             )
 
 
-fetchElmJson : FileSystem -> ReviewProject -> Path -> Task Problem String
-fetchElmJson fs reviewProject elmJsonPath =
-    Fs.readTextFile fs elmJsonPath
-        |> Task.mapError
+fetchElmJson : ReviewProject -> Path -> TTask Problem String
+fetchElmJson reviewProject elmJsonPath =
+    Fs.readTextFile elmJsonPath
+        |> TTask.mapError
             (\error ->
                 case error of
-                    Fs.NotFound _ ->
+                    FsData.NotFound _ ->
                         elmJsonNotFoundProblem reviewProject elmJsonPath
 
-                    Fs.PermissionDenied ->
+                    FsData.PermissionDenied ->
                         { title = "PERMISSION DENIED"
                         , message =
                             \c ->
@@ -389,10 +382,10 @@ Try changing the permissions of the file and/or its parents directories."""
                             |> Problem.from Problem.Recoverable
                             |> Problem.withPath elmJsonPath
 
-                    Fs.IoError "Not a directory" ->
+                    FsData.IoError "Not a directory" ->
                         notADirectoryConfigurationProblem elmJsonPath
 
-                    Fs.IoError message ->
+                    FsData.IoError message ->
                         Problem.unexpectedError ("when trying to read " ++ elmJsonPath) message
                             |> Problem.withPath elmJsonPath
             )
@@ -490,25 +483,25 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
             Ok application
 
 
-compileProject : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
-compileProject fs os options reviewFolder buildFolder reviewAppPath =
+compileProject : BuildOptions options -> Path -> Path -> String -> TTask Problem ()
+compileProject options reviewFolder buildFolder reviewAppPath =
     case options.outputTarget of
         OutputTarget.JavaScriptTarget ->
-            compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath
+            compileProjectUsingElmMake options reviewFolder buildFolder reviewAppPath
 
         OutputTarget.ElmRunTarget ->
-            compileProjectUsingElmRun os options.processEnv reviewFolder buildFolder reviewAppPath
+            compileProjectUsingElmRun options.processEnv reviewFolder buildFolder reviewAppPath
 
 
-compileProjectUsingElmMake : FileSystem -> ProcessCapability -> BuildOptions options -> Path -> Path -> String -> Task Problem ()
-compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath =
+compileProjectUsingElmMake : BuildOptions options -> Path -> Path -> String -> TTask Problem ()
+compileProjectUsingElmMake options reviewFolder buildFolder reviewAppPath =
     let
         elmBinary : Path
         elmBinary =
             -- TODO Apply `backwardsCompatiblePath` from `elm-binary.js`?
             Maybe.withDefault "elm" options.elmCompilerPath
     in
-    ProcessExtra.runButFailOnError os
+    Process.run
         elmBinary
         { args =
             [ "make"
@@ -525,24 +518,24 @@ compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
         , env = Just (ProcessEnv.asProcessEnv options.processEnv)
         , cwd = Just buildFolder
-        , stdin = Process.NullStdin
-        , stdout = Process.NullStdout
-        , stderr = Process.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = Process.TruncateOutput }
+        , stdin = ProcessData.NullStdin
+        , stdout = ProcessData.NullStdout
+        , stderr = ProcessData.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = ProcessData.TruncateOutput }
         }
-        |> Task.mapError
+        |> TTask.mapError
             (\error ->
                 case error of
-                    ProcessExtra.ProcessRunError processError ->
+                    ProcessData.ProcessRunError processError ->
                         processErrorToProblem "while building the review application binary" processError
 
-                    ProcessExtra.CommandNotFound ->
+                    ProcessData.CommandNotFound ->
                         elmNotFoundError { usedPath = elmBinary, elmCompilerPath = options.elmCompilerPath }
 
-                    ProcessExtra.CommandFailed completed ->
+                    ProcessData.CommandFailed completed ->
                         compilationError reviewFolder completed.stderr
                             |> Problem.from Problem.Recoverable
             )
-        |> Task.andThen (\_ -> OptimizeJs.optimize fs options.debug reviewAppPath)
+        |> TTask.andThen (\_ -> OptimizeJs.optimize options.debug reviewAppPath)
 
 
 elmNotFoundError : { usedPath : Path, elmCompilerPath : Maybe Path } -> Problem
@@ -565,9 +558,9 @@ A few options:
         |> Problem.withPath usedPath
 
 
-compileProjectUsingElmRun : ProcessCapability -> ProcessEnv -> Path -> Path -> String -> Task Problem ()
-compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
-    ProcessExtra.runButFailOnError os
+compileProjectUsingElmRun : ProcessEnv -> Path -> Path -> String -> TTask Problem ()
+compileProjectUsingElmRun processEnv reviewFolder buildFolder reviewAppPath =
+    Process.run
         -- TODO Get run from somewhere
         "run"
         { args =
@@ -575,23 +568,23 @@ compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
             , "--trust-always"
             , "-o"
             , reviewAppPath
-            , Path.join2 buildFolder "src/Elm/Review/Main.elm"
+            , Path.join2 buildFolder "src/Elm/Review/ElmRunMain.elm"
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
         , env = Just (ProcessEnv.asProcessEnv processEnv)
         , cwd = Nothing
-        , stdin = Process.NullStdin
-        , stdout = Process.NullStdout
-        , stderr = Process.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = Process.TruncateOutput }
+        , stdin = ProcessData.NullStdin
+        , stdout = ProcessData.NullStdout
+        , stderr = ProcessData.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = ProcessData.TruncateOutput }
         }
-        |> Task.mapError
+        |> TTask.mapError
             (\error ->
                 case error of
-                    ProcessExtra.ProcessRunError processError ->
+                    ProcessData.ProcessRunError processError ->
                         processErrorToProblem "while building the review application binary" processError
 
-                    ProcessExtra.CommandNotFound ->
+                    ProcessData.CommandNotFound ->
                         { title = "COMMAND NOT FOUND"
 
                         -- TODO Make "run not found" helper more helpful, e.g. by adding installations details.
@@ -599,11 +592,11 @@ compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
                         }
                             |> Problem.from Problem.Recoverable
 
-                    ProcessExtra.CommandFailed completed ->
+                    ProcessData.CommandFailed completed ->
                         compilationError reviewFolder completed.stderr
                             |> Problem.from Problem.Recoverable
             )
-        |> Task.map (\_ -> ())
+        |> TTask.map (\_ -> ())
 
 
 compilationError : Path -> Maybe String -> ProblemSimple

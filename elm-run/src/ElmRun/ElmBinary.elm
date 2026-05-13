@@ -1,27 +1,26 @@
 module ElmRun.ElmBinary exposing (findElmVersion)
 
+import Elm.Review.Testable.Process as Process
+import Elm.Review.Testable.ProcessData as ProcessData
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version exposing (Version)
-import ElmRun.ProcessExtra as ProcessExtra
-import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
-import Task exposing (Task)
 
 
-findElmVersion : ProcessCapability -> Task x Version
-findElmVersion os =
-    ProcessExtra.runButFailOnError os
+findElmVersion : TTask x Version
+findElmVersion =
+    Process.run
         -- TODO Use elmCompilerPath if available
         "elm"
         { cwd = Nothing
         , env = Nothing
         , args = [ "--version" ]
-        , stdin = Process.NullStdin
-        , stdout = Process.CaptureStdout { maxBytes = 4096, onOverflow = Process.TruncateOutput }
-        , stderr = Process.NullStderr
+        , stdin = ProcessData.NullStdin
+        , stdout = ProcessData.CaptureStdout { maxBytes = 4096, onOverflow = ProcessData.TruncateOutput }
+        , stderr = ProcessData.NullStderr
         }
-        |> Task.map .stdout
-        |> Task.onError (\_ -> Task.succeed Nothing)
-        |> Task.map
+        |> TTask.map .stdout
+        |> TTask.onError (\_ -> TTask.succeed Nothing)
+        |> TTask.map
             (\stdout ->
                 let
                     version : Maybe Version
