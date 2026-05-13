@@ -31,7 +31,7 @@ checkoutGitRepository fs os offline remoteTemplate debug =
 
         git : List String -> Task String ()
         git args =
-            Process.run os
+            ProcessExtra.runButFailOnError os
                 "git"
                 { args = args
                 , cwd = Just repoFolder
@@ -40,21 +40,13 @@ checkoutGitRepository fs os offline remoteTemplate debug =
                 , stdout = ProcessExtra.stdoutSpec debug
                 , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 }
-                |> Task.mapError (\error -> ProcessExtra.errorToString error)
-                |> Task.andThen
-                    (\{ exitCode, stderr } ->
-                        if exitCode == 0 then
-                            Task.succeed ()
-
-                        else
-                            Task.fail (Maybe.withDefault "No Git output." stderr)
-                    )
-                |> Task.mapError (\error -> "$ git " ++ String.join " " args ++ "\n\n" ++ error)
+                |> Task.mapError (\error -> fromGitError args error)
+                |> Task.map (\_ -> ())
 
         {- Same as the `git` function but captures and returns the stdout output. -}
         gitCapture : List String -> Task String String
         gitCapture args =
-            Process.run os
+            ProcessExtra.runButFailOnError os
                 "git"
                 { args = args
                 , cwd = Just repoFolder
@@ -63,20 +55,30 @@ checkoutGitRepository fs os offline remoteTemplate debug =
                 , stdout = Process.CaptureStdout { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
                 }
-                |> Task.mapError ProcessExtra.errorToString
-                |> Task.andThen
-                    (\result ->
-                        if result.exitCode == 0 then
-                            Task.succeed (Maybe.withDefault "" result.stdout)
-
-                        else
-                            Task.fail (Maybe.withDefault "No process output." result.stderr)
-                    )
-                |> Task.mapError (\error -> "$ git " ++ String.join " " args ++ "\n\n" ++ error)
+                |> Task.mapError (\error -> fromGitError args error)
+                |> Task.map (\result -> Maybe.withDefault "" result.stdout)
     in
     Task.map2 (\() () -> Path.join2 repoFolder (Maybe.withDefault "." remoteTemplate.pathToFolder))
         (createRepoIfNecessary fs git offline remoteTemplate repoFolder)
         (pullAndCheckout { git = git, gitCapture = gitCapture } offline remoteTemplate)
+
+
+fromGitError : List String -> ProcessExtra.SpawnError -> String
+fromGitError args error =
+    let
+        errorDetails : String
+        errorDetails =
+            case error of
+                ProcessExtra.ProcessError processError ->
+                    ProcessExtra.errorToString processError
+
+                ProcessExtra.CommandNotFound ->
+                    "Command `git` not found"
+
+                ProcessExtra.CommandFailed completed ->
+                    Maybe.withDefault "No Git output." completed.stderr
+    in
+    "$ git " ++ String.join " " args ++ "\n\n" ++ errorDetails
 
 
 createRepoIfNecessary : FileSystem -> (List String -> Task String ()) -> Bool -> RemoteTemplate -> Path -> Task Problem ()
