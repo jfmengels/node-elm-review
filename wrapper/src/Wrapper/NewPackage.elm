@@ -194,7 +194,7 @@ createProject input { fs, os, options } =
                             "while copying the GitHub Actions"
                     in
                     case error of
-                        ProcessExtra.ProcessError processError ->
+                        ProcessExtra.ProcessRunError processError ->
                             Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
 
                         ProcessExtra.CommandNotFound ->

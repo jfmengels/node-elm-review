@@ -199,7 +199,7 @@ createTemplateConfiguration fs os reviewPath offline remoteTemplate debug =
                                                                         "copying the template's " ++ directory ++ " source directory"
                                                                 in
                                                                 case error of
-                                                                    ProcessExtra.ProcessError processError ->
+                                                                    ProcessExtra.ProcessRunError processError ->
                                                                         Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
 
                                                                     ProcessExtra.CommandNotFound ->
