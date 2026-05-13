@@ -11,7 +11,7 @@ module Elm.Review.Testable.Internal exposing
 -}
 
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
-import Elm.Review.Testable.ProcessData exposing (ProcessError)
+import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import ElmReview.Path exposing (Path)
 
@@ -37,6 +37,9 @@ type TTask error value
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
       -- Stdin
     | ReadKey (Result StdinError Key -> TaskResult error value)
+      -- Process
+    | RunProcess String SpawnOptions (Result SpawnError Completed -> TaskResult error value)
+    | SpawnProcess String SpawnOptions (Result SpawnError ProcessId -> TaskResult error value)
 
 
 type TaskResult error value

@@ -276,6 +276,13 @@ transform tx source =
         Internal.ReadKey onResult ->
             Internal.ReadKey (onResult >> tx)
 
+        -- Process
+        Internal.RunProcess command spawnOptions onResult ->
+            Internal.RunProcess command spawnOptions (onResult >> tx)
+
+        Internal.SpawnProcess command spawnOptions onResult ->
+            Internal.SpawnProcess command spawnOptions (onResult >> tx)
+
 
 
 -- Commands
