@@ -523,7 +523,7 @@ compileProjectUsingElmMake fs os options reviewFolder buildFolder reviewAppPath 
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
-        , env = Just (ProcessEnv.asProcessOptions options.processEnv)
+        , env = Just (ProcessEnv.asProcessEnv options.processEnv)
         , cwd = Just buildFolder
         , stdin = Process.NullStdin
         , stdout = Process.NullStdout
@@ -579,7 +579,7 @@ compileProjectUsingElmRun os processEnv reviewFolder buildFolder reviewAppPath =
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
-        , env = Just (ProcessEnv.asProcessOptions processEnv)
+        , env = Just (ProcessEnv.asProcessEnv processEnv)
         , cwd = Nothing
         , stdin = Process.NullStdin
         , stdout = Process.NullStdout

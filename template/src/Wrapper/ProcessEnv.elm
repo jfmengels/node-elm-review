@@ -1,6 +1,6 @@
 module Wrapper.ProcessEnv exposing
     ( ProcessEnv, from
-    , asProcessOptions
+    , asProcessEnv
     )
 
 {-|
@@ -22,6 +22,6 @@ from =
     ProcessEnv
 
 
-asProcessOptions : ProcessEnv -> List ( String, String )
-asProcessOptions (ProcessEnv processEnv) =
+asProcessEnv : ProcessEnv -> List ( String, String )
+asProcessEnv (ProcessEnv processEnv) =
     Dict.toList processEnv
