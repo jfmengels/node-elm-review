@@ -39,7 +39,7 @@ type alias Config model msg =
 type alias Flags =
     { args : List String
     , env : Dict String String
-    , stdin : Maybe Stdin
+    , stdinSupported : Bool
     }
 
 
@@ -60,7 +60,7 @@ init : (Flags -> InitError.InitError ( model, TCmd msg )) -> Env -> ( ModelWrapp
 init initFn env =
     case requireCapabilities env of
         Ok { fs, os } ->
-            case initFn { args = env.args, env = env.env, stdin = env.stdin } of
+            case initFn { args = env.args, env = env.env, stdinSupported = env.stdin /= Nothing } of
                 InitError.Success ( mainModel, cmd ) ->
                     ( Running
                         { fs = fs

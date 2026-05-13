@@ -10,7 +10,6 @@ module Wrapper.NewPackage exposing
 
 -}
 
-import Capabilities exposing (Console, Stdin)
 import Elm.Constraint
 import Elm.License as License exposing (License)
 import Elm.Module as Module
@@ -44,7 +43,7 @@ type Model
 
 
 type alias ModelData =
-    { stdin : Maybe Stdin
+    { stdinSupported : Bool
     , options : NewPackageOptions
     }
 
@@ -68,10 +67,10 @@ type alias Warning =
     Colorize -> String
 
 
-init : Maybe Stdin -> NewPackageOptions -> ( Model, TCmd Msg )
-init stdin options =
+init : Bool -> NewPackageOptions -> ( Model, TCmd Msg )
+init stdinSupported options =
     ( Model
-        { stdin = stdin
+        { stdinSupported = stdinSupported
         , options = options
         }
     , -- TODO Remove hardcoded values

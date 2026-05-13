@@ -11,7 +11,6 @@ module ElmRun.Prompt exposing
 
 -}
 
-import Capabilities exposing (Console, Stdin)
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Internal exposing (TCmd)
@@ -22,11 +21,11 @@ import ElmReview.Color as Color exposing (Color(..), Colorize)
 
 
 type Msg
-    = UserPressedKey Stdin (Result StdinError Stdin.Key)
+    = UserPressedKey (Result StdinError Stdin.Key)
 
 
-prompt : Stdin -> { color : Color.Support, priorMessage : Maybe String, question : Colorize -> String } -> TCmd Msg
-prompt stdin { color, priorMessage, question } =
+prompt : { color : Color.Support, priorMessage : Maybe String, question : Colorize -> String } -> TCmd Msg
+prompt { color, priorMessage, question } =
     let
         message : String
         message =
@@ -48,7 +47,7 @@ prompt stdin { color, priorMessage, question } =
     TCmd.batch
         [ Cli.printlnStdout (message ++ question_ ++ yesNo ++ "")
         , Stdin.readKey
-            |> TTask.attempt (UserPressedKey stdin)
+            |> TTask.attempt UserPressedKey
         ]
 
 
@@ -62,7 +61,7 @@ update : Msg -> PromptResult
 update msg =
     case msg of
         -- TODO Figure out how to get interactive keypresses that don't wait for the Enter key
-        UserPressedKey stdin (Ok key) ->
+        UserPressedKey (Ok key) ->
             case interpretKey key of
                 Just True ->
                     Accepted
@@ -72,10 +71,10 @@ update msg =
 
                 Nothing ->
                     Stdin.readKey
-                        |> TTask.attempt (UserPressedKey stdin)
+                        |> TTask.attempt UserPressedKey
                         |> TriggerCmd
 
-        UserPressedKey _ (Err err) ->
+        UserPressedKey (Err err) ->
             Debug.todo ("Got error while awaiting key: " ++ Debug.toString err)
 
 

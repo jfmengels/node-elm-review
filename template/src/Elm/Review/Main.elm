@@ -7,7 +7,6 @@ module Elm.Review.Main exposing
     )
 
 import Array exposing (Array)
-import Capabilities exposing (Console, Stdin)
 import Dict exposing (Dict)
 import Elm.Project
 import Elm.Review.CliCommunication as CliCommunication
@@ -53,7 +52,7 @@ import Worker.Capabilities exposing (FileWatcher)
 
 
 type alias Model =
-    { stdin : Maybe Stdin
+    { stdinSupported : Bool
     , options : Options
 
     --
@@ -97,11 +96,11 @@ type FixPromptKind
 
 
 initWithOptions :
-    Maybe Stdin
+    Bool
     -> Options
     -> List Rule
     -> ( Model, TCmd Msg )
-initWithOptions stdin options rulesFromConfig =
+initWithOptions stdinSupported options rulesFromConfig =
     let
         rules : List Rule
         rules =
@@ -114,7 +113,7 @@ initWithOptions stdin options rulesFromConfig =
 
         model : Model
         model =
-            { stdin = stdin
+            { stdinSupported = stdinSupported
             , options = options
             , store = store
             , lastReviewedStoreVersion = StoreVersion.zero
@@ -130,14 +129,14 @@ initWithOptions stdin options rulesFromConfig =
     )
 
 
-init : Maybe Stdin -> List String -> InitError ( Model, TCmd Msg )
-init stdin args =
+init : Bool -> List String -> InitError ( Model, TCmd Msg )
+init stdinSupported args =
     case Options.parse args of
         Ok options ->
             computeRulesToRun options
                 |> InitError.map
                     (\rulesFromConfig ->
-                        initWithOptions stdin options rulesFromConfig
+                        initWithOptions stdinSupported options rulesFromConfig
                     )
 
         Err problem ->
@@ -1024,55 +1023,52 @@ sendFixPrompt diffs result nbErrors model =
             , removedFiles = removedFiles
             }
     in
-    case shouldPromptForFix model of
-        Just stdin ->
-            let
-                proposal : List Reporter.TextContent
-                proposal =
+    if shouldPromptForFix model then
+        let
+            proposal : List Reporter.TextContent
+            proposal =
+                case nbErrors of
+                    OneError filePath error ->
+                        Reporter.formatSingleFixProposal
+                            model.options
+                            (pathAndSource (Store.project model.store) filePath)
+                            (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
+                            diffs
+
+                    MultipleErrors _ ->
+                        confirmationForMultipleFixesPrompt model diffs result.fixedErrors
+
+            promptId : PromptId
+            promptId =
+                incrementPrompt model.promptId
+        in
+        ( { model | promptId = promptId }
+        , Prompt.prompt
+            { color = model.options.color
+            , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
+            , question =
+                \_ ->
                     case nbErrors of
-                        OneError filePath error ->
-                            Reporter.formatSingleFixProposal
-                                model.options
-                                (pathAndSource (Store.project model.store) filePath)
-                                (fromReviewError (Store.suppressedErrors model.store) (Store.ruleLinks model.store) error)
-                                diffs
+                        OneError _ _ ->
+                            "Do you wish to apply this fix?"
 
-                        MultipleErrors _ ->
-                            confirmationForMultipleFixesPrompt model diffs result.fixedErrors
-
-                promptId : PromptId
-                promptId =
-                    incrementPrompt model.promptId
-            in
-            ( { model | promptId = promptId }
-            , Prompt.prompt
-                stdin
-                { color = model.options.color
-                , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
-                , question =
-                    \_ ->
-                        case nbErrors of
-                            OneError _ _ ->
-                                "Do you wish to apply this fix?"
-
-                            MultipleErrors numberOfFixedErrors ->
-                                "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
-                }
-                |> TCmd.map (FixPromptMsg promptId fixPayload)
-            )
-
-        Nothing ->
-            ( model, applyFixChanges model.options fixPayload )
-
-
-shouldPromptForFix : Model -> Maybe Stdin
-shouldPromptForFix model =
-    if model.options.skipFixPrompt then
-        -- If there's no stdin, assume the reply is yes.
-        model.stdin
+                        MultipleErrors numberOfFixedErrors ->
+                            "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
+            }
+            |> TCmd.map (FixPromptMsg promptId fixPayload)
+        )
 
     else
-        Nothing
+        ( model, applyFixChanges model.options fixPayload )
+
+
+shouldPromptForFix : Model -> Bool
+shouldPromptForFix model =
+    if model.options.skipFixPrompt then
+        False
+
+    else
+        model.stdinSupported
 
 
 incrementPrompt : PromptId -> PromptId
