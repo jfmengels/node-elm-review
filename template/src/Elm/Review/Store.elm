@@ -184,14 +184,14 @@ type alias UpdateInput =
     }
 
 
-update : UpdateInput -> Msg -> Model -> ( Model, TCmd Msg )
-update inputs msg (Model model) =
-    updateInner inputs msg model
+update : Options -> Msg -> Model -> ( Model, TCmd Msg )
+update options msg (Model model) =
+    updateInner options msg model
         |> Tuple.mapFirst Model
 
 
-updateInner : UpdateInput -> Msg -> ModelData -> ( ModelData, TCmd Msg )
-updateInner { stderr, options } msg model =
+updateInner : Options -> Msg -> ModelData -> ( ModelData, TCmd Msg )
+updateInner options msg model =
     let
         decrementTaskCount : () -> ( ModelData, TCmd Msg )
         decrementTaskCount () =

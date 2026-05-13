@@ -47,8 +47,6 @@ import Worker.Capabilities exposing (FileWatcher)
 
 type alias Model =
     { stdin : Maybe Stdin
-    , stdout : Console
-    , stderr : Console
     , options : Options
 
     --
@@ -110,8 +108,6 @@ initWithOptions env options rulesFromConfig =
         model : Model
         model =
             { stdin = env.stdin
-            , stdout = env.stdout
-            , stderr = env.stderr
             , options = options
             , store = store
             , lastReviewedStoreVersion = StoreVersion.zero
@@ -127,8 +123,8 @@ initWithOptions env options rulesFromConfig =
     )
 
 
-computeRulesToRun : { env | stdout : Console } -> Options -> Result (TCmd msg) (List Rule)
-computeRulesToRun env options =
+computeRulesToRun : Options -> Result (TCmd msg) (List Rule)
+computeRulesToRun options =
     let
         stopBecauseOfProblem_ : Problem -> TCmd msg
         stopBecauseOfProblem_ problem =
@@ -205,7 +201,6 @@ I recommend you take a look at the following documents:
                         -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
                         TCmd.batch
                             [ printJson
-                                env.stdout
                                 options.debug
                                 (encodeConfigurationErrors options configurationErrors)
                                 (Encode.object [])
@@ -215,7 +210,7 @@ I recommend you take a look at the following documents:
 
                     NDJson ->
                         TCmd.batch
-                            [ printNDJson env.stdout (encodeConfigurationErrorsForNDJson options configurationErrors)
+                            [ printNDJson (encodeConfigurationErrorsForNDJson options configurationErrors)
                             , Cli.exit 1
                             ]
                             |> Err
@@ -294,9 +289,7 @@ update msg model =
             let
                 ( store, cmd ) =
                     Store.update
-                        { stderr = model.stderr
-                        , options = model.options
-                        }
+                        model.options
                         storeMsg
                         model.store
             in
@@ -635,7 +628,7 @@ saveRunReviewResultsInModel { model, result } =
         , case
             result.reviewErrors
                 |> SuppressedErrors.fromReviewErrors
-                |> SuppressedErrors.write model.fs model.options []
+                |> SuppressedErrors.write model.options []
           of
             Just task ->
                 TTask.attempt WroteSuppressionFiles task
@@ -696,7 +689,6 @@ printReport previousSuppressedErrors result model =
                             errorsByFile
                 in
                 printJson
-                    model.stdout
                     model.options.debug
                     errors
                     (Encode.dict identity identity result.extracts)
@@ -716,7 +708,7 @@ printReport previousSuppressedErrors result model =
                             }
                             ruleLinks
                         )
-                    |> printNDJson model.stdout
+                    |> printNDJson
         , if model.options.watch then
             TCmd.none
 
@@ -728,8 +720,8 @@ printReport previousSuppressedErrors result model =
         ]
 
 
-printJson : Console -> Bool -> Encode.Value -> Encode.Value -> TCmd msg
-printJson stdout debug errors extracts =
+printJson : Bool -> Encode.Value -> Encode.Value -> TCmd msg
+printJson debug errors extracts =
     let
         indent : Int
         indent =
@@ -750,8 +742,8 @@ printJson stdout debug errors extracts =
         |> Cli.printlnStdout
 
 
-printNDJson : Console -> List Encode.Value -> TCmd msg
-printNDJson stdout lines =
+printNDJson : List Encode.Value -> TCmd msg
+printNDJson lines =
     lines
         |> List.map (Encode.encode 0)
         |> String.join "\n"
@@ -1396,23 +1388,18 @@ maybeMapAndCons fn maybe list =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions wrapper =
-    case wrapper of
-        Running model ->
-            if model.options.watch then
-                case watchPermission () of
-                    Just fileWatcher ->
-                        Store.subscriptions fileWatcher model.options model.store
-                            |> Sub.map StoreMsg
+subscriptions model =
+    if model.options.watch then
+        case watchPermission () of
+            Just fileWatcher ->
+                Store.subscriptions fileWatcher model.options model.store
+                    |> Sub.map StoreMsg
 
-                    Nothing ->
-                        Sub.none
-
-            else
+            Nothing ->
                 Sub.none
 
-        Done ->
-            Sub.none
+    else
+        Sub.none
 
 
 watchPermission : () -> Maybe FileWatcher
