@@ -44,9 +44,7 @@ type Model
 
 
 type alias ModelData =
-    { stdout : Console
-    , stderr : Console
-    , stdin : Maybe Stdin
+    { stdin : Maybe Stdin
     , options : NewPackageOptions
     }
 
@@ -70,12 +68,10 @@ type alias Warning =
     Colorize -> String
 
 
-init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> NewPackageOptions -> ( Model, TCmd Msg )
-init { stdout, stderr, stdin } options =
+init : Maybe Stdin -> NewPackageOptions -> ( Model, TCmd Msg )
+init stdin options =
     ( Model
-        { stdout = stdout
-        , stderr = stderr
-        , stdin = stdin
+        { stdin = stdin
         , options = options
         }
     , -- TODO Remove hardcoded values

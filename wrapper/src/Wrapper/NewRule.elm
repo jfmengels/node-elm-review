@@ -42,9 +42,7 @@ type Model
 
 
 type alias ModelData =
-    { stdout : Console
-    , stderr : Console
-    , stdin : Maybe Stdin
+    { stdin : Maybe Stdin
     , options : NewRuleOptions
     }
 
@@ -96,17 +94,15 @@ couldNotFindElmJsonMessage pathToElmJson_ c =
 You can run """ ++ c Cyan "elm-review new-package" ++ " to get started with a new project designed to publish review rules."
 
 
-init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> NewRuleOptions -> ( Model, TCmd Msg )
-init { stdout, stderr, stdin } options =
+init : Maybe Stdin -> NewRuleOptions -> ( Model, TCmd Msg )
+init stdin options =
     let
         pathToElmJson_ : String
         pathToElmJson_ =
             pathToElmJson options
     in
     ( Model
-        { stdout = stdout
-        , stderr = stderr
-        , stdin = stdin
+        { stdin = stdin
         , options = options
         }
     , readReviewElmJson pathToElmJson_

@@ -26,15 +26,8 @@ import Wrapper.Options exposing (PrepareOfflineOptions)
 import Wrapper.Options.RuleType exposing (RuleType)
 
 
-type Model
-    = Model ModelData
-
-
-type alias ModelData =
-    { stdout : Console
-    , stderr : Console
-    , options : PrepareOfflineOptions
-    }
+type alias Model =
+    PrepareOfflineOptions
 
 
 type Msg
@@ -55,13 +48,9 @@ type alias Warning =
     Colorize -> String
 
 
-init : { env | stdout : Console, stderr : Console } -> PrepareOfflineOptions -> ( Model, TCmd Msg )
-init { stdout, stderr } options =
-    ( Model
-        { stdout = stdout
-        , stderr = stderr
-        , options = options
-        }
+init : PrepareOfflineOptions -> ( Model, TCmd Msg )
+init options =
+    ( options
     , run options
         |> TTask.attempt Done
     )
@@ -77,15 +66,15 @@ run options =
 
 
 update : Msg -> Model -> TCmd Msg
-update msg (Model model) =
+update msg options =
     case msg of
         Done result ->
             case result of
                 Ok () ->
                     TCmd.batch
-                        [ case model.options.reportMode of
+                        [ case options.reportMode of
                             ReportMode.HumanReadable ->
-                                Cli.printlnStdout (successMessage (Color.toAnsi model.options.color))
+                                Cli.printlnStdout (successMessage (Color.toAnsi options.color))
 
                             ReportMode.Json ->
                                 TCmd.none
@@ -97,9 +86,9 @@ update msg (Model model) =
 
                 Err problem ->
                     Problem.stop
-                        { color = model.options.color
+                        { color = options.color
                         , reportMode = ReportMode.HumanReadable
-                        , debug = model.options.debug
+                        , debug = options.debug
                         , attemptFutureRecovery = False
                         }
                         problem
