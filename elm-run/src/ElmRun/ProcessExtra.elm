@@ -1,14 +1,12 @@
 module ElmRun.ProcessExtra exposing
     ( errorToString, stdoutSpec
     , SpawnError(..), runButFailOnError
-    , which
     )
 
 {-|
 
 @docs errorToString, stdoutSpec
 @docs SpawnError, runButFailOnError
-@docs which
 
 -}
 
@@ -66,22 +64,6 @@ runButFailOnError os command spawnOptions =
                 else
                     Task.fail (CommandFailed completed)
             )
-
-
-{-| Find the path to a command.
--}
-which : ProcessCapability -> String -> Task ProcessError (Maybe String)
-which os command =
-    Process.run os
-        "which"
-        { cwd = Nothing
-        , env = Nothing
-        , args = [ command ]
-        , stdin = Process.NullStdin
-        , stdout = Process.CaptureStdout { maxBytes = 4096, onOverflow = Process.TruncateOutput }
-        , stderr = Process.NullStderr
-        }
-        |> Task.map .stdout
 
 
 {-| Error code when command was not found.
