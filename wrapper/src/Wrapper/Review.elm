@@ -10,7 +10,6 @@ module Wrapper.Review exposing
 
 -}
 
-import Capabilities exposing (Console, FileWatcher)
 import Elm.Project
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
@@ -372,9 +371,3 @@ watchSourceDirectory directory =
         , eventMask = 2
         }
         ConfigSourceFileWasModified
-
-
-watchPermission : () -> Maybe FileWatcher
-watchPermission () =
-    -- TODO Get FileWatcher permission from somewhere
-    Nothing

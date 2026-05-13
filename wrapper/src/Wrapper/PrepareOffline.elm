@@ -10,7 +10,6 @@ module Wrapper.PrepareOffline exposing
 
 -}
 
-import Capabilities exposing (Console)
 import Elm.License exposing (License)
 import Elm.Module as Module
 import Elm.Package

@@ -1,6 +1,5 @@
 module ElmRun.Program exposing (Config, Program, program)
 
-import Capabilities exposing (Console, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
