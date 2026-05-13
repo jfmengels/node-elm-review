@@ -7,6 +7,7 @@ import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import ElmReview.Problem as Problem exposing (Problem)
+import Json.Decode as Decode
 
 
 type ModelWrapper model
@@ -33,7 +34,7 @@ type alias Flags =
 
 
 type alias Program model msg =
-    Platform.Program Flags (ModelWrapper model) msg
+    Platform.Program Decode.Value (ModelWrapper model) msg
 
 
 program : Config model msg -> Program model msg
@@ -45,25 +46,39 @@ program config =
         }
 
 
-init : (Flags -> InitError.InitError ( model, TCmd msg )) -> Flags -> ( ModelWrapper model, Cmd msg )
-init initFn flags =
-    case initFn { args = flags.args, env = flags.env } of
-        InitError.Success ( mainModel, cmd ) ->
-            ( Running
-                { mainModel = mainModel
-                }
-            , Testable.cmd NodeEffects.effects cmd
+init : (Flags -> InitError.InitError ( model, TCmd msg )) -> Decode.Value -> ( ModelWrapper model, Cmd msg )
+init initFn rawFlags =
+    case Decode.decodeValue flagsDecoder rawFlags of
+        Ok flags ->
+            case initFn flags of
+                InitError.Success ( mainModel, cmd ) ->
+                    ( Running
+                        { mainModel = mainModel
+                        }
+                    , Testable.cmd NodeEffects.effects cmd
+                    )
+
+                InitError.Problem formatOptions problem ->
+                    ( Done
+                    , stop formatOptions problem
+                    )
+
+                InitError.StringProblem string ->
+                    ( Done
+                    , Debug.todo "stop on stringProblem"
+                    )
+
+        Err decodingError ->
+            ( Done
+            , Debug.todo ("Problem decoding flags: " ++ Decode.errorToString decodingError)
             )
 
-        InitError.Problem formatOptions problem ->
-            ( Done
-            , stop formatOptions problem
-            )
 
-        InitError.StringProblem string ->
-            ( Done
-            , Debug.todo "stop on stringProblem"
-            )
+flagsDecoder : Decode.Decoder Flags
+flagsDecoder =
+    Decode.map2 Flags
+        (Decode.field "args" (Decode.list Decode.string))
+        (Decode.field "env" (Decode.dict Decode.string))
 
 
 update : (msg -> model -> ( model, TCmd msg )) -> msg -> ModelWrapper model -> ( ModelWrapper model, Cmd msg )
