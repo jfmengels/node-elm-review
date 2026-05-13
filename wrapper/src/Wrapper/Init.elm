@@ -40,9 +40,7 @@ type Model
 
 
 type alias ModelData =
-    { stdout : Console
-    , stderr : Console
-    , stdin : Maybe Stdin
+    { stdin : Maybe Stdin
     , options : InitOptions
     }
 
@@ -52,14 +50,12 @@ type Msg
     | CreatedFiles (Result Problem ())
 
 
-init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> InitOptions -> ( Model, TCmd Msg )
-init { stdout, stderr, stdin } options =
+init : Maybe Stdin -> InitOptions -> ( Model, TCmd Msg )
+init stdin options =
     let
         model : ModelData
         model =
-            { stdout = stdout
-            , stderr = stderr
-            , stdin = stdin
+            { stdin = stdin
             , options = options
             }
     in

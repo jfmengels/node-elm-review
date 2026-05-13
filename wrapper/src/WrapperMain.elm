@@ -1,16 +1,19 @@
-module WrapperMain exposing (Model, Msg, main)
+module WrapperMain exposing (Model, Msg, init, subscriptions, update)
 
 import Array exposing (Array)
+import Capabilities exposing (Stdin)
 import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
+import Elm.Review.InitError as InitError exposing (InitError)
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
-import Elm.Review.Testable.FsData exposing (FsError)
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData exposing (FsError)
 import Elm.Review.Testable.Internal exposing (TCmd)
-import ElmReview.Color as Color exposing (Color(..))
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
+import ElmReview.Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions)
-import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import Wrapper.Help as Help
 import Wrapper.Init as Init
@@ -20,15 +23,6 @@ import Wrapper.Options.Parser as OptionsParser
 import Wrapper.OutputTarget as OutputTarget
 import Wrapper.PrepareOffline as PrepareOffline
 import Wrapper.Review as Review
-
-
-main : Cli.Program Model Msg
-main =
-    Cli.program
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        }
 
 
 type Model
@@ -45,6 +39,7 @@ type alias LoadingModel =
     { env : Dict String String
     , formatOptions : FormatOptions {}
     , toOptions : { elmJsonPath : Path } -> OptionsParser.OptionsParseResult
+    , stdin : Maybe Stdin
     }
 
 
@@ -57,50 +52,31 @@ type Msg
     | PrepareOfflineMsg PrepareOffline.Msg
 
 
-init : Dict String String -> List String -> ( Model, TCmd Msg )
-init env args =
-    case requireCapabilities env of
-        Err err ->
-            ( Done
-            , { title = "MISSING CAPABILITIES"
-              , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
-              }
-                |> Problem.from Problem.Unrecoverable
-                |> Problem.stop
-                    { color = Color.noColors
-                    , reportMode =
-                        if List.member "--report=json" args || List.member "--report=ndjson" args then
-                            ReportMode.Json
+init : Dict String String -> List String -> Maybe Stdin -> InitError ( Model, TCmd Msg )
+init env args stdin =
+    let
+        -- TODO Get binaryRoot path from somewhere
+        binaryRoot : Path
+        binaryRoot =
+            "/Users/m1/dev/node-elm-review"
 
-                        else
-                            ReportMode.HumanReadable
-                    , debug = List.member "--debug" args
-                    , attemptFutureRecovery = False
-                    }
-            )
-
-        Ok capabilities ->
-            let
-                -- TODO Get binaryRoot path from somewhere
-                binaryRoot : Path
-                binaryRoot =
-                    "/Users/m1/dev/node-elm-review"
-
-                -- TODO Get elmHomePath from somewhere
-                elmHomePath : String
-                elmHomePath =
-                    "/Users/m1/.elm"
-            in
-            handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath OutputTarget.JavaScriptTarget)
+        -- TODO Get elmHomePath from somewhere
+        elmHomePath : String
+        elmHomePath =
+            "/Users/m1/.elm"
+    in
+    OptionsParser.parse { args = args, env = env }
+        binaryRoot
+        elmHomePath
+        OutputTarget.JavaScriptTarget
+        |> handleCliArgsParseResult env stdin
 
 
-handleCliArgsParseResult : Dict String String -> OptionsParser.OptionsParseResult -> ( Model, TCmd Msg )
-handleCliArgsParseResult env result =
+handleCliArgsParseResult : Dict String String -> Maybe Stdin -> OptionsParser.OptionsParseResult -> InitError ( Model, TCmd Msg )
+handleCliArgsParseResult env stdin result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
-            ( Done
-            , Problem.stop formatOptions problem
-            )
+            InitError.Problem formatOptions problem
 
         OptionsParser.ShowHelp options ->
             ( Done
@@ -109,6 +85,7 @@ handleCliArgsParseResult env result =
                 , Cli.exit 0
                 ]
             )
+                |> InitError.Success
 
         OptionsParser.ShowVersion ->
             ( Done
@@ -117,12 +94,14 @@ handleCliArgsParseResult env result =
                 , Cli.exit 0
                 ]
             )
+                |> InitError.Success
 
         OptionsParser.NeedElmJsonPath { formatOptions, toOptions } ->
             ( Loading
                 { env = env
                 , formatOptions = formatOptions
                 , toOptions = toOptions
+                , stdin = stdin
                 }
             , getCwd env
                 |> TTask.andThen
@@ -130,80 +109,76 @@ handleCliArgsParseResult env result =
                         -- TODO Use `\` for Windows Support?
                         String.split "/" cwd
                             |> Array.fromList
-                            |> findNearestElmJson fs
+                            |> findNearestElmJson
                     )
                 |> TTask.attempt FoundNearestElmJson
             )
+                |> InitError.Success
 
         OptionsParser.Review options ->
             let
                 ( review, cmd ) =
-                    Review.init env
-                        { fs = fs
-                        , os = os
-                        }
-                        options
+                    Review.init options
             in
-            ( Review review, Cmd.map ReviewMsg cmd )
+            ( Review review, TCmd.map ReviewMsg cmd )
+                |> InitError.Success
 
         OptionsParser.Init options ->
             let
                 ( initModel, cmd ) =
-                    Init.init env
-                        { fs = fs
-                        , os = os
-                        }
-                        options
+                    Init.init stdin options
             in
-            ( Init initModel, Cmd.map InitMsg cmd )
+            ( Init initModel, TCmd.map InitMsg cmd )
+                |> InitError.Success
 
         OptionsParser.NewRule options ->
             let
                 ( newRuleModel, cmd ) =
-                    NewRule.init env fs options
+                    NewRule.init stdin options
             in
-            ( NewRule newRuleModel, Cmd.map NewRuleMsg cmd )
+            ( NewRule newRuleModel, TCmd.map NewRuleMsg cmd )
+                |> InitError.Success
 
         OptionsParser.NewPackage options ->
             let
                 ( newPackageModel, cmd ) =
-                    NewPackage.init env
-                        { fs = fs
-                        , os = os
-                        }
-                        options
+                    NewPackage.init stdin options
             in
-            ( NewPackage newPackageModel, Cmd.map NewPackageMsg cmd )
+            ( NewPackage newPackageModel, TCmd.map NewPackageMsg cmd )
+                |> InitError.Success
 
         OptionsParser.PrepareOffline options ->
             let
                 ( prepareOfflineModel, cmd ) =
-                    PrepareOffline.init env
-                        { fs = fs
-                        , os = os
-                        }
-                        options
+                    PrepareOffline.init options
             in
-            ( PrepareOffline prepareOfflineModel, Cmd.map PrepareOfflineMsg cmd )
+            ( PrepareOffline prepareOfflineModel, TCmd.map PrepareOfflineMsg cmd )
+                |> InitError.Success
 
 
-requireCapabilities : Env -> Result String { fs : FileSystem, os : ProcessCapability }
-requireCapabilities env =
-    Result.map2 (\fs os -> { fs = fs, os = os })
-        (Fs.require env)
-        (Os.requireProcess env)
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, TCmd Msg )
 update msg model =
     case msg of
         FoundNearestElmJson result ->
             case model of
                 Loading loading ->
-                    foundNearestElmJson loading result
+                    case foundNearestElmJson loading result of
+                        InitError.Success modelAndCmd ->
+                            modelAndCmd
+
+                        InitError.Problem formatOptions problem ->
+                            ( model, Problem.stop formatOptions problem )
+
+                        InitError.StringProblem string ->
+                            ( model
+                            , TCmd.batch
+                                [ Cli.printlnStdout string
+                                , Cli.exit 1
+                                ]
+                            )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, TCmd.none )
 
         ReviewMsg reviewMsg ->
             case model of
@@ -213,89 +188,85 @@ update msg model =
                             Review.update reviewMsg reviewModel
                     in
                     ( Review newReviewModel
-                    , Cmd.map ReviewMsg cmd
+                    , TCmd.map ReviewMsg cmd
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, TCmd.none )
 
         InitMsg initMsg ->
             case model of
                 Init initModel ->
                     ( model
                     , Init.update initMsg initModel
-                        |> Cmd.map InitMsg
+                        |> TCmd.map InitMsg
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, TCmd.none )
 
         NewPackageMsg newPackageMsg ->
             case model of
                 NewPackage newPackageModel ->
                     ( model
                     , NewPackage.update newPackageMsg newPackageModel
-                        |> Cmd.map NewPackageMsg
+                        |> TCmd.map NewPackageMsg
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, TCmd.none )
 
         NewRuleMsg newRuleMsg ->
             case model of
                 NewRule newRuleModel ->
                     ( model
                     , NewRule.update newRuleMsg newRuleModel
-                        |> Cmd.map NewRuleMsg
+                        |> TCmd.map NewRuleMsg
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, TCmd.none )
 
         PrepareOfflineMsg prepareOfflineMsg ->
             case model of
                 PrepareOffline prepareOfflineModel ->
                     ( model
                     , PrepareOffline.update prepareOfflineMsg prepareOfflineModel
-                        |> Cmd.map PrepareOfflineMsg
+                        |> TCmd.map PrepareOfflineMsg
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, TCmd.none )
 
 
-foundNearestElmJson : LoadingModel -> Result FsError Path -> ( Model, Cmd Msg )
+foundNearestElmJson : LoadingModel -> Result FsError Path -> InitError ( Model, TCmd Msg )
 foundNearestElmJson loading result =
     case result of
         Ok elmJsonPath ->
             handleCliArgsParseResult
                 loading.env
-                loading
+                loading.stdin
                 (loading.toOptions { elmJsonPath = elmJsonPath })
 
         Err (FsData.NotFound _) ->
-            ( Done
-            , { title = "COULD NOT FIND ELM.JSON"
-              , message =
-                    \c ->
-                        "I was expecting to find an " ++ c YellowBright "elm.json" ++ """ file in the current directory or one of its parents, but I did not find one.
+            { title = "COULD NOT FIND ELM.JSON"
+            , message =
+                \c ->
+                    "I was expecting to find an " ++ c YellowBright "elm.json" ++ """ file in the current directory or one of its parents, but I did not find one.
 
 If you wish to run elm-review from outside your project,
 try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
-              }
+            }
                 |> Problem.from Problem.Recoverable
-                |> Problem.stop loading.env.stderr loading.formatOptions
-            )
+                |> InitError.Problem loading.formatOptions
 
         Err error ->
-            ( Done
-            , Problem.unexpectedError "when trying to find your project root" (FsExtra.errorToString error)
-                |> Problem.stop loading.env.stderr loading.formatOptions
-            )
+            Problem.unexpectedError "when trying to find your project root" (FsExtra.errorToString error)
+                |> InitError.Problem loading.formatOptions
 
 
 findNearestElmJson : Array String -> TTask FsError Path
-findNearestElmJson fs pathSegments =
+findNearestElmJson pathSegments =
     if Array.isEmpty pathSegments then
         TTask.fail (FsData.NotFound "")
 
@@ -306,18 +277,18 @@ findNearestElmJson fs pathSegments =
                 -- TODO Does this work for Windows?
                 Array.push "elm.json" pathSegments |> Array.toList |> String.join "/"
         in
-        Fs.stat fs path
+        Fs.stat path
             |> TTask.map (\_ -> path)
             |> TTask.onError
                 (\_ ->
-                    findNearestElmJson fs (Array.slice 0 -1 pathSegments)
+                    findNearestElmJson (Array.slice 0 -1 pathSegments)
                 )
 
 
 getCwd : Dict String String -> TTask FsError Path
 getCwd env =
     -- TODO Replace this by the following when fixed.
-    -- Fs.toSandboxRel fs path "."
+    -- Fs.toSandboxRel  path "."
     case Dict.get "PWD" env of
         Just path ->
             TTask.succeed path

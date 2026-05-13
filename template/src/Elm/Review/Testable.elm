@@ -27,7 +27,6 @@ import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, Proces
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TTask as TestableTask
 import ElmReview.Path exposing (Path)
-import Http
 import Task as PlatformTask
 
 

@@ -1,6 +1,6 @@
 module Elm.Review.Store exposing
     ( Model, init
-    , Msg, update, UpdateInput
+    , Msg, update
     , applyChangesFromFix
     , subscriptions
     , Readiness(..), checkReadiness
@@ -45,7 +45,7 @@ import ElmRun.FsExtra as FsExtra
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
-import Worker.Capabilities exposing (Console, FileWatcher)
+import Worker.Capabilities exposing (FileWatcher)
 import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 
 
@@ -175,12 +175,6 @@ type Msg
 type alias File =
     { path : Path
     , source : String
-    }
-
-
-type alias UpdateInput =
-    { stderr : Console
-    , options : Options
     }
 
 

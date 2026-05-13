@@ -39,9 +39,7 @@ type Model
 
 
 type alias ModelData =
-    { stdout : Console
-    , stderr : Console
-    , options : ReviewOptions
+    { options : ReviewOptions
     , buildId : BuildId
     , pid : Maybe ProcessId
     , watch : Maybe (Sub Msg)
@@ -66,17 +64,15 @@ type Msg
     | KilledReviewProcess
 
 
-init : { env | stdout : Console, stderr : Console } -> ReviewOptions -> ( Model, TCmd Msg )
-init { stdout, stderr } options =
+init : ReviewOptions -> ( Model, TCmd Msg )
+init options =
     let
         buildId : BuildId
         buildId =
             BuildId 0
     in
     ( Model
-        { stdout = stdout
-        , stderr = stderr
-        , buildId = buildId
+        { buildId = buildId
         , options = options
         , pid = Nothing
         , watch = Nothing
