@@ -22,7 +22,7 @@ module Elm.Review.Testable exposing
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
-import Elm.Review.Testable.ProcessData exposing (ProcessError)
+import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TTask as TestableTask
 import ElmReview.Path exposing (Path)
@@ -42,6 +42,10 @@ type alias Effects =
 
     -- Stdin
     , readKey : () -> PlatformTask.Task StdinError Key
+
+    -- Process
+    , runProcess : String -> SpawnOptions -> PlatformTask.Task SpawnError Completed
+    , spawnProcess : String -> SpawnOptions -> PlatformTask.Task SpawnError ProcessId
     }
 
 
@@ -124,6 +128,15 @@ task effects testableTask =
         -- Stdin
         Internal.ReadKey onResult ->
             effects.readKey ()
+                |> handle effects onResult
+
+        -- Process
+        Internal.RunProcess command spawnOptions onResult ->
+            effects.runProcess command spawnOptions
+                |> handle effects onResult
+
+        Internal.SpawnProcess command spawnOptions onResult ->
+            effects.spawnProcess command spawnOptions
                 |> handle effects onResult
 
 
