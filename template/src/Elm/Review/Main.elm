@@ -1,4 +1,4 @@
-module Elm.Review.Main exposing (ModelWrapper, Msg, main)
+module Elm.Review.Main exposing (ModelWrapper, Msg, init, subscriptions, updateWrapper)
 
 import Array exposing (Array)
 import Capabilities exposing (Console, Stdin)
@@ -38,19 +38,6 @@ import ReviewConfig exposing (config)
 import Set exposing (Set)
 import Task exposing (Task)
 import Worker.Capabilities exposing (FileWatcher)
-
-
-
--- PROGRAM
-
-
-main : Cli.Program ModelWrapper Msg
-main =
-    Cli.program
-        { init = init
-        , update = updateWrapper
-        , subscriptions = subscriptions
-        }
 
 
 
