@@ -7,7 +7,7 @@ import Elm.Review.Options as Options
 import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.CliData as CliData
 import Elm.Review.Testable.FsData as FsData
-import Elm.Review.Testable.ProcessData as ProcessData exposing (SpawnError)
+import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError, SpawnError)
 import ElmReview.Color as Color
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
@@ -227,10 +227,10 @@ spawnProcess :
     ProcessCapability
     -> String
     -> ProcessData.SpawnOptions
-    -> Task SpawnError ElmRunProcess.ProcessId
+    -> Task ProcessError ElmRunProcess.ProcessId
 spawnProcess os command spawnOptions =
     ElmRunProcess.spawn os command (mapSpawnOptions spawnOptions)
-        |> Task.mapError (mapProcessError >> ProcessData.ProcessRunError)
+        |> Task.mapError mapProcessError
         |> Task.map .pid
 
 
