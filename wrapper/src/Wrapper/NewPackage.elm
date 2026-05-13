@@ -186,7 +186,23 @@ createProject input { fs, os, options } =
             { from = Path.join2 options.binaryRoot "new-package/github"
             , to = Path.join2 input.packageName ".github/"
             }
-            |> Task.mapError (\error -> Problem.unexpectedError "while copying the GitHub Actions" (ProcessExtra.errorToString error))
+            |> Task.mapError
+                (\error ->
+                    let
+                        stepDescription : String
+                        stepDescription =
+                            "while copying the GitHub Actions"
+                    in
+                    case error of
+                        ProcessExtra.ProcessError processError ->
+                            Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
+
+                        ProcessExtra.CommandNotFound ->
+                            Problem.unexpectedError stepDescription "Command `cp` not found"
+
+                        ProcessExtra.CommandFailed completed ->
+                            Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
+                )
 
         -- TODO
         --, createElmReviewConfiguration fs input

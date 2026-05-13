@@ -178,7 +178,23 @@ buildCreatedProject fs os reviewFolder options buildData =
             { from = Path.join2 options.binaryRoot "template/src"
             , to = buildFolder
             }
-            |> Task.mapError (processErrorToProblem "while building and copying template files")
+            |> Task.mapError
+                (\error ->
+                    let
+                        stepDescription : String
+                        stepDescription =
+                            "while building and copying template files"
+                    in
+                    case error of
+                        ProcessExtra.ProcessError processError ->
+                            processErrorToProblem stepDescription processError
+
+                        ProcessExtra.CommandNotFound ->
+                            Problem.unexpectedError stepDescription "Command `cp` not found"
+
+                        ProcessExtra.CommandFailed completed ->
+                            Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
+                )
         , createTemplateElmJson fs options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
         , compileProject fs os options reviewFolder buildFolder buildData.reviewAppPath
@@ -225,7 +241,20 @@ createSymLinkForLocalElmReview fs os { buildFolder, localElmReview, packagesLoca
                       FsExtra.copyDirectory os { from = localElmReview_, to = packagePath }
                         |> Task.mapError
                             (\error ->
-                                Problem.unexpectedError ("while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath) (ProcessExtra.errorToString error)
+                                let
+                                    stepDescription : String
+                                    stepDescription =
+                                        "while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath
+                                in
+                                case error of
+                                    ProcessExtra.ProcessError processError ->
+                                        processErrorToProblem stepDescription processError
+
+                                    ProcessExtra.CommandNotFound ->
+                                        Problem.unexpectedError stepDescription "Command `cp` not found"
+
+                                    ProcessExtra.CommandFailed completed ->
+                                        Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
                             )
                     ]
             , cleanUp =

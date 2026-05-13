@@ -13,6 +13,7 @@ module ElmRun.FsExtra exposing
 -}
 
 import ElmReview.Path as Path exposing (Path)
+import ElmRun.ProcessExtra as ProcessExtra exposing (SpawnError)
 import Fs exposing (FileSystem, FsError)
 import Os exposing (ProcessCapability)
 import Os.Process as Process exposing (ProcessError)
@@ -43,9 +44,9 @@ errorToString fsError =
 TODO Also remove the dependency to elm-run/os in Build.addReviewAppDependencies
 
 -}
-copyDirectory : ProcessCapability -> { from : String, to : String } -> Task ProcessError ()
+copyDirectory : ProcessCapability -> { from : String, to : String } -> Task SpawnError ()
 copyDirectory os { from, to } =
-    Process.run os
+    ProcessExtra.runButFailOnError os
         "cp"
         { cwd = Nothing
         , env = Nothing

@@ -191,7 +191,23 @@ createTemplateConfiguration fs os reviewPath offline remoteTemplate debug =
                                                         { from = Path.join2 templateConfigPath directory
                                                         , to = Path.join2 reviewPath directory
                                                         }
-                                                        |> Task.mapError (\error -> Problem.unexpectedError ("copying the template's " ++ directory ++ " source directory") (ProcessExtra.errorToString error))
+                                                        |> Task.mapError
+                                                            (\error ->
+                                                                let
+                                                                    stepDescription : String
+                                                                    stepDescription =
+                                                                        "copying the template's " ++ directory ++ " source directory"
+                                                                in
+                                                                case error of
+                                                                    ProcessExtra.ProcessError processError ->
+                                                                        Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
+
+                                                                    ProcessExtra.CommandNotFound ->
+                                                                        Problem.unexpectedError stepDescription "Command `cp` not found"
+
+                                                                    ProcessExtra.CommandFailed completed ->
+                                                                        Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
+                                                            )
                                                 )
                                                 elmJson.dirs
                                             )

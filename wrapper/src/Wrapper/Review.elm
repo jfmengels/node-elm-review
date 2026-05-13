@@ -294,7 +294,7 @@ runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, revie
                 :: ("--packages-location=" ++ packagesLocation)
                 :: options.reviewAppFlags
     in
-    ProcessExtra.runButFailOnError os
+    Process.spawn os
         "node"
         { args = Path.join2 options.binaryRoot "elm-app-worker2.js" :: reviewAppPath :: reviewAppFlags
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
@@ -304,22 +304,9 @@ runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, revie
         , stderr = Process.InheritStderr
         }
         |> Task.mapError
-            (\error ->
-                case error of
-                    ProcessExtra.ProcessError processError ->
-                        Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString processError)
-                            |> Problem.withPath reviewAppPath
-
-                    ProcessExtra.CommandNotFound ->
-                        { title = "COMMAND NOT FOUND"
-
-                        -- TODO Make "node not found" helper more helpful?
-                        , message = \c -> "I could not find the " ++ c Yellow "node" ++ " executable. Is it installed on your system?"
-                        }
-                            |> Problem.from Problem.Unrecoverable
-
-                    ProcessExtra.CommandFailed completed ->
-                        Problem.unexpectedError "when running the review application" (Maybe.withDefault "No output from node" completed.stderr)
+            (\err ->
+                Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
+                    |> Problem.withPath reviewAppPath
             )
         |> Task.map .pid
 
@@ -343,7 +330,7 @@ runReviewProcessWithElmRun { os, options } { reviewAppPath, reviewElmJson, revie
             else
                 ( reviewAppPath, reviewAppFlags )
     in
-    ProcessExtra.runButFailOnError os
+    Process.spawn os
         cmd
         { args = args
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
@@ -353,22 +340,9 @@ runReviewProcessWithElmRun { os, options } { reviewAppPath, reviewElmJson, revie
         , stderr = Process.InheritStderr
         }
         |> Task.mapError
-            (\error ->
-                case error of
-                    ProcessExtra.ProcessError processError ->
-                        Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString processError)
-                            |> Problem.withPath reviewAppPath
-
-                    ProcessExtra.CommandNotFound ->
-                        { title = "COMMAND NOT FOUND"
-
-                        -- TODO Make "run not found" helper more helpful, e.g. by adding installations details.
-                        , message = \c -> "I could not find the " ++ c Yellow "run" ++ " executable. Is it installed on your system?"
-                        }
-                            |> Problem.from Problem.Unrecoverable
-
-                    ProcessExtra.CommandFailed completed ->
-                        Problem.unexpectedError "when running the review application" (Maybe.withDefault "No output from host-cli" completed.stderr)
+            (\err ->
+                Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
+                    |> Problem.withPath reviewAppPath
             )
         |> Task.map .pid
 
