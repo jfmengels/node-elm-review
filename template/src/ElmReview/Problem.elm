@@ -5,6 +5,7 @@ module ElmReview.Problem exposing
     , stop
     , FormatOptions
     , unwrapFOR_TESTS
+    , format
     )
 
 {-|
@@ -22,8 +23,9 @@ module ElmReview.Problem exposing
 
 -}
 
-import Capabilities exposing (Console)
-import Cli
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Internal exposing (TCmd)
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
@@ -80,20 +82,20 @@ unwrapFOR_TESTS (Problem problem) =
     }
 
 
-stop : Console -> FormatOptions options -> Problem -> Cmd msg
-stop stderr formatOptions problem =
-    Cmd.batch
-        [ Cli.println stderr (format formatOptions problem)
+stop : FormatOptions options -> Problem -> TCmd msg
+stop formatOptions problem =
+    TCmd.batch
+        [ Cli.printlnStderr (format formatOptions problem)
         , exit formatOptions.attemptFutureRecovery problem
         ]
 
 
-exit : Bool -> Problem -> Cmd msg
+exit : Bool -> Problem -> TCmd msg
 exit watch (Problem problem) =
     case problem.recovery of
         Recoverable ->
             if watch then
-                Cmd.none
+                TCmd.none
 
             else
                 Cli.exit 1

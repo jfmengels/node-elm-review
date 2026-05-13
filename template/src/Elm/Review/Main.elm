@@ -1,8 +1,7 @@
-module Elm.Review.Main exposing (ModelWrapper, Msg, init, subscriptions, updateWrapper)
+module Elm.Review.Main exposing (Model, Msg, computeRulesToRun, initWithOptions, subscriptions, update)
 
 import Array exposing (Array)
 import Capabilities exposing (Console, Stdin)
-import Cli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Project
 import Elm.Review.CliCommunication as CliCommunication
@@ -15,28 +14,30 @@ import Elm.Review.Reporter as Reporter
 import Elm.Review.Store as Store
 import Elm.Review.StoreVersion as StoreVersion exposing (StoreVersion)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.Internal exposing (TCmd, TTask)
+import Elm.Review.Testable.Process as Process
+import Elm.Review.Testable.ProcessData as ProcessData exposing (SpawnError)
+import Elm.Review.Testable.TTask as TTask
 import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.Range as Range exposing (Range)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmReview.ReportMode as ReportMode exposing (ReportMode(..))
+import ElmReview.ReportMode exposing (ReportMode(..))
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError(..))
 import Json.Encode as Encode
-import Os exposing (ProcessCapability)
-import Os.Process as Process
 import Review.Fix as Fix exposing (Fix)
 import Review.Fix.FixProblem exposing (FixProblem)
 import Review.Project as Project exposing (Project)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
-import Task exposing (Task)
 import Worker.Capabilities exposing (FileWatcher)
 
 
@@ -48,8 +49,6 @@ type alias Model =
     { stdin : Maybe Stdin
     , stdout : Console
     , stderr : Console
-    , fs : FileSystem
-    , os : ProcessCapability
     , options : Options
 
     --
@@ -69,11 +68,6 @@ type alias Model =
 
 type PromptId
     = PromptId Int
-
-
-type ModelWrapper
-    = Done
-    | Running Model
 
 
 type Msg
@@ -97,53 +91,12 @@ type FixPromptKind
     | FixAll
 
 
-init : Env -> ( ModelWrapper, Cmd Msg )
-init env =
-    case Result.map2 Tuple.pair (requireCapabilities env) (Options.parse env.args) of
-        Ok ( capabilities, options ) ->
-            case computeRulesToRun env options of
-                Ok rulesFromConfig ->
-                    initWithOptions env capabilities options rulesFromConfig
-
-                Err cmd ->
-                    ( Done, cmd )
-
-        Err err ->
-            ( Done
-            , Problem.stop env.stderr (roughFormatOptions env.args) err
-            )
-
-
-requireCapabilities : Env -> Result Problem { fs : FileSystem, os : ProcessCapability }
-requireCapabilities env =
-    Result.map2 (\fs os -> { fs = fs, os = os })
-        (Fs.require env)
-        (Os.requireProcess env)
-        |> Result.mapError
-            (\err ->
-                Problem.from Problem.Unrecoverable
-                    { title = "MISSING CAPABILITIES"
-                    , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
-                    }
-            )
-
-
-roughFormatOptions : List String -> Problem.FormatOptions { attemptFutureRecovery : Bool }
-roughFormatOptions args =
-    { color = Color.noColors
-    , reportMode =
-        if List.member "--report=json" args || List.member "--report=ndjson" args then
-            ReportMode.Json
-
-        else
-            ReportMode.HumanReadable
-    , debug = List.member "--debug" args
-    , attemptFutureRecovery = False
-    }
-
-
-initWithOptions : Env -> { fs : FileSystem, os : ProcessCapability } -> Options -> List Rule -> ( ModelWrapper, Cmd Msg )
-initWithOptions env { fs, os } options rulesFromConfig =
+initWithOptions :
+    { env | stdin : Maybe Stdin, stdout : Console, stderr : Console }
+    -> Options
+    -> List Rule
+    -> ( Model, TCmd Msg )
+initWithOptions env options rulesFromConfig =
     let
         rules : List Rule
         rules =
@@ -152,15 +105,13 @@ initWithOptions env { fs, os } options rulesFromConfig =
                 rulesFromConfig
 
         ( store, storeCmd ) =
-            Store.init fs options
+            Store.init options
 
         model : Model
         model =
             { stdin = env.stdin
             , stdout = env.stdout
             , stderr = env.stderr
-            , fs = fs
-            , os = os
             , options = options
             , store = store
             , lastReviewedStoreVersion = StoreVersion.zero
@@ -171,18 +122,17 @@ initWithOptions env { fs, os } options rulesFromConfig =
             , refusedErrorFixes = RefusedErrorFixes.empty
             }
     in
-    ( Running model
-    , Cmd.map StoreMsg storeCmd
+    ( model
+    , TCmd.map StoreMsg storeCmd
     )
 
 
-computeRulesToRun : Env -> Options -> Result (Cmd msg) (List Rule)
+computeRulesToRun : { env | stdout : Console } -> Options -> Result (TCmd msg) (List Rule)
 computeRulesToRun env options =
     let
-        stopBecauseOfProblem_ : Problem -> Cmd msg
+        stopBecauseOfProblem_ : Problem -> TCmd msg
         stopBecauseOfProblem_ problem =
             Problem.stop
-                env.stderr
                 { color = options.color
                 , reportMode = options.reportMode
                 , debug = options.debug
@@ -240,20 +190,20 @@ I recommend you take a look at the following documents:
             (_ :: _) as configurationErrors ->
                 case options.reportMode of
                     HumanReadable ->
-                        Cmd.batch
+                        TCmd.batch
                             [ Reporter.formatConfigurationErrors
                                 { detailsMode = options.detailsMode
                                 , configurationErrors = configurationErrors
                                 }
                                 |> Text.toAnsi options.supportsColor
-                                |> Cli.println env.stdout
+                                |> Cli.printlnStdout
                             , Cli.exit 1
                             ]
                             |> Err
 
                     Json ->
                         -- TODO Keep order of keys. Should work out of the box if Encode is implemented as Elm's Json.Encode
-                        Cmd.batch
+                        TCmd.batch
                             [ printJson
                                 env.stdout
                                 options.debug
@@ -264,7 +214,7 @@ I recommend you take a look at the following documents:
                             |> Err
 
                     NDJson ->
-                        Cmd.batch
+                        TCmd.batch
                             [ printNDJson env.stdout (encodeConfigurationErrorsForNDJson options configurationErrors)
                             , Cli.exit 1
                             ]
@@ -326,21 +276,9 @@ closestNames names name =
 -- UPDATE
 
 
-updateWrapper : Msg -> ModelWrapper -> ( ModelWrapper, Cmd Msg )
-updateWrapper msg wrapper =
-    case wrapper of
-        Done ->
-            ( wrapper, Cmd.none )
-
-        Running model ->
-            update msg model
-                |> Tuple.mapFirst Running
-
-
-stopBecauseOfProblem : Model -> Problem -> Cmd msg
+stopBecauseOfProblem : Model -> Problem -> TCmd msg
 stopBecauseOfProblem model problem =
     Problem.stop
-        model.stderr
         { color = model.options.color
         , reportMode = model.options.reportMode
         , debug = model.options.debug
@@ -349,15 +287,14 @@ stopBecauseOfProblem model problem =
         problem
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, TCmd Msg )
 update msg model =
     case msg of
         StoreMsg storeMsg ->
             let
                 ( store, cmd ) =
                     Store.update
-                        { fs = model.fs
-                        , stderr = model.stderr
+                        { stderr = model.stderr
                         , options = model.options
                         }
                         storeMsg
@@ -365,14 +302,14 @@ update msg model =
             in
             startReviewIfNoPendingTasks
                 ( { model | store = store }
-                , Cmd.map StoreMsg cmd
+                , TCmd.map StoreMsg cmd
                 )
 
         WroteSuppressionFiles result ->
             ( model
             , case result of
                 Ok () ->
-                    Cmd.none
+                    TCmd.none
 
                 Err problem ->
                     stopBecauseOfProblem model problem
@@ -382,18 +319,18 @@ update msg model =
             if promptId == model.promptId then
                 case Prompt.update fixPromptMsg of
                     Prompt.Accepted ->
-                        ( model, applyFixChanges model.fs model.os model.options payload )
+                        ( model, applyFixChanges model.options payload )
 
                     Prompt.TriggerCmd cmd ->
                         ( model
-                        , Cmd.map (FixPromptMsg promptId payload) cmd
+                        , TCmd.map (FixPromptMsg promptId payload) cmd
                         )
 
                     Prompt.Refused ->
                         handleFixRefused payload.kind model
 
             else
-                ( model, Cmd.none )
+                ( model, TCmd.none )
 
         AppliedFixes { projectWithFixes, rulesWithFixes } result ->
             case result of
@@ -401,8 +338,6 @@ update msg model =
                     let
                         ( store, cmd ) =
                             Store.applyChangesFromFix
-                                model.fs
-                                model.stderr
                                 model.options
                                 projectWithFixes
                                 model.store
@@ -412,7 +347,7 @@ update msg model =
                         , rules = rulesWithFixes
                         , errorsHaveBeenFixedPreviously = True
                       }
-                    , Cmd.map StoreMsg cmd
+                    , TCmd.map StoreMsg cmd
                     )
 
                 Err problem ->
@@ -421,47 +356,47 @@ update msg model =
                     )
 
 
-applyFixChanges : FileSystem -> ProcessCapability -> Options -> FixPromptPayload -> Cmd Msg
-applyFixChanges fs os options fixPayload =
-    Task.map2 always
+applyFixChanges : Options -> FixPromptPayload -> TCmd Msg
+applyFixChanges options fixPayload =
+    TTask.map2 always
         (fixPayload.changedFiles
-            |> TaskExtra.mapAllAndIgnore (\changedFile -> writeChangedFile fs os options changedFile)
+            |> TTask.mapAllAndIgnore (\changedFile -> writeChangedFile options changedFile)
         )
-        (TaskExtra.mapAllAndIgnore (\filePath -> Fs.deleteFile fs filePath) fixPayload.removedFiles
-            |> Task.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsExtra.errorToString error))
+        (TTask.mapAllAndIgnore (\filePath -> Fs.deleteFile filePath) fixPayload.removedFiles
+            |> TTask.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsExtra.errorToString error))
         )
-        |> Task.attempt (AppliedFixes fixPayload)
+        |> TTask.attempt (AppliedFixes fixPayload)
 
 
-writeChangedFile : FileSystem -> ProcessCapability -> Options -> { filePath : Path, source : String } -> Task Problem ()
-writeChangedFile fs os options { filePath, source } =
+writeChangedFile : Options -> { filePath : Path, source : String } -> TTask Problem ()
+writeChangedFile options { filePath, source } =
     if String.endsWith "*.elm" filePath then
-        Fs.writeTextFile fs filePath source
-            |> Task.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error))
+        Fs.writeTextFile filePath source
+            |> TTask.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsExtra.errorToString error))
 
     else
-        ProcessExtra.runButFailOnError os
+        Process.run
             (Maybe.withDefault "elm-format" options.elmFormatPath)
             { args = [ "--elm-version=0.19", "--stdin", "--output", filePath ]
             , cwd = Nothing
             , env = Nothing
-            , stdin = Process.TextStdin source
+            , stdin = ProcessData.TextStdin source
             , stdout = ProcessExtra.stdoutSpec options.debug
-            , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
+            , stderr = ProcessData.CaptureStderr { maxBytes = 1024, onOverflow = ProcessData.TruncateOutput }
             }
-            |> Task.mapError
+            |> TTask.mapError
                 (\error ->
                     case error of
-                        ProcessExtra.ProcessRunError processError ->
+                        ProcessData.ProcessRunError processError ->
                             Problem.unexpectedError "while applying automatic fixes and running elm-format" (ProcessExtra.errorToString processError)
 
-                        ProcessExtra.CommandNotFound ->
+                        ProcessData.CommandNotFound ->
                             elmFormatNotFoundError options.elmFormatPath
 
-                        ProcessExtra.CommandFailed { stderr } ->
+                        ProcessData.CommandFailed { stderr } ->
                             Problem.unexpectedError ("while formatting " ++ filePath ++ " with elm-format") (Maybe.withDefault "No output from elm-format." stderr)
                 )
-            |> Task.map (\_ -> ())
+            |> TTask.map (\_ -> ())
 
 
 elmFormatNotFoundError elmFormatPath =
@@ -483,7 +418,7 @@ A few options:
         |> Problem.from Problem.Unrecoverable
 
 
-handleFixRefused : FixPromptKind -> Model -> ( Model, Cmd Msg )
+handleFixRefused : FixPromptKind -> Model -> ( Model, TCmd Msg )
 handleFixRefused fixPromptKind model =
     let
         project : Project
@@ -502,7 +437,7 @@ handleFixRefused fixPromptKind model =
                 |> makeReport (Store.suppressedErrors model.store)
 
 
-startReviewIfNoPendingTasks : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+startReviewIfNoPendingTasks : ( Model, TCmd Msg ) -> ( Model, TCmd Msg )
 startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
     case Store.checkReadiness model.store of
         Store.Ready version ->
@@ -516,29 +451,29 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         runReview { fixesAllowed = False } (Store.project model.store) model
                 in
                 ( res.model
-                , Cmd.batch
+                , TCmd.batch
                     [ case
                         res.result.reviewErrors
                             |> SuppressedErrors.fromReviewErrors
-                            |> SuppressedErrors.write model.fs model.options []
+                            |> SuppressedErrors.write model.options []
                       of
                         Just task ->
-                            Task.attempt WroteSuppressionFiles task
+                            TTask.attempt WroteSuppressionFiles task
 
                         Nothing ->
-                            Cmd.none
+                            TCmd.none
                     , case model.options.reportMode of
                         HumanReadable ->
-                            Cli.println model.stdout
+                            Cli.printlnStdout
                                 ("I created suppressions files in "
                                     ++ Color.toAnsi model.options.color Color.Orange (SuppressedErrors.suppressedFolder model.options)
                                 )
 
                         Json ->
-                            Cmd.none
+                            TCmd.none
 
                         NDJson ->
-                            Cmd.none
+                            TCmd.none
                     , cmd
                     , Cli.exit 0
                     ]
@@ -552,7 +487,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                             |> reportOrFix
                 in
                 ( newModel
-                , Cmd.batch [ cmd, newCmd ]
+                , TCmd.batch [ cmd, newCmd ]
                 )
 
         Store.NotReady ->
@@ -643,7 +578,7 @@ runReview fixesAllowed initialProject model =
     }
 
 
-reportOrFix : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+reportOrFix : { model : Model, result : RunReviewResult } -> ( Model, TCmd Msg )
 reportOrFix input =
     case input.model.options.fixMode of
         FixOptions.DontFix ->
@@ -659,21 +594,21 @@ reportOrFix input =
             applyFixesAfterReview input
 
 
-makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+makeReport : SuppressedErrors -> { model : Model, result : RunReviewResult } -> ( Model, TCmd Msg )
 makeReport previousSuppressedErrors input =
     let
         ( model, suppressionCmd ) =
             saveRunReviewResultsInModel input
     in
     ( model
-    , Cmd.batch
+    , TCmd.batch
         [ suppressionCmd
         , printReport previousSuppressedErrors input.result model
         ]
     )
 
 
-saveRunReviewResultsInModel : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+saveRunReviewResultsInModel : { model : Model, result : RunReviewResult } -> ( Model, TCmd Msg )
 saveRunReviewResultsInModel { model, result } =
     -- TODO Keep this function?
     let
@@ -703,17 +638,17 @@ saveRunReviewResultsInModel { model, result } =
                 |> SuppressedErrors.write model.fs model.options []
           of
             Just task ->
-                Task.attempt WroteSuppressionFiles task
+                TTask.attempt WroteSuppressionFiles task
 
             Nothing ->
-                Cmd.none
+                TCmd.none
         )
 
     else
-        ( newModel, Cmd.none )
+        ( newModel, TCmd.none )
 
 
-printReport : SuppressedErrors -> RunReviewResult -> Model -> Cmd Msg
+printReport : SuppressedErrors -> RunReviewResult -> Model -> TCmd Msg
 printReport previousSuppressedErrors result model =
     let
         newSuppressedErrors : SuppressedErrors
@@ -724,7 +659,7 @@ printReport previousSuppressedErrors result model =
         ruleLinks =
             Store.ruleLinks model.store
     in
-    Cmd.batch
+    TCmd.batch
         [ case model.options.reportMode of
             HumanReadable ->
                 let
@@ -740,7 +675,7 @@ printReport previousSuppressedErrors result model =
                     }
                     filesWithError
                     |> Text.toAnsi model.options.supportsColor
-                    |> Cli.println model.stdout
+                    |> Cli.printlnStdout
 
             Json ->
                 let
@@ -783,7 +718,7 @@ printReport previousSuppressedErrors result model =
                         )
                     |> printNDJson model.stdout
         , if model.options.watch then
-            Cmd.none
+            TCmd.none
 
           else if List.isEmpty result.reviewErrorsAfterSuppression then
             Cli.exit 0
@@ -793,7 +728,7 @@ printReport previousSuppressedErrors result model =
         ]
 
 
-printJson : Console -> Bool -> Encode.Value -> Encode.Value -> Cmd msg
+printJson : Console -> Bool -> Encode.Value -> Encode.Value -> TCmd msg
 printJson stdout debug errors extracts =
     let
         indent : Int
@@ -812,15 +747,15 @@ printJson stdout debug errors extracts =
         , ( "extracts", extracts )
         ]
         |> Encode.encode indent
-        |> Cli.println stdout
+        |> Cli.printlnStdout
 
 
-printNDJson : Console -> List Encode.Value -> Cmd msg
+printNDJson : Console -> List Encode.Value -> TCmd msg
 printNDJson stdout lines =
     lines
         |> List.map (Encode.encode 0)
         |> String.join "\n"
-        |> Cli.println stdout
+        |> Cli.printlnStdout
 
 
 encodeErrorByFile :
@@ -1011,7 +946,7 @@ encodePosition position =
         ]
 
 
-applyFixesAfterReview : { model : Model, result : RunReviewResult } -> ( Model, Cmd Msg )
+applyFixesAfterReview : { model : Model, result : RunReviewResult } -> ( Model, TCmd Msg )
 applyFixesAfterReview ({ model, result } as input) =
     case numberOfErrors result.fixedErrors of
         Nothing ->
@@ -1026,7 +961,7 @@ applyFixesAfterReview ({ model, result } as input) =
                     sendFixPrompt diffs result nbErrors model
 
 
-sendFixPrompt : List FixedFile -> RunReviewResult -> NumberOfErrors -> Model -> ( Model, Cmd Msg )
+sendFixPrompt : List FixedFile -> RunReviewResult -> NumberOfErrors -> Model -> ( Model, TCmd Msg )
 sendFixPrompt diffs result nbErrors model =
     let
         changedFiles : List { filePath : Path, source : String }
@@ -1099,7 +1034,6 @@ sendFixPrompt diffs result nbErrors model =
             ( { model | promptId = promptId }
             , Prompt.prompt
                 stdin
-                model.stdout
                 { color = model.options.color
                 , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
                 , question =
@@ -1111,11 +1045,11 @@ sendFixPrompt diffs result nbErrors model =
                             MultipleErrors numberOfFixedErrors ->
                                 "Do you wish to apply the result of these " ++ String.fromInt numberOfFixedErrors ++ " fixes?"
                 }
-                |> Cmd.map (FixPromptMsg promptId fixPayload)
+                |> TCmd.map (FixPromptMsg promptId fixPayload)
             )
 
         Nothing ->
-            ( model, applyFixChanges model.fs model.os model.options fixPayload )
+            ( model, applyFixChanges model.options fixPayload )
 
 
 shouldPromptForFix : Model -> Maybe Stdin
@@ -1461,7 +1395,7 @@ maybeMapAndCons fn maybe list =
             list
 
 
-subscriptions : ModelWrapper -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions wrapper =
     case wrapper of
         Running model ->

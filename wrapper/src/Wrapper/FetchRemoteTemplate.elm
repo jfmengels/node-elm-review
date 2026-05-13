@@ -6,20 +6,20 @@ module Wrapper.FetchRemoteTemplate exposing (checkoutGitRepository)
 
 -}
 
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.Internal exposing (TTask)
+import Elm.Review.Testable.Process as Process
+import Elm.Review.Testable.ProcessData as ProcessData
+import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmRun.ProcessExtra as ProcessExtra
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem)
-import Os exposing (ProcessCapability)
-import Os.Process as Process
-import Task exposing (Task)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
-checkoutGitRepository : FileSystem -> ProcessCapability -> Bool -> RemoteTemplate -> Bool -> Task Problem Path
-checkoutGitRepository fs os offline remoteTemplate debug =
+checkoutGitRepository : Bool -> RemoteTemplate -> Bool -> TTask Problem Path
+checkoutGitRepository offline remoteTemplate debug =
     let
         repoFolder : Path
         repoFolder =
@@ -29,67 +29,67 @@ checkoutGitRepository fs os offline remoteTemplate debug =
                 , remoteTemplate.repoName
                 ]
 
-        git : List String -> Task String ()
+        git : List String -> TTask String ()
         git args =
-            ProcessExtra.runButFailOnError os
+            Process.run
                 "git"
                 { args = args
                 , cwd = Just repoFolder
                 , env = Nothing
-                , stdin = Process.NullStdin
+                , stdin = ProcessData.NullStdin
                 , stdout = ProcessExtra.stdoutSpec debug
-                , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
+                , stderr = ProcessData.CaptureStderr { maxBytes = 1024, onOverflow = ProcessData.TruncateOutput }
                 }
-                |> Task.mapError (\error -> fromGitError args error)
-                |> Task.map (\_ -> ())
+                |> TTask.mapError (\error -> fromGitError args error)
+                |> TTask.map (\_ -> ())
 
         {- Same as the `git` function but captures and returns the stdout output. -}
-        gitCapture : List String -> Task String String
+        gitCapture : List String -> TTask String String
         gitCapture args =
-            ProcessExtra.runButFailOnError os
+            Process.run
                 "git"
                 { args = args
                 , cwd = Just repoFolder
                 , env = Nothing
-                , stdin = Process.NullStdin
-                , stdout = Process.CaptureStdout { maxBytes = 1024, onOverflow = Process.TruncateOutput }
-                , stderr = Process.CaptureStderr { maxBytes = 1024, onOverflow = Process.TruncateOutput }
+                , stdin = ProcessData.NullStdin
+                , stdout = ProcessData.CaptureStdout { maxBytes = 1024, onOverflow = ProcessData.TruncateOutput }
+                , stderr = ProcessData.CaptureStderr { maxBytes = 1024, onOverflow = ProcessData.TruncateOutput }
                 }
-                |> Task.mapError (\error -> fromGitError args error)
-                |> Task.map (\result -> Maybe.withDefault "" result.stdout)
+                |> TTask.mapError (\error -> fromGitError args error)
+                |> TTask.map (\result -> Maybe.withDefault "" result.stdout)
     in
-    Task.map2 (\() () -> Path.join2 repoFolder (Maybe.withDefault "." remoteTemplate.pathToFolder))
-        (createRepoIfNecessary fs git offline remoteTemplate repoFolder)
+    TTask.map2 (\() () -> Path.join2 repoFolder (Maybe.withDefault "." remoteTemplate.pathToFolder))
+        (createRepoIfNecessary git offline remoteTemplate repoFolder)
         (pullAndCheckout { git = git, gitCapture = gitCapture } offline remoteTemplate)
 
 
-fromGitError : List String -> ProcessExtra.SpawnError -> String
+fromGitError : List String -> ProcessData.SpawnError -> String
 fromGitError args error =
     let
         errorDetails : String
         errorDetails =
             case error of
-                ProcessExtra.ProcessRunError processError ->
+                ProcessData.ProcessRunError processError ->
                     ProcessExtra.errorToString processError
 
-                ProcessExtra.CommandNotFound ->
+                ProcessData.CommandNotFound ->
                     "Command `git` not found"
 
-                ProcessExtra.CommandFailed completed ->
+                ProcessData.CommandFailed completed ->
                     Maybe.withDefault "No Git output." completed.stderr
     in
     "$ git " ++ String.join " " args ++ "\n\n" ++ errorDetails
 
 
-createRepoIfNecessary : FileSystem -> (List String -> Task String ()) -> Bool -> RemoteTemplate -> Path -> Task Problem ()
-createRepoIfNecessary fs git offline remoteTemplate repoFolder =
-    Fs.stat fs (Path.join2 repoFolder ".git")
-        |> TaskExtra.toResultTask
-        |> Task.andThen
+createRepoIfNecessary : (List String -> TTask String ()) -> Bool -> RemoteTemplate -> Path -> TTask Problem ()
+createRepoIfNecessary git offline remoteTemplate repoFolder =
+    Fs.stat (Path.join2 repoFolder ".git")
+        |> TTask.toResultTask
+        |> TTask.andThen
             (\stat ->
                 case stat of
                     Ok _ ->
-                        Task.succeed ()
+                        TTask.succeed ()
 
                     Err _ ->
                         -- First time checkout out the repo, let's create it
@@ -100,30 +100,30 @@ createRepoIfNecessary fs git offline remoteTemplate repoFolder =
 Please acquire network access and re-run without """ ++ c Cyan "--offline" ++ ", or select another configuration to use."
                             }
                                 |> Problem.from Problem.Unrecoverable
-                                |> Task.fail
+                                |> TTask.fail
 
                         else
-                            createRepo fs git remoteTemplate repoFolder
+                            createRepo git remoteTemplate repoFolder
             )
 
 
-createRepo : FileSystem -> (List String -> Task String ()) -> RemoteTemplate -> Path -> Task Problem ()
-createRepo fs git remoteTemplate repoFolder =
+createRepo : (List String -> TTask String ()) -> RemoteTemplate -> Path -> TTask Problem ()
+createRepo git remoteTemplate repoFolder =
     let
         repository : String
         repository =
             "git@github.com:" ++ remoteTemplate.repoName ++ ".git"
     in
-    TaskExtra.sequence
-        [ Fs.createDirectory fs repoFolder
-            |> Task.onError (\_ -> Task.succeed ())
+    TTask.sequence
+        [ Fs.createDirectory repoFolder
+            |> TTask.onError (\_ -> TTask.succeed ())
         , git [ "init" ]
 
         -- TODO Support sparse-checkout to check out less files
         -- , git [ "sparse-checkout", "set", "--no-cone", "'!/*'", "'**/*.elm'", "'**/elm.json'", "'!**/tests/**/*.elm'" ]
         , git [ "remote", "add", "origin", repository ]
         ]
-        |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template" error)
+        |> TTask.mapError (\error -> Problem.unexpectedError "while checking out the template" error)
 
 
 nextIndex : String -> String -> Maybe Int
@@ -132,38 +132,38 @@ nextIndex needle string =
 
 
 type alias Git =
-    { git : List String -> Task String ()
-    , gitCapture : List String -> Task String String
+    { git : List String -> TTask String ()
+    , gitCapture : List String -> TTask String String
     }
 
 
-pullAndCheckout : Git -> Bool -> RemoteTemplate -> Task Problem ()
+pullAndCheckout : Git -> Bool -> RemoteTemplate -> TTask Problem ()
 pullAndCheckout { git, gitCapture } offline remoteTemplate =
     if offline then
         getDefaultBranchFromLocalInformation gitCapture
-            |> Task.andThen (\reference -> switchToBranch git reference)
+            |> TTask.andThen (\reference -> switchToBranch git reference)
 
     else
         remoteTemplate.reference
-            |> TaskExtra.otherwise (\() -> findRemoteDefaultBranch gitCapture remoteTemplate)
-            |> Task.andThen
+            |> TTask.otherwise (\() -> findRemoteDefaultBranch gitCapture remoteTemplate)
+            |> TTask.andThen
                 (\reference ->
-                    Task.map2 (\() () -> ())
+                    TTask.map2 (\() () -> ())
                         (fetchGitReference git reference remoteTemplate)
                         (switchToBranch git reference)
                 )
 
 
-switchToBranch : (List String -> Task String ()) -> String -> Task Problem ()
+switchToBranch : (List String -> TTask String ()) -> String -> TTask Problem ()
 switchToBranch git reference =
     git [ "switch", "--discard-changes", reference ]
-        |> Task.mapError (\error -> Problem.unexpectedError "while checking out the template's code" error)
+        |> TTask.mapError (\error -> Problem.unexpectedError "while checking out the template's code" error)
 
 
-fetchGitReference : (List String -> Task String ()) -> String -> RemoteTemplate -> Task Problem ()
+fetchGitReference : (List String -> TTask String ()) -> String -> RemoteTemplate -> TTask Problem ()
 fetchGitReference git reference remoteTemplate =
     git [ "fetch", "origin", reference, "--depth=1" ]
-        |> Task.mapError
+        |> TTask.mapError
             (\error ->
                 let
                     searchableError : String
@@ -191,10 +191,10 @@ Please check the spelling and make sure it has been pushed."""
             )
 
 
-findRemoteDefaultBranch : (List String -> Task String String) -> RemoteTemplate -> Task Problem String
+findRemoteDefaultBranch : (List String -> TTask String String) -> RemoteTemplate -> TTask Problem String
 findRemoteDefaultBranch gitCapture remoteTemplate =
     gitCapture [ "remote", "show", "origin" ]
-        |> Task.onError
+        |> TTask.onError
             (\error ->
                 if String.contains "repository not found" (String.toLower error) then
                     { title = "REPOSITORY NOT FOUND"
@@ -203,24 +203,24 @@ findRemoteDefaultBranch gitCapture remoteTemplate =
 Check the spelling and make sure it is a public repository, as I can't work with private ones at the moment."""
                     }
                         |> Problem.from Problem.Unrecoverable
-                        |> Task.fail
+                        |> TTask.fail
 
                 else
                     getDefaultBranchFromLocalInformation gitCapture
-                        |> Task.mapError (\_ -> Problem.unexpectedError "while trying to figure out the remote template's default Git branch" error)
+                        |> TTask.mapError (\_ -> Problem.unexpectedError "while trying to figure out the remote template's default Git branch" error)
             )
-        |> Task.andThen (\output -> headBranchName output |> TaskExtra.fromResult)
+        |> TTask.andThen (\output -> headBranchName output |> TTask.fromResult)
 
 
-getDefaultBranchFromLocalInformation : (List String -> Task String String) -> Task Problem String
+getDefaultBranchFromLocalInformation : (List String -> TTask String String) -> TTask Problem String
 getDefaultBranchFromLocalInformation gitCapture =
     gitCapture [ "symbolic-ref", "--short", "refs/remotes/origin/HEAD" ]
-        |> Task.mapError
+        |> TTask.mapError
             (\error ->
                 Problem.unexpectedError "while trying to figure out the remote template's default Git branch offline" error
             )
         -- Output is "origin/<branchname>\n"
-        |> Task.map (\output -> String.dropLeft 7 (String.trim output))
+        |> TTask.map (\output -> String.dropLeft 7 (String.trim output))
 
 
 headBranchName : String -> Result Problem String

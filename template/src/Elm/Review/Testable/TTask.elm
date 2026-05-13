@@ -7,6 +7,7 @@ module Elm.Review.Testable.TTask exposing
     , alwaysRun
     , otherwise
     , mapError, onError, toMaybe, toResult
+    , resultToTask, toResultTask
     , attempt, perform
     )
 
@@ -41,6 +42,7 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 # Errors
 
 @docs mapError, onError, toMaybe, toResult
+@docs resultToTask, toResultTask
 
 
 # Commands

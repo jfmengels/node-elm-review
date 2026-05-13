@@ -11,8 +11,14 @@ module Wrapper.Init exposing
 -}
 
 import Capabilities exposing (Console, Stdin)
-import Cli
 import Elm.Project
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.Internal exposing (TCmd, TTask)
+import Elm.Review.Testable.ProcessData as ProcessData
+import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
@@ -21,11 +27,7 @@ import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem)
 import Json.Decode as Decode
-import Os exposing (ProcessCapability)
-import Task exposing (Task)
 import Wrapper.FetchRemoteTemplate as FetchRemoteTemplate
 import Wrapper.MinVersion as MinVersion
 import Wrapper.Options as Options exposing (InitOptions)
@@ -41,8 +43,6 @@ type alias ModelData =
     { stdout : Console
     , stderr : Console
     , stdin : Maybe Stdin
-    , fs : FileSystem
-    , os : ProcessCapability
     , options : InitOptions
     }
 
@@ -52,16 +52,14 @@ type Msg
     | CreatedFiles (Result Problem ())
 
 
-init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> InitOptions -> ( Model, Cmd Msg )
-init { stdout, stderr, stdin } { fs, os } options =
+init : { env | stdout : Console, stderr : Console, stdin : Maybe Stdin } -> InitOptions -> ( Model, TCmd Msg )
+init { stdout, stderr, stdin } options =
     let
         model : ModelData
         model =
             { stdout = stdout
             , stderr = stderr
             , stdin = stdin
-            , fs = fs
-            , os = os
             , options = options
             }
     in
@@ -71,39 +69,39 @@ init { stdout, stderr, stdin } { fs, os } options =
             case options.remoteTemplate of
                 Just _ ->
                     -- Don't prompt when using template, the user likely knows what they are doing.
-                    createConfiguration fs os model.options
+                    createConfiguration model.options
 
                 Nothing ->
                     prompt stdin_ model
 
         Nothing ->
             -- If there is no stdin, assume the prompt answer is yes.
-            createConfiguration fs os model.options
+            createConfiguration model.options
     )
 
 
-update : Msg -> Model -> Cmd Msg
+update : Msg -> Model -> TCmd Msg
 update msg (Model model) =
     case msg of
         PromptMsg promptMsg ->
             case Prompt.update promptMsg of
                 Prompt.Accepted ->
-                    createConfiguration model.fs model.os model.options
+                    createConfiguration model.options
 
                 Prompt.Refused ->
                     Cli.exit 0
 
                 Prompt.TriggerCmd cmd ->
-                    Cmd.map PromptMsg cmd
+                    TCmd.map PromptMsg cmd
 
         CreatedFiles (Ok ()) ->
-            Cmd.batch
-                [ Cli.println model.stdout (successMessage model.options)
+            TCmd.batch
+                [ Cli.printlnStdout (successMessage model.options)
                 , Cli.exit 0
                 ]
 
         CreatedFiles (Err problem) ->
-            Problem.stop model.stderr
+            Problem.stop
                 { color = model.options.color
                 , reportMode = ReportMode.HumanReadable
                 , debug = model.options.debug
@@ -112,10 +110,9 @@ update msg (Model model) =
                 problem
 
 
-prompt : Stdin -> ModelData -> Cmd Msg
+prompt : Stdin -> ModelData -> TCmd Msg
 prompt stdin model =
     Prompt.prompt stdin
-        model.stdout
         { color = model.options.color
         , priorMessage = Nothing
         , question =
@@ -128,70 +125,70 @@ prompt stdin model =
                 in
                 "Would you like me to create " ++ c Yellow "elm.json" ++ " and " ++ c Yellow "src/ReviewConfig.elm" ++ " inside " ++ c Yellow path ++ "?"
         }
-        |> Cmd.map PromptMsg
+        |> TCmd.map PromptMsg
 
 
-createConfiguration : FileSystem -> ProcessCapability -> InitOptions -> Cmd Msg
-createConfiguration fs os options =
+createConfiguration : InitOptions -> TCmd Msg
+createConfiguration options =
     case options.remoteTemplate of
         Nothing ->
-            createDefaultConfiguration fs os options.configPath
-                |> Task.attempt CreatedFiles
+            createDefaultConfiguration options.configPath
+                |> TTask.attempt CreatedFiles
 
         Just remoteTemplate ->
-            createTemplateConfiguration fs os options.configPath options.offline remoteTemplate options.debug
-                |> Task.attempt CreatedFiles
+            createTemplateConfiguration options.configPath options.offline remoteTemplate options.debug
+                |> TTask.attempt CreatedFiles
 
 
-createDefaultConfiguration : FileSystem -> ProcessCapability -> Path -> Task Problem ()
-createDefaultConfiguration fs os reviewPath =
-    ElmBinary.findElmVersion os
-        |> Task.andThen (\elmVersion -> ReviewConfigTemplate.create fs elmVersion reviewPath Nothing)
-        |> Task.mapError (\error -> Problem.unexpectedError "while creating files" (FsExtra.errorToString error))
+createDefaultConfiguration : Path -> TTask Problem ()
+createDefaultConfiguration reviewPath =
+    ElmBinary.findElmVersion
+        |> TTask.andThen (\elmVersion -> ReviewConfigTemplate.create elmVersion reviewPath Nothing)
+        |> TTask.mapError (\error -> Problem.unexpectedError "while creating files" (FsExtra.errorToString error))
 
 
-createTemplateConfiguration : FileSystem -> ProcessCapability -> Path -> Bool -> RemoteTemplate -> Bool -> Task Problem ()
-createTemplateConfiguration fs os reviewPath offline remoteTemplate debug =
-    FetchRemoteTemplate.checkoutGitRepository fs os offline remoteTemplate debug
-        |> Task.andThen
+createTemplateConfiguration : Path -> Bool -> RemoteTemplate -> Bool -> TTask Problem ()
+createTemplateConfiguration reviewPath offline remoteTemplate debug =
+    FetchRemoteTemplate.checkoutGitRepository offline remoteTemplate debug
+        |> TTask.andThen
             (\templateConfigPath ->
                 let
                     elmJsonPath : Path
                     elmJsonPath =
                         Path.join2 templateConfigPath "elm.json"
                 in
-                Fs.readTextFile fs elmJsonPath
-                    |> Task.mapError
+                Fs.readTextFile elmJsonPath
+                    |> TTask.mapError
                         (\error ->
                             case error of
-                                Fs.NotFound _ ->
+                                FsData.NotFound _ ->
                                     elmJsonNotFoundProblem remoteTemplate
 
-                                Fs.PermissionDenied ->
+                                FsData.PermissionDenied ->
                                     Problem.unexpectedError ("when trying to read " ++ elmJsonPath) "Permission denied."
 
-                                Fs.IoError message ->
+                                FsData.IoError message ->
                                     Problem.unexpectedError ("when trying to read " ++ elmJsonPath) message
                                         |> Problem.withPath elmJsonPath
                         )
-                    |> Task.andThen
+                    |> TTask.andThen
                         (\rawElmJson ->
                             parseElmJson remoteTemplate elmJsonPath rawElmJson
-                                |> TaskExtra.fromResult
-                                |> Task.andThen
+                                |> TTask.fromResult
+                                |> TTask.andThen
                                     (\elmJson ->
-                                        Task.map2
+                                        TTask.map2
                                             (\() () -> ())
-                                            (Fs.writeTextFile fs (Path.join2 reviewPath "elm.json") rawElmJson
-                                                |> Task.mapError (\error -> Problem.unexpectedError "writing the template's elm.json file" (FsExtra.errorToString error))
+                                            (Fs.writeTextFile (Path.join2 reviewPath "elm.json") rawElmJson
+                                                |> TTask.mapError (\error -> Problem.unexpectedError "writing the template's elm.json file" (FsExtra.errorToString error))
                                             )
-                                            (TaskExtra.mapAllAndIgnore
+                                            (TTask.mapAllAndIgnore
                                                 (\directory ->
-                                                    FsExtra.copyDirectory os
+                                                    Fs.copyDirectory
                                                         { from = Path.join2 templateConfigPath directory
                                                         , to = Path.join2 reviewPath directory
                                                         }
-                                                        |> Task.mapError
+                                                        |> TTask.mapError
                                                             (\error ->
                                                                 let
                                                                     stepDescription : String
@@ -199,13 +196,13 @@ createTemplateConfiguration fs os reviewPath offline remoteTemplate debug =
                                                                         "copying the template's " ++ directory ++ " source directory"
                                                                 in
                                                                 case error of
-                                                                    ProcessExtra.ProcessRunError processError ->
+                                                                    ProcessData.ProcessRunError processError ->
                                                                         Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
 
-                                                                    ProcessExtra.CommandNotFound ->
+                                                                    ProcessData.CommandNotFound ->
                                                                         Problem.unexpectedError stepDescription "Command `cp` not found"
 
-                                                                    ProcessExtra.CommandFailed completed ->
+                                                                    ProcessData.CommandFailed completed ->
                                                                         Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
                                                             )
                                                 )

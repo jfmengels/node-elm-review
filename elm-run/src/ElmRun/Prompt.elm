@@ -12,18 +12,21 @@ module ElmRun.Prompt exposing
 -}
 
 import Capabilities exposing (Console, Stdin)
-import Cli
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.Stdin as Stdin
+import Elm.Review.Testable.StdinData as Stdin exposing (Key(..), StdinError)
+import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color as Color exposing (Color(..), Colorize)
-import Stdin exposing (Key(..), StdinError)
-import Task
 
 
 type Msg
     = UserPressedKey Stdin (Result StdinError Stdin.Key)
 
 
-prompt : Stdin -> Console -> { color : Color.Support, priorMessage : Maybe String, question : Colorize -> String } -> Cmd Msg
-prompt stdin stdout { color, priorMessage, question } =
+prompt : Stdin -> { color : Color.Support, priorMessage : Maybe String, question : Colorize -> String } -> TCmd Msg
+prompt stdin { color, priorMessage, question } =
     let
         message : String
         message =
@@ -42,17 +45,17 @@ prompt stdin stdout { color, priorMessage, question } =
         yesNo =
             Color.toAnsi color Gray " (Y/n)"
     in
-    Cmd.batch
-        [ Cli.println stdout (message ++ question_ ++ yesNo ++ "")
-        , Stdin.readKey stdin
-            |> Task.attempt (UserPressedKey stdin)
+    TCmd.batch
+        [ Cli.printlnStdout (message ++ question_ ++ yesNo ++ "")
+        , Stdin.readKey
+            |> TTask.attempt (UserPressedKey stdin)
         ]
 
 
 type PromptResult
     = Accepted
     | Refused
-    | TriggerCmd (Cmd Msg)
+    | TriggerCmd (TCmd Msg)
 
 
 update : Msg -> PromptResult
@@ -68,8 +71,8 @@ update msg =
                     Refused
 
                 Nothing ->
-                    Stdin.readKey stdin
-                        |> Task.attempt (UserPressedKey stdin)
+                    Stdin.readKey
+                        |> TTask.attempt (UserPressedKey stdin)
                         |> TriggerCmd
 
         UserPressedKey _ (Err err) ->

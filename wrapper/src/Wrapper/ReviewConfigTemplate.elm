@@ -1,22 +1,20 @@
 module Wrapper.ReviewConfigTemplate exposing (create)
 
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData exposing (FsError)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version exposing (Version)
 import ElmReview.Path as Path exposing (Path)
 import ElmRun.FsExtra as FsExtra
-import ElmRun.TaskExtra as TaskExtra
-import Fs exposing (FileSystem, FsError)
-import Task exposing (Task)
 
 
-create : FileSystem -> Version -> Path -> Maybe String -> Task FsError ()
-create fs elmVersion directory maybeRuleName =
-    TaskExtra.sequence
+create : Version -> Path -> Maybe String -> TTask FsError ()
+create elmVersion directory maybeRuleName =
+    TTask.sequence
         [ FsExtra.createFileAndItsDirectory
-            fs
             (Path.join2 directory "src/ReviewConfig.elm")
             (reviewConfig maybeRuleName)
         , Fs.writeTextFile
-            fs
             (Path.join2 directory "elm.json")
             (createNewReviewElmJson elmVersion (maybeRuleName /= Nothing))
         ]

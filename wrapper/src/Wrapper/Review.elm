@@ -11,18 +11,21 @@ module Wrapper.Review exposing
 -}
 
 import Capabilities exposing (Console, FileWatcher)
-import Cli
 import Elm.Project
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.Fs as Fs
+import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.Internal exposing (TCmd, TTask)
+import Elm.Review.Testable.Process as Process
+import Elm.Review.Testable.ProcessData as Process
+import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
-import Fs exposing (FileSystem)
-import Os exposing (ProcessCapability)
-import Os.Process as Process
-import Task exposing (Task)
 import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 import Worker.Process exposing (ProcessId)
 import Wrapper.Build as Build
@@ -38,8 +41,6 @@ type Model
 type alias ModelData =
     { stdout : Console
     , stderr : Console
-    , fs : FileSystem
-    , os : ProcessCapability
     , options : ReviewOptions
     , buildId : BuildId
     , pid : Maybe ProcessId
@@ -65,8 +66,8 @@ type Msg
     | KilledReviewProcess
 
 
-init : { env | stdout : Console, stderr : Console } -> { capabilities | fs : FileSystem, os : ProcessCapability } -> ReviewOptions -> ( Model, Cmd Msg )
-init { stdout, stderr } { fs, os } options =
+init : { env | stdout : Console, stderr : Console } -> ReviewOptions -> ( Model, TCmd Msg )
+init { stdout, stderr } options =
     let
         buildId : BuildId
         buildId =
@@ -75,33 +76,31 @@ init { stdout, stderr } { fs, os } options =
     ( Model
         { stdout = stdout
         , stderr = stderr
-        , fs = fs
-        , os = os
         , buildId = buildId
         , options = options
         , pid = Nothing
         , watch = Nothing
         }
-    , startBuild fs os options buildId
+    , startBuild options buildId
     )
 
 
-verifyElmJsonExists : FileSystem -> ProjectPaths -> Task Problem ()
-verifyElmJsonExists fs projectPaths =
+verifyElmJsonExists : ProjectPaths -> TTask Problem ()
+verifyElmJsonExists projectPaths =
     let
         elmJsonPath : Path
         elmJsonPath =
             Path.join2 (ProjectPaths.projectRoot projectPaths) "elm.json"
     in
-    Fs.stat fs elmJsonPath
-        |> Task.map (\_ -> ())
-        |> Task.mapError
+    Fs.stat elmJsonPath
+        |> TTask.map (\_ -> ())
+        |> TTask.mapError
             (\error ->
                 let
                     problem : ProblemSimple
                     problem =
                         case error of
-                            Fs.NotFound _ ->
+                            FsData.NotFound _ ->
                                 { title = "ELM.JSON NOT FOUND"
                                 , message = \c -> "I could not find the " ++ c Cyan "elm.json" ++ " of the project to review. I was looking for it at\n\n    " ++ c Yellow elmJsonPath ++ """
 
@@ -119,16 +118,15 @@ Since you specified this path, I'm assuming that you misconfigured the CLI's arg
             )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, TCmd Msg )
 update msg (Model model) =
     updateHelp msg model
         |> Tuple.mapFirst Model
 
 
-stopBecauseOfProblem : ModelData -> Problem -> Cmd msg
+stopBecauseOfProblem : ModelData -> Problem -> TCmd msg
 stopBecauseOfProblem model problem =
     Problem.stop
-        model.stderr
         { color = model.options.color
         , reportMode = model.options.reportMode
         , debug = model.options.debug
@@ -137,12 +135,12 @@ stopBecauseOfProblem model problem =
         problem
 
 
-updateHelp : Msg -> ModelData -> ( ModelData, Cmd Msg )
+updateHelp : Msg -> ModelData -> ( ModelData, TCmd Msg )
 updateHelp msg model =
     case msg of
         BuildCompleted buildId result ->
             if buildId /= model.buildId then
-                ( model, Cmd.none )
+                ( model, TCmd.none )
 
             else
                 case result of
@@ -167,13 +165,13 @@ updateHelp msg model =
 
                           else
                             model
-                        , runReviewProcess model
+                        , runReviewProcess model.options
                             { reviewAppPath = reviewAppPath
                             , reviewElmJson = reviewElmJson
                             , reviewFolder = Path.dirname elmJsonPath
                             , packagesLocation = packagesLocation
                             }
-                            |> Task.attempt SpawnedReviewProcess
+                            |> TTask.attempt SpawnedReviewProcess
                         )
 
                     Err problem ->
@@ -185,9 +183,9 @@ updateHelp msg model =
             case result of
                 Ok pid ->
                     ( { model | pid = Just pid }
-                    , Process.wait model.os pid
-                        |> Task.mapError (\error -> Debug.todo ("Spawn error " ++ ProcessExtra.errorToString error))
-                        |> Task.attempt (ReviewProcessEnded pid)
+                    , Process.wait pid
+                        |> TTask.mapError (\error -> Debug.todo ("Spawn error " ++ ProcessExtra.errorToString error))
+                        |> TTask.attempt (ReviewProcessEnded pid)
                     )
 
                 Err problem ->
@@ -209,7 +207,7 @@ updateHelp msg model =
                         )
 
             else
-                ( model, Cmd.none )
+                ( model, TCmd.none )
 
         ConfigElmJsonWasModified ->
             -- TODO Wait a bit before doing anything, we might be in the middle of a rebase
@@ -222,13 +220,13 @@ updateHelp msg model =
                 restartBuild model
 
             else
-                ( model, Cmd.none )
+                ( model, TCmd.none )
 
         KilledReviewProcess ->
-            ( model, Cmd.none )
+            ( model, TCmd.none )
 
 
-restartBuild : ModelData -> ( ModelData, Cmd Msg )
+restartBuild : ModelData -> ( ModelData, TCmd Msg )
 restartBuild model =
     let
         buildId : BuildId
@@ -236,35 +234,35 @@ restartBuild model =
             incrementBuild model.buildId
     in
     ( { model | buildId = buildId, pid = Nothing }
-    , Cmd.batch
+    , TCmd.batch
         [ case model.options.reportMode of
             ReportMode.HumanReadable ->
-                Cli.println model.stdout "Your configuration has changed. Restarting elm-review with the new one."
+                Cli.printlnStdout "Your configuration has changed. Restarting elm-review with the new one."
 
             ReportMode.Json ->
-                Cmd.none
+                TCmd.none
 
             ReportMode.NDJson ->
-                Cmd.none
-        , startBuild model.fs model.os model.options buildId
+                TCmd.none
+        , startBuild model.options buildId
         , case model.pid of
             Just pid ->
                 -- TODO Send softer signal that waits until any file writes are done and exits.
                 --      Requires a Subscription in the review app that listens to signals
-                Process.kill model.os pid 9
-                    |> Task.attempt (\_ -> KilledReviewProcess)
+                Process.kill pid 9
+                    |> TTask.attempt (\_ -> KilledReviewProcess)
 
             Nothing ->
-                Cmd.none
+                TCmd.none
         ]
     )
 
 
-startBuild : FileSystem -> ProcessCapability -> ReviewOptions -> BuildId -> Cmd Msg
-startBuild fs os options buildId =
-    verifyElmJsonExists fs options.projectPaths
-        |> Task.andThen (\() -> Build.build fs os options)
-        |> Task.attempt (BuildCompleted buildId)
+startBuild : ReviewOptions -> BuildId -> TCmd Msg
+startBuild options buildId =
+    verifyElmJsonExists options.projectPaths
+        |> TTask.andThen (\() -> Build.build options)
+        |> TTask.attempt (BuildCompleted buildId)
 
 
 type alias RunReviewOptions =
@@ -275,18 +273,18 @@ type alias RunReviewOptions =
     }
 
 
-runReviewProcess : ModelData -> RunReviewOptions -> Task Problem ProcessId
-runReviewProcess model runReviewOptions =
-    case model.options.outputTarget of
+runReviewProcess : ReviewOptions -> RunReviewOptions -> TTask Problem ProcessId
+runReviewProcess options runReviewOptions =
+    case options.outputTarget of
         OutputTarget.JavaScriptTarget ->
-            runReviewProcessWithNodeJs model runReviewOptions
+            runReviewProcessWithNodeJs options runReviewOptions
 
         OutputTarget.ElmRunTarget ->
-            runReviewProcessWithElmRun model runReviewOptions
+            runReviewProcessWithElmRun options runReviewOptions
 
 
-runReviewProcessWithNodeJs : ModelData -> RunReviewOptions -> Task Problem ProcessId
-runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
+runReviewProcessWithNodeJs : ReviewOptions -> RunReviewOptions -> TTask Problem ProcessId
+runReviewProcessWithNodeJs options { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
     let
         reviewAppFlags : List String
         reviewAppFlags =
@@ -294,7 +292,7 @@ runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, revie
                 :: ("--packages-location=" ++ packagesLocation)
                 :: options.reviewAppFlags
     in
-    Process.spawn os
+    Process.spawn
         "node"
         { args = Path.join2 options.binaryRoot "elm-app-worker2.js" :: reviewAppPath :: reviewAppFlags
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
@@ -303,16 +301,15 @@ runReviewProcessWithNodeJs { os, options } { reviewAppPath, reviewElmJson, revie
         , stdout = Process.InheritStdout
         , stderr = Process.InheritStderr
         }
-        |> Task.mapError
+        |> TTask.mapError
             (\err ->
                 Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
                     |> Problem.withPath reviewAppPath
             )
-        |> Task.map .pid
 
 
-runReviewProcessWithElmRun : ModelData -> RunReviewOptions -> Task Problem ProcessId
-runReviewProcessWithElmRun { os, options } { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
+runReviewProcessWithElmRun : ReviewOptions -> RunReviewOptions -> TTask Problem ProcessId
+runReviewProcessWithElmRun options { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
     let
         reviewAppFlags : List String
         reviewAppFlags =
@@ -330,7 +327,7 @@ runReviewProcessWithElmRun { os, options } { reviewAppPath, reviewElmJson, revie
             else
                 ( reviewAppPath, reviewAppFlags )
     in
-    Process.spawn os
+    Process.spawn
         cmd
         { args = args
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
@@ -339,12 +336,11 @@ runReviewProcessWithElmRun { os, options } { reviewAppPath, reviewElmJson, revie
         , stdout = Process.InheritStdout
         , stderr = Process.InheritStderr
         }
-        |> Task.mapError
+        |> TTask.mapError
             (\err ->
                 Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
                     |> Problem.withPath reviewAppPath
             )
-        |> Task.map .pid
 
 
 subscriptions : Model -> Sub Msg

@@ -1,73 +1,31 @@
-module ElmRun.ProcessExtra exposing
-    ( errorToString, stdoutSpec
-    , SpawnError(..), runButFailOnError
-    )
+module ElmRun.ProcessExtra exposing (errorToString, stdoutSpec)
 
 {-|
 
 @docs errorToString, stdoutSpec
-@docs SpawnError, runButFailOnError
 
 -}
 
-import Os exposing (ProcessCapability)
-import Os.Process as Process exposing (ProcessError)
-import Task exposing (Task)
+import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError)
 
 
 errorToString : ProcessError -> String
 errorToString err =
     case err of
-        Process.PermissionDenied ->
+        ProcessData.PermissionDenied ->
             "PermissionDenied"
 
-        Process.CaptureLimitExceeded stream ->
+        ProcessData.CaptureLimitExceeded stream ->
             "CaptureLimitExceeded(" ++ stream ++ ")"
 
-        Process.ProcessError message ->
+        ProcessData.ProcessError message ->
             message
 
 
-stdoutSpec : Bool -> Process.StdoutSpec
+stdoutSpec : Bool -> ProcessData.StdoutSpec
 stdoutSpec debug =
     if debug then
-        Process.InheritStdout
+        ProcessData.InheritStdout
 
     else
-        Process.NullStdout
-
-
-type SpawnError
-    = CommandNotFound
-    | ProcessRunError ProcessError
-    | CommandFailed Process.Completed
-
-
-{-| Like `Os.Process.run`, but fails if the exit code is different from 0.
--}
-runButFailOnError :
-    ProcessCapability
-    -> String
-    -> Process.SpawnOptions
-    -> Task SpawnError Process.Completed
-runButFailOnError os command spawnOptions =
-    Process.run os command spawnOptions
-        |> Task.mapError ProcessRunError
-        |> Task.andThen
-            (\completed ->
-                if completed.exitCode == 0 then
-                    Task.succeed completed
-
-                else if completed.exitCode == commandNotFound then
-                    Task.fail CommandNotFound
-
-                else
-                    Task.fail (CommandFailed completed)
-            )
-
-
-{-| Error code when command was not found.
--}
-commandNotFound : Int
-commandNotFound =
-    127
+        ProcessData.NullStdout
