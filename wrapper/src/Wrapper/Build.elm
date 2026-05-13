@@ -79,7 +79,7 @@ buildProject fs os options reviewFolder =
             Path.join2 reviewFolder "elm.json"
     in
     readReviewElmJson fs options.reviewProject elmJsonPath
-        |> Task.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson.application |> TaskExtra.resultToTask)
+        |> Task.andThen (\elmJson -> validateElmReviewVersion options elmJsonPath elmJson.application |> TaskExtra.fromResult)
         |> Task.andThen
             (\{ application, elmReviewVersion } ->
                 FolderHash.hashApplication fs reviewFolder options.localElmReview application
@@ -365,7 +365,7 @@ readReviewElmJson fs reviewProject elmJsonPath =
             (\rawElmJson ->
                 parseElmJson reviewProject elmJsonPath rawElmJson
                     |> Result.map (\application -> { raw = rawElmJson, application = application })
-                    |> TaskExtra.resultToTask
+                    |> TaskExtra.fromResult
             )
 
 

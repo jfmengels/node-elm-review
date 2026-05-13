@@ -209,7 +209,7 @@ Check the spelling and make sure it is a public repository, as I can't work with
                     getDefaultBranchFromLocalInformation gitCapture
                         |> Task.mapError (\_ -> Problem.unexpectedError "while trying to figure out the remote template's default Git branch" error)
             )
-        |> Task.andThen (\output -> headBranchName output |> TaskExtra.resultToTask)
+        |> Task.andThen (\output -> headBranchName output |> TaskExtra.fromResult)
 
 
 getDefaultBranchFromLocalInformation : (List String -> Task String String) -> Task Problem String
