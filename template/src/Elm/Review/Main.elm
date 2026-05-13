@@ -394,14 +394,14 @@ writeChangedFile options { filePath, source } =
             , cwd = Nothing
             , env = Nothing
             , stdin = ProcessData.TextStdin source
-            , stdout = ProcessExtra.stdoutSpec options.debug
+            , stdout = ProcessData.stdoutSpec options.debug
             , stderr = ProcessData.CaptureStderr { maxBytes = 1024, onOverflow = ProcessData.TruncateOutput }
             }
             |> TTask.mapError
                 (\error ->
                     case error of
                         ProcessData.ProcessRunError processError ->
-                            Problem.unexpectedError "while applying automatic fixes and running elm-format" (ProcessExtra.errorToString processError)
+                            Problem.unexpectedError "while applying automatic fixes and running elm-format" (ProcessData.errorToString processError)
 
                         ProcessData.CommandNotFound ->
                             elmFormatNotFoundError options.elmFormatPath

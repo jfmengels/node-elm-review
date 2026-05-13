@@ -298,7 +298,7 @@ fsErrorToProblem stepDescription error =
 
 processErrorToProblem : String -> ProcessError -> Problem
 processErrorToProblem stepDescription error =
-    Problem.unexpectedError stepDescription (ProcessExtra.errorToString error)
+    Problem.unexpectedError stepDescription (ProcessData.errorToString error)
 
 
 addReviewAppDependencies : OutputTarget -> List ( Elm.Package.Name, Elm.Version.Version ) -> List ( Elm.Package.Name, Elm.Version.Version )

@@ -10,6 +10,8 @@ module Elm.Review.Testable.ProcessData exposing
     , StderrSpec(..)
     , StdinSpec(..)
     , StdoutSpec(..)
+    , errorToString
+    , stdoutSpec
     )
 
 
@@ -84,3 +86,25 @@ type alias Completed =
     , stdoutTruncated : Bool
     , stderrTruncated : Bool
     }
+
+
+errorToString : ProcessError -> String
+errorToString err =
+    case err of
+        PermissionDenied ->
+            "PermissionDenied"
+
+        CaptureLimitExceeded stream ->
+            "CaptureLimitExceeded(" ++ stream ++ ")"
+
+        ProcessError message ->
+            message
+
+
+stdoutSpec : Bool -> StdoutSpec
+stdoutSpec debug =
+    if debug then
+        InheritStdout
+
+    else
+        NullStdout

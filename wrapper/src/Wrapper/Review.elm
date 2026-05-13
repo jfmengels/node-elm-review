@@ -20,15 +20,13 @@ import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TCmd, TSub, TTask)
 import Elm.Review.Testable.Process as Process
-import Elm.Review.Testable.ProcessData as Process
+import Elm.Review.Testable.ProcessData as ProcessData
 import Elm.Review.Testable.TSub as TSub
 import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode
-import ElmRun.FsExtra as FsExtra
-import ElmRun.ProcessExtra as ProcessExtra
 import Worker.Process exposing (ProcessId)
 import Wrapper.Build as Build
 import Wrapper.Options as Options exposing (ReviewOptions)
@@ -60,7 +58,7 @@ incrementBuild (BuildId n) =
 type Msg
     = BuildCompleted BuildId (Result Problem Build.BuildData)
     | SpawnedReviewProcess (Result Problem ProcessId)
-    | ReviewProcessEnded ProcessId (Result Problem Process.Completed)
+    | ReviewProcessEnded ProcessId (Result Problem ProcessData.Completed)
     | ConfigElmJsonWasModified
     | ConfigSourceFileWasModified FileEvent
     | KilledReviewProcess
@@ -177,7 +175,7 @@ updateHelp msg model =
                 Ok pid ->
                     ( { model | pid = Just pid }
                     , Process.wait pid
-                        |> TTask.mapError (\error -> Debug.todo ("Spawn error " ++ ProcessExtra.errorToString error))
+                        |> TTask.mapError (\error -> Debug.todo ("Spawn error " ++ ProcessData.errorToString error))
                         |> TTask.attempt (ReviewProcessEnded pid)
                     )
 
@@ -290,13 +288,13 @@ runReviewProcessWithNodeJs options { reviewAppPath, reviewElmJson, reviewFolder,
         { args = Path.join2 options.binaryRoot "lib/elm-app-worker2.js" :: reviewAppPath :: reviewAppFlags
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
         , env = Nothing
-        , stdin = Process.InheritStdin
-        , stdout = Process.InheritStdout
-        , stderr = Process.InheritStderr
+        , stdin = ProcessData.InheritStdin
+        , stdout = ProcessData.InheritStdout
+        , stderr = ProcessData.InheritStderr
         }
         |> TTask.mapError
             (\err ->
-                Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
+                Problem.unexpectedError "when running the review application" (ProcessData.errorToString err)
                     |> Problem.withPath reviewAppPath
             )
 
@@ -325,13 +323,13 @@ runReviewProcessWithElmRun options { reviewAppPath, reviewElmJson, reviewFolder,
         { args = args
         , cwd = Just (ProjectPaths.projectRoot options.projectPaths)
         , env = Nothing
-        , stdin = Process.InheritStdin
-        , stdout = Process.InheritStdout
-        , stderr = Process.InheritStderr
+        , stdin = ProcessData.InheritStdin
+        , stdout = ProcessData.InheritStdout
+        , stderr = ProcessData.InheritStderr
         }
         |> TTask.mapError
             (\err ->
-                Problem.unexpectedError "when running the review application" (ProcessExtra.errorToString err)
+                Problem.unexpectedError "when running the review application" (ProcessData.errorToString err)
                     |> Problem.withPath reviewAppPath
             )
 

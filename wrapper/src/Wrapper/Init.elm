@@ -191,7 +191,7 @@ createTemplateConfiguration reviewPath offline remoteTemplate debug =
                                                                 in
                                                                 case error of
                                                                     ProcessData.ProcessRunError processError ->
-                                                                        Problem.unexpectedError stepDescription (ProcessExtra.errorToString processError)
+                                                                        Problem.unexpectedError stepDescription (ProcessData.errorToString processError)
 
                                                                     ProcessData.CommandNotFound ->
                                                                         Problem.unexpectedError stepDescription "Command `cp` not found"
