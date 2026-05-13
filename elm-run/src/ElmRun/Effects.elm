@@ -1,5 +1,6 @@
 module ElmRun.Effects exposing (effects, subEffects)
 
+import Capabilities exposing (Console, FileWatcher, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Elm.Review.Testable exposing (Effects)
 import Elm.Review.Testable.CliData as CliData
