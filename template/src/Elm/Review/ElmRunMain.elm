@@ -44,12 +44,8 @@ init : Env -> ( ModelWrapper, Cmd Main.Msg )
 init env =
     case Result.map2 Tuple.pair (requireCapabilities env) (Options.parse env.args) of
         Ok ( { fs, os }, options ) ->
-            case Main.computeRulesToRun options of
-                Ok rulesFromConfig ->
-                    let
-                        ( mainModel, cmd ) =
-                            Main.initWithOptions env options rulesFromConfig
-                    in
+            case Main.init env.stdin options of
+                Ok ( mainModel, cmd ) ->
                     ( Running
                         { fs = fs
                         , os = os
