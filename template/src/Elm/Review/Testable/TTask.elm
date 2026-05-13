@@ -2,7 +2,7 @@ module Elm.Review.Testable.TTask exposing
     ( TTask, succeed, fail
     , fromResult
     , map
-    , map2, andThen, sequence
+    , map2, map3, andThen, sequence
     , mapAllAndFold, mapAllAndIgnore
     , alwaysRun
     , otherwise
@@ -28,7 +28,7 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 
 # Chaining
 
-@docs map2, andThen, sequence
+@docs map2, map3, andThen, sequence
 @docs mapAllAndFold, mapAllAndIgnore
 @docs alwaysRun
 
@@ -105,6 +105,20 @@ map2 func taskA taskB =
             (\a ->
                 taskB
                     |> andThen (\b -> succeed (func a b))
+            )
+
+
+map3 : (a -> b -> c -> result) -> TTask x a -> TTask x b -> TTask x c -> TTask x result
+map3 func taskA taskB taskC =
+    taskA
+        |> andThen
+            (\a ->
+                taskB
+                    |> andThen
+                        (\b ->
+                            taskC
+                                |> andThen (\c -> succeed (func a b c))
+                        )
             )
 
 
