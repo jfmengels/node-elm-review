@@ -1,7 +1,6 @@
 module WrapperMain exposing (Model, Msg, init, subscriptions, update)
 
 import Array exposing (Array)
-import Capabilities exposing (Stdin)
 import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.InitError as InitError exposing (InitError)
@@ -39,7 +38,7 @@ type alias LoadingModel =
     { env : Dict String String
     , formatOptions : FormatOptions {}
     , toOptions : { elmJsonPath : Path } -> OptionsParser.OptionsParseResult
-    , stdin : Maybe Stdin
+    , stdinSupported : Bool
     }
 
 
@@ -52,8 +51,8 @@ type Msg
     | PrepareOfflineMsg PrepareOffline.Msg
 
 
-init : Dict String String -> List String -> Maybe Stdin -> InitError ( Model, TCmd Msg )
-init env args stdin =
+init : Dict String String -> List String -> Bool -> InitError ( Model, TCmd Msg )
+init env args stdinSupported =
     let
         -- TODO Get binaryRoot path from somewhere
         binaryRoot : Path
@@ -69,11 +68,11 @@ init env args stdin =
         binaryRoot
         elmHomePath
         OutputTarget.JavaScriptTarget
-        |> handleCliArgsParseResult env stdin
+        |> handleCliArgsParseResult env stdinSupported
 
 
-handleCliArgsParseResult : Dict String String -> Maybe Stdin -> OptionsParser.OptionsParseResult -> InitError ( Model, TCmd Msg )
-handleCliArgsParseResult env stdin result =
+handleCliArgsParseResult : Dict String String -> Bool -> OptionsParser.OptionsParseResult -> InitError ( Model, TCmd Msg )
+handleCliArgsParseResult env stdinSupported result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
             InitError.Problem formatOptions problem
@@ -101,7 +100,7 @@ handleCliArgsParseResult env stdin result =
                 { env = env
                 , formatOptions = formatOptions
                 , toOptions = toOptions
-                , stdin = stdin
+                , stdinSupported = stdinSupported
                 }
             , getCwd env
                 |> TTask.andThen
@@ -126,7 +125,7 @@ handleCliArgsParseResult env stdin result =
         OptionsParser.Init options ->
             let
                 ( initModel, cmd ) =
-                    Init.init stdin options
+                    Init.init stdinSupported options
             in
             ( Init initModel, TCmd.map InitMsg cmd )
                 |> InitError.Success
@@ -134,7 +133,7 @@ handleCliArgsParseResult env stdin result =
         OptionsParser.NewRule options ->
             let
                 ( newRuleModel, cmd ) =
-                    NewRule.init stdin options
+                    NewRule.init stdinSupported options
             in
             ( NewRule newRuleModel, TCmd.map NewRuleMsg cmd )
                 |> InitError.Success
@@ -142,7 +141,7 @@ handleCliArgsParseResult env stdin result =
         OptionsParser.NewPackage options ->
             let
                 ( newPackageModel, cmd ) =
-                    NewPackage.init stdin options
+                    NewPackage.init stdinSupported options
             in
             ( NewPackage newPackageModel, TCmd.map NewPackageMsg cmd )
                 |> InitError.Success
@@ -245,7 +244,7 @@ foundNearestElmJson loading result =
         Ok elmJsonPath ->
             handleCliArgsParseResult
                 loading.env
-                loading.stdin
+                loading.stdinSupported
                 (loading.toOptions { elmJsonPath = elmJsonPath })
 
         Err (FsData.NotFound _) ->

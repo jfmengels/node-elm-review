@@ -10,7 +10,6 @@ module Wrapper.Init exposing
 
 -}
 
-import Capabilities exposing (Console, Stdin)
 import Elm.Project
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
@@ -40,7 +39,7 @@ type Model
 
 
 type alias ModelData =
-    { stdin : Maybe Stdin
+    { stdinSupported : Bool
     , options : InitOptions
     }
 
@@ -50,29 +49,28 @@ type Msg
     | CreatedFiles (Result Problem ())
 
 
-init : Maybe Stdin -> InitOptions -> ( Model, TCmd Msg )
-init stdin options =
+init : Bool -> InitOptions -> ( Model, TCmd Msg )
+init stdinSupported options =
     let
         model : ModelData
         model =
-            { stdin = stdin
+            { stdinSupported = stdinSupported
             , options = options
             }
     in
     ( Model model
-    , case stdin of
-        Just stdin_ ->
-            case options.remoteTemplate of
-                Just _ ->
-                    -- Don't prompt when using template, the user likely knows what they are doing.
-                    createConfiguration model.options
+    , if stdinSupported then
+        case options.remoteTemplate of
+            Just _ ->
+                -- Don't prompt when using template, the user likely knows what they are doing.
+                createConfiguration model.options
 
-                Nothing ->
-                    prompt stdin_ model
+            Nothing ->
+                prompt model
 
-        Nothing ->
-            -- If there is no stdin, assume the prompt answer is yes.
-            createConfiguration model.options
+      else
+        -- If there is no stdin, assume the prompt answer is yes.
+        createConfiguration model.options
     )
 
 
@@ -106,9 +104,9 @@ update msg (Model model) =
                 problem
 
 
-prompt : Stdin -> ModelData -> TCmd Msg
-prompt stdin model =
-    Prompt.prompt stdin
+prompt : ModelData -> TCmd Msg
+prompt model =
+    Prompt.prompt
         { color = model.options.color
         , priorMessage = Nothing
         , question =

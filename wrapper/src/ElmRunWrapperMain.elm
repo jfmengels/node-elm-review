@@ -7,7 +7,7 @@ import WrapperMain
 main : ElmRunProgram.Program WrapperMain.Model WrapperMain.Msg
 main =
     ElmRunProgram.program
-        { init = \{ env, args, stdin } -> WrapperMain.init env args stdin
+        { init = \{ env, args, stdinSupported } -> WrapperMain.init env args stdinSupported
         , update = WrapperMain.update
         , subscriptions = WrapperMain.subscriptions
         }

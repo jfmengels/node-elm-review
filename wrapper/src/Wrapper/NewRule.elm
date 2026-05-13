@@ -13,7 +13,6 @@ module Wrapper.NewRule exposing
 
 -}
 
-import Capabilities exposing (Console, Stdin)
 import Elm.Module as Module
 import Elm.Package
 import Elm.Project
@@ -42,7 +41,7 @@ type Model
 
 
 type alias ModelData =
-    { stdin : Maybe Stdin
+    { stdinSupported : Bool
     , options : NewRuleOptions
     }
 
@@ -94,15 +93,15 @@ couldNotFindElmJsonMessage pathToElmJson_ c =
 You can run """ ++ c Cyan "elm-review new-package" ++ " to get started with a new project designed to publish review rules."
 
 
-init : Maybe Stdin -> NewRuleOptions -> ( Model, TCmd Msg )
-init stdin options =
+init : Bool -> NewRuleOptions -> ( Model, TCmd Msg )
+init stdinSupported options =
     let
         pathToElmJson_ : String
         pathToElmJson_ =
             pathToElmJson options
     in
     ( Model
-        { stdin = stdin
+        { stdinSupported = stdinSupported
         , options = options
         }
     , readReviewElmJson pathToElmJson_
