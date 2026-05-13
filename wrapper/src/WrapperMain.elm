@@ -3,12 +3,15 @@ module WrapperMain exposing (Model, Msg, main)
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Elm.Review.CliVersion as CliVersion
+import Elm.Review.Testable.Cli as Cli
+import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.FsData exposing (FsError)
+import Elm.Review.Testable.Internal exposing (TCmd)
 import ElmReview.Color as Color exposing (Color(..))
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
-import Os exposing (ProcessCapability)
 import Wrapper.Help as Help
 import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage
@@ -39,9 +42,7 @@ type Model
 
 
 type alias LoadingModel =
-    { env : Env
-    , fs : FileSystem
-    , os : ProcessCapability
+    { env : Dict String String
     , formatOptions : FormatOptions {}
     , toOptions : { elmJsonPath : Path } -> OptionsParser.OptionsParseResult
     }
@@ -56,8 +57,8 @@ type Msg
     | PrepareOfflineMsg PrepareOffline.Msg
 
 
-init : Env -> ( Model, Cmd Msg )
-init env =
+init : Dict String String -> List String -> ( Model, TCmd Msg )
+init env args =
     case requireCapabilities env of
         Err err ->
             ( Done
@@ -68,12 +69,12 @@ init env =
                 |> Problem.stop
                     { color = Color.noColors
                     , reportMode =
-                        if List.member "--report=json" env.args || List.member "--report=ndjson" env.args then
+                        if List.member "--report=json" args || List.member "--report=ndjson" args then
                             ReportMode.Json
 
                         else
                             ReportMode.HumanReadable
-                    , debug = List.member "--debug" env.args
+                    , debug = List.member "--debug" args
                     , attemptFutureRecovery = False
                     }
             )
@@ -93,12 +94,12 @@ init env =
             handleCliArgsParseResult env capabilities (OptionsParser.parse env binaryRoot elmHomePath OutputTarget.JavaScriptTarget)
 
 
-handleCliArgsParseResult : Env -> { capabilities | fs : FileSystem, os : ProcessCapability } -> OptionsParser.OptionsParseResult -> ( Model, Cmd Msg )
-handleCliArgsParseResult env { fs, os } result =
+handleCliArgsParseResult : Dict String String -> OptionsParser.OptionsParseResult -> ( Model, TCmd Msg )
+handleCliArgsParseResult env result =
     case result of
         OptionsParser.ParseError formatOptions problem ->
             ( Done
-            , Problem.stop env.stderr formatOptions problem
+            , Problem.stop formatOptions problem
             )
 
         OptionsParser.ShowHelp options ->
@@ -120,20 +121,18 @@ handleCliArgsParseResult env { fs, os } result =
         OptionsParser.NeedElmJsonPath { formatOptions, toOptions } ->
             ( Loading
                 { env = env
-                , fs = fs
-                , os = os
                 , formatOptions = formatOptions
                 , toOptions = toOptions
                 }
-            , getCwd fs env.env
-                |> Task.andThen
+            , getCwd env
+                |> TTask.andThen
                     (\cwd ->
                         -- TODO Use `\` for Windows Support?
                         String.split "/" cwd
                             |> Array.fromList
                             |> findNearestElmJson fs
                     )
-                |> Task.attempt FoundNearestElmJson
+                |> TTask.attempt FoundNearestElmJson
             )
 
         OptionsParser.Review options ->
@@ -295,10 +294,10 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
             )
 
 
-findNearestElmJson : Array String -> Task FsError Path
+findNearestElmJson : Array String -> TTask FsError Path
 findNearestElmJson fs pathSegments =
     if Array.isEmpty pathSegments then
-        Task.fail (FsData.NotFound "")
+        TTask.fail (FsData.NotFound "")
 
     else
         let
@@ -308,23 +307,23 @@ findNearestElmJson fs pathSegments =
                 Array.push "elm.json" pathSegments |> Array.toList |> String.join "/"
         in
         Fs.stat fs path
-            |> Task.map (\_ -> path)
-            |> Task.onError
+            |> TTask.map (\_ -> path)
+            |> TTask.onError
                 (\_ ->
                     findNearestElmJson fs (Array.slice 0 -1 pathSegments)
                 )
 
 
-getCwd : Dict String String -> Task FsError Path
-getCwd fs env =
+getCwd : Dict String String -> TTask FsError Path
+getCwd env =
     -- TODO Replace this by the following when fixed.
     -- Fs.toSandboxRel fs path "."
     case Dict.get "PWD" env of
         Just path ->
-            Task.succeed path
+            TTask.succeed path
 
         Nothing ->
-            Task.fail (FsData.NotFound ".")
+            TTask.fail (FsData.NotFound ".")
 
 
 subscriptions : Model -> Sub Msg
