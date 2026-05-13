@@ -26,7 +26,8 @@ type ModelWrapper
 type alias Model =
     { fs : FileSystem
     , os : ProcessCapability
-    , env : Env
+    , stdout : Console
+    , stderr : Console
     , mainModel : Main.Model
     }
 
@@ -49,7 +50,8 @@ init env =
                     ( Running
                         { fs = fs
                         , os = os
-                        , env = env
+                        , stdout = env.stdout
+                        , stderr = env.stderr
                         , mainModel = mainModel
                         }
                     , Testable.cmd (effects fs os env.stdout env.stderr) cmd
@@ -72,7 +74,7 @@ update msg modelWrapper =
         Done ->
             ( Done, Cmd.none )
 
-        Running { fs, os, env, mainModel } ->
+        Running { fs, os, stdout, stderr, mainModel } ->
             let
                 ( newMainModel, cmd ) =
                     Main.update msg mainModel
@@ -80,10 +82,11 @@ update msg modelWrapper =
             ( Running
                 { fs = fs
                 , os = os
-                , env = env
+                , stdout = stdout
+                , stderr = stderr
                 , mainModel = newMainModel
                 }
-            , Testable.cmd (effects fs os env.stdout env.stderr) cmd
+            , Testable.cmd (effects fs os stdout stderr) cmd
             )
 
 
