@@ -11,6 +11,7 @@ module Wrapper.Init exposing
 -}
 
 import Elm.Project
+import Elm.Review.ElmBinary as ElmBinary
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
@@ -22,7 +23,6 @@ import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
-import ElmRun.ElmBinary as ElmBinary
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
 import ElmRun.Prompt as Prompt

@@ -1,4 +1,4 @@
-module ElmRun.ElmBinary exposing (findElmVersion)
+module Elm.Review.ElmBinary exposing (findElmVersion)
 
 import Elm.Review.Testable.Process as Process
 import Elm.Review.Testable.ProcessData as ProcessData
