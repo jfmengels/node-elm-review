@@ -1,6 +1,6 @@
-module ElmRunWrapperMain exposing (main)
+module ElmRun.WrapperMain exposing (main)
 
-import Elm.Review.ElmRunProgram as ElmRunProgram
+import ElmRun.Program as ElmRunProgram
 import WrapperMain
 
 

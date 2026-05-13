@@ -1,9 +1,8 @@
-module Elm.Review.ElmRunProgram exposing (Config, Program, program)
+module ElmRun.Program exposing (Config, Program, program)
 
 import Capabilities exposing (Console, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Dict exposing (Dict)
-import Elm.Review.ElmRunEffects as ElmRunEffects
 import Elm.Review.InitError as InitError
 import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.Internal exposing (TCmd)
@@ -11,6 +10,7 @@ import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import ElmReview.Color as Color
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
+import ElmRun.Effects as ElmRunEffects
 import Fs as ElmRunFs exposing (FileSystem, FsError(..))
 import Os exposing (ProcessCapability)
 

@@ -1,7 +1,7 @@
-module Elm.Review.ElmRunMain exposing (main)
+module ElmRun.ReviewMain exposing (main)
 
-import Elm.Review.ElmRunProgram as ElmRunProgram
 import Elm.Review.Main as Main
+import ElmRun.Program as ElmRunProgram
 
 
 main : ElmRunProgram.Program Main.Model Main.Msg
