@@ -4,6 +4,7 @@ import ElmReview.Problem exposing (ProblemSimple)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
 import Set exposing (Set)
 import Wrapper.Options.RuleType exposing (RuleType)
+import Wrapper.OutputTarget exposing (OutputTarget)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 import Wrapper.Subcommand exposing (Subcommand)
 
@@ -36,6 +37,7 @@ type alias InternalOptions =
     , namespace : String
     , flagsNotToUseAnymore : Set String
     , problem : Maybe (Maybe Subcommand -> ProblemSimple)
+    , outputTarget : Maybe OutputTarget
     }
 
 
@@ -68,4 +70,5 @@ initialOptions =
     , restOfArgs = []
     , flagsNotToUseAnymore = Set.empty
     , problem = Nothing
+    , outputTarget = Nothing
     }

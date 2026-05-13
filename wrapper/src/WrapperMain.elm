@@ -19,7 +19,7 @@ import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage
 import Wrapper.NewRule as NewRule
 import Wrapper.Options.Parser as OptionsParser
-import Wrapper.OutputTarget as OutputTarget
+import Wrapper.OutputTarget as OutputTarget exposing (OutputTarget)
 import Wrapper.PrepareOffline as PrepareOffline
 import Wrapper.Review as Review
 
@@ -51,8 +51,8 @@ type Msg
     | PrepareOfflineMsg PrepareOffline.Msg
 
 
-init : Dict String String -> List String -> Bool -> InitError ( Model, TCmd Msg )
-init env args stdinSupported =
+init : Dict String String -> List String -> Bool -> OutputTarget -> InitError ( Model, TCmd Msg )
+init env args stdinSupported defaultOutputTarget =
     let
         -- TODO Get binaryRoot path from somewhere
         binaryRoot : Path
@@ -67,7 +67,7 @@ init env args stdinSupported =
     OptionsParser.parse { args = args, env = env }
         binaryRoot
         elmHomePath
-        OutputTarget.JavaScriptTarget
+        defaultOutputTarget
         |> handleCliArgsParseResult env stdinSupported
 
 

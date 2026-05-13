@@ -19,6 +19,7 @@ import ElmReview.ReportMode as ReportMode
 import Wrapper.Flag as Flag exposing (Argument(..), Display, Flag)
 import Wrapper.Options.InternalOptions exposing (InternalOptions)
 import Wrapper.Options.RuleType as RuleType
+import Wrapper.OutputTarget as OutputTarget
 import Wrapper.RemoteTemplate as RemoteTemplate
 import Wrapper.Section as Section exposing (Section)
 import Wrapper.Subcommand as Subcommand exposing (Subcommand)
@@ -247,6 +248,14 @@ flags =
                 , initDescription = Nothing
                 , newPackageDescription = Nothing
                 }
+      }
+    , { name = "nodejs"
+      , argument = ArgumentAbsent (\_ options -> { options | outputTarget = Just OutputTarget.JavaScriptTarget })
+      , display = Nothing
+      }
+    , { name = "elm-run"
+      , argument = ArgumentAbsent (\_ options -> { options | outputTarget = Just OutputTarget.ElmRunTarget })
+      , display = Nothing
       }
     , { name = "benchmark-info"
       , argument = ArgumentAbsent addToReviewAppFlags
