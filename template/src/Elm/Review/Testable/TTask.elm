@@ -286,6 +286,10 @@ transform tx source =
         Internal.WalkTree path pattern matchKind onResult ->
             Internal.WalkTree path pattern matchKind (onResult >> tx)
 
+        -- Http
+        Internal.HttpGet url onResult ->
+            Internal.HttpGet url (onResult >> tx)
+
         -- Stdin
         Internal.ReadKey onResult ->
             Internal.ReadKey (onResult >> tx)

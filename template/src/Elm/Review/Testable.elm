@@ -27,6 +27,7 @@ import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, Proces
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TTask as TestableTask
 import ElmReview.Path exposing (Path)
+import Http
 import Task as PlatformTask
 
 
@@ -40,6 +41,7 @@ type alias Effects =
     , removeDirectory : Path -> PlatformTask.Task FsError ()
     , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task SpawnError ()
     , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
+    , httpGet : String -> PlatformTask.Task () String
 
     -- Stdin / Stdout
     , readKey : () -> PlatformTask.Task StdinError Key
@@ -136,6 +138,11 @@ task effects testableTask =
 
         Internal.WalkTree path pattern matchKind onResult ->
             effects.walkTree path pattern matchKind
+                |> handle effects onResult
+
+        -- Http
+        Internal.HttpGet url onResult ->
+            effects.httpGet url
                 |> handle effects onResult
 
         -- Stdin
