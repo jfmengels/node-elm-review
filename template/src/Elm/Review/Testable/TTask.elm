@@ -1,7 +1,10 @@
 module Elm.Review.Testable.TTask exposing
     ( TTask, succeed, fail
     , map
-    , andThen
+    , map2, andThen, sequence
+    , mapAllAndFold, mapAllAndIgnore
+    , alwaysRun
+    , otherwise
     , mapError, onError, toMaybe, toResult
     , perform
     )
@@ -23,7 +26,14 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 
 # Chaining
 
-@docs andThen
+@docs map2, andThen, sequence
+@docs mapAllAndFold, mapAllAndIgnore
+@docs alwaysRun
+
+
+# Utilities
+
+@docs otherwise
 
 
 # Errors
@@ -74,6 +84,45 @@ fail error =
 map : (a -> b) -> TTask x a -> TTask x b
 map f source =
     transform (resultMap f) source
+
+
+map2 : (a -> b -> result) -> TTask x a -> TTask x b -> TTask x result
+map2 func taskA taskB =
+    taskA
+        |> andThen
+            (\a ->
+                taskB
+                    |> andThen (\b -> succeed (func a b))
+            )
+
+
+{-| Like Task.sequence but ignores the tasks' results.
+-}
+sequence : List (TTask x ()) -> TTask x ()
+sequence list =
+    List.foldl (\task acc -> map2 always acc task) (succeed ()) list
+
+
+{-| Run a Task after another, regardless of whether the second succeeded or failed.
+
+Similar to JavaScript's `finally` on Promises or try/catch.
+
+-}
+alwaysRun : TTask ignoredError ignoredValue -> TTask x a -> TTask x a
+alwaysRun finallyTask task =
+    task
+        |> onError
+            (\error ->
+                finallyTask
+                    |> mapError (\_ -> error)
+                    |> andThen (\_ -> fail error)
+            )
+        |> andThen
+            (\value ->
+                finallyTask
+                    |> map (\_ -> value)
+                    |> onError (\_ -> succeed value)
+            )
 
 
 
@@ -275,3 +324,42 @@ resultToResult source =
 
         Continue next ->
             Continue (toResult next)
+
+
+resultToTask : Result x a -> TTask x a
+resultToTask result =
+    case result of
+        Ok value ->
+            succeed value
+
+        Err err ->
+            fail err
+
+
+toResultTask : TTask x value -> TTask never (Result x value)
+toResultTask task =
+    task
+        |> map Ok
+        |> onError (\x -> succeed (Err x))
+
+
+otherwise : (() -> TTask x a) -> Maybe a -> TTask x a
+otherwise alternative maybe =
+    case maybe of
+        Just reference ->
+            succeed reference
+
+        Nothing ->
+            alternative ()
+
+
+mapAllAndFold : (a -> TTask x b) -> (b -> c -> c) -> c -> List a -> TTask x c
+mapAllAndFold f fold initial list =
+    List.foldl (\task acc -> map2 (\c b -> fold b c) acc (f task)) (succeed initial) list
+
+
+{-| Like Task.map f >> Task.sequence but ignores the tasks' results.
+-}
+mapAllAndIgnore : (a -> TTask x ()) -> List a -> TTask x ()
+mapAllAndIgnore f list =
+    List.foldl (\task acc -> map2 always acc (f task)) (succeed ()) list
