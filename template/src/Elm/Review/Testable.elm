@@ -82,7 +82,7 @@ cmd effects testableEffects =
         == Task.succeed "A"
 
 -}
-task : Effects -> TestableTask.Task error value -> PlatformTask.Task error value
+task : Effects -> TestableTask.TTask error value -> PlatformTask.Task error value
 task effects testableTask =
     case testableTask of
         Internal.ImmediateTask result ->

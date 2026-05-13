@@ -1,6 +1,7 @@
 module Elm.Review.Testable.Internal exposing
     ( Cmd(..)
-    , Task(..), TaskResult(..), resultFromResult
+    , TaskResult(..), resultFromResult
+    , TTask(..)
     )
 
 {-|
@@ -18,11 +19,13 @@ import ElmReview.Path exposing (Path)
 
 type Cmd msg
     = None
-    | TaskCmd (Task msg msg)
+    | TaskCmd (TTask msg msg)
     | Batch (List (Cmd msg))
 
 
-type Task error value
+{-| "TTask" stands for "Testable Task".
+-}
+type TTask error value
     = ImmediateTask (TaskResult error value)
       -- File system
     | Stat Path (Result FsError FileStat -> TaskResult error value)
@@ -40,7 +43,7 @@ type Task error value
 type TaskResult error value
     = Success value
     | Failure error
-    | Continue (Task error value)
+    | Continue (TTask error value)
 
 
 resultFromResult : Result error value -> TaskResult error value
