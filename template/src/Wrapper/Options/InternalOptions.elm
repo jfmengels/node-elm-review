@@ -12,7 +12,6 @@ type alias InternalOptions =
     { subcommand : Maybe Subcommand
     , help : Bool
     , debug : Bool
-    , showBenchmark : Bool
     , ignoredDirs : List String
     , ignoredFiles : List String
     , suppressCheckAfterTests : Bool
@@ -45,7 +44,6 @@ initialOptions =
     { subcommand = Nothing
     , help = False
     , debug = False
-    , showBenchmark = False
     , ignoredDirs = []
     , ignoredFiles = []
     , suppressCheckAfterTests = False
