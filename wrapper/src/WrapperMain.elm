@@ -65,7 +65,7 @@ init env =
               , message = \_ -> "elm-review was run with missing capabilities:\n\n    " ++ err
               }
                 |> Problem.from Problem.Unrecoverable
-                |> Problem.stop env.stderr
+                |> Problem.stop
                     { color = Color.noColors
                     , reportMode =
                         if List.member "--report=json" env.args || List.member "--report=ndjson" env.args then
