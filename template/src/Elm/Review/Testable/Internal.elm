@@ -10,6 +10,7 @@ module Elm.Review.Testable.Internal exposing
 
 -}
 
+import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
@@ -20,6 +21,8 @@ type TCmd msg
     = None
     | TaskCmd (TTask msg msg)
     | Batch (List (TCmd msg))
+    | PrintLn Console String
+    | Exit Int
 
 
 {-| "TTask" stands for "Testable Task".

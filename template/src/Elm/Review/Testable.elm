@@ -19,6 +19,7 @@ module Elm.Review.Testable exposing
 
 -}
 
+import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
@@ -40,8 +41,10 @@ type alias Effects =
     , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task SpawnError ()
     , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
 
-    -- Stdin
+    -- Stdin / Stdout
     , readKey : () -> PlatformTask.Task StdinError Key
+    , println : Console -> String -> Cmd Never
+    , exit : Int -> Cmd Never
 
     -- Process
     , runProcess : String -> SpawnOptions -> PlatformTask.Task SpawnError Completed
@@ -77,6 +80,14 @@ cmd effects testableEffects =
 
         Internal.Batch list ->
             Cmd.batch (List.map (\t -> cmd effects t) list)
+
+        Internal.PrintLn console string ->
+            effects.println console string
+                |> Cmd.map never
+
+        Internal.Exit code ->
+            effects.exit code
+                |> Cmd.map never
 
 
 {-| Converts a `Testable.Task` into a `Task`

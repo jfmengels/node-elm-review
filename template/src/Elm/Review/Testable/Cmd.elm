@@ -44,3 +44,9 @@ map f source =
 
         Internal.Batch list ->
             Internal.Batch (List.map (map f) list)
+
+        Internal.PrintLn console string ->
+            Internal.PrintLn console string
+
+        Internal.Exit code ->
+            Internal.Exit code
