@@ -1,5 +1,6 @@
 module Elm.Review.Testable.TTask exposing
     ( TTask, succeed, fail
+    , fromResult
     , map
     , map2, andThen, sequence
     , mapAllAndFold, mapAllAndIgnore
@@ -17,6 +18,7 @@ convert `Testable.Task` into a core `Task` with the `Testable` module.
 # Basics
 
 @docs TTask, succeed, fail
+@docs fromResult
 
 
 # Mapping
@@ -74,6 +76,16 @@ succeed value =
 fail : x -> TTask x a
 fail error =
     Internal.ImmediateTask (Failure error)
+
+
+fromResult : Result x a -> TTask x a
+fromResult result =
+    case result of
+        Ok value ->
+            succeed value
+
+        Err err ->
+            fail err
 
 
 {-| Transform a task.
