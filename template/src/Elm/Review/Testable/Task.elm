@@ -191,8 +191,23 @@ transform tx source =
         Internal.ImmediateTask result ->
             Internal.ImmediateTask (result |> tx)
 
+        Internal.Stat path onResult ->
+            Internal.Stat path (onResult >> tx)
+
+        Internal.ReadTextFile path onResult ->
+            Internal.ReadTextFile path (onResult >> tx)
+
+        Internal.WriteTextFile path string onResult ->
+            Internal.WriteTextFile path string (onResult >> tx)
+
+        Internal.DeleteFile path onResult ->
+            Internal.DeleteFile path (onResult >> tx)
+
         Internal.CreateDirectory path onResult ->
             Internal.CreateDirectory path (onResult >> tx)
+
+        Internal.RemoveDirectory path onResult ->
+            Internal.RemoveDirectory path (onResult >> tx)
 
         Internal.WalkTree path pattern matchKind onResult ->
             Internal.WalkTree path pattern matchKind (onResult >> tx)
