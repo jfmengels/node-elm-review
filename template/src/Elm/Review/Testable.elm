@@ -22,7 +22,7 @@ module Elm.Review.Testable exposing
 import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
-import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
+import Elm.Review.Testable.Internal as Internal exposing (TSub, TaskResult)
 import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TTask as TestableTask

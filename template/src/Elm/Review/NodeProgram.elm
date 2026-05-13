@@ -5,6 +5,7 @@ import Elm.Review.InitError as InitError
 import Elm.Review.NodeEffects as NodeEffects
 import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import ElmReview.Problem as Problem exposing (Problem)
 
 
@@ -21,7 +22,7 @@ type alias Model model =
 type alias Config model msg =
     { init : Flags -> InitError.InitError ( model, TCmd msg )
     , update : msg -> model -> ( model, TCmd msg )
-    , subscriptions : model -> Sub msg
+    , subscriptions : model -> TSub msg
     }
 
 
@@ -83,14 +84,14 @@ update updateFn msg modelWrapper =
             )
 
 
-subscriptions : (model -> Sub msg) -> ModelWrapper model -> Sub msg
+subscriptions : (model -> TSub msg) -> ModelWrapper model -> Sub msg
 subscriptions subsFn model =
     case model of
         Done ->
             Sub.none
 
         Running { mainModel } ->
-            subsFn mainModel
+            TSub.subscriptions NodeEffects.subEffects (subsFn mainModel)
 
 
 stop : Problem.FormatOptions options -> Problem -> Cmd msg

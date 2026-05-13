@@ -14,11 +14,14 @@ import Capabilities exposing (Console, FileWatcher)
 import Elm.Project
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
+import Elm.Review.Testable.FileWatchData exposing (FileEvent)
+import Elm.Review.Testable.FileWatcher as FileWatcher
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData
-import Elm.Review.Testable.Internal exposing (TCmd, TTask)
+import Elm.Review.Testable.Internal exposing (TCmd, TSub, TTask)
 import Elm.Review.Testable.Process as Process
 import Elm.Review.Testable.ProcessData as Process
+import Elm.Review.Testable.TSub as TSub
 import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
@@ -26,7 +29,6 @@ import ElmReview.Problem as Problem exposing (Problem, ProblemSimple)
 import ElmReview.ReportMode as ReportMode
 import ElmRun.FsExtra as FsExtra
 import ElmRun.ProcessExtra as ProcessExtra
-import Worker.FileWatcher as FileWatcher exposing (FileEvent)
 import Worker.Process exposing (ProcessId)
 import Wrapper.Build as Build
 import Wrapper.Options as Options exposing (ReviewOptions)
@@ -42,7 +44,7 @@ type alias ModelData =
     { options : ReviewOptions
     , buildId : BuildId
     , pid : Maybe ProcessId
-    , watch : Maybe (Sub Msg)
+    , watch : Maybe (TSub Msg)
     }
 
 
@@ -144,17 +146,12 @@ updateHelp msg model =
                         ( if model.options.watchConfig then
                             case model.options.reviewProject of
                                 Options.Local reviewFolder ->
-                                    case watchPermission () of
-                                        Just fileWatcher ->
-                                            let
-                                                watcher : Sub Msg
-                                                watcher =
-                                                    watchConfig fileWatcher reviewFolder reviewElmJson
-                                            in
-                                            { model | watch = Just watcher }
-
-                                        Nothing ->
-                                            model
+                                    let
+                                        watcher : TSub Msg
+                                        watcher =
+                                            watchConfig reviewFolder reviewElmJson
+                                    in
+                                    { model | watch = Just watcher }
 
                                 Options.Remote _ ->
                                     model
@@ -339,27 +336,26 @@ runReviewProcessWithElmRun options { reviewAppPath, reviewElmJson, reviewFolder,
             )
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> TSub Msg
 subscriptions (Model model) =
     case model.watch of
         Just sub ->
             sub
 
         Nothing ->
-            Sub.none
+            TSub.none
 
 
-watchConfig : FileWatcher -> Path -> Elm.Project.ApplicationInfo -> Sub Msg
-watchConfig fileWatcher reviewFolder reviewElmJson =
-    watchElmJson fileWatcher reviewFolder
-        :: List.map (\dir -> watchSourceDirectory fileWatcher (Path.join2 reviewFolder dir)) reviewElmJson.dirs
-        |> Sub.batch
+watchConfig : Path -> Elm.Project.ApplicationInfo -> TSub Msg
+watchConfig reviewFolder reviewElmJson =
+    watchElmJson reviewFolder
+        :: List.map (\dir -> watchSourceDirectory (Path.join2 reviewFolder dir)) reviewElmJson.dirs
+        |> TSub.batch
 
 
-watchElmJson : FileWatcher -> Path -> Sub Msg
-watchElmJson fileWatcher reviewFolder =
+watchElmJson : Path -> TSub Msg
+watchElmJson reviewFolder =
     FileWatcher.watch
-        fileWatcher
         (Path.join2 reviewFolder "elm.json")
         { excludePaths = []
         , recursive = False
@@ -369,10 +365,9 @@ watchElmJson fileWatcher reviewFolder =
         (\_ -> ConfigElmJsonWasModified)
 
 
-watchSourceDirectory : FileWatcher -> Path -> Sub Msg
-watchSourceDirectory fileWatcher directory =
+watchSourceDirectory : Path -> TSub Msg
+watchSourceDirectory directory =
     FileWatcher.watch
-        fileWatcher
         directory
         { excludePaths = []
         , recursive = True

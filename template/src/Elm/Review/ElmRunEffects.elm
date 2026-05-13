@@ -1,18 +1,22 @@
-module Elm.Review.ElmRunEffects exposing (effects)
+module Elm.Review.ElmRunEffects exposing (effects, subEffects)
 
-import Capabilities exposing (Console, Stdin)
+import Capabilities exposing (Console, FileWatcher, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Elm.Review.Testable exposing (Effects)
 import Elm.Review.Testable.CliData as CliData
+import Elm.Review.Testable.FileWatchData as FileWatcherData exposing (FileEvent, WatchOptions)
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError, SpawnError)
 import Elm.Review.Testable.StdinData as StdinData
+import Elm.Review.Testable.TSub as TSub
+import ElmReview.Path exposing (Path)
 import Fs as ElmRunFs exposing (FileSystem, FsError(..))
 import Http
 import Os exposing (ProcessCapability)
 import Os.Process as ElmRunProcess
 import Stdin as ElmRunStdin
 import Task exposing (Task)
+import Worker.FileWatcher as FileWatcher
 
 
 effects : FileSystem -> ProcessCapability -> Maybe Stdin -> Console -> Console -> Effects
@@ -319,3 +323,26 @@ mapStdinKey key =
 
         ElmRunStdin.KeyMouseWheelDown ->
             StdinData.KeyMouseWheelDown
+
+
+subEffects : TSub.SubEffects msg
+subEffects =
+    { watchFiles = watchFiles (watchPermission ())
+    }
+
+
+watchFiles : Maybe FileWatcher -> Path -> WatchOptions -> (FileEvent -> msg) -> Sub msg
+watchFiles maybeFileWatcher =
+    case maybeFileWatcher of
+        Just fileWatcher ->
+            \path watchOptions toMsg ->
+                FileWatcher.watch fileWatcher path watchOptions toMsg
+
+        Nothing ->
+            \_ _ _ -> Sub.none
+
+
+watchPermission : () -> Maybe FileWatcher
+watchPermission () =
+    -- TODO Get FileWatcher permission from somewhere
+    Nothing

@@ -23,9 +23,10 @@ import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedError
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
-import Elm.Review.Testable.Internal exposing (TCmd, TTask)
+import Elm.Review.Testable.Internal exposing (TCmd, TSub, TTask)
 import Elm.Review.Testable.Process as Process
 import Elm.Review.Testable.ProcessData as ProcessData exposing (SpawnError)
+import Elm.Review.Testable.TSub as TSub
 import Elm.Review.Testable.TTask as TTask
 import Elm.Review.Text as Text
 import Elm.Review.Vendor.Levenshtein as Levenshtein
@@ -44,7 +45,6 @@ import Review.Project as Project exposing (Project)
 import Review.Rule as Rule exposing (Rule)
 import ReviewConfig exposing (config)
 import Set exposing (Set)
-import Worker.Capabilities exposing (FileWatcher)
 
 
 
@@ -1404,22 +1404,11 @@ maybeMapAndCons fn maybe list =
             list
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> TSub Msg
 subscriptions model =
     if model.options.watch then
-        case watchPermission () of
-            Just fileWatcher ->
-                Store.subscriptions fileWatcher model.options model.store
-                    |> Sub.map StoreMsg
-
-            Nothing ->
-                Sub.none
+        Store.subscriptions model.options model.store
+            |> TSub.map StoreMsg
 
     else
-        Sub.none
-
-
-watchPermission : () -> Maybe FileWatcher
-watchPermission () =
-    -- TODO Get FileWatcher permission from somewhere
-    Nothing
+        TSub.none
