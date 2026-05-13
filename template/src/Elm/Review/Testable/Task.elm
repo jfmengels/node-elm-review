@@ -191,6 +191,7 @@ transform tx source =
         Internal.ImmediateTask result ->
             Internal.ImmediateTask (result |> tx)
 
+        -- File system
         Internal.Stat path onResult ->
             Internal.Stat path (onResult >> tx)
 
@@ -211,6 +212,10 @@ transform tx source =
 
         Internal.WalkTree path pattern matchKind onResult ->
             Internal.WalkTree path pattern matchKind (onResult >> tx)
+
+        -- Stdin
+        Internal.ReadKey onResult ->
+            Internal.ReadKey (onResult >> tx)
 
 
 

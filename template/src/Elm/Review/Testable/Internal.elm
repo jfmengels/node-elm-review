@@ -11,6 +11,7 @@ module Elm.Review.Testable.Internal exposing
 -}
 
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import ElmReview.Path exposing (Path)
 
 
@@ -22,6 +23,7 @@ type Cmd msg
 
 type Task error value
     = ImmediateTask (TaskResult error value)
+      -- File system
     | Stat Path (Result FsError FileStat -> TaskResult error value)
     | ReadTextFile Path (Result FsError String -> TaskResult error value)
     | WriteTextFile Path String (Result FsError () -> TaskResult error value)
@@ -29,6 +31,8 @@ type Task error value
     | CreateDirectory Path (Result FsError () -> TaskResult error value)
     | RemoveDirectory Path (Result FsError () -> TaskResult error value)
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
+      -- Stdin
+    | ReadKey (Result StdinError Key -> TaskResult error value)
 
 
 type TaskResult error value
