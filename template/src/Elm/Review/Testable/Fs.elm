@@ -1,6 +1,7 @@
 module Elm.Review.Testable.Fs exposing
     ( copyDirectory
     , createDirectory
+    , createFileAndItsDirectory
     , deleteFile
     , readTextFile
     , removeDirectory
@@ -12,8 +13,8 @@ module Elm.Review.Testable.Fs exposing
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal
 import Elm.Review.Testable.ProcessData exposing (ProcessError, SpawnError)
-import Elm.Review.Testable.TTask exposing (TTask)
-import ElmReview.Path exposing (Path)
+import Elm.Review.Testable.TTask as TTask exposing (TTask)
+import ElmReview.Path as Path exposing (Path)
 
 
 {-| Get file or directory metadata without following symlinks.
@@ -35,6 +36,12 @@ readTextFile path =
 writeTextFile : Path -> String -> TTask FsError ()
 writeTextFile path string =
     Internal.WriteTextFile path string Internal.resultFromResult
+
+
+createFileAndItsDirectory : Path -> String -> TTask FsError ()
+createFileAndItsDirectory path content =
+    createDirectory (Path.dirname path)
+        |> TTask.andThen (\() -> writeTextFile path content)
 
 
 {-| Delete a file. Succeeds silently if the file does not exist.

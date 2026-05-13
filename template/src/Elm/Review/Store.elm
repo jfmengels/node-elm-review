@@ -44,7 +44,6 @@ import Elm.Version
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmRun.FsExtra as FsExtra
 import Json.Decode as Decode
 import Review.Project as Project exposing (Project)
 import Review.Project.Dependency as Dependency
@@ -250,7 +249,7 @@ updateInner options msg model =
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , { title = "PROBLEM READING ELM.JSON"
-              , message = \c -> "I was trying to read " ++ c Yellow elmJsonPath ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+              , message = \c -> "I was trying to read " ++ c Yellow elmJsonPath ++ " but encountered a problem:\n\n" ++ FsData.errorToString err
               }
                 |> Problem.from Problem.Recoverable
                 |> Problem.withPath elmJsonPath
@@ -404,7 +403,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , { title = "PROBLEM READING ELM FILE"
-                      , message = \c -> "I was trying to read " ++ c Yellow path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+                      , message = \c -> "I was trying to read " ++ c Yellow path ++ " but encountered a problem:\n\n" ++ FsData.errorToString err
                       }
                         |> Problem.from Problem.Recoverable
                         |> Problem.withPath path
@@ -475,7 +474,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                       , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
                       }
                     , { title = "PROBLEM READING SUPPRESSION FILE"
-                      , message = \c -> "I was trying to read " ++ c Orange path ++ " but encountered a problem:\n\n" ++ FsExtra.errorToString err
+                      , message = \c -> "I was trying to read " ++ c Orange path ++ " but encountered a problem:\n\n" ++ FsData.errorToString err
                       }
                         |> Problem.from Problem.Recoverable
                         |> Problem.withPath path
@@ -695,7 +694,7 @@ receivedElmFileList { onNotFound, handleProblem } directory result model =
               , directoriesFromCliArgsWithoutFiles = model.directoriesFromCliArgsWithoutFiles
               }
             , { title = "PROBLEM FINDING ELM FILES"
-              , message = \_ -> "I was trying to find the Elm files in your project but encountered a problem:\n\n" ++ FsExtra.errorToString err
+              , message = \_ -> "I was trying to find the Elm files in your project but encountered a problem:\n\n" ++ FsData.errorToString err
               }
                 |> Problem.from Problem.Recoverable
                 |> Problem.withPath directory

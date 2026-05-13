@@ -18,14 +18,13 @@ module Elm.Review.SuppressedErrors exposing
 import Dict exposing (Dict)
 import Elm.Review.Options exposing (Options)
 import Elm.Review.Testable.Fs as Fs
-import Elm.Review.Testable.FsData exposing (FsError)
+import Elm.Review.Testable.FsData as FsData exposing (FsError)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import ElmReview.Color exposing (Color(..))
 import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
-import ElmRun.FsExtra as FsExtra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Review.Options as ReviewOptions exposing (ReviewOptions)
@@ -312,7 +311,7 @@ write options ruleNames suppressedErrors =
                 (\err ->
                     Problem.from Problem.Recoverable
                         { title = "PROBLEM WRITING SUPPRESSION FILES"
-                        , message = \_ -> "I was trying to write suppressions files but encountered a problem:\n\n" ++ FsExtra.errorToString err
+                        , message = \_ -> "I was trying to write suppressions files but encountered a problem:\n\n" ++ FsData.errorToString err
                         }
                 )
             |> Just
