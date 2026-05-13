@@ -22,6 +22,7 @@ module Elm.Review.Testable exposing
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TaskResult)
+import Elm.Review.Testable.ProcessData exposing (ProcessError)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.Task as TestableTask
 import ElmReview.Path exposing (Path)
@@ -36,6 +37,7 @@ type alias Effects =
     , deleteFile : Path -> PlatformTask.Task FsError ()
     , createDirectory : Path -> PlatformTask.Task FsError ()
     , removeDirectory : Path -> PlatformTask.Task FsError ()
+    , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task ProcessError ()
     , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
 
     -- Stdin
@@ -109,6 +111,10 @@ task effects testableTask =
 
         Internal.RemoveDirectory path onResult ->
             effects.removeDirectory path
+                |> handle effects onResult
+
+        Internal.CopyDirectory targets onResult ->
+            effects.copyDirectory targets
                 |> handle effects onResult
 
         Internal.WalkTree path pattern matchKind onResult ->

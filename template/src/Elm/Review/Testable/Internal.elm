@@ -11,6 +11,7 @@ module Elm.Review.Testable.Internal exposing
 -}
 
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.ProcessData exposing (ProcessError)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import ElmReview.Path exposing (Path)
 
@@ -30,6 +31,7 @@ type Task error value
     | DeleteFile Path (Result FsError () -> TaskResult error value)
     | CreateDirectory Path (Result FsError () -> TaskResult error value)
     | RemoveDirectory Path (Result FsError () -> TaskResult error value)
+    | CopyDirectory { from : Path, to : Path } (Result ProcessError () -> TaskResult error value)
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
       -- Stdin
     | ReadKey (Result StdinError Key -> TaskResult error value)
