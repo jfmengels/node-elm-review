@@ -6,15 +6,17 @@ import Elm.Review.Testable exposing (Effects)
 import Elm.Review.Testable.CliData as CliData
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError, SpawnError)
+import Elm.Review.Testable.StdinData as StdinData
 import Fs as ElmRunFs exposing (FileSystem, FsError(..))
 import Http
 import Os exposing (ProcessCapability)
 import Os.Process as ElmRunProcess
+import Stdin as ElmRunStdin
 import Task exposing (Task)
 
 
-effects : FileSystem -> ProcessCapability -> Console -> Console -> Effects
-effects fs os stdout stderr =
+effects : FileSystem -> ProcessCapability -> Maybe Stdin -> Console -> Console -> Effects
+effects fs os stdin stdout stderr =
     { -- File system
       readTextFile = \path -> ElmRunFs.readTextFile fs path |> Task.mapError mapFsError
     , writeTextFile = \path string -> ElmRunFs.writeTextFile fs path string |> Task.mapError mapFsError
@@ -29,7 +31,7 @@ effects fs os stdout stderr =
     , httpGet = httpGet
 
     -- Stdin / Stdout
-    , readKey = Debug.todo "effects: readKey"
+    , readKey = readKey stdin
     , println = mapConsole stdout stderr >> ElmRunCli.println
     , exit = ElmRunCli.exit
 
@@ -60,6 +62,19 @@ httpGet url =
                 )
         , timeout = Nothing
         }
+
+
+readKey : Maybe Stdin -> () -> Task StdinData.StdinError StdinData.Key
+readKey stdin =
+    \() ->
+        case stdin of
+            Just stdin_ ->
+                ElmRunStdin.readKey stdin_
+                    |> Task.map mapStdinKey
+                    |> Task.mapError mapStdinError
+
+            Nothing ->
+                Task.fail StdinData.PermissionDenied
 
 
 mapFsError : ElmRunFs.FsError -> FsData.FsError
@@ -239,3 +254,68 @@ mapOverflowPolicy policy =
 commandNotFound : Int
 commandNotFound =
     127
+
+
+mapStdinError : ElmRunStdin.StdinError -> StdinData.StdinError
+mapStdinError stdinError =
+    case stdinError of
+        ElmRunStdin.PermissionDenied ->
+            StdinData.PermissionDenied
+
+        ElmRunStdin.EndOfInput ->
+            StdinData.EndOfInput
+
+        ElmRunStdin.IoError string ->
+            StdinData.IoError string
+
+
+mapStdinKey : ElmRunStdin.Key -> StdinData.Key
+mapStdinKey key =
+    case key of
+        ElmRunStdin.KeyChar char ->
+            StdinData.KeyChar char
+
+        ElmRunStdin.KeyCtrl char ->
+            StdinData.KeyCtrl char
+
+        ElmRunStdin.KeyEnter ->
+            StdinData.KeyEnter
+
+        ElmRunStdin.KeyBackspace ->
+            StdinData.KeyBackspace
+
+        ElmRunStdin.KeyDelete ->
+            StdinData.KeyDelete
+
+        ElmRunStdin.KeyEscape ->
+            StdinData.KeyEscape
+
+        ElmRunStdin.KeyArrowUp ->
+            StdinData.KeyArrowUp
+
+        ElmRunStdin.KeyArrowDown ->
+            StdinData.KeyArrowDown
+
+        ElmRunStdin.KeyArrowLeft ->
+            StdinData.KeyArrowLeft
+
+        ElmRunStdin.KeyArrowRight ->
+            StdinData.KeyArrowRight
+
+        ElmRunStdin.KeyHome ->
+            StdinData.KeyHome
+
+        ElmRunStdin.KeyEnd ->
+            StdinData.KeyEnd
+
+        ElmRunStdin.KeyPageUp ->
+            StdinData.KeyPageUp
+
+        ElmRunStdin.KeyPageDown ->
+            StdinData.KeyPageDown
+
+        ElmRunStdin.KeyMouseWheelUp ->
+            StdinData.KeyMouseWheelUp
+
+        ElmRunStdin.KeyMouseWheelDown ->
+            StdinData.KeyMouseWheelDown
