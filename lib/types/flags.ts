@@ -1,5 +1,6 @@
 export type Flags = {
-  reviewAppFlags: string[];
+  args: string[];
+  env: NodeJS.ProcessEnv;
   logger?: unknown;
 };
 
