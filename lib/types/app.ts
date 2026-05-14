@@ -18,7 +18,11 @@ import type {FilesProposedByCurrentFix} from "./state.ts";
 import type {StyledMessage} from "./styled-message.ts";
 import type {SuppressedErrorsFile} from "./suppressed.ts";
 
-export type ReviewModule = ElmModule<Ports, Flags, ["Elm", "Review", "NodeMain"]>;
+export type ReviewModule = ElmModule<
+  Ports,
+  Flags,
+  ["Elm", "Review", "NodeMain"]
+>;
 export type ReviewApp = ElmApp<Ports>;
 
 export type Ports = {

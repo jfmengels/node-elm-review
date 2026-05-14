@@ -441,8 +441,8 @@ effects =
 
     -- Stdin / Stdout
     , readKey = \() -> Debug.todo "readKey"
-    , println = \console string -> Debug.todo "println"
-    , exit = \code -> Debug.todo "exit"
+    , println = \console string -> Debug.todo "println, use a port"
+    , exit = \code -> Debug.todo "exit, use a port"
 
     -- Process
     , runProcess = \command options -> Debug.todo "runProcess"

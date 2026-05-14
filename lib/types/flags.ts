@@ -8,4 +8,3 @@ export type ElmCommunicationFlags = {
   debug: boolean;
   showBenchmark: boolean;
 };
-
