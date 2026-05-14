@@ -268,12 +268,21 @@ createTemplateElmJson outputTarget reviewFolder binaryRoot buildFolder reviewElm
                 ++ reviewElmJson.depsIndirect
                 |> addReviewAppDependencies outputTarget
 
+        mainFileSrc : Path
+        mainFileSrc =
+            case outputTarget of
+                OutputTarget.JavaScriptTarget ->
+                    Path.join2 binaryRoot "node/src"
+
+                OutputTarget.ElmRunTarget ->
+                    Path.join2 binaryRoot "elm-run/src"
+
         elmJson : Elm.Project.ApplicationInfo
         elmJson =
             { reviewElmJson
                 | dirs =
                     "src"
-                        :: Path.join2 binaryRoot "elm-run/src"
+                        :: mainFileSrc
                         :: Path.join2 binaryRoot "ast-codec/src"
                         :: List.map (\dir -> Path.join2 reviewFolder dir) reviewElmJson.dirs
                 , depsDirect = dependencies
@@ -510,7 +519,7 @@ compileProjectUsingElmMake options reviewFolder buildFolder reviewAppPath =
 
               else
                 "--optimize"
-            , "src/Elm/Review/NodeMain.elm"
+            , Path.join2 options.binaryRoot "node/src/Node/ReviewMain.elm"
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.

@@ -2,12 +2,12 @@ module Node.Program exposing (Config, Program, program)
 
 import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
-import Elm.Review.NodeEffects as NodeEffects
 import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import ElmReview.Problem as Problem exposing (Problem)
 import Json.Decode as Decode
+import Node.Effects as NodeEffects
 
 
 type ModelWrapper model
