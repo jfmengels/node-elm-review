@@ -43,4 +43,4 @@ subEffects =
 
 watchFiles : Path -> WatchOptions -> (FileEvent -> msg) -> Sub msg
 watchFiles path watchOptions toMsg =
-    Sub.none
+    Debug.todo "watchFiles"

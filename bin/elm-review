@@ -26,8 +26,10 @@ function loadCompiledElmApp(elmModulePath) {
   return elmApp;
 }
 
-(function main() {
-// TODO(@lishaduck): With ESM, this should use TLA.
+(async function main() {
+  const ConcurrentTask = await import("@andrewmacmurray/elm-concurrent-task");
+
+  // TODO(@lishaduck): With ESM, this should use TLA.
   const elmModule = loadCompiledElmApp('./node/wrapper.js');
   const app = elmModule.Elm.Node.WrapperMain.init({
     flags: {
@@ -35,5 +37,12 @@ function loadCompiledElmApp(elmModulePath) {
       env: process.env,
     }
   });
-  return app;
+
+  ConcurrentTask.register({
+    tasks: {},
+    ports: {
+      send: app.ports.send,
+      receive: app.ports.receive,
+    },
+  });
 })();
