@@ -1,4 +1,4 @@
-module ElmRun.ReviewMain exposing (main)
+module Node.ReviewMain exposing (main)
 
 import Elm.Review.Main as Main
 import Node.Program
