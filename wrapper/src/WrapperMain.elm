@@ -54,6 +54,10 @@ type Msg
 init : Dict String String -> List String -> Bool -> OutputTarget -> InitError ( Model, TCmd Msg )
 init env args stdinSupported defaultOutputTarget =
     let
+        _ =
+            Debug.log "hi" ()
+    in
+    let
         -- TODO Get binaryRoot path from somewhere
         binaryRoot : Path
         binaryRoot =
@@ -73,7 +77,7 @@ init env args stdinSupported defaultOutputTarget =
 
 handleCliArgsParseResult : Dict String String -> Bool -> OptionsParser.OptionsParseResult -> InitError ( Model, TCmd Msg )
 handleCliArgsParseResult env stdinSupported result =
-    case result of
+    case Debug.log "result" result of
         OptionsParser.ParseError formatOptions problem ->
             InitError.Problem formatOptions problem
 
@@ -277,6 +281,7 @@ findNearestElmJson pathSegments =
                 Array.push "elm.json" pathSegments |> Array.toList |> String.join "/"
         in
         Fs.stat path
+            |> Debug.log "fstat task"
             |> TTask.map (\_ -> path)
             |> TTask.onError
                 (\_ ->
