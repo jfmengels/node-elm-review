@@ -294,6 +294,29 @@ writeTextFile path content =
         }
 
 
+stat : String -> ConcurrentTask FsData.FsError FileStat
+stat path =
+    ConcurrentTask.define
+        { function = "fs:stat"
+        , expect = ConcurrentTask.expectJson statDecoder
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                ]
+        }
+
+
+statDecoder : Decoder FileStat
+statDecoder =
+    Decode.map5 FileStat
+        (Decode.field "isFile" Decode.bool)
+        (Decode.field "isDirectory" Decode.bool)
+        (Decode.field "isSymlink" Decode.bool)
+        (Decode.field "size" Decode.int)
+        (Decode.field "modifiedTime" Decode.int)
+
+
 decodeFsError : Decoder FsData.FsError
 decodeFsError =
     Decode.field "kind" Decode.string
@@ -406,7 +429,7 @@ effects =
     { -- File system
       readTextFile = readTextFile
     , writeTextFile = writeTextFile
-    , stat = \path -> Debug.todo "stat"
+    , stat = stat
     , deleteFile = \path -> Debug.todo "deleteFile"
     , createDirectory = \path -> Debug.todo "createDirectory"
     , removeDirectory = \path -> Debug.todo "removeDirectory"
