@@ -19,7 +19,7 @@ import Wrapper.Init as Init
 import Wrapper.NewPackage as NewPackage
 import Wrapper.NewRule as NewRule
 import Wrapper.Options.Parser as OptionsParser
-import Wrapper.OutputTarget as OutputTarget exposing (OutputTarget)
+import Wrapper.OutputTarget exposing (OutputTarget)
 import Wrapper.PrepareOffline as PrepareOffline
 import Wrapper.Review as Review
 
