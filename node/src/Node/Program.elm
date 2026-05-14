@@ -3,7 +3,6 @@ port module Node.Program exposing (Config, Program, program)
 import ConcurrentTask exposing (ConcurrentTask, Pool)
 import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
-import Elm.Review.Testable as Testable exposing (Effects)
 import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData as FsData exposing (FileStat, FsError, MatchKind)
@@ -26,7 +25,7 @@ type ModelWrapper model msg
 
 type alias Model model msg =
     { mainModel : model
-    , tasks : Pool msg
+    , pool : Pool msg
     }
 
 
@@ -79,13 +78,16 @@ init initFn rawFlags =
     case Decode.decodeValue flagsDecoder rawFlags of
         Ok flags ->
             case initFn flags of
-                InitError.Success ( mainModel, cmd ) ->
+                InitError.Success ( mainModel, initCmd ) ->
+                    let
+                        ( pool, cmd ) =
+                            taskToCmd ConcurrentTask.pool initCmd
+                    in
                     ( Running
                         { mainModel = mainModel
-                        , tasks = ConcurrentTask.pool
+                        , pool = pool
                         }
-                    , Testable.cmd NodeEffects.effects cmd
-                        |> Cmd.map MainMsg
+                    , cmd
                     )
 
                 InitError.Problem formatOptions problem ->
@@ -127,23 +129,25 @@ update updateFn msg modelWrapper =
         Done ->
             ( Done, Cmd.none )
 
-        Running { mainModel, tasks } ->
+        Running { mainModel, pool } ->
             case msg of
                 MainMsg mainMsg ->
                     let
-                        ( newMainModel, cmd ) =
+                        ( newMainModel, mainCmd ) =
                             updateFn mainMsg mainModel
+
+                        ( newPool, cmd ) =
+                            taskToCmd pool mainCmd
                     in
                     ( Running
                         { mainModel = newMainModel
-                        , tasks = tasks
+                        , pool = newPool
                         }
-                    , Testable.cmd NodeEffects.effects cmd
-                        |> Cmd.map MainMsg
+                    , cmd
                     )
 
-                TaskOnProgress ( pool, cmd ) ->
-                    ( Running { mainModel = mainModel, tasks = pool }, cmd )
+                TaskOnProgress ( newPool, cmd ) ->
+                    ( Running { mainModel = mainModel, pool = newPool }, cmd )
 
                 TaskOnComplete _ ->
                     ( modelWrapper, Cmd.none )
@@ -184,7 +188,7 @@ taskToCmd pool testableEffects =
 
         Internal.Exit code ->
             ( pool
-            , NodeEffects.effects.exit code
+            , effects.exit code
                 |> Cmd.map never
             )
 
@@ -344,14 +348,14 @@ subscriptions subsFn model =
         Done ->
             Sub.none
 
-        Running { mainModel, tasks } ->
+        Running { mainModel, pool } ->
             Sub.batch
                 [ ConcurrentTask.onProgress
                     { send = send
                     , receive = receive
                     , onProgress = TaskOnProgress
                     }
-                    tasks
+                    pool
                 , TSub.subscriptions NodeEffects.subEffects (subsFn mainModel)
                     |> Sub.map MainMsg
                 ]
