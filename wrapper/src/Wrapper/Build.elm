@@ -163,6 +163,15 @@ buildCreatedProject reviewFolder options buildData =
                 , packagesLocation = buildData.packagesLocation
                 , elmReviewVersion = buildData.elmReviewVersion
                 }
+
+        mainElmFilePath : Path
+        mainElmFilePath =
+            case options.outputTarget of
+                OutputTarget.JavaScriptTarget ->
+                    Path.join2 options.binaryRoot "node/src/Node/ReviewMain.elm"
+
+                OutputTarget.ElmRunTarget ->
+                    Path.join2 options.binaryRoot "elm-run/src/ElmRun/ReviewMain.elm"
     in
     TTask.sequence
         [ Fs.createDirectory buildFolder
@@ -170,9 +179,22 @@ buildCreatedProject reviewFolder options buildData =
         , Fs.createDirectory (Path.dirname buildData.reviewAppPath)
             |> TTask.mapError (fsErrorToProblem "while building and creating temporary directory")
         , createSymlinkToTemplateSrc options buildFolder
-        , createTemplateElmJson options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
+        , createTemplateElmJson
+            { outputTarget = options.outputTarget
+            , mainFileSrc = Path.dirname mainElmFilePath
+            , reviewFolder = reviewFolder
+            , buildFolder = buildFolder
+            , binaryRoot = options.binaryRoot
+            , reviewElmJson = buildData.reviewElmJson
+            }
         , localElmReviewTasks.setUp
-        , compileProject options reviewFolder buildFolder buildData.reviewAppPath
+        , compileProject
+            { buildOptions = options
+            , reviewFolder = reviewFolder
+            , buildFolder = buildFolder
+            , mainElmFilePath = mainElmFilePath
+            , reviewAppPath = buildData.reviewAppPath
+            }
             |> TTask.alwaysRun localElmReviewTasks.cleanUp
         ]
 
@@ -244,23 +266,22 @@ createSymLinkForLocalElmReview { buildFolder, localElmReview, packagesLocation, 
             }
 
 
-createTemplateElmJson : OutputTarget -> Path -> Path -> Path -> Elm.Project.ApplicationInfo -> TTask Problem ()
-createTemplateElmJson outputTarget reviewFolder binaryRoot buildFolder reviewElmJson =
+createTemplateElmJson :
+    { outputTarget : OutputTarget
+    , mainFileSrc : Path
+    , reviewFolder : Path
+    , buildFolder : Path
+    , binaryRoot : Path
+    , reviewElmJson : Elm.Project.ApplicationInfo
+    }
+    -> TTask Problem ()
+createTemplateElmJson { outputTarget, mainFileSrc, reviewFolder, buildFolder, binaryRoot, reviewElmJson } =
     let
         dependencies : List ( Elm.Package.Name, Elm.Version.Version )
         dependencies =
             reviewElmJson.depsDirect
                 ++ reviewElmJson.depsIndirect
                 |> addReviewAppDependencies outputTarget
-
-        mainFileSrc : Path
-        mainFileSrc =
-            case outputTarget of
-                OutputTarget.JavaScriptTarget ->
-                    Path.join2 binaryRoot "node/src"
-
-                OutputTarget.ElmRunTarget ->
-                    Path.join2 binaryRoot "elm-run/src"
 
         elmJson : Elm.Project.ApplicationInfo
         elmJson =
@@ -482,41 +503,50 @@ Maybe you meant to target the """ ++ c Cyan "example" ++ " or the " ++ c Cyan "p
             Ok application
 
 
-compileProject : BuildOptions options -> Path -> Path -> String -> TTask Problem ()
-compileProject options reviewFolder buildFolder reviewAppPath =
-    case options.outputTarget of
+type alias CompileOptions options =
+    { buildOptions : BuildOptions options
+    , reviewFolder : Path
+    , buildFolder : Path
+    , mainElmFilePath : Path
+    , reviewAppPath : Path
+    }
+
+
+compileProject : CompileOptions options -> TTask Problem ()
+compileProject options =
+    case options.buildOptions.outputTarget of
         OutputTarget.JavaScriptTarget ->
-            compileProjectUsingElmMake options reviewFolder buildFolder reviewAppPath
+            compileProjectUsingElmMake options
 
         OutputTarget.ElmRunTarget ->
-            compileProjectUsingElmRun options.processEnv reviewFolder buildFolder reviewAppPath
+            compileProjectUsingElmRun options
 
 
-compileProjectUsingElmMake : BuildOptions options -> Path -> Path -> String -> TTask Problem ()
-compileProjectUsingElmMake options reviewFolder buildFolder reviewAppPath =
+compileProjectUsingElmMake : CompileOptions options -> TTask Problem ()
+compileProjectUsingElmMake options =
     let
         elmBinary : Path
         elmBinary =
             -- TODO Apply `backwardsCompatiblePath` from `elm-binary.js`?
-            Maybe.withDefault "elm" options.elmCompilerPath
+            Maybe.withDefault "elm" options.buildOptions.elmCompilerPath
     in
     Process.run
         elmBinary
         { args =
             [ "make"
             , "--output"
-            , reviewAppPath
-            , if options.debug then
+            , options.reviewAppPath
+            , if options.buildOptions.debug then
                 "--debug"
 
               else
                 "--optimize"
-            , Path.join2 options.binaryRoot "node/src/Node/ReviewMain.elm"
+            , options.mainElmFilePath
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
-        , env = Just (ProcessEnv.asProcessOptions options.processEnv)
-        , cwd = Just buildFolder
+        , env = Just (ProcessEnv.asProcessEnv options.buildOptions.processEnv)
+        , cwd = Just options.buildFolder
         , stdin = ProcessData.NullStdin
         , stdout = ProcessData.NullStdout
         , stderr = ProcessData.CaptureStderr { maxBytes = 8 * 1024 * 1024, onOverflow = ProcessData.TruncateOutput }
@@ -528,13 +558,13 @@ compileProjectUsingElmMake options reviewFolder buildFolder reviewAppPath =
                         processErrorToProblem "while building the review application binary" processError
 
                     ProcessData.CommandNotFound ->
-                        elmNotFoundError { usedPath = elmBinary, elmCompilerPath = options.elmCompilerPath }
+                        elmNotFoundError { usedPath = elmBinary, elmCompilerPath = options.buildOptions.elmCompilerPath }
 
                     ProcessData.CommandFailed completed ->
-                        compilationError reviewFolder completed.stderr
+                        compilationError options.reviewFolder completed.stderr
                             |> Problem.from Problem.Recoverable
             )
-        |> TTask.andThen (\_ -> OptimizeJs.optimize options.debug reviewAppPath)
+        |> TTask.andThen (\_ -> OptimizeJs.optimize options.buildOptions.debug options.reviewAppPath)
 
 
 elmNotFoundError : { usedPath : Path, elmCompilerPath : Maybe Path } -> Problem
@@ -557,8 +587,8 @@ A few options:
         |> Problem.withPath usedPath
 
 
-compileProjectUsingElmRun : ProcessEnv -> Path -> Path -> String -> TTask Problem ()
-compileProjectUsingElmRun processEnv reviewFolder buildFolder reviewAppPath =
+compileProjectUsingElmRun : CompileOptions options -> TTask Problem ()
+compileProjectUsingElmRun options =
     Process.run
         -- TODO Get run from somewhere
         "run"
@@ -566,12 +596,12 @@ compileProjectUsingElmRun processEnv reviewFolder buildFolder reviewAppPath =
             [ "make"
             , "--trust-always"
             , "-o"
-            , reviewAppPath
-            , Path.join2 buildFolder "src/Elm/Review/ElmRunMain.elm"
+            , options.reviewAppPath
+            , options.mainElmFilePath
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
-        , env = Just (ProcessEnv.asProcessEnv processEnv)
+        , env = Just (ProcessEnv.asProcessEnv options.buildOptions.processEnv)
         , cwd = Nothing
         , stdin = ProcessData.NullStdin
         , stdout = ProcessData.NullStdout
@@ -592,7 +622,7 @@ compileProjectUsingElmRun processEnv reviewFolder buildFolder reviewAppPath =
                             |> Problem.from Problem.Recoverable
 
                     ProcessData.CommandFailed completed ->
-                        compilationError reviewFolder completed.stderr
+                        compilationError options.reviewFolder completed.stderr
                             |> Problem.from Problem.Recoverable
             )
         |> TTask.map (\_ -> ())
