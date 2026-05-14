@@ -1,13 +1,14 @@
 port module Node.Program exposing (Config, Program, program)
 
 import ConcurrentTask exposing (ConcurrentTask, Pool)
+import ConcurrentTask.Http
 import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
-import Elm.Review.Testable.CliData exposing (Console)
+import Elm.Review.Testable.CliData as CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData as FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TCmd, TSub, TaskResult)
-import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
+import Elm.Review.Testable.ProcessData as ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import Elm.Review.Testable.TTask exposing (TTask)
@@ -99,12 +100,18 @@ init initFn rawFlags =
 
                 InitError.StringProblem string ->
                     ( Done
-                    , Debug.todo "stop on stringProblem"
+                    , Cmd.batch
+                        [ printlnStdout string
+                        , exit 1
+                        ]
                     )
 
         Err decodingError ->
             ( Done
-            , Debug.todo ("Problem decoding flags: " ++ Decode.errorToString decodingError)
+            , Cmd.batch
+                [ printlnStdout ("Problem decoding flags: " ++ Decode.errorToString decodingError)
+                , exit 1
+                ]
             )
 
 
@@ -127,7 +134,11 @@ startTask pool task_ =
         task_
 
 
-update : (msg -> model -> ( model, TCmd msg )) -> Msg msg -> ModelWrapper model msg -> ( ModelWrapper model msg, Cmd (Msg msg) )
+update :
+    (msg -> model -> ( model, TCmd msg ))
+    -> Msg msg
+    -> ModelWrapper model msg
+    -> ( ModelWrapper model msg, Cmd (Msg msg) )
 update updateFn msg modelWrapper =
     case modelWrapper of
         Done ->
@@ -136,25 +147,43 @@ update updateFn msg modelWrapper =
         Running { mainModel, pool } ->
             case msg of
                 MainMsg mainMsg ->
-                    let
-                        ( newMainModel, mainCmd ) =
-                            updateFn mainMsg mainModel
+                    handleMainMsg updateFn pool mainMsg mainModel
 
-                        ( newPool, cmd ) =
-                            taskToCmd pool mainCmd
-                    in
-                    ( Running
-                        { mainModel = newMainModel
-                        , pool = newPool
-                        }
-                    , cmd
-                    )
+                TaskOnComplete (ConcurrentTask.Success mainMsg) ->
+                    handleMainMsg updateFn pool mainMsg mainModel
+
+                TaskOnComplete (ConcurrentTask.Error error) ->
+                    -- TODO Handle Task ConcurrentTask.Error
+                    ( modelWrapper, Cmd.none )
+
+                TaskOnComplete (ConcurrentTask.UnexpectedError error) ->
+                    -- TODO Handle Task ConcurrentTask.UnexpectedError
+                    ( modelWrapper, Cmd.none )
 
                 TaskOnProgress ( newPool, cmd ) ->
                     ( Running { mainModel = mainModel, pool = newPool }, cmd )
 
-                TaskOnComplete _ ->
-                    ( modelWrapper, Cmd.none )
+
+handleMainMsg :
+    (msg -> model -> ( model, TCmd msg ))
+    -> Pool msg
+    -> msg
+    -> model
+    -> ( ModelWrapper model msg, Cmd (Msg msg) )
+handleMainMsg updateFn pool mainMsg mainModel =
+    let
+        ( newMainModel, mainCmd ) =
+            updateFn mainMsg mainModel
+
+        ( newPool, cmd ) =
+            taskToCmd pool mainCmd
+    in
+    ( Running
+        { mainModel = newMainModel
+        , pool = newPool
+        }
+    , cmd
+    )
 
 
 {-| Converts a `Testable.Cmd` into a `Cmd`
@@ -271,7 +300,7 @@ task testableTask =
                 |> handle onResult
 
 
-readTextFile : String -> ConcurrentTask FsData.FsError String
+readTextFile : Path -> ConcurrentTask FsData.FsError String
 readTextFile path =
     ConcurrentTask.define
         { function = "fs:readTextFile"
@@ -298,7 +327,7 @@ writeTextFile path content =
         }
 
 
-stat : String -> ConcurrentTask FsData.FsError FileStat
+stat : Path -> ConcurrentTask FsData.FsError FileStat
 stat path =
     ConcurrentTask.define
         { function = "fs:stat"
@@ -321,24 +350,310 @@ statDecoder =
         (Decode.field "modifiedTime" Decode.int)
 
 
+deleteFile : Path -> ConcurrentTask FsData.FsError ()
+deleteFile path =
+    ConcurrentTask.define
+        { function = "fs:deleteFile"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                ]
+        }
+
+
+createDirectory : Path -> ConcurrentTask FsData.FsError ()
+createDirectory path =
+    ConcurrentTask.define
+        { function = "fs:createDirectory"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                ]
+        }
+
+
+removeDirectory : Path -> ConcurrentTask FsData.FsError ()
+removeDirectory path =
+    ConcurrentTask.define
+        { function = "fs:removeDirectory"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                ]
+        }
+
+
+copyDirectory : { from : Path, to : Path } -> ConcurrentTask FsError ()
+copyDirectory { from, to } =
+    ConcurrentTask.define
+        { function = "fs:copyDirectory"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "from", Encode.string from )
+                , ( "to", Encode.string to )
+                ]
+        }
+
+
+walkTree : Path -> Maybe String -> MatchKind -> ConcurrentTask FsError (List Path)
+walkTree path pattern kind =
+    ConcurrentTask.define
+        { function = "fs:walkTree"
+        , expect = ConcurrentTask.expectJson (Decode.list Decode.string)
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                , ( "pattern", encodeMaybe Encode.string pattern )
+                , ( "onlyFiles", Encode.bool (kind == FsData.File) )
+                , ( "onlyDirectory", Encode.bool (kind == FsData.Directory) )
+                ]
+        }
+
+
 decodeFsError : Decoder FsData.FsError
 decodeFsError =
-    Decode.field "kind" Decode.string
+    Decode.field "code" Decode.string
         |> Decode.andThen
-            (\kind ->
-                case kind of
-                    "PermissionDenied" ->
+            (\code ->
+                case code of
+                    "ENOENT" ->
+                        Decode.map FsData.NotFound (Decode.field "path" Decode.string)
+
+                    "EACCESS" ->
                         Decode.succeed FsData.PermissionDenied
 
-                    "NotFound" ->
-                        Decode.map FsData.NotFound (Decode.field "data" Decode.string)
+                    _ ->
+                        Decode.map FsData.IoError (Decode.field "message" Decode.string)
+            )
 
-                    "IoError" ->
-                        Decode.map FsData.NotFound (Decode.field "data" Decode.string)
+
+decodeSpawnError : Decoder ProcessData.SpawnError
+decodeSpawnError =
+    Decode.field "code" Decode.string
+        |> Decode.andThen
+            (\code ->
+                case code of
+                    "CommandNotFound" ->
+                        Decode.succeed ProcessData.CommandNotFound
+
+                    "ProcessRunError" ->
+                        Decode.map ProcessData.ProcessRunError (Decode.field "processError" decodeProcessError)
+
+                    "CommandFailed" ->
+                        Decode.map ProcessData.CommandFailed (Decode.field "data" decodeCompleted)
 
                     _ ->
-                        Decode.fail ("Unknown kind: " ++ kind)
+                        Decode.field "message" Decode.string
+                            |> Decode.andThen
+                                (\message ->
+                                    Decode.fail ("Unknown code: " ++ code ++ " - " ++ message)
+                                )
             )
+
+
+decodeProcessError : Decoder ProcessData.ProcessError
+decodeProcessError =
+    Decode.field "code" Decode.string
+        |> Decode.andThen
+            (\code ->
+                case code of
+                    "PermissionDenied" ->
+                        Decode.succeed ProcessData.PermissionDenied
+
+                    "CaptureLimitExceeded" ->
+                        Decode.map ProcessData.CaptureLimitExceeded (Decode.field "data" Decode.string)
+
+                    "ProcessError" ->
+                        Decode.map ProcessData.ProcessError (Decode.field "data" Decode.string)
+
+                    _ ->
+                        Decode.field "message" Decode.string
+                            |> Decode.andThen
+                                (\message ->
+                                    Decode.fail ("Unknown code: " ++ code ++ " - " ++ message)
+                                )
+            )
+
+
+decodeCompleted : Decoder ProcessData.Completed
+decodeCompleted =
+    Decode.map7 ProcessData.Completed
+        (Decode.field "pid" Decode.int)
+        (Decode.field "exitCode" Decode.int)
+        (Decode.succeed Nothing)
+        (Decode.field "stdout" (Decode.nullable Decode.string))
+        (Decode.field "stderr" (Decode.nullable Decode.string))
+        (Decode.succeed False)
+        (Decode.succeed False)
+
+
+httpGet : String -> ConcurrentTask () String
+httpGet url =
+    ConcurrentTask.Http.get
+        { url = url
+        , headers = []
+        , expect = ConcurrentTask.Http.expectString
+        , timeout = Nothing
+        }
+        |> ConcurrentTask.mapError (\_ -> ())
+
+
+runProcess : String -> SpawnOptions -> ConcurrentTask SpawnError Completed
+runProcess command spawnOptions =
+    ConcurrentTask.define
+        { function = "os:runProcess"
+        , expect = ConcurrentTask.expectJson decodeCompleted
+        , errors = ConcurrentTask.expectErrors decodeSpawnError
+        , args = encodeSpawnOptions command spawnOptions
+        }
+
+
+spawnProcess : String -> SpawnOptions -> ConcurrentTask ProcessError ProcessId
+spawnProcess command spawnOptions =
+    -- TODO Add missing tasks in `lib/main-nodejs.js`
+    ConcurrentTask.define
+        { function = "os:spawnProcess"
+        , expect = ConcurrentTask.expectJson Decode.int
+        , errors = ConcurrentTask.expectErrors decodeProcessError
+        , args = encodeSpawnOptions command spawnOptions
+        }
+
+
+waitProcess : ProcessId -> ConcurrentTask ProcessError Completed
+waitProcess pid =
+    ConcurrentTask.define
+        { function = "waitProcess"
+        , expect = ConcurrentTask.expectJson decodeCompleted
+        , errors = ConcurrentTask.expectErrors decodeProcessError
+        , args = Encode.int pid
+        }
+
+
+killProcess : ProcessId -> Int -> ConcurrentTask ProcessError ()
+killProcess pid signal =
+    ConcurrentTask.define
+        { function = "killProcess"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeProcessError
+        , args =
+            Encode.object
+                [ ( "pid", Encode.int pid )
+                , ( "signal", Encode.int signal )
+                ]
+        }
+
+
+encodeSpawnOptions : String -> SpawnOptions -> Encode.Value
+encodeSpawnOptions command spawnOptions =
+    Encode.object
+        [ ( "command", Encode.string command )
+        , ( "args", Encode.list Encode.string spawnOptions.args )
+        , ( "env", encodeMaybe encodeEnv spawnOptions.env )
+        , ( "cwd", encodeMaybe Encode.string spawnOptions.cwd )
+        , ( "stdin", encodeStdinSpec spawnOptions.stdin )
+        , ( "stdout", encodeStdoutSpec spawnOptions.stdout )
+        , ( "stderr", encodeStderrSpec spawnOptions.stderr )
+        ]
+
+
+encodeEnv : List ( String, String ) -> Encode.Value
+encodeEnv list =
+    List.map (\( key, value ) -> ( key, Encode.string value )) list
+        |> Encode.object
+
+
+encodeStdinSpec : ProcessData.StdinSpec -> Encode.Value
+encodeStdinSpec stdinSpec =
+    case stdinSpec of
+        ProcessData.InheritStdin ->
+            Encode.object
+                [ ( "kind", Encode.string "inherit" )
+                ]
+
+        ProcessData.NullStdin ->
+            Encode.object
+                [ ( "kind", Encode.string "ignore" )
+                ]
+
+        ProcessData.TextStdin data ->
+            Encode.object
+                [ ( "kind", Encode.string "pipe" )
+                , ( "data", Encode.string data )
+                ]
+
+        ProcessData.FileStdin file ->
+            Encode.object
+                [ ( "kind", Encode.string "pipe" )
+                , ( "file", Encode.string file )
+                ]
+
+
+encodeStdoutSpec : ProcessData.StdoutSpec -> Encode.Value
+encodeStdoutSpec stdinSpec =
+    case stdinSpec of
+        ProcessData.InheritStdout ->
+            Encode.object
+                [ ( "kind", Encode.string "inherit" )
+                ]
+
+        ProcessData.NullStdout ->
+            Encode.object
+                [ ( "kind", Encode.string "ignore" )
+                ]
+
+        ProcessData.CaptureStdout captureLimits ->
+            -- TODO Capture stdout
+            -- https://nodejs.org/docs/latest-v14.x/api/child_process.html#child_process_options_stdio
+            Encode.object
+                [ ( "kind", Encode.string "pipe" )
+                ]
+
+
+encodeStderrSpec : ProcessData.StderrSpec -> Encode.Value
+encodeStderrSpec stdinSpec =
+    case stdinSpec of
+        ProcessData.InheritStderr ->
+            Encode.object
+                [ ( "kind", Encode.string "inherit" )
+                ]
+
+        ProcessData.NullStderr ->
+            Encode.object
+                [ ( "kind", Encode.string "ignore" )
+                ]
+
+        ProcessData.CaptureStderr captureLimits ->
+            -- TODO Capture stdout
+            -- https://nodejs.org/docs/latest-v14.x/api/child_process.html#child_process_options_stdio
+            Encode.object
+                [ ( "kind", Encode.string "pipe" )
+                ]
+
+        ProcessData.MergeWithStdout ->
+            -- TODO Merge stderr with stdout
+            -- https://nodejs.org/docs/latest-v14.x/api/child_process.html#child_process_options_stdio
+            Encode.object
+                [ ( "kind", Encode.string "stdout" )
+                ]
+
+
+encodeMaybe : (a -> Encode.Value) -> Maybe a -> Encode.Value
+encodeMaybe encoder maybe =
+    case maybe of
+        Just data ->
+            encoder data
+
+        Nothing ->
+            Encode.null
 
 
 handle : (Result x value -> TaskResult error a) -> ConcurrentTask x value -> ConcurrentTask error a
@@ -390,7 +705,19 @@ subscriptions subsFn model =
 
 stop : Problem.FormatOptions options -> Problem -> Cmd msg
 stop formatOptions problem =
-    Debug.todo "stop"
+    Cmd.batch
+        [ printlnStdout (Problem.format formatOptions problem)
+        , exit 1
+        ]
+
+
+port exit : Int -> Cmd msg
+
+
+port printlnStdout : String -> Cmd msg
+
+
+port printlnStderr : String -> Cmd msg
 
 
 port send : Decode.Value -> Cmd msg
@@ -407,7 +734,7 @@ type alias Effects =
     , deleteFile : Path -> ConcurrentTask FsError ()
     , createDirectory : Path -> ConcurrentTask FsError ()
     , removeDirectory : Path -> ConcurrentTask FsError ()
-    , copyDirectory : { from : Path, to : Path } -> ConcurrentTask SpawnError ()
+    , copyDirectory : { from : Path, to : Path } -> ConcurrentTask FsError ()
     , walkTree : Path -> Maybe String -> MatchKind -> ConcurrentTask FsError (List Path)
     , httpGet : String -> ConcurrentTask () String
 
@@ -430,23 +757,30 @@ effects =
       readTextFile = readTextFile
     , writeTextFile = writeTextFile
     , stat = stat
-    , deleteFile = \path -> Debug.todo "deleteFile"
-    , createDirectory = \path -> Debug.todo "createDirectory"
-    , removeDirectory = \path -> Debug.todo "removeDirectory"
-    , copyDirectory = \path -> Debug.todo "copyDirectory"
-    , walkTree = \path pattern matchKind -> Debug.todo "walkTree"
+    , deleteFile = deleteFile
+    , createDirectory = createDirectory
+    , removeDirectory = removeDirectory
+    , copyDirectory = copyDirectory
+    , walkTree = walkTree
 
     -- Http
-    , httpGet = \url -> Debug.todo "httpGet"
+    , httpGet = httpGet
 
     -- Stdin / Stdout
     , readKey = \() -> Debug.todo "readKey"
-    , println = \console string -> Debug.todo "println"
-    , exit = \code -> Debug.todo "exit"
+    , println =
+        \console string ->
+            case console of
+                CliData.Stdout ->
+                    printlnStdout string
+
+                CliData.Stderr ->
+                    printlnStderr string
+    , exit = exit
 
     -- Process
-    , runProcess = \command options -> Debug.todo "runProcess"
-    , spawnProcess = \command options -> Debug.todo "spawnProcess"
-    , waitProcess = \pid -> Debug.todo "waitProcess"
-    , killProcess = \pid signal -> Debug.todo "killProcess"
+    , runProcess = runProcess
+    , spawnProcess = spawnProcess
+    , waitProcess = waitProcess
+    , killProcess = killProcess
     }
