@@ -328,7 +328,14 @@ addReviewAppDependencies outputTarget initialDependencies =
          ]
             ++ (case outputTarget of
                     OutputTarget.JavaScriptTarget ->
-                        []
+                        [ ( "andrewMacmurray/elm-concurrent-task", "2.0.0" )
+                        , ( "danfishgold/base64-bytes", "1.1.0" )
+                        , ( "elm/browser", "1.0.2" )
+                        , ( "elm/bytes", "1.0.8" )
+                        , ( "elm/random", "1.0.0" )
+                        , ( "elm/time", "1.0.0" )
+                        , ( "elm/url", "1.0.0" )
+                        ]
 
                     OutputTarget.ElmRunTarget ->
                         [ ( "elm-run/cli", "1.0.0" )
