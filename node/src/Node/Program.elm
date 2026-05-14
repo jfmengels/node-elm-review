@@ -1,20 +1,22 @@
 port module Node.Program exposing (Config, Program, program)
 
 import ConcurrentTask exposing (ConcurrentTask, Pool)
-import ConcurrentTask.Http
 import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
 import Elm.Review.Testable as Testable exposing (Effects)
+import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
-import Elm.Review.Testable.FsData as FsData
-import Elm.Review.Testable.Internal as Internal exposing (TCmd, TaskResult)
+import Elm.Review.Testable.FsData as FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.Internal as Internal exposing (TCmd, TSub, TaskResult)
+import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
+import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import Elm.Review.Testable.TTask exposing (TTask)
+import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Node.Effects as NodeEffects
-import Task as PlatformTask
 
 
 type ModelWrapper model msg
@@ -24,14 +26,26 @@ type ModelWrapper model msg
 
 type alias Model model msg =
     { mainModel : model
-    , tasks : ConcurrentTask.Pool (Msg msg)
+    , tasks : Pool msg
     }
+
+
+type alias Pool msg =
+    ConcurrentTask.Pool (Msg msg)
+
+
+type Error
+    = Error
+
+
+type TransactionError
+    = FsError FsData.FsError
 
 
 type Msg msg
     = MainMsg msg
     | TaskOnProgress ( ConcurrentTask.Pool (Msg msg), Cmd (Msg msg) ) -- updates task progress
-    | TaskOnComplete (ConcurrentTask.Response ConcurrentTask.Http.Error Output)
+    | TaskOnComplete (ConcurrentTask.Response msg msg)
 
 
 type alias Config model msg =
@@ -97,22 +111,14 @@ flagsDecoder =
         (Decode.field "env" (Decode.dict Decode.string))
 
 
-type TransactionError
-    = ReadFileError String
-
-
-type alias Pool msg =
-    ConcurrentTask.Pool (Msg msg)
-
-
-startTask : { pool : Pool msg, task : ConcurrentTask ConcurrentTask.Http.Error Output } -> ( Pool msg, Cmd (Msg msg) )
-startTask options =
+startTask : Pool msg -> ConcurrentTask msg msg -> ( Pool msg, Cmd (Msg msg) )
+startTask pool task_ =
     ConcurrentTask.attempt
         { send = send
-        , pool = options.pool
+        , pool = pool
         , onComplete = TaskOnComplete
         }
-        options.task
+        task_
 
 
 update : (msg -> model -> ( model, TCmd msg )) -> Msg msg -> ModelWrapper model msg -> ( ModelWrapper model msg, Cmd (Msg msg) )
@@ -150,35 +156,37 @@ update updateFn msg modelWrapper =
         == Cmd.none
 
 -}
-taskToCmd : TestableCmd.Cmd msg -> Cmd msg
-taskToCmd testableEffects =
+taskToCmd : Pool msg -> TestableCmd.Cmd msg -> ( Pool msg, Cmd (Msg msg) )
+taskToCmd pool testableEffects =
     case testableEffects of
         Internal.None ->
-            Cmd.none
+            ( pool, Cmd.none )
 
         Internal.TaskCmd testableTask ->
-            Testable.task NodeEffects.effects testableTask
-                |> toResultTask
-                |> PlatformTask.perform
-                    (\res ->
-                        case res of
-                            Ok msg ->
-                                msg
-
-                            Err msg ->
-                                msg
-                    )
+            task testableTask
+                |> startTask pool
 
         Internal.Batch list ->
-            Cmd.batch (List.map (\t -> taskToCmd t) list)
+            List.foldl
+                (\t ( p, cmds ) ->
+                    taskToCmd p t
+                        |> Tuple.mapSecond (\cmd -> cmd :: cmds)
+                )
+                ( pool, [] )
+                list
+                |> Tuple.mapSecond Cmd.batch
 
         Internal.PrintLn console string ->
-            NodeEffects.effects.println console string
+            ( pool
+            , effects.println console string
                 |> Cmd.map never
+            )
 
         Internal.Exit code ->
-            NodeEffects.effects.exit code
+            ( pool
+            , NodeEffects.effects.exit code
                 |> Cmd.map never
+            )
 
 
 {-| Converts a `Testable.Task` into a `Task`
@@ -188,77 +196,90 @@ taskToCmd testableEffects =
         == Task.succeed "A"
 
 -}
-task : Effects -> TTask error value -> PlatformTask.Task error value
-task effects testableTask =
+task : TTask error value -> ConcurrentTask error value
+task testableTask =
     case testableTask of
         Internal.ImmediateTask result ->
-            taskResult effects result
+            taskResult result
 
         -- File system
         Internal.Stat path onResult ->
             effects.stat path
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.ReadTextFile path onResult ->
             effects.readTextFile path
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.WriteTextFile path string onResult ->
             effects.writeTextFile path string
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.DeleteFile path onResult ->
             effects.deleteFile path
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.CreateDirectory path onResult ->
             effects.createDirectory path
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.RemoveDirectory path onResult ->
             effects.removeDirectory path
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.CopyDirectory targets onResult ->
             effects.copyDirectory targets
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.WalkTree path pattern matchKind onResult ->
             effects.walkTree path pattern matchKind
-                |> handle effects onResult
+                |> handle onResult
 
         -- Http
         Internal.HttpGet url onResult ->
             effects.httpGet url
-                |> handle effects onResult
+                |> handle onResult
 
         -- Stdin
         Internal.ReadKey onResult ->
             effects.readKey ()
-                |> handle effects onResult
+                |> handle onResult
 
         -- Process
         Internal.RunProcess command spawnOptions onResult ->
             effects.runProcess command spawnOptions
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.SpawnProcess command spawnOptions onResult ->
             effects.spawnProcess command spawnOptions
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.WaitProcess processId onResult ->
             effects.waitProcess processId
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.KillProcess processId signal onResult ->
             effects.killProcess processId signal
-                |> handle effects onResult
+                |> handle onResult
 
 
-readTextFile : String -> String -> ConcurrentTask FsData.FsError ()
-readTextFile path content =
+readTextFile : String -> ConcurrentTask FsData.FsError String
+readTextFile path =
     ConcurrentTask.define
         { function = "fs:readTextFile"
+        , expect = ConcurrentTask.expectString
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                ]
+        }
+
+
+writeTextFile : String -> String -> ConcurrentTask FsData.FsError ()
+writeTextFile path content =
+    ConcurrentTask.define
+        { function = "fs:writeTextFile"
         , expect = ConcurrentTask.expectWhatever
         , errors = ConcurrentTask.expectErrors decodeFsError
         , args =
@@ -289,32 +310,32 @@ decodeFsError =
             )
 
 
-handle : Effects -> (Result x value -> TaskResult error a) -> PlatformTask.Task x value -> PlatformTask.Task error a
-handle effects onResult source =
+handle : (Result x value -> TaskResult error a) -> ConcurrentTask x value -> ConcurrentTask error a
+handle onResult source =
     source
         |> toResultTask
-        |> PlatformTask.map onResult
-        |> (\result -> PlatformTask.andThen (taskResult effects) result)
+        |> ConcurrentTask.map onResult
+        |> (\result -> ConcurrentTask.andThen taskResult result)
 
 
-taskResult : Effects -> Internal.TaskResult error value -> PlatformTask.Task error value
-taskResult effects result =
+taskResult : Internal.TaskResult error value -> ConcurrentTask error value
+taskResult result =
     case result of
         Internal.Success msg ->
-            PlatformTask.succeed msg
+            ConcurrentTask.succeed msg
 
         Internal.Failure error ->
-            PlatformTask.fail error
+            ConcurrentTask.fail error
 
         Internal.Continue next ->
-            task effects next
+            task next
 
 
-toResultTask : PlatformTask.Task x value -> PlatformTask.Task never (Result x value)
+toResultTask : ConcurrentTask x value -> ConcurrentTask never (Result x value)
 toResultTask task_ =
     task_
-        |> PlatformTask.map Ok
-        |> PlatformTask.onError (\x -> PlatformTask.succeed (Err x))
+        |> ConcurrentTask.map Ok
+        |> ConcurrentTask.onError (\x -> ConcurrentTask.succeed (Err x))
 
 
 subscriptions : (model -> TSub msg) -> ModelWrapper model msg -> Sub (Msg msg)
@@ -349,3 +370,56 @@ port send : Decode.Value -> Cmd msg
 
 
 port receive : (Decode.Value -> msg) -> Sub msg
+
+
+type alias Effects =
+    { -- File system
+      readTextFile : Path -> ConcurrentTask FsError String
+    , writeTextFile : Path -> String -> ConcurrentTask FsError ()
+    , stat : Path -> ConcurrentTask FsError FileStat
+    , deleteFile : Path -> ConcurrentTask FsError ()
+    , createDirectory : Path -> ConcurrentTask FsError ()
+    , removeDirectory : Path -> ConcurrentTask FsError ()
+    , copyDirectory : { from : Path, to : Path } -> ConcurrentTask SpawnError ()
+    , walkTree : Path -> Maybe String -> MatchKind -> ConcurrentTask FsError (List Path)
+    , httpGet : String -> ConcurrentTask () String
+
+    -- Stdin / Stdout
+    , readKey : () -> ConcurrentTask StdinError Key
+    , println : Console -> String -> Cmd Never
+    , exit : Int -> Cmd Never
+
+    -- Process
+    , runProcess : String -> SpawnOptions -> ConcurrentTask SpawnError Completed
+    , spawnProcess : String -> SpawnOptions -> ConcurrentTask ProcessError ProcessId
+    , waitProcess : ProcessId -> ConcurrentTask ProcessError Completed
+    , killProcess : ProcessId -> Int -> ConcurrentTask ProcessError ()
+    }
+
+
+effects : Effects
+effects =
+    { -- File system
+      readTextFile = readTextFile
+    , writeTextFile = writeTextFile
+    , stat = \path -> Debug.todo "stat"
+    , deleteFile = \path -> Debug.todo "deleteFile"
+    , createDirectory = \path -> Debug.todo "createDirectory"
+    , removeDirectory = \path -> Debug.todo "removeDirectory"
+    , copyDirectory = \path -> Debug.todo "copyDirectory"
+    , walkTree = \path pattern matchKind -> Debug.todo "walkTree"
+
+    -- Http
+    , httpGet = \url -> Debug.todo "httpGet"
+
+    -- Stdin / Stdout
+    , readKey = \() -> Debug.todo "readKey"
+    , println = \console string -> Debug.todo "println"
+    , exit = \code -> Debug.todo "exit"
+
+    -- Process
+    , runProcess = \command options -> Debug.todo "runProcess"
+    , spawnProcess = \command options -> Debug.todo "spawnProcess"
+    , waitProcess = \pid -> Debug.todo "waitProcess"
+    , killProcess = \pid signal -> Debug.todo "killProcess"
+    }
