@@ -57,6 +57,8 @@ type alias Config model msg =
 type alias Flags =
     { args : List String
     , env : Dict String String
+    , userHome : Path
+    , binaryRoot : Path
     }
 
 
@@ -108,9 +110,11 @@ init initFn rawFlags =
 
 flagsDecoder : Decode.Decoder Flags
 flagsDecoder =
-    Decode.map2 Flags
+    Decode.map4 Flags
         (Decode.field "args" (Decode.list Decode.string))
         (Decode.field "env" (Decode.dict Decode.string))
+        (Decode.field "userHome" Decode.string)
+        (Decode.field "binaryRoot" Decode.string)
 
 
 startTask : Pool msg -> ConcurrentTask msg msg -> ( Pool msg, Cmd (Msg msg) )
