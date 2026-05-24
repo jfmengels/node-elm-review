@@ -51,22 +51,19 @@ type Msg
     | PrepareOfflineMsg PrepareOffline.Msg
 
 
-init : Dict String String -> List String -> Bool -> OutputTarget -> InitError ( Model, TCmd Msg )
-init env args stdinSupported defaultOutputTarget =
-    let
-        -- TODO Get binaryRoot path from somewhere
-        binaryRoot : Path
-        binaryRoot =
-            "/Users/m1/dev/node-elm-review"
-
-        -- TODO Get elmHomePath from somewhere
-        elmHomePath : String
-        elmHomePath =
-            "/Users/m1/.elm"
-    in
+init :
+    { env : Dict String String
+    , args : List String
+    , stdinSupported : Bool
+    , defaultOutputTarget : OutputTarget
+    , binaryRoot : Path
+    , userHome : String
+    }
+    -> InitError ( Model, TCmd Msg )
+init { env, args, stdinSupported, defaultOutputTarget, binaryRoot, userHome } =
     OptionsParser.parse { args = args, env = env }
         binaryRoot
-        elmHomePath
+        userHome
         defaultOutputTarget
         |> handleCliArgsParseResult env stdinSupported
 
