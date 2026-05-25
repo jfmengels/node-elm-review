@@ -11,25 +11,29 @@ import Elm.Review.Testable.StdinData as StdinData
 import Elm.Review.Testable.TSub as TSub
 import ElmReview.Path exposing (Path)
 import Fs as ElmRunFs exposing (FileSystem, FsError(..))
+import Fs.Error
+import Fs.FileWatcher as FileWatcher
+import Fs.Location
+import Fs.Path
+import Fs.Walk as Walk
 import Http
 import Os exposing (ProcessCapability)
 import Os.Process as ElmRunProcess
 import Stdin as ElmRunStdin
 import Task exposing (Task)
-import Worker.FileWatcher as FileWatcher
 
 
 effects : FileSystem -> ProcessCapability -> Maybe Stdin -> Console -> Console -> Effects
 effects fs os stdin stdout stderr =
     { -- File system
-      readTextFile = \path -> ElmRunFs.readTextFile fs path |> Task.mapError mapFsError
-    , writeTextFile = \path string -> ElmRunFs.writeTextFile fs path string |> Task.mapError mapFsError
-    , stat = \path -> ElmRunFs.stat fs path |> Task.mapError mapFsError
-    , deleteFile = \path -> ElmRunFs.deleteFile fs path |> Task.mapError mapFsError
-    , createDirectory = \path -> ElmRunFs.createDirectory fs path |> Task.mapError mapFsError
-    , removeDirectory = \path -> ElmRunFs.removeDirectory fs path |> Task.mapError mapFsError
-    , copyDirectory = copyDirectory os
-    , walkTree = \path pattern matchKind -> ElmRunFs.walkTree fs path pattern (mapMatchKind matchKind) |> Task.map Tuple.first |> Task.mapError mapFsError
+      readTextFile = \path -> ElmRunFs.readTextFile fs (Fs.Location.file path) |> Task.mapError mapFsError
+    , writeTextFile = \path string -> ElmRunFs.writeTextFile fs (Fs.Location.file path) string |> Task.mapError mapFsError
+    , stat = \path -> ElmRunFs.stat fs (Fs.Location.fromFile (Fs.Location.file path)) |> Task.map toTestableStat |> Task.mapError mapFsError
+    , deleteFile = \path -> ElmRunFs.deleteFile fs (Fs.Location.file path) |> Task.mapError mapFsError
+    , createDirectory = \path -> ElmRunFs.createDirectory fs (Fs.Location.dir path) |> Task.mapError mapFsError
+    , removeDirectory = \path -> ElmRunFs.removeDirectory fs (Fs.Location.dir path) |> Task.mapError mapFsError
+    , copyDirectory = copyDirectory fs
+    , walkTree = walkTree fs
 
     -- Http
     , httpGet = httpGet
@@ -82,16 +86,47 @@ readKey stdin =
 
 
 mapFsError : ElmRunFs.FsError -> FsData.FsError
-mapFsError fsError =
-    case fsError of
-        ElmRunFs.PermissionDenied ->
+mapFsError (ElmRunFs.FsError errno path) =
+    case errno of
+        Fs.Error.EACCES ->
             FsData.PermissionDenied
 
-        ElmRunFs.NotFound string ->
-            FsData.NotFound string
+        Fs.Error.EPERM ->
+            FsData.PermissionDenied
 
-        ElmRunFs.IoError string ->
-            FsData.IoError string
+        Fs.Error.ENOENT ->
+            FsData.NotFound (Fs.Path.toString path)
+
+        _ ->
+            FsData.IoError (Fs.Error.toMessage errno)
+
+
+toTestableStat : ElmRunFs.FileStat -> FsData.FileStat
+toTestableStat s =
+    { isFile = s.isFile
+    , isDirectory = s.isDirectory
+    , isSymlink = s.isSymlink
+    , size = s.size
+    , modifiedTime = s.modifiedTime
+    }
+
+
+walkTree : FileSystem -> Path -> Maybe String -> FsData.MatchKind -> Task FsData.FsError (List Path)
+walkTree fs path pattern matchKind =
+    let
+        opts =
+            Walk.defaultOptions
+
+        walkOpts =
+            { opts | pattern = pattern, kind = mapMatchKind matchKind }
+    in
+    Walk.fold fs
+        (Fs.Location.dir path)
+        walkOpts
+        (\entry acc -> Walk.Continue (Fs.Path.toString entry.relativePath :: acc))
+        []
+        |> Task.map (\r -> List.reverse r.result)
+        |> Task.mapError mapFsError
 
 
 mapConsole : Capabilities.Console -> Capabilities.Console -> CliData.Console -> Capabilities.Console
@@ -104,21 +139,13 @@ mapConsole stdout stderr console =
             stderr
 
 
-copyDirectory : ProcessCapability -> { from : String, to : String } -> Task SpawnError ()
-copyDirectory os { from, to } =
-    runProcess os
-        "cp"
-        { cwd = Nothing
-        , env = Nothing
-        , args = [ "-R", from, to ]
-        , stdin = ProcessData.NullStdin
-        , stdout = ProcessData.NullStdout
-        , stderr = ProcessData.NullStderr
-        }
-        |> Task.map (\_ -> ())
+copyDirectory : FileSystem -> { from : String, to : String } -> Task FsData.FsError ()
+copyDirectory fs { from, to } =
+    Walk.copyDirectory fs (Fs.Location.dir from) (Fs.Location.dir to)
+        |> Task.mapError mapFsError
 
 
-{-| Like `Os.Process.run`, but fails if the exit code is different from 0.
+{-| Spawn and wait, mapping non-zero exits to typed failures.
 -}
 runProcess :
     ProcessCapability
@@ -126,7 +153,8 @@ runProcess :
     -> ProcessData.SpawnOptions
     -> Task ProcessData.SpawnError ProcessData.Completed
 runProcess os command spawnOptions =
-    ElmRunProcess.run os command (mapSpawnOptions spawnOptions)
+    ElmRunProcess.spawn os command (mapSpawnOptions spawnOptions)
+        |> Task.andThen (\spawned -> ElmRunProcess.wait os spawned.pid)
         |> Task.mapError (mapProcessError >> ProcessData.ProcessRunError)
         |> Task.andThen
             (\completed ->
@@ -325,9 +353,9 @@ mapStdinKey key =
             StdinData.KeyMouseWheelDown
 
 
-subEffects : TSub.SubEffects msg
-subEffects =
-    { watchFiles = watchFiles (watchPermission ())
+subEffects : Maybe FileWatcher -> TSub.SubEffects msg
+subEffects maybeFileWatcher =
+    { watchFiles = watchFiles maybeFileWatcher
     }
 
 
@@ -340,9 +368,3 @@ watchFiles maybeFileWatcher =
 
         Nothing ->
             \_ _ _ -> Sub.none
-
-
-watchPermission : () -> Maybe FileWatcher
-watchPermission () =
-    -- TODO Get FileWatcher permission from somewhere
-    Nothing

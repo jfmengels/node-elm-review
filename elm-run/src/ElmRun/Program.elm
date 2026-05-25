@@ -1,6 +1,6 @@
 module ElmRun.Program exposing (Config, Program, program)
 
-import Capabilities exposing (Console, Stdin)
+import Capabilities exposing (Console, FileWatcher, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
@@ -26,6 +26,7 @@ type alias Model model =
     , stdin : Maybe Stdin
     , stdout : Console
     , stderr : Console
+    , fileWatcher : Maybe FileWatcher
     , mainModel : model
     }
 
@@ -69,6 +70,7 @@ init initFn env =
                         , stdin = env.stdin
                         , stdout = env.stdout
                         , stderr = env.stderr
+                        , fileWatcher = env.fileWatcher
                         , mainModel = mainModel
                         }
                     , Testable.cmd (ElmRunEffects.effects fs os env.stdin env.stdout env.stderr) cmd
@@ -99,7 +101,7 @@ update updateFn msg modelWrapper =
         Done ->
             ( Done, Cmd.none )
 
-        Running { fs, os, stdin, stdout, stderr, mainModel } ->
+        Running { fs, os, stdin, stdout, stderr, fileWatcher, mainModel } ->
             let
                 ( newMainModel, cmd ) =
                     updateFn msg mainModel
@@ -110,6 +112,7 @@ update updateFn msg modelWrapper =
                 , stdin = stdin
                 , stdout = stdout
                 , stderr = stderr
+                , fileWatcher = fileWatcher
                 , mainModel = newMainModel
                 }
             , Testable.cmd (ElmRunEffects.effects fs os stdin stdout stderr) cmd
@@ -122,8 +125,8 @@ subscriptions subsFn model =
         Done ->
             Sub.none
 
-        Running { mainModel } ->
-            TSub.subscriptions ElmRunEffects.subEffects (subsFn mainModel)
+        Running { fileWatcher, mainModel } ->
+            TSub.subscriptions (ElmRunEffects.subEffects fileWatcher) (subsFn mainModel)
 
 
 stop : Console -> Problem.FormatOptions options -> Problem -> Cmd msg

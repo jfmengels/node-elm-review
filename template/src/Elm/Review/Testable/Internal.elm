@@ -38,7 +38,7 @@ type TTask error value
     | DeleteFile Path (Result FsError () -> TaskResult error value)
     | CreateDirectory Path (Result FsError () -> TaskResult error value)
     | RemoveDirectory Path (Result FsError () -> TaskResult error value)
-    | CopyDirectory { from : Path, to : Path } (Result SpawnError () -> TaskResult error value)
+    | CopyDirectory { from : Path, to : Path } (Result FsError () -> TaskResult error value)
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
       -- Http
     | HttpGet String (Result () String -> TaskResult error value)

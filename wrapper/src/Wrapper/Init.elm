@@ -182,20 +182,9 @@ createTemplateConfiguration reviewPath offline remoteTemplate debug =
                                                         }
                                                         |> TTask.mapError
                                                             (\error ->
-                                                                let
-                                                                    stepDescription : String
-                                                                    stepDescription =
-                                                                        "copying the template's " ++ directory ++ " source directory"
-                                                                in
-                                                                case error of
-                                                                    ProcessData.ProcessRunError processError ->
-                                                                        Problem.unexpectedError stepDescription (ProcessData.errorToString processError)
-
-                                                                    ProcessData.CommandNotFound ->
-                                                                        Problem.unexpectedError stepDescription "Command `cp` not found"
-
-                                                                    ProcessData.CommandFailed completed ->
-                                                                        Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
+                                                                Problem.unexpectedError
+                                                                    ("copying the template's " ++ directory ++ " source directory")
+                                                                    (FsData.errorToString error)
                                                             )
                                                 )
                                                 elmJson.dirs
