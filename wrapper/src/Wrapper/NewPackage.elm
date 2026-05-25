@@ -175,22 +175,7 @@ createProject input options =
             , to = Path.join2 input.packageName ".github/"
             }
             |> TTask.mapError
-                (\error ->
-                    let
-                        stepDescription : String
-                        stepDescription =
-                            "while copying the GitHub Actions"
-                    in
-                    case error of
-                        ProcessData.ProcessRunError processError ->
-                            Problem.unexpectedError stepDescription (ProcessData.errorToString processError)
-
-                        ProcessData.CommandNotFound ->
-                            Problem.unexpectedError stepDescription "Command `cp` not found"
-
-                        ProcessData.CommandFailed completed ->
-                            Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
-                )
+                (\error -> Problem.unexpectedError "while copying the GitHub Actions" (FsData.errorToString error))
 
         -- TODO
         --, createElmReviewConfiguration  input

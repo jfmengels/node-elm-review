@@ -173,23 +173,7 @@ buildCreatedProject reviewFolder options buildData =
             { from = Path.join2 options.binaryRoot "template/src"
             , to = buildFolder
             }
-            |> TTask.mapError
-                (\error ->
-                    let
-                        stepDescription : String
-                        stepDescription =
-                            "while building and copying template files"
-                    in
-                    case error of
-                        ProcessData.ProcessRunError processError ->
-                            processErrorToProblem stepDescription processError
-
-                        ProcessData.CommandNotFound ->
-                            Problem.unexpectedError stepDescription "Command `cp` not found"
-
-                        ProcessData.CommandFailed completed ->
-                            Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
-                )
+            |> TTask.mapError (fsErrorToProblem "while building and copying template files")
         , createTemplateElmJson options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
         , compileProject options reviewFolder buildFolder buildData.reviewAppPath
@@ -232,21 +216,8 @@ createSymLinkForLocalElmReview { buildFolder, localElmReview, packagesLocation, 
                     , -- TODO Create a symlink instead
                       Fs.copyDirectory { from = localElmReview_, to = packagePath }
                         |> TTask.mapError
-                            (\error ->
-                                let
-                                    stepDescription : String
-                                    stepDescription =
-                                        "while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath
-                                in
-                                case error of
-                                    ProcessData.ProcessRunError processError ->
-                                        processErrorToProblem stepDescription processError
-
-                                    ProcessData.CommandNotFound ->
-                                        Problem.unexpectedError stepDescription "Command `cp` not found"
-
-                                    ProcessData.CommandFailed completed ->
-                                        Problem.unexpectedError stepDescription (Maybe.withDefault "No output." completed.stderr)
+                            (fsErrorToProblem
+                                ("while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath)
                             )
                     ]
             , cleanUp =

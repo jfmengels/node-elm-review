@@ -12,7 +12,6 @@ module Elm.Review.Testable.Fs exposing
 
 import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal
-import Elm.Review.Testable.ProcessData exposing (ProcessError, SpawnError)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Path as Path exposing (Path)
 
@@ -67,7 +66,7 @@ removeDirectory path =
     Internal.RemoveDirectory path Internal.resultFromResult
 
 
-copyDirectory : { from : Path, to : Path } -> TTask SpawnError ()
+copyDirectory : { from : Path, to : Path } -> TTask FsError ()
 copyDirectory targets =
     Internal.CopyDirectory targets Internal.resultFromResult
 

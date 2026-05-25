@@ -38,7 +38,7 @@ type alias Effects =
     , deleteFile : Path -> PlatformTask.Task FsError ()
     , createDirectory : Path -> PlatformTask.Task FsError ()
     , removeDirectory : Path -> PlatformTask.Task FsError ()
-    , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task SpawnError ()
+    , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task FsError ()
     , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
     , httpGet : String -> PlatformTask.Task () String
 
