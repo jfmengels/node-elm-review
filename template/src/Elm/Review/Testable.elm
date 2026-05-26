@@ -45,6 +45,7 @@ type alias Effects =
 
     -- Stdin / Stdout
     , readKey : () -> PlatformTask.Task StdinError Key
+    , printlnTask : Console -> String -> PlatformTask.Task Never ()
     , println : Console -> String -> Cmd Never
     , exit : Int -> Cmd Never
 
@@ -85,7 +86,7 @@ cmd effects testableEffects =
         Internal.Batch list ->
             Cmd.batch (List.map (\t -> cmd effects t) list)
 
-        Internal.PrintLn console string ->
+        Internal.Println console string ->
             effects.println console string
                 |> Cmd.map never
 
@@ -152,6 +153,10 @@ task effects testableTask =
         -- Stdin
         Internal.ReadKey onResult ->
             effects.readKey ()
+                |> handle effects onResult
+
+        Internal.PrintlnTask console message onResult ->
+            effects.printlnTask console message
                 |> handle effects onResult
 
         -- Process

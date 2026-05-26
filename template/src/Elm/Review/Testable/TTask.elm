@@ -295,9 +295,12 @@ transform tx source =
         Internal.HttpGet url onResult ->
             Internal.HttpGet url (onResult >> tx)
 
-        -- Stdin
+        -- Stdin/stdout/stderr
         Internal.ReadKey onResult ->
             Internal.ReadKey (onResult >> tx)
+
+        Internal.PrintlnTask console string onResult ->
+            Internal.PrintlnTask console string (onResult >> tx)
 
         -- Process
         Internal.RunProcess command spawnOptions onResult ->
