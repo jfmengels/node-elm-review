@@ -276,6 +276,9 @@ transform tx source =
         Internal.DeleteFile path onResult ->
             Internal.DeleteFile path (onResult >> tx)
 
+        Internal.CreateSymlink targets onResult ->
+            Internal.CreateSymlink targets (onResult >> tx)
+
         Internal.CreateDirectory path onResult ->
             Internal.CreateDirectory path (onResult >> tx)
 

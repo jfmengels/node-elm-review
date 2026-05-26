@@ -13,6 +13,7 @@ effects =
     , writeTextFile = \path string -> Debug.todo "writeTextFile"
     , stat = \path -> Debug.todo "stat"
     , deleteFile = \path -> Debug.todo "deleteFile"
+    , createSymlink = \paths -> Debug.todo "createSymlink"
     , createDirectory = \path -> Debug.todo "createDirectory"
     , removeDirectory = \path -> Debug.todo "removeDirectory"
     , copyDirectory = \path -> Debug.todo "copyDirectory"

@@ -36,6 +36,7 @@ type alias Effects =
     , writeTextFile : Path -> String -> PlatformTask.Task FsError ()
     , stat : Path -> PlatformTask.Task FsError FileStat
     , deleteFile : Path -> PlatformTask.Task FsError ()
+    , createSymlink : { target : Path, linkPath : Path } -> PlatformTask.Task FsError ()
     , createDirectory : Path -> PlatformTask.Task FsError ()
     , removeDirectory : Path -> PlatformTask.Task FsError ()
     , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task FsError ()
@@ -121,6 +122,10 @@ task effects testableTask =
 
         Internal.DeleteFile path onResult ->
             effects.deleteFile path
+                |> handle effects onResult
+
+        Internal.CreateSymlink targets onResult ->
+            effects.createSymlink targets
                 |> handle effects onResult
 
         Internal.CreateDirectory path onResult ->
