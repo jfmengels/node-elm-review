@@ -6,17 +6,17 @@ import Dict exposing (Dict)
 import Elm.Review.InitError as InitError
 import Elm.Review.Testable.CliData as CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
+import Elm.Review.Testable.FileWatchData as FileWatchData
 import Elm.Review.Testable.FsData as FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TCmd, TSub, TaskResult)
 import Elm.Review.Testable.ProcessData as ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
-import Elm.Review.Testable.TSub as TSub exposing (TSub)
+import Elm.Review.Testable.TSub as TSub exposing (SubEffects, TSub)
 import Elm.Review.Testable.TTask exposing (TTask)
 import ElmReview.Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
-import Node.Effects as NodeEffects
 
 
 type ModelWrapper model msg
@@ -263,6 +263,10 @@ task testableTask =
         Internal.DeleteFile path onResult ->
             effects.deleteFile path
                 |> handle onResult
+
+        Internal.CreateSymlink targets onResult ->
+            effects.createSymlink targets
+                |> handle effects onResult
 
         Internal.CreateDirectory path onResult ->
             effects.createDirectory path
@@ -706,9 +710,20 @@ subscriptions subsFn model =
                     , onProgress = TaskOnProgress
                     }
                     pool
-                , TSub.subscriptions NodeEffects.subEffects (subsFn mainModel)
+                , TSub.subscriptions subEffects (subsFn mainModel)
                     |> Sub.map MainMsg
                 ]
+
+
+subEffects : SubEffects msg
+subEffects =
+    { watchFiles = watchFiles
+    }
+
+
+watchFiles : Path -> FileWatchData.WatchOptions -> (FileWatchData.FileEvent -> msg) -> Sub msg
+watchFiles path watchOptions toMsg =
+    Debug.todo "watchFiles"
 
 
 stop : Problem.FormatOptions options -> Problem -> Cmd msg
