@@ -316,7 +316,7 @@ taskToCmd pool initialExitCode ongoingTasksCount testableEffects =
             , cmd = Cmd.batch result.cmds
             }
 
-        Internal.PrintLn console string ->
+        Internal.Println console string ->
             { pool = pool
             , exitCode = Nothing
             , ongoingTasksCount = ongoingTasksCount
@@ -390,9 +390,13 @@ task testableTask =
             effects.httpGet url
                 |> handle onResult
 
-        -- Stdin
+        -- Stdin/stdout/stderr
         Internal.ReadKey onResult ->
             effects.readKey ()
+                |> handle onResult
+
+        Internal.PrintlnTask console message onResult ->
+            effects.printlnTask console message
                 |> handle onResult
 
         -- Process
@@ -622,6 +626,29 @@ httpGet url =
         , timeout = Nothing
         }
         |> ConcurrentTask.mapError (\_ -> ())
+
+
+printlnTask : Console -> String -> ConcurrentTask x ()
+printlnTask console message =
+    ConcurrentTask.define
+        { function = "std::println"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectNoErrors
+        , args =
+            Encode.object
+                [ ( "logFunction"
+                  , Encode.string
+                        (case console of
+                            CliData.Stdout ->
+                                "log"
+
+                            CliData.Stderr ->
+                                "error"
+                        )
+                  )
+                , ( "message", Encode.string message )
+                ]
+        }
 
 
 runProcess : String -> SpawnOptions -> ConcurrentTask SpawnError Completed
@@ -871,6 +898,7 @@ type alias Effects =
     -- Stdin / Stdout
     , readKey : () -> ConcurrentTask StdinError Key
     , println : Console -> String -> Cmd Never
+    , printlnTask : Console -> String -> ConcurrentTask Never ()
     , exit : Int -> Cmd Never
 
     -- Process
@@ -907,6 +935,7 @@ effects =
 
                 CliData.Stderr ->
                     printlnStderr string
+    , printlnTask = printlnTask
     , exit = exit
 
     -- Process

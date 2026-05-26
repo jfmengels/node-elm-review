@@ -23,7 +23,7 @@ type TCmd msg
     = None
     | TaskCmd (TTask msg msg)
     | Batch (List (TCmd msg))
-    | PrintLn Console String
+    | Println Console String
     | Exit Int
 
 
@@ -43,8 +43,9 @@ type TTask error value
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
       -- Http
     | HttpGet String (Result () String -> TaskResult error value)
-      -- Stdin
+      -- Stdin/stdout/stderr
     | ReadKey (Result StdinError Key -> TaskResult error value)
+    | PrintlnTask Console String (Result Never () -> TaskResult error value)
       -- Process
     | RunProcess String SpawnOptions (Result SpawnError Completed -> TaskResult error value)
     | SpawnProcess String SpawnOptions (Result ProcessError ProcessId -> TaskResult error value)

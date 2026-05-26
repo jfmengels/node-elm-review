@@ -42,6 +42,7 @@ effects fs os stdin stdout stderr =
     -- Stdin / Stdout
     , readKey = readKey stdin
     , println = mapConsole stdout stderr >> ElmRunCli.println
+    , printlnTask = mapConsole stdout stderr >> ElmRunCli.printlnTask
     , exit = ElmRunCli.exit
 
     -- Process
