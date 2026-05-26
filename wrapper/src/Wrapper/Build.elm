@@ -366,6 +366,8 @@ addReviewAppDependencies outputTarget initialDependencies =
                         , ( "elm-run/capabilities", "1.0.0" )
                         , ( "elm-run/log", "1.0.0" )
                         , ( "elm-run/stdio", "1.0.0" )
+                        , ( "elm-run/terminal", "1.0.0" )
+                        , ( "elm-run/binary", "1.0.0" )
                         ]
                )
         )
