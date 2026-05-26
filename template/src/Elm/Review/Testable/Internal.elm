@@ -36,6 +36,7 @@ type TTask error value
     | ReadTextFile Path (Result FsError String -> TaskResult error value)
     | WriteTextFile Path String (Result FsError () -> TaskResult error value)
     | DeleteFile Path (Result FsError () -> TaskResult error value)
+    | CreateSymlink { target : Path, linkPath : Path } (Result FsError () -> TaskResult error value)
     | CreateDirectory Path (Result FsError () -> TaskResult error value)
     | RemoveDirectory Path (Result FsError () -> TaskResult error value)
     | CopyDirectory { from : Path, to : Path } (Result FsError () -> TaskResult error value)

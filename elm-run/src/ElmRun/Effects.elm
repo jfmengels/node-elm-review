@@ -30,6 +30,7 @@ effects fs os stdin stdout stderr =
     , writeTextFile = \path string -> ElmRunFs.writeTextFile fs (Fs.Location.file path) string |> Task.mapError mapFsError
     , stat = \path -> ElmRunFs.stat fs (Fs.Location.fromFile (Fs.Location.file path)) |> Task.map toTestableStat |> Task.mapError mapFsError
     , deleteFile = \path -> ElmRunFs.deleteFile fs (Fs.Location.file path) |> Task.mapError mapFsError
+    , createSymlink = createSymlink fs
     , createDirectory = \path -> ElmRunFs.createDirectory fs (Fs.Location.dir path) |> Task.mapError mapFsError
     , removeDirectory = \path -> ElmRunFs.removeDirectory fs (Fs.Location.dir path) |> Task.mapError mapFsError
     , copyDirectory = copyDirectory fs
@@ -137,6 +138,12 @@ mapConsole stdout stderr console =
 
         CliData.Stderr ->
             stderr
+
+
+createSymlink : FileSystem -> { target : Path, linkPath : Path } -> Task FsData.FsError ()
+createSymlink fs { target, linkPath } =
+    ElmRunFs.createSymlink fs target (Fs.Location.file linkPath)
+        |> Task.mapError mapFsError
 
 
 copyDirectory : FileSystem -> { from : String, to : String } -> Task FsData.FsError ()

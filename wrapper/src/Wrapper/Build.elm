@@ -165,20 +165,34 @@ buildCreatedProject reviewFolder options buildData =
                 }
     in
     TTask.sequence
-        [ Fs.createDirectory (Path.join2 buildFolder "src")
+        [ Fs.createDirectory buildFolder
             |> TTask.mapError (fsErrorToProblem "while building and creating temporary source directory")
         , Fs.createDirectory (Path.dirname buildData.reviewAppPath)
             |> TTask.mapError (fsErrorToProblem "while building and creating temporary directory")
-        , Fs.copyDirectory
-            { from = Path.join2 options.binaryRoot "template/src"
-            , to = buildFolder
-            }
-            |> TTask.mapError (fsErrorToProblem "while building and copying template files")
+        , createSymlinkToTemplateSrc options buildFolder
         , createTemplateElmJson options.outputTarget reviewFolder options.binaryRoot buildFolder buildData.reviewElmJson
         , localElmReviewTasks.setUp
         , compileProject options reviewFolder buildFolder buildData.reviewAppPath
             |> TTask.alwaysRun localElmReviewTasks.cleanUp
         ]
+
+
+createSymlinkToTemplateSrc : { a | binaryRoot : Path } -> Path -> TTask Problem ()
+createSymlinkToTemplateSrc options buildFolder =
+    Fs.createSymlink
+        { target = Path.join2 options.binaryRoot "template/src"
+        , linkPath = Path.join2 buildFolder "src"
+        }
+        |> TTask.onError
+            (\error ->
+                case error of
+                    FsData.IoError "File exists" ->
+                        TTask.succeed ()
+
+                    _ ->
+                        fsErrorToProblem "while building creating a symlink to the template' source directory" error
+                            |> TTask.fail
+            )
 
 
 createSymLinkForLocalElmReview :

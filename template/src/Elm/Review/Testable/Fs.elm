@@ -2,6 +2,7 @@ module Elm.Review.Testable.Fs exposing
     ( copyDirectory
     , createDirectory
     , createFileAndItsDirectory
+    , createSymlink
     , deleteFile
     , readTextFile
     , removeDirectory
@@ -48,6 +49,14 @@ createFileAndItsDirectory path content =
 deleteFile : Path -> TTask FsError ()
 deleteFile path =
     Internal.DeleteFile path Internal.resultFromResult
+
+
+{-| Create a directory and all parent directories (like mkdir -p).
+Succeeds silently if the directory already exists.
+-}
+createSymlink : { target : Path, linkPath : Path } -> TTask FsError ()
+createSymlink targets =
+    Internal.CreateSymlink targets Internal.resultFromResult
 
 
 {-| Create a directory and all parent directories (like mkdir -p).
