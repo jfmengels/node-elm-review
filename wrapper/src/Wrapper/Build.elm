@@ -181,7 +181,7 @@ buildCreatedProject reviewFolder options buildData =
         , createSymlinkToTemplateSrc options buildFolder
         , createTemplateElmJson
             { outputTarget = options.outputTarget
-            , mainFileSrc = Path.dirname mainElmFilePath
+            , mainFileSrc = Path.dirname (Path.dirname mainElmFilePath)
             , reviewFolder = reviewFolder
             , buildFolder = buildFolder
             , binaryRoot = options.binaryRoot
