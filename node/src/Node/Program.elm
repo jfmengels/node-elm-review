@@ -266,7 +266,7 @@ task testableTask =
 
         Internal.CreateSymlink targets onResult ->
             effects.createSymlink targets
-                |> handle effects onResult
+                |> handle onResult
 
         Internal.CreateDirectory path onResult ->
             effects.createDirectory path
@@ -371,6 +371,20 @@ deleteFile path =
         , args =
             Encode.object
                 [ ( "path", Encode.string path )
+                ]
+        }
+
+
+createSymlink : { target : Path, linkPath : Path } -> ConcurrentTask FsData.FsError ()
+createSymlink { target, linkPath } =
+    ConcurrentTask.define
+        { function = "fs:createSymlink"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "target", Encode.string target )
+                , ( "linkPath", Encode.string linkPath )
                 ]
         }
 
@@ -755,6 +769,7 @@ type alias Effects =
     , writeTextFile : Path -> String -> ConcurrentTask FsError ()
     , stat : Path -> ConcurrentTask FsError FileStat
     , deleteFile : Path -> ConcurrentTask FsError ()
+    , createSymlink : { target : Path, linkPath : Path } -> ConcurrentTask FsError ()
     , createDirectory : Path -> ConcurrentTask FsError ()
     , removeDirectory : Path -> ConcurrentTask FsError ()
     , copyDirectory : { from : Path, to : Path } -> ConcurrentTask FsError ()
@@ -781,6 +796,7 @@ effects =
     , writeTextFile = writeTextFile
     , stat = stat
     , deleteFile = deleteFile
+    , createSymlink = createSymlink
     , createDirectory = createDirectory
     , removeDirectory = removeDirectory
     , copyDirectory = copyDirectory
