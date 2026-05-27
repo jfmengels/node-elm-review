@@ -547,7 +547,7 @@ spawnProcess command spawnOptions =
 waitProcess : ProcessId -> ConcurrentTask ProcessError Completed
 waitProcess pid =
     ConcurrentTask.define
-        { function = "waitProcess"
+        { function = "os:waitProcess"
         , expect = ConcurrentTask.expectJson decodeCompleted
         , errors = ConcurrentTask.expectErrors decodeProcessError
         , args = Encode.int pid
