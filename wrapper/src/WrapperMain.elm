@@ -12,7 +12,7 @@ import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Color exposing (Color(..))
-import ElmReview.Path exposing (Path)
+import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (FormatOptions)
 import Wrapper.Help as Help
 import Wrapper.Init as Init
@@ -61,9 +61,19 @@ init :
     }
     -> InitError ( Model, TCmd Msg )
 init { env, args, stdinSupported, defaultOutputTarget, binaryRoot, userHome } =
+    let
+        elmHomePath : Path
+        elmHomePath =
+            case Dict.get "ELM_HOME" env of
+                Just elmHomePath_ ->
+                    elmHomePath_
+
+                Nothing ->
+                    Path.join2 userHome ".elm"
+    in
     OptionsParser.parse { args = args, env = env }
         binaryRoot
-        userHome
+        elmHomePath
         defaultOutputTarget
         |> handleCliArgsParseResult env stdinSupported
 
