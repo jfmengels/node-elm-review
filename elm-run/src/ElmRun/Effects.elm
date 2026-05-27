@@ -88,18 +88,7 @@ readKey stdin =
 
 mapFsError : ElmRunFs.FsError -> FsData.FsError
 mapFsError (ElmRunFs.FsError errno path) =
-    case errno of
-        Fs.Error.EACCES ->
-            FsData.PermissionDenied
-
-        Fs.Error.EPERM ->
-            FsData.PermissionDenied
-
-        Fs.Error.ENOENT ->
-            FsData.NotFound (Fs.Path.toString path)
-
-        _ ->
-            FsData.IoError (Fs.Error.toMessage errno)
+    FsData.FsError (mapFsErrno errno) (Fs.Path.toString path)
 
 
 toTestableStat : ElmRunFs.FileStat -> FsData.FileStat
@@ -375,3 +364,328 @@ watchFiles maybeFileWatcher =
 
         Nothing ->
             \_ _ _ -> Sub.none
+
+
+mapFsErrno : Fs.Error.Errno -> FsData.Errno
+mapFsErrno errno =
+    case errno of
+        Fs.Error.EPERM ->
+            FsData.EPERM
+
+        Fs.Error.ENOENT ->
+            FsData.ENOENT
+
+        Fs.Error.ESRCH ->
+            FsData.ESRCH
+
+        Fs.Error.EINTR ->
+            FsData.EINTR
+
+        Fs.Error.EIO ->
+            FsData.EIO
+
+        Fs.Error.ENXIO ->
+            FsData.ENXIO
+
+        Fs.Error.E2BIG ->
+            FsData.E2BIG
+
+        Fs.Error.ENOEXEC ->
+            FsData.ENOEXEC
+
+        Fs.Error.EBADF ->
+            FsData.EBADF
+
+        Fs.Error.ECHILD ->
+            FsData.ECHILD
+
+        Fs.Error.EDEADLK ->
+            FsData.EDEADLK
+
+        Fs.Error.ENOMEM ->
+            FsData.ENOMEM
+
+        Fs.Error.EACCES ->
+            FsData.EACCES
+
+        Fs.Error.EFAULT ->
+            FsData.EFAULT
+
+        Fs.Error.ENOTBLK ->
+            FsData.ENOTBLK
+
+        Fs.Error.EBUSY ->
+            FsData.EBUSY
+
+        Fs.Error.EEXIST ->
+            FsData.EEXIST
+
+        Fs.Error.EXDEV ->
+            FsData.EXDEV
+
+        Fs.Error.ENODEV ->
+            FsData.ENODEV
+
+        Fs.Error.ENOTDIR ->
+            FsData.ENOTDIR
+
+        Fs.Error.EISDIR ->
+            FsData.EISDIR
+
+        Fs.Error.EINVAL ->
+            FsData.EINVAL
+
+        Fs.Error.ENFILE ->
+            FsData.ENFILE
+
+        Fs.Error.EMFILE ->
+            FsData.EMFILE
+
+        Fs.Error.ENOTTY ->
+            FsData.ENOTTY
+
+        Fs.Error.ETXTBSY ->
+            FsData.ETXTBSY
+
+        Fs.Error.EFBIG ->
+            FsData.EFBIG
+
+        Fs.Error.ENOSPC ->
+            FsData.ENOSPC
+
+        Fs.Error.ESPIPE ->
+            FsData.ESPIPE
+
+        Fs.Error.EROFS ->
+            FsData.EROFS
+
+        Fs.Error.EMLINK ->
+            FsData.EMLINK
+
+        Fs.Error.EPIPE ->
+            FsData.EPIPE
+
+        Fs.Error.EDOM ->
+            FsData.EDOM
+
+        Fs.Error.ERANGE ->
+            FsData.ERANGE
+
+        Fs.Error.EAGAIN ->
+            FsData.EAGAIN
+
+        Fs.Error.EINPROGRESS ->
+            FsData.EINPROGRESS
+
+        Fs.Error.EALREADY ->
+            FsData.EALREADY
+
+        Fs.Error.ENOTSOCK ->
+            FsData.ENOTSOCK
+
+        Fs.Error.EDESTADDRREQ ->
+            FsData.EDESTADDRREQ
+
+        Fs.Error.EMSGSIZE ->
+            FsData.EMSGSIZE
+
+        Fs.Error.EPROTOTYPE ->
+            FsData.EPROTOTYPE
+
+        Fs.Error.ENOPROTOOPT ->
+            FsData.ENOPROTOOPT
+
+        Fs.Error.EPROTONOSUPPORT ->
+            FsData.EPROTONOSUPPORT
+
+        Fs.Error.ESOCKTNOSUPPORT ->
+            FsData.ESOCKTNOSUPPORT
+
+        Fs.Error.ENOTSUP ->
+            FsData.ENOTSUP
+
+        Fs.Error.EPFNOSUPPORT ->
+            FsData.EPFNOSUPPORT
+
+        Fs.Error.EAFNOSUPPORT ->
+            FsData.EAFNOSUPPORT
+
+        Fs.Error.EADDRINUSE ->
+            FsData.EADDRINUSE
+
+        Fs.Error.EADDRNOTAVAIL ->
+            FsData.EADDRNOTAVAIL
+
+        Fs.Error.ENETDOWN ->
+            FsData.ENETDOWN
+
+        Fs.Error.ENETUNREACH ->
+            FsData.ENETUNREACH
+
+        Fs.Error.ENETRESET ->
+            FsData.ENETRESET
+
+        Fs.Error.ECONNABORTED ->
+            FsData.ECONNABORTED
+
+        Fs.Error.ECONNRESET ->
+            FsData.ECONNRESET
+
+        Fs.Error.ENOBUFS ->
+            FsData.ENOBUFS
+
+        Fs.Error.EISCONN ->
+            FsData.EISCONN
+
+        Fs.Error.ENOTCONN ->
+            FsData.ENOTCONN
+
+        Fs.Error.ESHUTDOWN ->
+            FsData.ESHUTDOWN
+
+        Fs.Error.ETOOMANYREFS ->
+            FsData.ETOOMANYREFS
+
+        Fs.Error.ETIMEDOUT ->
+            FsData.ETIMEDOUT
+
+        Fs.Error.ECONNREFUSED ->
+            FsData.ECONNREFUSED
+
+        Fs.Error.ELOOP ->
+            FsData.ELOOP
+
+        Fs.Error.ENAMETOOLONG ->
+            FsData.ENAMETOOLONG
+
+        Fs.Error.EHOSTDOWN ->
+            FsData.EHOSTDOWN
+
+        Fs.Error.EHOSTUNREACH ->
+            FsData.EHOSTUNREACH
+
+        Fs.Error.ENOTEMPTY ->
+            FsData.ENOTEMPTY
+
+        Fs.Error.EPROCLIM ->
+            FsData.EPROCLIM
+
+        Fs.Error.EUSERS ->
+            FsData.EUSERS
+
+        Fs.Error.EDQUOT ->
+            FsData.EDQUOT
+
+        Fs.Error.ESTALE ->
+            FsData.ESTALE
+
+        Fs.Error.EREMOTE ->
+            FsData.EREMOTE
+
+        Fs.Error.EBADRPC ->
+            FsData.EBADRPC
+
+        Fs.Error.ERPCMISMATCH ->
+            FsData.ERPCMISMATCH
+
+        Fs.Error.EPROGUNAVAIL ->
+            FsData.EPROGUNAVAIL
+
+        Fs.Error.EPROGMISMATCH ->
+            FsData.EPROGMISMATCH
+
+        Fs.Error.EPROCUNAVAIL ->
+            FsData.EPROCUNAVAIL
+
+        Fs.Error.ENOLCK ->
+            FsData.ENOLCK
+
+        Fs.Error.ENOSYS ->
+            FsData.ENOSYS
+
+        Fs.Error.EFTYPE ->
+            FsData.EFTYPE
+
+        Fs.Error.EAUTH ->
+            FsData.EAUTH
+
+        Fs.Error.ENEEDAUTH ->
+            FsData.ENEEDAUTH
+
+        Fs.Error.EPWROFF ->
+            FsData.EPWROFF
+
+        Fs.Error.EDEVERR ->
+            FsData.EDEVERR
+
+        Fs.Error.EOVERFLOW ->
+            FsData.EOVERFLOW
+
+        Fs.Error.EBADEXEC ->
+            FsData.EBADEXEC
+
+        Fs.Error.EBADARCH ->
+            FsData.EBADARCH
+
+        Fs.Error.ESHLIBVERS ->
+            FsData.ESHLIBVERS
+
+        Fs.Error.EBADMACHO ->
+            FsData.EBADMACHO
+
+        Fs.Error.ECANCELED ->
+            FsData.ECANCELED
+
+        Fs.Error.EIDRM ->
+            FsData.EIDRM
+
+        Fs.Error.ENOMSG ->
+            FsData.ENOMSG
+
+        Fs.Error.EILSEQ ->
+            FsData.EILSEQ
+
+        Fs.Error.ENOATTR ->
+            FsData.ENOATTR
+
+        Fs.Error.EBADMSG ->
+            FsData.EBADMSG
+
+        Fs.Error.EMULTIHOP ->
+            FsData.EMULTIHOP
+
+        Fs.Error.ENODATA ->
+            FsData.ENODATA
+
+        Fs.Error.ENOLINK ->
+            FsData.ENOLINK
+
+        Fs.Error.ENOSR ->
+            FsData.ENOSR
+
+        Fs.Error.ENOSTR ->
+            FsData.ENOSTR
+
+        Fs.Error.EPROTO ->
+            FsData.EPROTO
+
+        Fs.Error.ETIME ->
+            FsData.ETIME
+
+        Fs.Error.EOPNOTSUPP ->
+            FsData.EOPNOTSUPP
+
+        Fs.Error.ENOPOLICY ->
+            FsData.ENOPOLICY
+
+        Fs.Error.ENOTRECOVERABLE ->
+            FsData.ENOTRECOVERABLE
+
+        Fs.Error.EOWNERDEAD ->
+            FsData.EOWNERDEAD
+
+        Fs.Error.EQFULL ->
+            FsData.EQFULL
+
+        Fs.Error.Unknown code ->
+            FsData.Unknown code

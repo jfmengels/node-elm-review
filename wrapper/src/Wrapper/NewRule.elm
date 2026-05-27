@@ -19,7 +19,7 @@ import Elm.Project
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
-import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Review.Vendor.List.Extra as ListExtra
@@ -58,23 +58,23 @@ readReviewElmJson : Path -> TTask Problem Elm.Project.Project
 readReviewElmJson pathToElmJson_ =
     Fs.readTextFile pathToElmJson_
         |> TTask.mapError
-            (\error ->
-                case error of
-                    FsData.NotFound _ ->
+            (\((FsError errno _) as error) ->
+                case errno of
+                    FsData.ENOENT ->
                         Problem.from Problem.Recoverable
                             { title = "COULD NOT FIND ELM.JSON"
                             , message = couldNotFindElmJsonMessage pathToElmJson_
                             }
 
-                    FsData.PermissionDenied ->
+                    FsData.EPERM ->
                         Problem.from Problem.Recoverable
                             { title = "PERMISSION DENIED"
                             , message = \c -> "I could not read " ++ c Yellow pathToElmJson_ ++ " file due to missing permissions."
                             }
                             |> Problem.withPath pathToElmJson_
 
-                    FsData.IoError err ->
-                        Problem.unexpectedError "when trying to read the elm.json file" err
+                    _ ->
+                        Problem.unexpectedError "when trying to read the elm.json file" (FsData.errorToString error)
                             |> Problem.withPath pathToElmJson_
             )
         |> TTask.andThen
@@ -470,7 +470,7 @@ injectRuleInReadme options pkg ruleName =
                                 )
                             |> TTask.map (\() -> warnings)
 
-                    Err (FsData.NotFound _) ->
+                    Err (FsError FsData.ENOENT _) ->
                         TTask.succeed [ \c -> "I tried mentioning the rule " ++ c Yellow "README.md" ++ " but could not find such a file." ]
 
                     Err error ->

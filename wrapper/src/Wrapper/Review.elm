@@ -16,7 +16,7 @@ import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.FileWatchData exposing (FileEvent)
 import Elm.Review.Testable.FileWatcher as FileWatcher
 import Elm.Review.Testable.Fs as Fs
-import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Internal exposing (TCmd, TSub, TTask)
 import Elm.Review.Testable.Process as Process
 import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessId)
@@ -89,12 +89,12 @@ verifyElmJsonExists projectPaths =
     Fs.stat elmJsonPath
         |> TTask.map (\_ -> ())
         |> TTask.mapError
-            (\error ->
+            (\((FsError errno _) as error) ->
                 let
                     problem : ProblemSimple
                     problem =
-                        case error of
-                            FsData.NotFound _ ->
+                        case errno of
+                            FsData.ENOENT ->
                                 { title = "ELM.JSON NOT FOUND"
                                 , message = \c -> "I could not find the " ++ c Cyan "elm.json" ++ " of the project to review. I was looking for it at\n\n    " ++ c Yellow elmJsonPath ++ """
 

@@ -244,7 +244,7 @@ foundNearestElmJson loading result =
                 loading.stdinSupported
                 (loading.toOptions { elmJsonPath = elmJsonPath })
 
-        Err (FsData.NotFound _) ->
+        Err (FsData.FsError FsData.ENOENT _) ->
             { title = "COULD NOT FIND ELM.JSON"
             , message =
                 \c ->
@@ -264,7 +264,7 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
 findNearestElmJson : Array String -> TTask FsError Path
 findNearestElmJson pathSegments =
     if Array.isEmpty pathSegments then
-        TTask.fail (FsData.NotFound "")
+        TTask.fail (FsData.FsError FsData.ENOENT "")
 
     else
         let
@@ -290,7 +290,7 @@ getCwd env =
             TTask.succeed path
 
         Nothing ->
-            TTask.fail (FsData.NotFound ".")
+            TTask.fail (FsData.FsError FsData.ENOENT ".")
 
 
 subscriptions : Model -> TSub Msg
