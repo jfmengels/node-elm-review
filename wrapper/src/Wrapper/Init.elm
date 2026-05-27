@@ -16,7 +16,7 @@ import Elm.Review.Prompt as Prompt
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
-import Elm.Review.Testable.FsData as FsData
+import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Internal exposing (TCmd, TTask)
 import Elm.Review.Testable.ProcessData as ProcessData
 import Elm.Review.Testable.TTask as TTask
@@ -151,16 +151,13 @@ createTemplateConfiguration reviewPath offline remoteTemplate debug =
                 in
                 Fs.readTextFile elmJsonPath
                     |> TTask.mapError
-                        (\error ->
-                            case error of
-                                FsData.NotFound _ ->
+                        (\((FsError errno _) as error) ->
+                            case errno of
+                                FsData.ENOENT ->
                                     elmJsonNotFoundProblem remoteTemplate
 
-                                FsData.PermissionDenied ->
-                                    Problem.unexpectedError ("when trying to read " ++ elmJsonPath) "Permission denied."
-
-                                FsData.IoError message ->
-                                    Problem.unexpectedError ("when trying to read " ++ elmJsonPath) message
+                                _ ->
+                                    Problem.unexpectedError ("when trying to read " ++ elmJsonPath) (FsData.errorToString error)
                                         |> Problem.withPath elmJsonPath
                         )
                     |> TTask.andThen

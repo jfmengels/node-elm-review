@@ -447,19 +447,9 @@ walkTree path pattern kind =
 
 decodeFsError : Decoder FsData.FsError
 decodeFsError =
-    Decode.field "code" Decode.string
-        |> Decode.andThen
-            (\code ->
-                case code of
-                    "ENOENT" ->
-                        Decode.map FsData.NotFound (Decode.field "path" Decode.string)
-
-                    "EACCESS" ->
-                        Decode.succeed FsData.PermissionDenied
-
-                    _ ->
-                        Decode.map FsData.IoError (Decode.field "message" Decode.string)
-            )
+    Decode.map2 FsData.errorFromCodeAndPath
+        (Decode.field "errno" (Decode.map negate Decode.int))
+        (Decode.field "path" Decode.string)
 
 
 decodeSpawnError : Decoder ProcessData.SpawnError

@@ -9,7 +9,7 @@ module Wrapper.Build exposing (build, BuildData)
 import Elm.Package
 import Elm.Project
 import Elm.Review.Testable.Fs as Fs
-import Elm.Review.Testable.FsData as FsData exposing (FsError)
+import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Process as Process
 import Elm.Review.Testable.ProcessData as ProcessData exposing (ProcessError)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
@@ -206,9 +206,9 @@ createSymlinkToTemplateSrc options buildFolder =
         , linkPath = Path.join2 buildFolder "src"
         }
         |> TTask.onError
-            (\error ->
-                case error of
-                    FsData.IoError "File exists" ->
+            (\((FsError errno _) as error) ->
+                case errno of
+                    FsData.EEXIST ->
                         TTask.succeed ()
 
                     _ ->
@@ -388,12 +388,12 @@ fetchElmJson : ReviewProject -> Path -> TTask Problem String
 fetchElmJson reviewProject elmJsonPath =
     Fs.readTextFile elmJsonPath
         |> TTask.mapError
-            (\error ->
-                case error of
-                    FsData.NotFound _ ->
+            (\((FsError errno path) as error) ->
+                case errno of
+                    FsData.ENOENT ->
                         elmJsonNotFoundProblem reviewProject elmJsonPath
 
-                    FsData.PermissionDenied ->
+                    FsData.EPERM ->
                         { title = "PERMISSION DENIED"
                         , message =
                             \c ->
@@ -404,11 +404,11 @@ Try changing the permissions of the file and/or its parents directories."""
                             |> Problem.from Problem.Recoverable
                             |> Problem.withPath elmJsonPath
 
-                    FsData.IoError "Not a directory" ->
+                    FsData.ENOTDIR ->
                         notADirectoryConfigurationProblem elmJsonPath
 
-                    FsData.IoError message ->
-                        Problem.unexpectedError ("when trying to read " ++ elmJsonPath) message
+                    _ ->
+                        fsErrorToProblem ("when trying to read " ++ path) error
                             |> Problem.withPath elmJsonPath
             )
 

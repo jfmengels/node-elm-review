@@ -429,7 +429,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         |> TCmd.batch
                     )
 
-                Err (FsData.NotFound _) ->
+                Err (FsData.FsError FsData.ENOENT _) ->
                     decrementTaskCount ()
 
                 Err _ ->
@@ -681,7 +681,7 @@ receivedElmFileList { onNotFound, handleProblem } directory result model =
                 |> TCmd.batch
             )
 
-        Err (FsData.NotFound _) ->
+        Err (FsData.FsError FsData.ENOENT _) ->
             onNotFound ()
 
         Err err ->
