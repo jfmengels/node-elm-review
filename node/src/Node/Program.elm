@@ -26,6 +26,8 @@ type ModelWrapper model msg
 
 type alias Model model msg =
     { mainModel : model
+    , exitCode : Maybe Int
+    , ongoingTasksCount : Int
     , pool : Pool msg
     }
 
@@ -83,11 +85,13 @@ init initFn rawFlags =
             case initFn flags of
                 InitError.Success ( mainModel, initCmd ) ->
                     let
-                        { pool, cmd } =
-                            taskToCmd ConcurrentTask.pool initCmd
+                        { pool, exitCode, ongoingTasksCount, cmd } =
+                            taskToCmd ConcurrentTask.pool Nothing 0 initCmd
                     in
                     ( Running
                         { mainModel = mainModel
+                        , ongoingTasksCount = ongoingTasksCount
+                        , exitCode = exitCode
                         , pool = pool
                         }
                     , cmd
@@ -144,13 +148,14 @@ update updateFn msg modelWrapper =
         Done ->
             ( Done, Cmd.none )
 
-        Running { mainModel, pool } ->
+        Running model ->
             case msg of
                 MainMsg mainMsg ->
-                    handleMainMsg updateFn pool mainMsg mainModel
+                    handleMainMsg updateFn mainMsg model
 
                 TaskOnComplete (ConcurrentTask.Success mainMsg) ->
-                    handleMainMsg updateFn pool mainMsg mainModel
+                    handleMainMsg updateFn mainMsg { model | ongoingTasksCount = model.ongoingTasksCount - 1 }
+                        |> exitIfRequestedAndDone
 
                 TaskOnComplete (ConcurrentTask.Error error) ->
                     -- TODO Handle Task ConcurrentTask.Error
@@ -159,6 +164,7 @@ update updateFn msg modelWrapper =
                             Debug.log "Task error" error
                     in
                     ( modelWrapper, Cmd.none )
+                        |> exitIfRequestedAndDone
 
                 TaskOnComplete (ConcurrentTask.UnexpectedError error) ->
                     -- TODO Handle Task ConcurrentTask.UnexpectedError
@@ -167,31 +173,72 @@ update updateFn msg modelWrapper =
                             Debug.log "Task unexpected error" error
                     in
                     ( modelWrapper, Cmd.none )
+                        |> exitIfRequestedAndDone
 
                 TaskOnProgress ( newPool, cmd ) ->
-                    ( Running { mainModel = mainModel, pool = newPool }, cmd )
+                    ( Running
+                        { mainModel = model.mainModel
+                        , exitCode = model.exitCode
+                        , ongoingTasksCount = model.ongoingTasksCount
+                        , pool = newPool
+                        }
+                    , cmd
+                    )
 
 
 handleMainMsg :
     (msg -> model -> ( model, TCmd msg ))
-    -> Pool msg
     -> msg
-    -> model
+    -> Model model msg
     -> ( ModelWrapper model msg, Cmd (Msg msg) )
-handleMainMsg updateFn initialPool mainMsg mainModel =
+handleMainMsg updateFn mainMsg model =
     let
         ( newMainModel, mainCmd ) =
-            updateFn mainMsg mainModel
+            updateFn mainMsg model.mainModel
 
-        { pool, cmd } =
-            taskToCmd initialPool mainCmd
+        { pool, exitCode, ongoingTasksCount, cmd } =
+            taskToCmd model.pool model.exitCode model.ongoingTasksCount mainCmd
     in
     ( Running
         { mainModel = newMainModel
+        , exitCode = maybeOr model.exitCode exitCode
+        , ongoingTasksCount = ongoingTasksCount
         , pool = pool
         }
     , cmd
     )
+        |> exitIfRequestedAndDone
+
+
+exitIfRequestedAndDone : ( ModelWrapper model msg, Cmd (Msg msg) ) -> ( ModelWrapper model msg, Cmd (Msg msg) )
+exitIfRequestedAndDone (( modelWrapper, _ ) as untouched) =
+    case modelWrapper of
+        Done ->
+            untouched
+
+        Running model ->
+            case model.exitCode of
+                Nothing ->
+                    untouched
+
+                Just exitCode ->
+                    if model.ongoingTasksCount == 0 then
+                        ( modelWrapper
+                        , exit exitCode
+                        )
+
+                    else
+                        untouched
+
+
+maybeOr : Maybe a -> Maybe a -> Maybe a
+maybeOr initialMaybe newMaybe =
+    case initialMaybe of
+        Nothing ->
+            newMaybe
+
+        Just _ ->
+            initialMaybe
 
 
 {-| Converts a `Testable.Cmd` into a `Cmd`
@@ -201,11 +248,23 @@ handleMainMsg updateFn initialPool mainMsg mainModel =
         == Cmd.none
 
 -}
-taskToCmd : Pool msg -> TestableCmd.Cmd msg -> { pool : Pool msg, cmd : Cmd (Msg msg) }
-taskToCmd pool testableEffects =
+taskToCmd :
+    Pool msg
+    -> Maybe Int
+    -> Int
+    -> TestableCmd.Cmd msg
+    ->
+        { pool : Pool msg
+        , exitCode : Maybe Int
+        , ongoingTasksCount : Int
+        , cmd : Cmd (Msg msg)
+        }
+taskToCmd pool initialExitCode ongoingTasksCount testableEffects =
     case testableEffects of
         Internal.None ->
             { pool = pool
+            , exitCode = Nothing
+            , ongoingTasksCount = ongoingTasksCount
             , cmd = Cmd.none
             }
 
@@ -216,35 +275,51 @@ taskToCmd pool testableEffects =
                         |> startTask pool
             in
             { pool = newPool
-            , cmd = cmd
+            , exitCode = Nothing
+            , ongoingTasksCount = ongoingTasksCount + 1
+            , cmd =
+                case initialExitCode of
+                    Just _ ->
+                        Cmd.none
+
+                    Nothing ->
+                        cmd
             }
 
         Internal.Batch list ->
             let
-                result : { pool : Pool msg, cmds : List (Cmd (Msg msg)) }
+                result : { pool : Pool msg, exitCode : Maybe Int, ongoingTasksCount : Int, cmds : List (Cmd (Msg msg)) }
                 result =
                     List.foldl
                         (\t acc ->
                             let
-                                res : { pool : Pool msg, cmd : Cmd (Msg msg) }
+                                res : { pool : Pool msg, exitCode : Maybe Int, ongoingTasksCount : Int, cmd : Cmd (Msg msg) }
                                 res =
-                                    taskToCmd acc.pool t
+                                    taskToCmd acc.pool initialExitCode acc.ongoingTasksCount t
                             in
                             { pool = res.pool
+                            , exitCode = maybeOr acc.exitCode res.exitCode
+                            , ongoingTasksCount = res.ongoingTasksCount
                             , cmds = res.cmd :: acc.cmds
                             }
                         )
                         { pool = pool
+                        , exitCode = initialExitCode
+                        , ongoingTasksCount = ongoingTasksCount
                         , cmds = []
                         }
                         list
             in
             { pool = result.pool
+            , exitCode = result.exitCode
+            , ongoingTasksCount = result.ongoingTasksCount
             , cmd = Cmd.batch result.cmds
             }
 
         Internal.PrintLn console string ->
             { pool = pool
+            , exitCode = Nothing
+            , ongoingTasksCount = ongoingTasksCount
             , cmd =
                 effects.println console string
                     |> Cmd.map never
@@ -252,6 +327,8 @@ taskToCmd pool testableEffects =
 
         Internal.Exit code ->
             { pool = pool
+            , exitCode = Just code
+            , ongoingTasksCount = ongoingTasksCount
             , cmd =
                 effects.exit code
                     |> Cmd.map never
