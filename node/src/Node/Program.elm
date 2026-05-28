@@ -10,7 +10,7 @@ import Elm.Review.Testable.FileWatchData as FileWatchData
 import Elm.Review.Testable.FsData as FsData exposing (FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TCmd, TSub, TaskResult)
 import Elm.Review.Testable.ProcessData as ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
-import Elm.Review.Testable.StdinData exposing (Key, StdinError)
+import Elm.Review.Testable.StdinData as StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TSub as TSub exposing (SubEffects, TSub)
 import Elm.Review.Testable.TTask exposing (TTask)
 import ElmReview.Path exposing (Path)
@@ -727,7 +727,8 @@ subEffects =
 
 watchFiles : Path -> FileWatchData.WatchOptions -> (FileWatchData.FileEvent -> msg) -> Sub msg
 watchFiles path watchOptions toMsg =
-    Debug.todo "watchFiles"
+    -- TODO Implement watch files
+    Sub.none
 
 
 stop : Problem.FormatOptions options -> Problem -> Cmd msg
@@ -796,7 +797,7 @@ effects =
     , httpGet = httpGet
 
     -- Stdin / Stdout
-    , readKey = \() -> Debug.todo "readKey"
+    , readKey = readKey
     , println =
         \console string ->
             case console of
@@ -813,3 +814,9 @@ effects =
     , waitProcess = waitProcess
     , killProcess = killProcess
     }
+
+
+readKey : () -> ConcurrentTask StdinError Key
+readKey () =
+    -- TODO Implement readKey effect
+    ConcurrentTask.succeed StdinData.KeyEnter
