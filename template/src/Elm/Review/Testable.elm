@@ -108,6 +108,9 @@ task effects testableTask =
         Internal.ImmediateTask result ->
             taskResult effects result
 
+        Internal.ExitTask _ result ->
+            taskResult effects result
+
         -- File system
         Internal.Stat path onResult ->
             effects.stat path

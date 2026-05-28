@@ -46,6 +46,7 @@ type TTask error value
       -- Stdin/stdout/stderr
     | ReadKey (Result StdinError Key -> TaskResult error value)
     | PrintlnTask Console String (Result Never () -> TaskResult error value)
+    | ExitTask Int (TaskResult error value)
       -- Process
     | RunProcess String SpawnOptions (Result SpawnError Completed -> TaskResult error value)
     | SpawnProcess String SpawnOptions (Result ProcessError ProcessId -> TaskResult error value)
