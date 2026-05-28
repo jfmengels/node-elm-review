@@ -45,6 +45,7 @@ type alias ModelData =
 type Msg
     = PromptMsg Prompt.Msg
     | CreatedFiles (Result Problem ())
+    | PrintedNowExit Int
 
 
 init : Bool -> InitOptions -> ( Model, TCmd Msg )
@@ -87,10 +88,8 @@ update msg (Model model) =
                     TCmd.map PromptMsg cmd
 
         CreatedFiles (Ok ()) ->
-            TCmd.batch
-                [ Cli.printlnStdout (successMessage model.options)
-                , Cli.exit 0
-                ]
+            Cli.printlnStdoutTask (successMessage model.options)
+                |> TTask.attempt (\_ -> PrintedNowExit 0)
 
         CreatedFiles (Err problem) ->
             Problem.stop
@@ -100,6 +99,9 @@ update msg (Model model) =
                 , attemptFutureRecovery = False
                 }
                 problem
+
+        PrintedNowExit exitCode ->
+            Cli.exit exitCode
 
 
 prompt : ModelData -> TCmd Msg
