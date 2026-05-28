@@ -1,4 +1,4 @@
-module Elm.Review.Main exposing
+module Elm.Review.ReviewApp exposing
     ( Model
     , Msg
     , init

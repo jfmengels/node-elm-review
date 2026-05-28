@@ -3,10 +3,10 @@ module ElmRun.WrapperMain exposing (main)
 import ElmReview.Path exposing (Path)
 import ElmRun.Program as ElmRunProgram
 import Wrapper.OutputTarget as OutputTarget
-import WrapperMain
+import WrapperApp
 
 
-main : ElmRunProgram.Program WrapperMain.Model WrapperMain.Msg
+main : ElmRunProgram.Program WrapperApp.Model WrapperApp.Msg
 main =
     ElmRunProgram.program
         { init =
@@ -22,7 +22,7 @@ main =
                     userHome =
                         "/Users/m1"
                 in
-                WrapperMain.init
+                WrapperApp.init
                     { env = env
                     , args = args
                     , stdinSupported = stdinSupported
@@ -30,6 +30,6 @@ main =
                     , binaryRoot = binaryRoot
                     , userHome = userHome
                     }
-        , update = WrapperMain.update
-        , subscriptions = WrapperMain.subscriptions
+        , update = WrapperApp.update
+        , subscriptions = WrapperApp.subscriptions
         }

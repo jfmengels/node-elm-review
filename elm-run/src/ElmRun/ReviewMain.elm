@@ -1,13 +1,13 @@
 module ElmRun.ReviewMain exposing (main)
 
-import Elm.Review.Main as Main
+import Elm.Review.ReviewApp as ReviewApp
 import ElmRun.Program as ElmRunProgram
 
 
-main : ElmRunProgram.Program Main.Model Main.Msg
+main : ElmRunProgram.Program ReviewApp.Model ReviewApp.Msg
 main =
     ElmRunProgram.program
-        { init = \flags -> Main.init flags.stdinSupported flags.args
-        , update = Main.update
-        , subscriptions = Main.subscriptions
+        { init = \flags -> ReviewApp.init flags.stdinSupported flags.args
+        , update = ReviewApp.update
+        , subscriptions = ReviewApp.subscriptions
         }
