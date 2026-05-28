@@ -59,7 +59,6 @@ type Msg
     | ReviewProcessEnded ProcessId (Result Problem ProcessData.Completed)
     | ConfigElmJsonWasModified
     | ConfigSourceFileWasModified FileEvent
-    | KilledReviewProcess
 
 
 init : ReviewOptions -> ( Model, TCmd Msg )
@@ -75,7 +74,8 @@ init options =
         , pid = Nothing
         , watch = Nothing
         }
-    , startBuild options buildId
+    , startBuild options
+        |> TTask.attempt (BuildCompleted buildId)
     )
 
 
@@ -211,9 +211,6 @@ updateHelp msg model =
             else
                 ( model, TCmd.none )
 
-        KilledReviewProcess ->
-            ( model, TCmd.none )
-
 
 restartBuild : ModelData -> ( ModelData, TCmd Msg )
 restartBuild model =
@@ -223,35 +220,43 @@ restartBuild model =
             incrementBuild model.buildId
     in
     ( { model | buildId = buildId, pid = Nothing }
-    , TCmd.batch
-        [ case model.options.reportMode of
-            ReportMode.HumanReadable ->
-                Cli.printlnStdout "Your configuration has changed. Restarting elm-review with the new one."
-
-            ReportMode.Json ->
-                TCmd.none
-
-            ReportMode.NDJson ->
-                TCmd.none
-        , startBuild model.options buildId
-        , case model.pid of
-            Just pid ->
-                -- TODO Send softer signal that waits until any file writes are done and exits.
-                --      Requires a Subscription in the review app that listens to signals
-                Process.kill pid 9
-                    |> TTask.attempt (\_ -> KilledReviewProcess)
-
-            Nothing ->
-                TCmd.none
-        ]
+    , printRestartMessage model.options.reportMode
+        |> TTask.andThen (\() -> killRunningApp model.pid)
+        |> TTask.andThen (\() -> startBuild model.options)
+        |> TTask.attempt (BuildCompleted buildId)
     )
 
 
-startBuild : ReviewOptions -> BuildId -> TCmd Msg
-startBuild options buildId =
+printRestartMessage : ReportMode.ReportMode -> TTask x ()
+printRestartMessage reportMode =
+    case reportMode of
+        ReportMode.HumanReadable ->
+            Cli.printlnStdoutTask "Your configuration has changed. Restarting elm-review with the new one."
+
+        ReportMode.Json ->
+            TTask.succeed ()
+
+        ReportMode.NDJson ->
+            TTask.succeed ()
+
+
+killRunningApp : Maybe ProcessId -> TTask x ()
+killRunningApp currentPid =
+    case currentPid of
+        Just pid ->
+            -- TODO Send softer signal that waits until any file writes are done and exits.
+            --      Requires a Subscription in the review app that listens to signals
+            Process.kill pid 9
+                |> TTask.onError (\_ -> TTask.succeed ())
+
+        Nothing ->
+            TTask.succeed ()
+
+
+startBuild : ReviewOptions -> TTask.TTask Problem Build.BuildData
+startBuild options =
     verifyElmJsonExists options.projectPaths
         |> TTask.andThen (\() -> Build.build options)
-        |> TTask.attempt (BuildCompleted buildId)
 
 
 type alias RunReviewOptions =
