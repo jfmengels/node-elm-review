@@ -87,7 +87,7 @@ buildProject options reviewFolder =
                             let
                                 reviewAppPath : Path
                                 reviewAppPath =
-                                    ProjectPaths.reviewApp options.projectPaths options.outputTarget appHash
+                                    ProjectPaths.reviewApp options.projectPaths options.outputTarget options.debug appHash
 
                                 packagesLocation : Path
                                 packagesLocation =

@@ -33,8 +33,8 @@ projectRoot (ProjectPaths paths) =
     paths.projectRoot
 
 
-reviewApp : ProjectPaths -> OutputTarget -> Hash -> Path
-reviewApp projectPaths outputTarget hash =
+reviewApp : ProjectPaths -> OutputTarget -> Bool -> Hash -> Path
+reviewApp projectPaths outputTarget debug hash =
     let
         extension : String
         extension =
@@ -44,11 +44,19 @@ reviewApp projectPaths outputTarget hash =
 
                 OutputTarget.ElmRunTarget ->
                     ""
+
+        debugSuffix : String
+        debugSuffix =
+            if debug then
+                "-debug"
+
+            else
+                ""
     in
     Path.join
         [ elmStuff projectPaths
         , "review-applications"
-        , Hash.toString hash ++ extension
+        , Hash.toString hash ++ debugSuffix ++ extension
         ]
 
 
