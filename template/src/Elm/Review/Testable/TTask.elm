@@ -263,6 +263,9 @@ transform tx source =
         Internal.ImmediateTask result ->
             Internal.ImmediateTask (result |> tx)
 
+        Internal.ExitTask exitCode result ->
+            Internal.ExitTask exitCode (result |> tx)
+
         -- File system
         Internal.Stat path onResult ->
             Internal.Stat path (onResult >> tx)

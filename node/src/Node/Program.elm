@@ -268,6 +268,13 @@ taskToCmd pool initialExitCode ongoingTasksCount testableEffects =
             , cmd = Cmd.none
             }
 
+        Internal.TaskCmd (Internal.ExitTask exitCode _) ->
+            { pool = pool
+            , exitCode = Just exitCode
+            , ongoingTasksCount = ongoingTasksCount
+            , cmd = Cmd.none
+            }
+
         Internal.TaskCmd testableTask ->
             let
                 ( newPool, cmd ) =
@@ -346,6 +353,11 @@ task : TTask error value -> ConcurrentTask error value
 task testableTask =
     case testableTask of
         Internal.ImmediateTask result ->
+            taskResult result
+
+        Internal.ExitTask _ result ->
+            -- Is handled in the parent caller
+            -- TODO Extract ExitTask out of TTask (add a layer?) to avoid this case
             taskResult result
 
         -- File system

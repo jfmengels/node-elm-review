@@ -1,14 +1,14 @@
 module Elm.Review.Testable.Cli exposing
     ( printlnStdout, printlnStderr
     , printlnStdoutTask, printlnStderrTask
-    , exit
+    , exit, exitTask
     )
 
 {-|
 
 @docs printlnStdout, printlnStderr
 @docs printlnStdoutTask, printlnStderrTask
-@docs exit
+@docs exit, exitTask
 
 -}
 
@@ -37,6 +37,11 @@ printlnStderrTask : String -> Internal.TTask x ()
 printlnStderrTask message =
     Internal.PrintlnTask Stderr message Internal.resultFromResult
         |> TTask.mapError Basics.never
+
+
+exitTask : Int -> Internal.TTask x ()
+exitTask exitCode =
+    Internal.ExitTask exitCode (Internal.Success ())
 
 
 exit : Int -> TCmd msg
