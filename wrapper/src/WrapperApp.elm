@@ -1,4 +1,4 @@
-module WrapperMain exposing (Model, Msg, init, subscriptions, update)
+module WrapperApp exposing (Model, Msg, init, subscriptions, update)
 
 import Array exposing (Array)
 import Dict exposing (Dict)

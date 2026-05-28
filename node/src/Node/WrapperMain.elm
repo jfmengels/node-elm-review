@@ -2,15 +2,15 @@ module Node.WrapperMain exposing (main)
 
 import Node.Program
 import Wrapper.OutputTarget as OutputTarget
-import WrapperMain
+import WrapperApp
 
 
-main : Node.Program.Program WrapperMain.Model WrapperMain.Msg
+main : Node.Program.Program WrapperApp.Model WrapperApp.Msg
 main =
     Node.Program.program
         { init =
             \{ env, args, binaryRoot, userHome } ->
-                WrapperMain.init
+                WrapperApp.init
                     { env = env
                     , args = args
                     , stdinSupported = True
@@ -18,6 +18,6 @@ main =
                     , binaryRoot = binaryRoot
                     , userHome = userHome
                     }
-        , update = WrapperMain.update
-        , subscriptions = WrapperMain.subscriptions
+        , update = WrapperApp.update
+        , subscriptions = WrapperApp.subscriptions
         }
