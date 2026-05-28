@@ -83,7 +83,7 @@ init initFn rawFlags =
             case initFn flags of
                 InitError.Success ( mainModel, initCmd ) ->
                     let
-                        ( pool, cmd ) =
+                        { pool, cmd } =
                             taskToCmd ConcurrentTask.pool initCmd
                     in
                     ( Running
@@ -178,17 +178,17 @@ handleMainMsg :
     -> msg
     -> model
     -> ( ModelWrapper model msg, Cmd (Msg msg) )
-handleMainMsg updateFn pool mainMsg mainModel =
+handleMainMsg updateFn initialPool mainMsg mainModel =
     let
         ( newMainModel, mainCmd ) =
             updateFn mainMsg mainModel
 
-        ( newPool, cmd ) =
-            taskToCmd pool mainCmd
+        { pool, cmd } =
+            taskToCmd initialPool mainCmd
     in
     ( Running
         { mainModel = newMainModel
-        , pool = newPool
+        , pool = pool
         }
     , cmd
     )
@@ -201,37 +201,61 @@ handleMainMsg updateFn pool mainMsg mainModel =
         == Cmd.none
 
 -}
-taskToCmd : Pool msg -> TestableCmd.Cmd msg -> ( Pool msg, Cmd (Msg msg) )
+taskToCmd : Pool msg -> TestableCmd.Cmd msg -> { pool : Pool msg, cmd : Cmd (Msg msg) }
 taskToCmd pool testableEffects =
     case testableEffects of
         Internal.None ->
-            ( pool, Cmd.none )
+            { pool = pool
+            , cmd = Cmd.none
+            }
 
         Internal.TaskCmd testableTask ->
-            task testableTask
-                |> startTask pool
+            let
+                ( newPool, cmd ) =
+                    task testableTask
+                        |> startTask pool
+            in
+            { pool = newPool
+            , cmd = cmd
+            }
 
         Internal.Batch list ->
-            List.foldl
-                (\t ( p, cmds ) ->
-                    taskToCmd p t
-                        |> Tuple.mapSecond (\cmd -> cmd :: cmds)
-                )
-                ( pool, [] )
-                list
-                |> Tuple.mapSecond Cmd.batch
+            let
+                result : { pool : Pool msg, cmds : List (Cmd (Msg msg)) }
+                result =
+                    List.foldl
+                        (\t acc ->
+                            let
+                                res : { pool : Pool msg, cmd : Cmd (Msg msg) }
+                                res =
+                                    taskToCmd acc.pool t
+                            in
+                            { pool = res.pool
+                            , cmds = res.cmd :: acc.cmds
+                            }
+                        )
+                        { pool = pool
+                        , cmds = []
+                        }
+                        list
+            in
+            { pool = result.pool
+            , cmd = Cmd.batch result.cmds
+            }
 
         Internal.PrintLn console string ->
-            ( pool
-            , effects.println console string
-                |> Cmd.map never
-            )
+            { pool = pool
+            , cmd =
+                effects.println console string
+                    |> Cmd.map never
+            }
 
         Internal.Exit code ->
-            ( pool
-            , effects.exit code
-                |> Cmd.map never
-            )
+            { pool = pool
+            , cmd =
+                effects.exit code
+                    |> Cmd.map never
+            }
 
 
 {-| Converts a `Testable.Task` into a `Task`
