@@ -17,7 +17,6 @@ import Elm.Module as Module
 import Elm.Package
 import Elm.Project
 import Elm.Review.Testable.Cli as Cli
-import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Internal exposing (TCmd)
@@ -48,6 +47,7 @@ type alias ModelData =
 type Msg
     = GotElmJson (Result Problem Elm.Project.Project)
     | Done Module.Name (Result Problem (List Warning))
+    | PrintedNowExit Int
 
 
 type alias Warning =
@@ -774,10 +774,8 @@ update msg (Model model) =
                                     |> String.join "\n\n"
                                )
             in
-            TCmd.batch
-                [ Cli.printlnStdout (successMessage ++ "!" ++ warningsMessage)
-                , Cli.exit 0
-                ]
+            Cli.printlnStdoutTask (successMessage ++ "!" ++ warningsMessage)
+                |> TTask.attempt (\_ -> PrintedNowExit 0)
 
         Done _ (Err problem) ->
             Problem.stop
@@ -787,3 +785,6 @@ update msg (Model model) =
                 , attemptFutureRecovery = False
                 }
                 problem
+
+        PrintedNowExit exitCode ->
+            Cli.exit exitCode

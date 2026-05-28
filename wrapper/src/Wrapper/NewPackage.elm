@@ -18,11 +18,9 @@ import Elm.Project
 import Elm.Review.CliVersion as CliVersion
 import Elm.Review.ElmBinary as ElmBinary
 import Elm.Review.Testable.Cli as Cli
-import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TCmd)
-import Elm.Review.Testable.ProcessData as ProcessData
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version as Version
 import ElmReview.Color as Color exposing (Color(..), Colorize)
@@ -50,6 +48,7 @@ type alias ModelData =
 type Msg
     = GotUserInput Input
     | Done (Result Problem ())
+    | PrintedNowExit Int
 
 
 type alias Input =
@@ -112,10 +111,9 @@ update msg (Model model) =
                         c =
                             Color.toAnsi model.options.color
                     in
-                    TCmd.batch
-                        [ Cli.printlnStdout (successMessage c)
-                        , Cli.exit 0
-                        ]
+                    Cli.printlnStdoutTask
+                        (successMessage c)
+                        |> TTask.attempt (\_ -> PrintedNowExit 0)
 
                 Err problem ->
                     Problem.stop
@@ -125,6 +123,9 @@ update msg (Model model) =
                         , attemptFutureRecovery = False
                         }
                         problem
+
+        PrintedNowExit exitCode ->
+            Cli.exit exitCode
 
 
 createProject : Input -> NewPackageOptions -> TTask Problem ()

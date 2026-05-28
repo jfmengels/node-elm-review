@@ -49,6 +49,7 @@ type Msg
     | NewRuleMsg NewRule.Msg
     | NewPackageMsg NewPackage.Msg
     | PrepareOfflineMsg PrepareOffline.Msg
+    | PrintedNowExit Int
 
 
 init :
@@ -86,19 +87,16 @@ handleCliArgsParseResult env stdinSupported result =
 
         OptionsParser.ShowHelp options ->
             ( Done
-            , TCmd.batch
-                [ Cli.printlnStdout (Help.show options)
-                , Cli.exit 0
-                ]
+            , Cli.printlnStdoutTask (Help.show options)
+                |> TTask.attempt (\_ -> PrintedNowExit 0)
             )
                 |> InitError.Success
 
         OptionsParser.ShowVersion ->
             ( Done
-            , TCmd.batch
-                [ Cli.printlnStdout CliVersion.version
-                , Cli.exit 0
-                ]
+            , Cli.printlnStdoutTask CliVersion.version
+                |> TTask.andThen (\_ -> Cli.exitTask 0)
+                |> TTask.attempt (\_ -> PrintedNowExit 0)
             )
                 |> InitError.Success
 
@@ -177,10 +175,8 @@ update msg model =
 
                         InitError.StringProblem string ->
                             ( model
-                            , TCmd.batch
-                                [ Cli.printlnStdout string
-                                , Cli.exit 1
-                                ]
+                            , Cli.printlnStdoutTask string
+                                |> TTask.attempt (\_ -> PrintedNowExit 1)
                             )
 
                 _ ->
@@ -243,6 +239,9 @@ update msg model =
 
                 _ ->
                     ( model, TCmd.none )
+
+        PrintedNowExit exitCode ->
+            ( model, Cli.exit exitCode )
 
 
 foundNearestElmJson : LoadingModel -> Result FsError Path -> InitError ( Model, TCmd Msg )
