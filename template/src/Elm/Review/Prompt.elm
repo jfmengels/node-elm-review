@@ -13,7 +13,6 @@ module Elm.Review.Prompt exposing
 -}
 
 import Elm.Review.Testable.Cli as Cli
-import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.Stdin as Stdin
 import Elm.Review.Testable.StdinData as Stdin exposing (Key(..), StdinError)
@@ -45,11 +44,9 @@ prompt { color, priorMessage, question } =
         yesNo =
             Color.toAnsi color Gray " (Y/n)"
     in
-    TCmd.batch
-        [ Cli.printlnStdout (message ++ question_ ++ yesNo ++ "")
-        , Stdin.readKey
-            |> TTask.attempt UserPressedKey
-        ]
+    Cli.printlnStdoutTask (message ++ question_ ++ yesNo ++ "")
+        |> TTask.andThen (\() -> Stdin.readKey)
+        |> TTask.attempt UserPressedKey
 
 
 type PromptResult

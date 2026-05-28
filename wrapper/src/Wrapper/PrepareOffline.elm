@@ -14,7 +14,6 @@ import Elm.License exposing (License)
 import Elm.Module as Module
 import Elm.Package
 import Elm.Review.Testable.Cli as Cli
-import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Color as Color exposing (Color(..), Colorize)
@@ -51,6 +50,18 @@ init : PrepareOfflineOptions -> ( Model, TCmd Msg )
 init options =
     ( options
     , run options
+        |> TTask.andThen
+            (\() ->
+                case options.reportMode of
+                    ReportMode.HumanReadable ->
+                        Cli.printlnStdoutTask (successMessage (Color.toAnsi options.color))
+
+                    ReportMode.Json ->
+                        TTask.succeed ()
+
+                    ReportMode.NDJson ->
+                        TTask.succeed ()
+            )
         |> TTask.attempt Done
     )
 
@@ -70,18 +81,7 @@ update msg options =
         Done result ->
             case result of
                 Ok () ->
-                    TCmd.batch
-                        [ case options.reportMode of
-                            ReportMode.HumanReadable ->
-                                Cli.printlnStdout (successMessage (Color.toAnsi options.color))
-
-                            ReportMode.Json ->
-                                TCmd.none
-
-                            ReportMode.NDJson ->
-                                TCmd.none
-                        , Cli.exit 0
-                        ]
+                    Cli.exit 0
 
                 Err problem ->
                     Problem.stop
