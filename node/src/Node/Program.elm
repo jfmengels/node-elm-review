@@ -411,7 +411,7 @@ task testableTask =
 
         -- Stdin/stdout/stderr
         Internal.ReadKey onResult ->
-            effects.readKey ()
+            effects.readKey
                 |> handle onResult
 
         Internal.PrintlnTask console message onResult ->
@@ -926,7 +926,7 @@ type alias Effects =
     , httpGet : String -> ConcurrentTask () String
 
     -- Stdin / Stdout
-    , readKey : () -> ConcurrentTask StdinError Key
+    , readKey : ConcurrentTask StdinError Key
     , println : Console -> String -> Cmd Never
     , printlnStderrThenExit : String -> Int -> Cmd Never
     , printlnTask : Console -> String -> ConcurrentTask Never ()
@@ -978,7 +978,37 @@ effects =
     }
 
 
-readKey : () -> ConcurrentTask StdinError Key
-readKey () =
-    -- TODO Implement readKey effect
-    ConcurrentTask.succeed StdinData.KeyEnter
+readKey : ConcurrentTask StdinError StdinData.Key
+readKey =
+    ConcurrentTask.define
+        { function = "std::readKey"
+        , expect = ConcurrentTask.expectJson decodeStdinKey
+        , errors = ConcurrentTask.expectErrors decodeStdinError
+        , args = Encode.null
+        }
+
+
+decodeStdinKey : Decoder StdinData.Key
+decodeStdinKey =
+    -- TODO Implement decodeStdinKey
+    Decode.succeed StdinData.KeyEnter
+
+
+decodeStdinError : Decoder StdinError
+decodeStdinError =
+    Decode.field "code" Decode.string
+        |> Decode.andThen
+            (\code ->
+                case code of
+                    "PermissionDenied" ->
+                        Decode.succeed StdinData.PermissionDenied
+
+                    "EndOfInput" ->
+                        Decode.succeed StdinData.EndOfInput
+
+                    "IoError" ->
+                        Decode.map StdinData.IoError (Decode.field "data" Decode.string)
+
+                    _ ->
+                        Decode.fail ("Unknown code: " ++ code)
+            )
