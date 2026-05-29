@@ -394,11 +394,7 @@ applyFixChanges options fixPayload =
 
 writeChangedFile : Options -> { filePath : Path, source : String } -> TTask Problem ()
 writeChangedFile options { filePath, source } =
-    if String.endsWith "*.elm" filePath then
-        Fs.writeTextFile filePath source
-            |> TTask.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsData.errorToString error))
-
-    else
+    if String.endsWith ".elm" filePath then
         Process.run
             (Maybe.withDefault "elm-format" options.elmFormatPath)
             { args = [ "--elm-version=0.19", "--stdin", "--output", filePath ]
@@ -421,6 +417,10 @@ writeChangedFile options { filePath, source } =
                             Problem.unexpectedError ("while formatting " ++ filePath ++ " with elm-format") (Maybe.withDefault "No output from elm-format." stderr)
                 )
             |> TTask.map (\_ -> ())
+
+    else
+        Fs.writeTextFile filePath source
+            |> TTask.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsData.errorToString error))
 
 
 elmFormatNotFoundError elmFormatPath =
