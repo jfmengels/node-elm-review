@@ -411,7 +411,11 @@ task testableTask =
 
         -- Stdin/stdout/stderr
         Internal.ReadKey onResult ->
-            effects.readKey ()
+            effects.readKey
+                |> handle onResult
+
+        Internal.ReadLine onResult ->
+            effects.readLine
                 |> handle onResult
 
         Internal.PrintlnTask console message onResult ->
@@ -926,7 +930,8 @@ type alias Effects =
     , httpGet : String -> ConcurrentTask () String
 
     -- Stdin / Stdout
-    , readKey : () -> ConcurrentTask StdinError Key
+    , readKey : ConcurrentTask StdinError Key
+    , readLine : ConcurrentTask StdinError String
     , println : Console -> String -> Cmd Never
     , printlnStderrThenExit : String -> Int -> Cmd Never
     , printlnTask : Console -> String -> ConcurrentTask Never ()
@@ -958,6 +963,7 @@ effects =
 
     -- Stdin / Stdout
     , readKey = readKey
+    , readLine = readLine
     , println =
         \console string ->
             case console of
@@ -978,7 +984,107 @@ effects =
     }
 
 
-readKey : () -> ConcurrentTask StdinError Key
-readKey () =
-    -- TODO Implement readKey effect
-    ConcurrentTask.succeed StdinData.KeyEnter
+readKey : ConcurrentTask StdinError StdinData.Key
+readKey =
+    ConcurrentTask.define
+        { function = "std::readKey"
+        , expect = ConcurrentTask.expectJson decodeStdinKey
+        , errors = ConcurrentTask.expectErrors decodeStdinError
+        , args = Encode.null
+        }
+
+
+readLine : ConcurrentTask StdinError String
+readLine =
+    ConcurrentTask.define
+        { function = "std::readLine"
+        , expect = ConcurrentTask.expectString
+        , errors = ConcurrentTask.expectErrors decodeStdinError
+        , args = Encode.null
+        }
+
+
+decodeStdinKey : Decoder StdinData.Key
+decodeStdinKey =
+    Decode.oneOf
+        [ Decode.field "name" Decode.string
+            |> Decode.andThen stringToKey
+        , Decode.field "sequence" Decode.string
+            |> Decode.andThen
+                (\sequence ->
+                    case String.uncons sequence of
+                        Just ( char, _ ) ->
+                            Decode.succeed (StdinData.KeyChar char)
+
+                        Nothing ->
+                            Decode.fail "Invalid keyboard key"
+                )
+        ]
+
+
+stringToKey : String -> Decoder StdinData.Key
+stringToKey name =
+    case name of
+        "return" ->
+            Decode.succeed StdinData.KeyEnter
+
+        "backspace" ->
+            Decode.succeed StdinData.KeyBackspace
+
+        "delete" ->
+            Decode.succeed StdinData.KeyDelete
+
+        "escape" ->
+            Decode.succeed StdinData.KeyEscape
+
+        "up" ->
+            Decode.succeed StdinData.KeyArrowUp
+
+        "down" ->
+            Decode.succeed StdinData.KeyArrowDown
+
+        "left" ->
+            Decode.succeed StdinData.KeyArrowLeft
+
+        "right" ->
+            Decode.succeed StdinData.KeyArrowRight
+
+        "home" ->
+            Decode.succeed StdinData.KeyHome
+
+        "end" ->
+            Decode.succeed StdinData.KeyEnd
+
+        "pageup" ->
+            Decode.succeed StdinData.KeyPageUp
+
+        "pagedown" ->
+            Decode.succeed StdinData.KeyPageDown
+
+        _ ->
+            case String.uncons name of
+                Just ( char, _ ) ->
+                    Decode.succeed (StdinData.KeyChar char)
+
+                Nothing ->
+                    Decode.fail "Invalid keyboard key"
+
+
+decodeStdinError : Decoder StdinError
+decodeStdinError =
+    Decode.field "code" Decode.string
+        |> Decode.andThen
+            (\code ->
+                case code of
+                    "PermissionDenied" ->
+                        Decode.succeed StdinData.PermissionDenied
+
+                    "EndOfInput" ->
+                        Decode.succeed StdinData.EndOfInput
+
+                    "IoError" ->
+                        Decode.map StdinData.IoError (Decode.field "data" Decode.string)
+
+                    _ ->
+                        Decode.fail ("Unknown code: " ++ code)
+            )

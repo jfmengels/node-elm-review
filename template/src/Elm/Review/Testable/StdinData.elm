@@ -1,7 +1,15 @@
 module Elm.Review.Testable.StdinData exposing
-    ( Key(..)
-    , StdinError(..)
+    ( StdinError(..)
+    , Key(..)
     )
+
+{-|
+
+@docs StdinError
+
+@docs Key
+
+-}
 
 
 type StdinError

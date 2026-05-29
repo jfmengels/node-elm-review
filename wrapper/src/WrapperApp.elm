@@ -29,7 +29,7 @@ type Model
     | Loading LoadingModel
     | Review Review.Model
     | Init Init.Model
-    | NewRule NewRule.Model
+    | NewRule
     | NewPackage NewPackage.Model
     | PrepareOffline PrepareOffline.Model
 
@@ -136,11 +136,10 @@ handleCliArgsParseResult env stdinSupported result =
                 |> InitError.Success
 
         OptionsParser.NewRule options ->
-            let
-                ( newRuleModel, cmd ) =
-                    NewRule.init stdinSupported options
-            in
-            ( NewRule newRuleModel, TCmd.map NewRuleMsg cmd )
+            ( NewRule
+            , NewRule.init options
+                |> TCmd.map NewRuleMsg
+            )
                 |> InitError.Success
 
         OptionsParser.NewPackage options ->
@@ -221,9 +220,9 @@ update msg model =
 
         NewRuleMsg newRuleMsg ->
             case model of
-                NewRule newRuleModel ->
-                    ( model
-                    , NewRule.update newRuleMsg newRuleModel
+                NewRule ->
+                    ( NewRule
+                    , NewRule.update newRuleMsg
                         |> TCmd.map NewRuleMsg
                     )
 

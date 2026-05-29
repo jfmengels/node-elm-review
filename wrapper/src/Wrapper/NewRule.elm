@@ -1,12 +1,13 @@
 module Wrapper.NewRule exposing
-    ( Model, init
+    ( init
     , Msg, update
     , ruleDescription, newSourceFile, newTestFile
+    , prompts
     )
 
 {-|
 
-@docs Model, init
+@docs init
 @docs Msg, update
 
 @docs ruleDescription, newSourceFile, newTestFile
@@ -20,6 +21,7 @@ import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.Stdin as Stdin
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Review.Vendor.List.Extra as ListExtra
 import Elm.Version
@@ -34,28 +36,21 @@ import Wrapper.Options as Options exposing (NewRuleOptions)
 import Wrapper.Options.RuleType as RuleType exposing (RuleType)
 
 
-type Model
-    = Model ModelData
-
-
-type alias ModelData =
-    { stdinSupported : Bool
-    , options : NewRuleOptions
-    }
-
-
 type Msg
-    = GotElmJson (Result Problem.Exit Elm.Project.Project)
-    | Done Module.Name (Result Problem.Exit (List Warning))
-    | PrintedNowExit Int
+    = Done (Result Problem.Exit ())
 
 
 type alias Warning =
     Colorize -> String
 
 
-readReviewElmJson : Path -> TTask Problem Elm.Project.Project
-readReviewElmJson pathToElmJson_ =
+readReviewElmJson : NewRuleOptions -> TTask Problem Elm.Project.Project
+readReviewElmJson options =
+    let
+        pathToElmJson_ : Path
+        pathToElmJson_ =
+            pathToElmJson options
+    in
     Fs.readTextFile pathToElmJson_
         |> TTask.mapError
             (\((FsError errno _) as error) ->
@@ -92,21 +87,37 @@ couldNotFindElmJsonMessage pathToElmJson_ c =
 You can run """ ++ c Cyan "elm-review new-package" ++ " to get started with a new project designed to publish review rules."
 
 
-init : Bool -> NewRuleOptions -> ( Model, TCmd Msg )
-init stdinSupported options =
-    let
-        pathToElmJson_ : String
-        pathToElmJson_ =
-            pathToElmJson options
-    in
-    ( Model
-        { stdinSupported = stdinSupported
-        , options = options
-        }
-    , readReviewElmJson pathToElmJson_
+init : NewRuleOptions -> TCmd Msg
+init options =
+    TTask.map2
+        (\elmJson ( ruleName, ruleType ) ->
+            createFiles options elmJson ruleName ruleType
+                |> TTask.andThen (printWarnings options ruleName)
+        )
+        (readReviewElmJson options)
+        (prompts options)
+        |> TTask.andThen identity
         |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
-        |> TTask.attempt GotElmJson
-    )
+        |> TTask.attempt Done
+
+
+prompts : { options | newRuleName : Maybe Module.Name, ruleType : Maybe RuleType } -> TTask Problem ( Module.Name, RuleType )
+prompts options =
+    TTask.map2 Tuple.pair
+        (case options.newRuleName of
+            Just ruleName ->
+                TTask.succeed ruleName
+
+            Nothing ->
+                promptForRuleName
+        )
+        (case options.ruleType of
+            Just ruleType ->
+                TTask.succeed ruleType
+
+            Nothing ->
+                promptForRuleType
+        )
 
 
 pathToElmJson : NewRuleOptions -> Path
@@ -114,28 +125,47 @@ pathToElmJson options =
     Path.join2 options.reviewFolder "elm.json"
 
 
-validateOrElsePromptForRuleType : Elm.Project.Project -> Module.Name -> Maybe RuleType -> Model -> TCmd Msg
-validateOrElsePromptForRuleType elmJson ruleName maybeRuleType model =
-    case maybeRuleType of
-        Just ruleType ->
-            run elmJson ruleName ruleType model
+promptForRuleName : TTask Problem Module.Name
+promptForRuleName =
+    -- TODO Put special effects on prompt messages
+    Cli.printlnStdoutTask "? Name of the rule (ex: No.Doing.Foo): ›"
+        |> TTask.andThen (\() -> Stdin.readLine)
+        |> TTask.map String.trim
+        |> TTask.mapError (Stdin.toProblem "while prompting for the rule name")
+        |> TTask.andThen
+            (\ruleName ->
+                case Module.fromString ruleName of
+                    Just validRuleName ->
+                        TTask.succeed validRuleName
 
-        Nothing ->
-            promptForRuleType ()
+                    Nothing ->
+                        Cli.printlnStdoutTask "The rule name needs to be a valid Elm module name that only contains characters A-Z, digits and `_`."
+                            |> TTask.andThen (\() -> promptForRuleName)
+            )
 
 
-promptForRuleName : () -> TCmd Msg
-promptForRuleName () =
-    Debug.todo "promptForRuleName"
+promptForRuleType : TTask Problem RuleType
+promptForRuleType =
+    -- TODO Put special effects on prompt messages
+    Cli.printlnStdoutTask "? Choose the type of rule you want to start with: › You can always switch the type later manually"
+        -- TODO Make a select prompt
+        |> TTask.andThen (\() -> Stdin.readLine)
+        |> TTask.map String.trim
+        |> TTask.mapError (Stdin.toProblem "while prompting for the rule type")
+        |> TTask.andThen
+            (\ruleType ->
+                case RuleType.fromString ruleType of
+                    Just validRuleType ->
+                        TTask.succeed validRuleType
+
+                    Nothing ->
+                        Cli.printlnStdoutTask "The rule type needs to be either \"module\" or \"project\"."
+                            |> TTask.andThen (\() -> promptForRuleType)
+            )
 
 
-promptForRuleType : () -> TCmd Msg
-promptForRuleType () =
-    Debug.todo "promptForRuleType"
-
-
-run : Elm.Project.Project -> Module.Name -> RuleType -> Model -> TCmd Msg
-run elmJson ruleModuleName ruleType (Model { options }) =
+createFiles : NewRuleOptions -> Elm.Project.Project -> Module.Name -> RuleType -> TTask Problem (List Warning)
+createFiles options elmJson ruleModuleName ruleType =
     let
         ruleName : String
         ruleName =
@@ -184,8 +214,32 @@ run elmJson ruleModuleName ruleType (Model { options }) =
                 else
                     TTask.succeed []
         )
-        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
-        |> TTask.attempt (Done ruleModuleName)
+
+
+printWarnings : { options | color : Color.Support } -> Module.Name -> List Warning -> TTask x ()
+printWarnings options ruleName warnings =
+    let
+        successMessage : String
+        successMessage =
+            "Added rule " ++ Module.toString ruleName
+
+        warningsMessage : String
+        warningsMessage =
+            if List.isEmpty warnings then
+                ""
+
+            else
+                let
+                    c : Colorize
+                    c =
+                        Color.toAnsi options.color
+                in
+                "\n\nI have however failed to apply some changes I wanted to make:\n\n"
+                    ++ (List.map (\warning -> warning c) warnings
+                            |> String.join "\n\n"
+                       )
+    in
+    Cli.printlnStdoutTask (successMessage ++ "!" ++ warningsMessage)
 
 
 newSourceFile : Elm.Project.Project -> String -> RuleType -> String
@@ -734,50 +788,14 @@ insertRuleInConfigList target ruleName someRuleName fileModification =
                 )
 
 
-update : Msg -> Model -> TCmd Msg
-update msg (Model model) =
+update : Msg -> TCmd Msg
+update msg =
     case msg of
-        GotElmJson (Ok elmJson) ->
-            case model.options.newRuleName of
-                Just newRuleName ->
-                    validateOrElsePromptForRuleType elmJson newRuleName model.options.ruleType (Model model)
+        Done (Ok ()) ->
+            Cli.exit 0
 
-                Nothing ->
-                    promptForRuleName ()
-
-        GotElmJson (Err exit) ->
+        Done (Err exit) ->
             Problem.exit exit
-
-        Done ruleName (Ok warnings) ->
-            let
-                successMessage : String
-                successMessage =
-                    "Added rule " ++ Module.toString ruleName
-
-                warningsMessage : String
-                warningsMessage =
-                    if List.isEmpty warnings then
-                        ""
-
-                    else
-                        let
-                            c : Colorize
-                            c =
-                                Color.toAnsi model.options.color
-                        in
-                        "\n\nI have however failed to apply some changes I wanted to make:\n\n"
-                            ++ (List.map (\warning -> warning c) warnings
-                                    |> String.join "\n\n"
-                               )
-            in
-            Cli.printlnStdoutTask (successMessage ++ "!" ++ warningsMessage)
-                |> TTask.attempt (\_ -> PrintedNowExit 0)
-
-        Done _ (Err exit) ->
-            Problem.exit exit
-
-        PrintedNowExit exitCode ->
-            Cli.exit exitCode
 
 
 formatOptions : NewRuleOptions -> Problem.FormatOptions {}

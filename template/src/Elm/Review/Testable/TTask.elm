@@ -302,6 +302,9 @@ transform tx source =
         Internal.ReadKey onResult ->
             Internal.ReadKey (onResult >> tx)
 
+        Internal.ReadLine onResult ->
+            Internal.ReadLine (onResult >> tx)
+
         Internal.PrintlnTask console string onResult ->
             Internal.PrintlnTask console string (onResult >> tx)
 

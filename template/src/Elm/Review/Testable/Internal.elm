@@ -46,6 +46,7 @@ type TTask error value
     | HttpGet String (Result () String -> TaskResult error value)
       -- Stdin/stdout/stderr
     | ReadKey (Result StdinError Key -> TaskResult error value)
+    | ReadLine (Result StdinError String -> TaskResult error value)
     | PrintlnTask Console String (Result Never () -> TaskResult error value)
     | ExitTask Int (TaskResult error value)
       -- Process

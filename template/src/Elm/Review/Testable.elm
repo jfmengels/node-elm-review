@@ -44,7 +44,8 @@ type alias Effects =
     , httpGet : String -> PlatformTask.Task () String
 
     -- Stdin / Stdout
-    , readKey : () -> PlatformTask.Task StdinError Key
+    , readKey : PlatformTask.Task StdinError Key
+    , readLine : PlatformTask.Task StdinError String
     , printlnTask : Console -> String -> PlatformTask.Task Never ()
     , println : Console -> String -> Cmd Never
     , printlnStderrThenExit : String -> Int -> Cmd Never
@@ -160,7 +161,11 @@ task effects testableTask =
 
         -- Stdin
         Internal.ReadKey onResult ->
-            effects.readKey ()
+            effects.readKey
+                |> handle effects onResult
+
+        Internal.ReadLine onResult ->
+            effects.readLine
                 |> handle effects onResult
 
         Internal.PrintlnTask console message onResult ->

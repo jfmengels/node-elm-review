@@ -41,6 +41,7 @@ effects fs os stdin stdout stderr =
 
     -- Stdin / Stdout
     , readKey = readKey stdin
+    , readLine = readLine stdin
     , println = mapConsole stdout stderr >> ElmRunCli.println
     , printlnStderrThenExit = \message exitCode -> Cmd.batch [ ElmRunCli.println stderr message, ElmRunCli.exit exitCode ]
     , printlnTask = mapConsole stdout stderr >> ElmRunCli.printlnTask
@@ -75,17 +76,27 @@ httpGet url =
         }
 
 
-readKey : Maybe Stdin -> () -> Task StdinData.StdinError StdinData.Key
+readKey : Maybe Stdin -> Task StdinData.StdinError StdinData.Key
 readKey stdin =
-    \() ->
-        case stdin of
-            Just stdin_ ->
-                ElmRunStdin.readKey stdin_
-                    |> Task.map mapStdinKey
-                    |> Task.mapError mapStdinError
+    case stdin of
+        Just stdin_ ->
+            ElmRunStdin.readKey stdin_
+                |> Task.map mapStdinKey
+                |> Task.mapError mapStdinError
 
-            Nothing ->
-                Task.fail StdinData.PermissionDenied
+        Nothing ->
+            Task.fail StdinData.PermissionDenied
+
+
+readLine : Maybe Stdin -> Task StdinData.StdinError String
+readLine stdin =
+    case stdin of
+        Just stdin_ ->
+            ElmRunStdin.readLine stdin_
+                |> Task.mapError mapStdinError
+
+        Nothing ->
+            Task.fail StdinData.PermissionDenied
 
 
 mapFsError : ElmRunFs.FsError -> FsData.FsError
