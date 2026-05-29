@@ -763,7 +763,7 @@ encodeStdinSpec stdinSpec =
 
         ProcessData.FileStdin file ->
             Encode.object
-                [ ( "kind", Encode.string "pipe" )
+                [ ( "kind", Encode.string "file" )
                 , ( "file", Encode.string file )
                 ]
 
