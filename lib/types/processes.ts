@@ -19,7 +19,7 @@ export type CompletedData = {
 
 export type CompletedError = {
   error: {
-    code: "ProcessError",
+    code: "ProcessError";
     data: string;
   };
 };
