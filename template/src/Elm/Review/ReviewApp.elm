@@ -78,6 +78,7 @@ type Msg
     | WroteSuppressionFiles (Result Problem ())
     | FixPromptMsg PromptId FixPromptPayload Prompt.Msg
     | AppliedFixes FixPromptPayload (Result Problem ())
+    | PrintedReport Bool
 
 
 type alias FixPromptPayload =
@@ -367,6 +368,18 @@ update msg model =
                     , stopBecauseOfProblem model problem
                     )
 
+        PrintedReport hasNoMoreErrors ->
+            ( model
+            , if model.options.watch then
+                TCmd.none
+
+              else if hasNoMoreErrors then
+                Cli.exit 0
+
+              else
+                Cli.exit 1
+            )
+
 
 applyFixChanges : Options -> FixPromptPayload -> TCmd Msg
 applyFixChanges options fixPayload =
@@ -616,6 +629,7 @@ makeReport previousSuppressedErrors input =
     , TCmd.batch
         [ suppressionCmd
         , printReport previousSuppressedErrors input.result model
+            |> TTask.perform (\() -> PrintedReport (List.isEmpty input.result.reviewErrorsAfterSuppression))
         ]
     )
 
@@ -660,7 +674,7 @@ saveRunReviewResultsInModel { model, result } =
         ( newModel, TCmd.none )
 
 
-printReport : SuppressedErrors -> RunReviewResult -> Model -> TCmd Msg
+printReport : SuppressedErrors -> RunReviewResult -> Model -> TTask x ()
 printReport previousSuppressedErrors result model =
     let
         newSuppressedErrors : SuppressedErrors
@@ -671,23 +685,13 @@ printReport previousSuppressedErrors result model =
         ruleLinks =
             Store.ruleLinks model.store
     in
-    TCmd.batch
-        [ printReportDependingOnReportMode
-            ruleLinks
-            { previous = previousSuppressedErrors
-            , new = newSuppressedErrors
-            }
-            result
-            model
-        , if model.options.watch then
-            TCmd.none
-
-          else if List.isEmpty result.reviewErrorsAfterSuppression then
-            Cli.exit 0
-
-          else
-            Cli.exit 1
-        ]
+    printReportDependingOnReportMode
+        ruleLinks
+        { previous = previousSuppressedErrors
+        , new = newSuppressedErrors
+        }
+        result
+        model
 
 
 printReportDependingOnReportMode :
@@ -695,7 +699,7 @@ printReportDependingOnReportMode :
     -> { previous : SuppressedErrors, new : SuppressedErrors }
     -> RunReviewResult
     -> Model
-    -> TCmd msg
+    -> TTask x ()
 printReportDependingOnReportMode ruleLinks suppressedErrors result model =
     case model.options.reportMode of
         HumanReadable ->
@@ -712,7 +716,7 @@ printReportDependingOnReportMode ruleLinks suppressedErrors result model =
                 }
                 filesWithError
                 |> Text.toAnsi model.options.supportsColor
-                |> Cli.printlnStdout
+                |> Cli.printlnStdoutTask
 
         Json ->
             let
@@ -736,7 +740,7 @@ printReportDependingOnReportMode ruleLinks suppressedErrors result model =
                 model.options.debug
                 errors
                 (Encode.dict identity identity result.extracts)
-                |> Cli.printlnStdout
+                |> Cli.printlnStdoutTask
 
         NDJson ->
             let
@@ -754,7 +758,7 @@ printReportDependingOnReportMode ruleLinks suppressedErrors result model =
                         ruleLinks
                     )
                 |> printNDJson
-                |> Cli.printlnStdout
+                |> Cli.printlnStdoutTask
 
 
 printJson : Bool -> Encode.Value -> Encode.Value -> String
