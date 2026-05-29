@@ -56,7 +56,7 @@ incrementBuild (BuildId n) =
 type Msg
     = BuildCompleted BuildId (Result Problem Build.BuildData)
     | SpawnedReviewProcess (Result Problem ProcessId)
-    | ReviewProcessEnded ProcessId (Result Problem ProcessData.Completed)
+    | ReviewProcessEnded ProcessId (Result Problem Int)
     | ConfigElmJsonWasModified
     | ConfigSourceFileWasModified FileEvent
 
@@ -173,7 +173,8 @@ updateHelp msg model =
                 Ok pid ->
                     ( { model | pid = Just pid }
                     , Process.wait pid
-                        |> TTask.mapError (\error -> Debug.todo ("Spawn error " ++ ProcessData.errorToString error))
+                        |> TTask.mapError (\error -> Problem.unexpectedError "when waiting for the review application's results" (ProcessData.errorToString error))
+                        |> TTask.map .exitCode
                         |> TTask.attempt (ReviewProcessEnded pid)
                     )
 
@@ -185,9 +186,9 @@ updateHelp msg model =
         ReviewProcessEnded pid result ->
             if model.pid == Just pid then
                 case result of
-                    Ok completed ->
+                    Ok exitCode ->
                         ( model
-                        , Cli.exit completed.exitCode
+                        , Cli.exit exitCode
                         )
 
                     Err problem ->
