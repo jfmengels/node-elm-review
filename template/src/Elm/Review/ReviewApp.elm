@@ -360,6 +360,7 @@ update msg model =
                       }
                     , TCmd.map StoreMsg cmd
                     )
+                        |> startReviewIfNoPendingTasks
 
                 Err exit ->
                     ( model
