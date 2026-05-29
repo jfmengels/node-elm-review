@@ -2,10 +2,10 @@ module ElmReview.Problem exposing
     ( Problem, from, Recovery(..), withPath
     , ProblemSimple
     , invalidElmJson, unexpectedError
+    , exitOnUnrecoverable, Exit, exit
     , stop
-    , FormatOptions
+    , FormatOptions, format
     , unwrapFOR_TESTS
-    , format
     )
 
 {-|
@@ -15,9 +15,10 @@ module ElmReview.Problem exposing
 
 @docs invalidElmJson, unexpectedError
 
+@docs exitOnUnrecoverable, Exit, exit
 @docs stop
 
-@docs FormatOptions
+@docs FormatOptions, format
 
 @docs unwrapFOR_TESTS
 
@@ -25,7 +26,8 @@ module ElmReview.Problem exposing
 
 import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Cmd as TCmd
-import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.Internal exposing (TCmd, TTask)
+import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path exposing (Path)
 import ElmReview.ReportMode as ReportMode exposing (ReportMode)
@@ -86,22 +88,51 @@ stop : FormatOptions options -> Problem -> TCmd msg
 stop formatOptions problem =
     TCmd.batch
         [ Cli.printlnStderr (format formatOptions problem)
-        , exit formatOptions.attemptFutureRecovery problem
+        , exit (shouldExitWithError formatOptions.attemptFutureRecovery problem)
         ]
 
 
-exit : Bool -> Problem -> TCmd msg
-exit watch (Problem problem) =
+type Exit
+    = Exit Bool
+
+
+doExit : Exit
+doExit =
+    Exit True
+
+
+dontExit : Exit
+dontExit =
+    Exit False
+
+
+exitOnUnrecoverable : FormatOptions options -> Problem -> TTask Exit value
+exitOnUnrecoverable formatOptions problem =
+    Cli.printlnStderrTask (format formatOptions problem)
+        |> TTask.andThen (\() -> TTask.fail (shouldExitWithError formatOptions.attemptFutureRecovery problem))
+
+
+shouldExitWithError : Bool -> Problem -> Exit
+shouldExitWithError attemptFutureRecovery (Problem problem) =
     case problem.recovery of
         Recoverable ->
-            if watch then
-                TCmd.none
+            if attemptFutureRecovery then
+                dontExit
 
             else
-                Cli.exit 1
+                doExit
 
         Unrecoverable ->
-            Cli.exit 1
+            doExit
+
+
+exit : Exit -> TCmd msg
+exit (Exit shouldExit) =
+    if shouldExit then
+        Cli.exit 1
+
+    else
+        TCmd.none
 
 
 type alias FormatOptions a =
