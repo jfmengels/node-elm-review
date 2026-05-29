@@ -18,7 +18,6 @@ import Elm.Review.Testable.Cmd as TCmd
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData exposing (FsError(..))
 import Elm.Review.Testable.Internal exposing (TCmd, TTask)
-import Elm.Review.Testable.ProcessData as ProcessData
 import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color as Color exposing (Color(..), Colorize)
 import ElmReview.Path as Path exposing (Path)
@@ -44,7 +43,7 @@ type alias ModelData =
 
 type Msg
     = PromptMsg Prompt.Msg
-    | CreatedFiles (Result Problem ())
+    | CreatedFiles (Result Problem.Exit ())
     | PrintedNowExit Int
 
 
@@ -91,17 +90,20 @@ update msg (Model model) =
             Cli.printlnStdoutTask (successMessage model.options)
                 |> TTask.attempt (\_ -> PrintedNowExit 0)
 
-        CreatedFiles (Err problem) ->
-            Problem.stop
-                { color = model.options.color
-                , reportMode = ReportMode.HumanReadable
-                , debug = model.options.debug
-                , attemptFutureRecovery = False
-                }
-                problem
+        CreatedFiles (Err exit) ->
+            Problem.exit exit
 
         PrintedNowExit exitCode ->
             Cli.exit exitCode
+
+
+formatOptions : InitOptions -> Problem.FormatOptions {}
+formatOptions options =
+    { color = options.color
+    , reportMode = ReportMode.HumanReadable
+    , debug = options.debug
+    , attemptFutureRecovery = False
+    }
 
 
 prompt : ModelData -> TCmd Msg
@@ -127,10 +129,12 @@ createConfiguration options =
     case options.remoteTemplate of
         Nothing ->
             createDefaultConfiguration options.configPath
+                |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
                 |> TTask.attempt CreatedFiles
 
         Just remoteTemplate ->
             createTemplateConfiguration options.configPath options.offline remoteTemplate options.debug
+                |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
                 |> TTask.attempt CreatedFiles
 
 

@@ -153,10 +153,11 @@ handleCliArgsParseResult env stdinSupported result =
 
         OptionsParser.PrepareOffline options ->
             let
-                ( prepareOfflineModel, cmd ) =
+                cmd : TCmd PrepareOffline.Msg
+                cmd =
                     PrepareOffline.init options
             in
-            ( PrepareOffline prepareOfflineModel, TCmd.map PrepareOfflineMsg cmd )
+            ( PrepareOffline (), TCmd.map PrepareOfflineMsg cmd )
                 |> InitError.Success
 
 
@@ -231,9 +232,9 @@ update msg model =
 
         PrepareOfflineMsg prepareOfflineMsg ->
             case model of
-                PrepareOffline prepareOfflineModel ->
+                PrepareOffline () ->
                     ( model
-                    , PrepareOffline.update prepareOfflineMsg prepareOfflineModel
+                    , PrepareOffline.update prepareOfflineMsg
                         |> TCmd.map PrepareOfflineMsg
                     )
 
