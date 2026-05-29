@@ -332,6 +332,13 @@ taskToCmd pool initialExitCode ongoingTasksCount testableEffects =
                     |> Cmd.map never
             }
 
+        Internal.PrintErrorThenExit message exitCode ->
+            { pool = pool
+            , exitCode = Nothing
+            , ongoingTasksCount = ongoingTasksCount
+            , cmd = printlnStderrThenExit { message = message, exitCode = exitCode }
+            }
+
         Internal.Exit code ->
             { pool = pool
             , exitCode = Just code
@@ -663,6 +670,14 @@ printlnTask console message =
         }
 
 
+printlnStderrThenExit_ : String -> Int -> Cmd msg
+printlnStderrThenExit_ message exitCode =
+    printlnStderrThenExit
+        { message = message
+        , exitCode = exitCode
+        }
+
+
 runProcess : String -> SpawnOptions -> ConcurrentTask SpawnError Completed
 runProcess command spawnOptions =
     ConcurrentTask.define
@@ -873,10 +888,10 @@ watchFiles path watchOptions toMsg =
 
 stop : Problem.FormatOptions options -> Problem -> Cmd msg
 stop formatOptions problem =
-    Cmd.batch
-        [ printlnStdout (Problem.format formatOptions problem)
-        , exit 1
-        ]
+    printlnStderrThenExit
+        { message = Problem.format formatOptions problem
+        , exitCode = 1
+        }
 
 
 port exit : Int -> Cmd msg
@@ -885,10 +900,13 @@ port exit : Int -> Cmd msg
 port printlnStdout : String -> Cmd msg
 
 
+port printlnStderrThenExit : { message : String, exitCode : Int } -> Cmd msg
+
+
 port printlnStderr : String -> Cmd msg
 
 
-port send : Decode.Value -> Cmd msg
+port send : Encode.Value -> Cmd msg
 
 
 port receive : (Decode.Value -> msg) -> Sub msg
@@ -910,6 +928,7 @@ type alias Effects =
     -- Stdin / Stdout
     , readKey : () -> ConcurrentTask StdinError Key
     , println : Console -> String -> Cmd Never
+    , printlnStderrThenExit : String -> Int -> Cmd Never
     , printlnTask : Console -> String -> ConcurrentTask Never ()
     , exit : Int -> Cmd Never
 
@@ -947,6 +966,7 @@ effects =
 
                 CliData.Stderr ->
                     printlnStderr string
+    , printlnStderrThenExit = printlnStderrThenExit_
     , printlnTask = printlnTask
     , exit = exit
 
