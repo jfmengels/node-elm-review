@@ -75,9 +75,9 @@ type PromptId
 
 type Msg
     = StoreMsg Store.Msg
-    | WroteSuppressionFiles (Result Problem ())
+    | WroteSuppressionFiles (Result Problem.Exit ())
     | FixPromptMsg PromptId FixPromptPayload Prompt.Msg
-    | AppliedFixes FixPromptPayload (Result Problem ())
+    | AppliedFixes FixPromptPayload (Result Problem.Exit ())
     | PrintedReport Bool
 
 
@@ -293,13 +293,16 @@ closestNames names name =
 
 stopBecauseOfProblem : Model -> Problem -> TCmd msg
 stopBecauseOfProblem model problem =
-    Problem.stop
-        { color = model.options.color
-        , reportMode = model.options.reportMode
-        , debug = model.options.debug
-        , attemptFutureRecovery = model.options.watch
-        }
-        problem
+    Problem.stop (formatOptions model.options) problem
+
+
+formatOptions : Options -> Problem.FormatOptions {}
+formatOptions options =
+    { color = options.color
+    , reportMode = options.reportMode
+    , debug = options.debug
+    , attemptFutureRecovery = options.watch
+    }
 
 
 update : Msg -> Model -> ( Model, TCmd Msg )
@@ -324,8 +327,8 @@ update msg model =
                 Ok () ->
                     TCmd.none
 
-                Err problem ->
-                    stopBecauseOfProblem model problem
+                Err exit ->
+                    Problem.exit exit
             )
 
         FixPromptMsg promptId payload fixPromptMsg ->
@@ -363,9 +366,9 @@ update msg model =
                     , TCmd.map StoreMsg cmd
                     )
 
-                Err problem ->
+                Err exit ->
                     ( model
-                    , stopBecauseOfProblem model problem
+                    , Problem.exit exit
                     )
 
         PrintedReport hasNoMoreErrors ->
@@ -390,6 +393,7 @@ applyFixChanges options fixPayload =
         (TTask.mapAllAndIgnore (\filePath -> Fs.deleteFile filePath) fixPayload.removedFiles
             |> TTask.mapError (\error -> Problem.unexpectedError "while deleting files as part of the automatic fixes" (FsData.errorToString error))
         )
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
         |> TTask.attempt (AppliedFixes fixPayload)
 
 
@@ -483,7 +487,9 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                             |> SuppressedErrors.write model.options []
                       of
                         Just task ->
-                            TTask.attempt WroteSuppressionFiles task
+                            task
+                                |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
+                                |> TTask.attempt WroteSuppressionFiles
 
                         Nothing ->
                             TCmd.none
@@ -664,7 +670,9 @@ saveRunReviewResultsInModel { model, result } =
                 |> SuppressedErrors.write model.options []
           of
             Just task ->
-                TTask.attempt WroteSuppressionFiles task
+                task
+                    |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
+                    |> TTask.attempt WroteSuppressionFiles
 
             Nothing ->
                 TCmd.none

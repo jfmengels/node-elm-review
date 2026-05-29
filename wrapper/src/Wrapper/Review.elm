@@ -54,9 +54,9 @@ incrementBuild (BuildId n) =
 
 
 type Msg
-    = BuildCompleted BuildId (Result Problem Build.BuildData)
-    | SpawnedReviewProcess (Result Problem ProcessId)
-    | ReviewProcessEnded ProcessId (Result Problem Int)
+    = BuildCompleted BuildId (Result Problem.Exit Build.BuildData)
+    | SpawnedReviewProcess (Result Problem.Exit ProcessId)
+    | ReviewProcessEnded ProcessId (Result Problem.Exit Int)
     | ConfigElmJsonWasModified
     | ConfigSourceFileWasModified FileEvent
 
@@ -75,6 +75,7 @@ init options =
         , watch = Nothing
         }
     , startBuild options
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
         |> TTask.attempt (BuildCompleted buildId)
     )
 
@@ -118,15 +119,13 @@ update msg (Model model) =
         |> Tuple.mapFirst Model
 
 
-stopBecauseOfProblem : ModelData -> Problem -> TCmd msg
-stopBecauseOfProblem model problem =
-    Problem.stop
-        { color = model.options.color
-        , reportMode = model.options.reportMode
-        , debug = model.options.debug
-        , attemptFutureRecovery = model.options.watchConfig
-        }
-        problem
+formatOptions : ReviewOptions -> Problem.FormatOptions {}
+formatOptions options =
+    { color = options.color
+    , reportMode = options.reportMode
+    , debug = options.debug
+    , attemptFutureRecovery = options.watchConfig
+    }
 
 
 updateHelp : Msg -> ModelData -> ( ModelData, TCmd Msg )
@@ -160,12 +159,13 @@ updateHelp msg model =
                             , reviewFolder = Path.dirname elmJsonPath
                             , packagesLocation = packagesLocation
                             }
+                            |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
                             |> TTask.attempt SpawnedReviewProcess
                         )
 
-                    Err problem ->
+                    Err exit ->
                         ( model
-                        , stopBecauseOfProblem model problem
+                        , Problem.exit exit
                         )
 
         SpawnedReviewProcess result ->
@@ -175,12 +175,13 @@ updateHelp msg model =
                     , Process.wait pid
                         |> TTask.mapError (\error -> Problem.unexpectedError "when waiting for the review application's results" (ProcessData.errorToString error))
                         |> TTask.map .exitCode
+                        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
                         |> TTask.attempt (ReviewProcessEnded pid)
                     )
 
-                Err problem ->
+                Err exit ->
                     ( model
-                    , stopBecauseOfProblem model problem
+                    , Problem.exit exit
                     )
 
         ReviewProcessEnded pid result ->
@@ -191,9 +192,9 @@ updateHelp msg model =
                         , Cli.exit exitCode
                         )
 
-                    Err problem ->
+                    Err exit ->
                         ( model
-                        , stopBecauseOfProblem model problem
+                        , Problem.exit exit
                         )
 
             else
@@ -224,6 +225,7 @@ restartBuild model =
     , printRestartMessage model.options.reportMode
         |> TTask.andThen (\() -> killRunningApp model.pid)
         |> TTask.andThen (\() -> startBuild model.options)
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
         |> TTask.attempt (BuildCompleted buildId)
     )
 
