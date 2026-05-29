@@ -24,6 +24,7 @@ type TCmd msg
     | TaskCmd (TTask msg msg)
     | Batch (List (TCmd msg))
     | Println Console String
+    | PrintErrorThenExit String Int
     | Exit Int
 
 

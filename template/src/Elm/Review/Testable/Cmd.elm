@@ -48,5 +48,8 @@ map f source =
         Internal.Println console string ->
             Internal.Println console string
 
+        Internal.PrintErrorThenExit message exitCodes ->
+            Internal.PrintErrorThenExit message exitCodes
+
         Internal.Exit code ->
             Internal.Exit code

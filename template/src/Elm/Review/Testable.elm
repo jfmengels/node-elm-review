@@ -47,6 +47,7 @@ type alias Effects =
     , readKey : () -> PlatformTask.Task StdinError Key
     , printlnTask : Console -> String -> PlatformTask.Task Never ()
     , println : Console -> String -> Cmd Never
+    , printlnStderrThenExit : String -> Int -> Cmd Never
     , exit : Int -> Cmd Never
 
     -- Process
@@ -88,6 +89,10 @@ cmd effects testableEffects =
 
         Internal.Println console string ->
             effects.println console string
+                |> Cmd.map never
+
+        Internal.PrintErrorThenExit message exitCode ->
+            effects.printlnStderrThenExit message exitCode
                 |> Cmd.map never
 
         Internal.Exit code ->
