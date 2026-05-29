@@ -672,64 +672,13 @@ printReport previousSuppressedErrors result model =
             Store.ruleLinks model.store
     in
     TCmd.batch
-        [ case model.options.reportMode of
-            HumanReadable ->
-                let
-                    filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
-                    filesWithError =
-                        groupErrorsByFile (fromReviewError newSuppressedErrors ruleLinks) (Store.project model.store) result.reviewErrorsAfterSuppression
-                in
-                Reporter.formatReport
-                    model.options
-                    { suppressedErrors = newSuppressedErrors
-                    , originalNumberOfSuppressedErrors = SuppressedErrors.count previousSuppressedErrors
-                    , errorsHaveBeenFixedPreviously = model.errorsHaveBeenFixedPreviously
-                    }
-                    filesWithError
-                    |> Text.toAnsi model.options.supportsColor
-                    |> Cli.printlnStdout
-
-            Json ->
-                let
-                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                    errorsByFile =
-                        groupErrorsByFile identity (Store.project model.store) result.reviewErrors
-
-                    errors : Encode.Value
-                    errors =
-                        Encode.list
-                            (encodeErrorByFile
-                                model.options
-                                { suppressedErrors = newSuppressedErrors
-                                , reviewErrorsAfterSuppression = result.reviewErrorsAfterSuppression
-                                }
-                                ruleLinks
-                            )
-                            errorsByFile
-                in
-                printJson
-                    model.options.debug
-                    errors
-                    (Encode.dict identity identity result.extracts)
-                    |> Cli.printlnStdout
-
-            NDJson ->
-                let
-                    errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
-                    errorsByFile =
-                        groupErrorsByFile identity (Store.project model.store) result.reviewErrors
-                in
-                errorsByFile
-                    |> List.concatMap
-                        (encodeErrorsForNDJson
-                            model.options
-                            { suppressedErrors = newSuppressedErrors
-                            , reviewErrorsAfterSuppression = result.reviewErrorsAfterSuppression
-                            }
-                            ruleLinks
-                        )
-                    |> printNDJson
-                    |> Cli.printlnStdout
+        [ printReportDependingOnReportMode
+            ruleLinks
+            { previous = previousSuppressedErrors
+            , new = newSuppressedErrors
+            }
+            result
+            model
         , if model.options.watch then
             TCmd.none
 
@@ -739,6 +688,73 @@ printReport previousSuppressedErrors result model =
           else
             Cli.exit 1
         ]
+
+
+printReportDependingOnReportMode :
+    Dict String String
+    -> { previous : SuppressedErrors, new : SuppressedErrors }
+    -> RunReviewResult
+    -> Model
+    -> TCmd msg
+printReportDependingOnReportMode ruleLinks suppressedErrors result model =
+    case model.options.reportMode of
+        HumanReadable ->
+            let
+                filesWithError : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Reporter.Error }
+                filesWithError =
+                    groupErrorsByFile (fromReviewError suppressedErrors.new ruleLinks) (Store.project model.store) result.reviewErrorsAfterSuppression
+            in
+            Reporter.formatReport
+                model.options
+                { suppressedErrors = suppressedErrors.new
+                , originalNumberOfSuppressedErrors = SuppressedErrors.count suppressedErrors.previous
+                , errorsHaveBeenFixedPreviously = model.errorsHaveBeenFixedPreviously
+                }
+                filesWithError
+                |> Text.toAnsi model.options.supportsColor
+                |> Cli.printlnStdout
+
+        Json ->
+            let
+                errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                errorsByFile =
+                    groupErrorsByFile identity (Store.project model.store) result.reviewErrors
+
+                errors : Encode.Value
+                errors =
+                    Encode.list
+                        (encodeErrorByFile
+                            model.options
+                            { suppressedErrors = suppressedErrors.new
+                            , reviewErrorsAfterSuppression = result.reviewErrorsAfterSuppression
+                            }
+                            ruleLinks
+                        )
+                        errorsByFile
+            in
+            printJson
+                model.options.debug
+                errors
+                (Encode.dict identity identity result.extracts)
+                |> Cli.printlnStdout
+
+        NDJson ->
+            let
+                errorsByFile : List { path : Reporter.FilePath, source : Reporter.Source, errors : List Rule.ReviewError }
+                errorsByFile =
+                    groupErrorsByFile identity (Store.project model.store) result.reviewErrors
+            in
+            errorsByFile
+                |> List.concatMap
+                    (encodeErrorsForNDJson
+                        model.options
+                        { suppressedErrors = suppressedErrors.new
+                        , reviewErrorsAfterSuppression = result.reviewErrorsAfterSuppression
+                        }
+                        ruleLinks
+                    )
+                |> printNDJson
+                |> Cli.printlnStdout
 
 
 printJson : Bool -> Encode.Value -> Encode.Value -> String
