@@ -25,11 +25,11 @@ import Wrapper.Options.RuleType exposing (RuleType)
 
 
 type alias Model =
-    PrepareOfflineOptions
+    ()
 
 
 type Msg
-    = Done (Result Problem ())
+    = Done (Result Problem.Exit ())
 
 
 type alias Input =
@@ -46,10 +46,9 @@ type alias Warning =
     Colorize -> String
 
 
-init : PrepareOfflineOptions -> ( Model, TCmd Msg )
+init : PrepareOfflineOptions -> TCmd Msg
 init options =
-    ( options
-    , run options
+    run options
         |> TTask.andThen
             (\() ->
                 case options.reportMode of
@@ -62,8 +61,17 @@ init options =
                     ReportMode.NDJson ->
                         TTask.succeed ()
             )
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
         |> TTask.attempt Done
-    )
+
+
+formatOptions : PrepareOfflineOptions -> Problem.FormatOptions {}
+formatOptions options =
+    { color = options.color
+    , reportMode = ReportMode.HumanReadable
+    , debug = options.debug
+    , attemptFutureRecovery = False
+    }
 
 
 run : PrepareOfflineOptions -> TTask Problem ()
@@ -75,22 +83,16 @@ run options =
         ]
 
 
-update : Msg -> Model -> TCmd Msg
-update msg options =
+update : Msg -> TCmd Msg
+update msg =
     case msg of
         Done result ->
             case result of
                 Ok () ->
                     Cli.exit 0
 
-                Err problem ->
-                    Problem.stop
-                        { color = options.color
-                        , reportMode = ReportMode.HumanReadable
-                        , debug = options.debug
-                        , attemptFutureRecovery = False
-                        }
-                        problem
+                Err exit ->
+                    Problem.exit exit
 
 
 successMessage : Colorize -> String

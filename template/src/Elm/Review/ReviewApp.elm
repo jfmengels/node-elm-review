@@ -291,11 +291,6 @@ closestNames names name =
 -- UPDATE
 
 
-stopBecauseOfProblem : Model -> Problem -> TCmd msg
-stopBecauseOfProblem model problem =
-    Problem.stop (formatOptions model.options) problem
-
-
 formatOptions : Options -> Problem.FormatOptions {}
 formatOptions options =
     { color = options.color
@@ -526,7 +521,7 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
 
         Store.Failure problem ->
             ( model
-            , stopBecauseOfProblem model problem
+            , Problem.stop (formatOptions model.options) problem
             )
 
 

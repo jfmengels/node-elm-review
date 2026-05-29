@@ -45,8 +45,8 @@ type alias ModelData =
 
 
 type Msg
-    = GotElmJson (Result Problem Elm.Project.Project)
-    | Done Module.Name (Result Problem (List Warning))
+    = GotElmJson (Result Problem.Exit Elm.Project.Project)
+    | Done Module.Name (Result Problem.Exit (List Warning))
     | PrintedNowExit Int
 
 
@@ -104,6 +104,7 @@ init stdinSupported options =
         , options = options
         }
     , readReviewElmJson pathToElmJson_
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
         |> TTask.attempt GotElmJson
     )
 
@@ -183,6 +184,7 @@ run elmJson ruleModuleName ruleType (Model { options }) =
                 else
                     TTask.succeed []
         )
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
         |> TTask.attempt (Done ruleModuleName)
 
 
@@ -743,14 +745,8 @@ update msg (Model model) =
                 Nothing ->
                     promptForRuleName ()
 
-        GotElmJson (Err problem) ->
-            Problem.stop
-                { color = model.options.color
-                , reportMode = ReportMode.HumanReadable
-                , debug = model.options.debug
-                , attemptFutureRecovery = False
-                }
-                problem
+        GotElmJson (Err exit) ->
+            Problem.exit exit
 
         Done ruleName (Ok warnings) ->
             let
@@ -777,14 +773,17 @@ update msg (Model model) =
             Cli.printlnStdoutTask (successMessage ++ "!" ++ warningsMessage)
                 |> TTask.attempt (\_ -> PrintedNowExit 0)
 
-        Done _ (Err problem) ->
-            Problem.stop
-                { color = model.options.color
-                , reportMode = ReportMode.HumanReadable
-                , debug = model.options.debug
-                , attemptFutureRecovery = False
-                }
-                problem
+        Done _ (Err exit) ->
+            Problem.exit exit
 
         PrintedNowExit exitCode ->
             Cli.exit exitCode
+
+
+formatOptions : NewRuleOptions -> Problem.FormatOptions {}
+formatOptions options =
+    { color = options.color
+    , reportMode = ReportMode.HumanReadable
+    , debug = options.debug
+    , attemptFutureRecovery = False
+    }

@@ -47,7 +47,7 @@ type alias ModelData =
 
 type Msg
     = GotUserInput Input
-    | Done (Result Problem ())
+    | Done (Result Problem.Exit ())
     | PrintedNowExit Int
 
 
@@ -101,6 +101,7 @@ update msg (Model model) =
     case msg of
         GotUserInput input ->
             createProject input model.options
+                |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
                 |> TTask.attempt Done
 
         Done result ->
@@ -115,17 +116,20 @@ update msg (Model model) =
                         (successMessage c)
                         |> TTask.attempt (\_ -> PrintedNowExit 0)
 
-                Err problem ->
-                    Problem.stop
-                        { color = model.options.color
-                        , reportMode = ReportMode.HumanReadable
-                        , debug = model.options.debug
-                        , attemptFutureRecovery = False
-                        }
-                        problem
+                Err exit ->
+                    Problem.exit exit
 
         PrintedNowExit exitCode ->
             Cli.exit exitCode
+
+
+formatOptions : NewPackageOptions -> Problem.FormatOptions {}
+formatOptions options =
+    { color = options.color
+    , reportMode = ReportMode.HumanReadable
+    , debug = options.debug
+    , attemptFutureRecovery = False
+    }
 
 
 createProject : Input -> NewPackageOptions -> TTask Problem ()
