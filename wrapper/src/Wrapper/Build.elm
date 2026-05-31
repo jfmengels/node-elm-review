@@ -606,7 +606,7 @@ compileProjectUsingElmRun options =
             ]
 
         -- TODO Force color. Setting an env currently unsets all other variables like PATH and makes the process crash.
-        , env = Just (ProcessEnv.asProcessEnv options.buildOptions.processEnv)
+        , env = Just (( "ELM_RUN_PROJECT_ROOT", options.buildFolder ) :: ProcessEnv.asProcessEnv options.buildOptions.processEnv)
         , cwd = Nothing
         , stdin = ProcessData.NullStdin
         , stdout = ProcessData.NullStdout
