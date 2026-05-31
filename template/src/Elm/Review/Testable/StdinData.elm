@@ -16,6 +16,7 @@ type StdinError
     = PermissionDenied
     | EndOfInput
     | IoError String
+    | NoStdin
 
 
 {-| A keypress decoded by the native runtime.

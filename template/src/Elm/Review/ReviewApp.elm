@@ -424,6 +424,7 @@ writeChangedFile options { filePath, source } =
             |> TTask.mapError (\error -> Problem.unexpectedError "while applying automatic fixes" (FsData.errorToString error))
 
 
+elmFormatNotFoundError : Maybe String -> Problem
 elmFormatNotFoundError elmFormatPath =
     { title = "ELM-FORMAT NOT FOUND"
     , message =

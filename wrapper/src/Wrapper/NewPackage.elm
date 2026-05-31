@@ -21,17 +21,18 @@ import Elm.Review.Testable.Cli as Cli
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData
 import Elm.Review.Testable.Internal exposing (TCmd)
+import Elm.Review.Testable.Stdin as Stdin
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import Elm.Version as Version
 import ElmReview.Color as Color exposing (Color(..), Colorize)
-import ElmReview.Path as Path
+import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import ElmReview.ReportMode as ReportMode
 import Json.Encode as Encode
 import Wrapper.MinVersion as MinVersion
 import Wrapper.NewRule as NewRule
 import Wrapper.Options exposing (NewPackageOptions)
-import Wrapper.Options.RuleType as RuleType exposing (RuleType)
+import Wrapper.Options.RuleType exposing (RuleType)
 import Wrapper.ReviewConfigTemplate as ReviewConfigTemplate
 
 
@@ -46,75 +47,92 @@ type alias ModelData =
 
 
 type Msg
-    = GotUserInput Input
-    | Done (Result Problem.Exit ())
+    = Done (Result Problem.Exit ())
     | PrintedNowExit Int
-
-
-type alias Input =
-    { authorName : String
-    , packageName : String
-    , fullPackageName : Elm.Package.Name
-    , ruleName : Module.Name
-    , ruleType : RuleType
-    , license : License
-    }
 
 
 type alias Warning =
     Colorize -> String
 
 
-init : Bool -> NewPackageOptions -> ( Model, TCmd Msg )
-init stdinSupported options =
-    ( Model
-        { stdinSupported = stdinSupported
-        , options = options
-        }
-    , -- TODO Remove hardcoded values
-      TTask.succeed
-        { authorName = "jfmengels"
-        , packageName = "elm-review-yes"
-        , fullPackageName =
-            case Elm.Package.fromString "jfmengels/elm-review-yes" of
-                Just name ->
-                    name
-
-                Nothing ->
-                    Debug.todo "Package name: Nooooooo!"
-        , ruleName =
-            case Module.fromString "Hi" of
-                Just name ->
-                    name
-
-                Nothing ->
-                    Debug.todo "Rule name: Nooooooo!"
-        , ruleType = RuleType.ModuleRule
-        , license = License.bsd3
-        }
-        |> TTask.perform GotUserInput
-    )
+init : NewPackageOptions -> TCmd Msg
+init options =
+    TTask.map2
+        (\name ( ruleName, ruleType ) ->
+            { name = name
+            , path = Elm.Package.toString name
+            , ruleName = ruleName
+            , ruleType = ruleType
+            }
+        )
+        promptForName
+        -- TODO Use prefilled answers for tests
+        (NewRule.prompts { newRuleName = Nothing, ruleType = Nothing })
+        |> TTask.andThen (createProject options)
+        |> TTask.andThen (\() -> Cli.printlnStdoutTask (successMessage (Color.toAnsi options.color)))
+        |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
+        |> TTask.attempt Done
 
 
-update : Msg -> Model -> TCmd Msg
-update msg (Model model) =
+promptForName : TTask Problem Elm.Package.Name
+promptForName =
+    promptForAuthorName
+        |> TTask.andThen promptForPackageName
+
+
+promptForAuthorName : TTask Problem String
+promptForAuthorName =
+    -- TODO Put special effects on prompt messages
+    Cli.printlnStdoutTask """? Your GitHub username:"""
+        |> TTask.andThen (\() -> Stdin.readLine)
+        |> TTask.map String.trim
+        |> TTask.mapError (Stdin.toProblem "while prompting for the GitHub username")
+        |> TTask.andThen
+            (\author ->
+                if String.isEmpty author then
+                    Cli.printlnStdoutTask "The GitHub username should not be empty."
+                        |> TTask.andThen (\() -> promptForAuthorName)
+
+                else
+                    TTask.succeed author
+            )
+
+
+promptForPackageName : String -> TTask Problem Elm.Package.Name
+promptForPackageName authorName =
+    -- TODO Put special effects on prompt messages
+    Cli.printlnStdoutTask """? The package name (starting with "elm-review-")"""
+        |> TTask.andThen (\() -> Stdin.readLine)
+        |> TTask.mapError (Stdin.toProblem "while prompting for the package name")
+        |> TTask.map String.trim
+        |> TTask.andThen
+            (\packageName ->
+                let
+                    name : Maybe Elm.Package.Name
+                    name =
+                        if not (String.startsWith "elm-review-" packageName) then
+                            Nothing
+
+                        else
+                            Elm.Package.fromString (authorName ++ "/" ++ packageName)
+                in
+                case name of
+                    Just validName ->
+                        TTask.succeed validName
+
+                    Nothing ->
+                        Cli.printlnStdoutTask """The package name needs to start with "elm-review-"."""
+                            |> TTask.andThen (\() -> promptForPackageName authorName)
+            )
+
+
+update : Msg -> TCmd Msg
+update msg =
     case msg of
-        GotUserInput input ->
-            createProject input model.options
-                |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
-                |> TTask.attempt Done
-
         Done result ->
             case result of
                 Ok () ->
-                    let
-                        c : Colorize
-                        c =
-                            Color.toAnsi model.options.color
-                    in
-                    Cli.printlnStdoutTask
-                        (successMessage c)
-                        |> TTask.attempt (\_ -> PrintedNowExit 0)
+                    Cli.exit 0
 
                 Err exit ->
                     Problem.exit exit
@@ -132,52 +150,60 @@ formatOptions options =
     }
 
 
-createProject : Input -> NewPackageOptions -> TTask Problem ()
-createProject input options =
+type alias Input =
+    { name : Elm.Package.Name
+    , path : Path
+    , ruleName : Module.Name
+    , ruleType : RuleType
+    }
+
+
+createProject : NewPackageOptions -> Input -> TTask Problem ()
+createProject options ({ name, path, ruleName, ruleType } as input) =
     let
         elmJson : Elm.Project.Project
         elmJson =
-            createElmJson input
+            createElmJson ruleName name
 
-        ruleName : String
-        ruleName =
-            Module.toString input.ruleName
+        ruleNameAsString : String
+        ruleNameAsString =
+            Module.toString ruleName
     in
     TTask.sequence
         [ -- Rule source file
           Fs.createFileAndItsDirectory
-            (Path.join [ input.packageName, "src", String.replace "." "/" ruleName ++ ".elm" ])
-            (NewRule.newSourceFile elmJson ruleName input.ruleType)
+            (Path.join [ path, "src", String.replace "." "/" ruleNameAsString ++ ".elm" ])
+            (NewRule.newSourceFile elmJson ruleNameAsString ruleType)
             |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's source file" (FsData.errorToString error))
         , -- Rule test file
           Fs.createFileAndItsDirectory
-            (Path.join [ input.packageName, "tests", String.replace "." "/" ruleName ++ "Test.elm" ])
-            (NewRule.newTestFile ruleName)
+            (Path.join [ path, "tests", String.replace "." "/" ruleNameAsString ++ "Test.elm" ])
+            (NewRule.newTestFile ruleNameAsString)
             |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new rule's test file" (FsData.errorToString error))
         , -- elm.json
-          createElmJsonFile elmJson input
+          createElmJsonFile elmJson path
         , -- package.json
-          createPackageJsonFile input
+          createPackageJsonFile name path
         , -- elm-tooling.json
-          createElmToolingJson input
+          createElmToolingJson path
         , -- README.md
           createReadme input
         , -- preview/
           ElmBinary.findElmVersion
-            |> TTask.andThen (\elmVersion -> ReviewConfigTemplate.create elmVersion (Path.join2 input.packageName "preview") (Just ruleName))
+            |> TTask.andThen (\elmVersion -> ReviewConfigTemplate.create elmVersion (Path.join2 path "preview") (Just ruleNameAsString))
             |> TTask.mapError (\error -> Problem.unexpectedError "while creating the preview folder's configuration" (FsData.errorToString error))
         , -- .gitignore
-          Fs.writeTextFile (Path.join2 input.packageName ".gitignore") (gitIgnore ())
+          Fs.writeTextFile (Path.join2 path ".gitignore") (gitIgnore ())
             |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's .gitignore file" (FsData.errorToString error))
         , -- GitHub actions and issue template
           -- TODO Use write instead of copy?
-          Fs.createDirectory (Path.join2 input.packageName ".github/ISSUE_TEMPLATE/")
+          Fs.createDirectory (Path.join2 path ".github/ISSUE_TEMPLATE/")
             |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/ISSUE_TEMPLATE folder" (FsData.errorToString error))
-        , Fs.createDirectory (Path.join2 input.packageName ".github/workflows/")
+        , Fs.createDirectory (Path.join2 path ".github/workflows/")
             |> TTask.mapError (\error -> Problem.unexpectedError "while creating the .github/workflows folder" (FsData.errorToString error))
         , Fs.copyDirectory
             { from = Path.join2 options.binaryRoot "new-package/github"
-            , to = Path.join2 input.packageName ".github/"
+            , to = Path.join2 path ".github/"
             }
             |> TTask.mapError
                 (\error -> Problem.unexpectedError "while copying the GitHub Actions" (FsData.errorToString error))
@@ -191,8 +217,8 @@ createProject input options =
         ]
 
 
-createElmJsonFile : Elm.Project.Project -> Input -> TTask Problem ()
-createElmJsonFile elmJson input =
+createElmJsonFile : Elm.Project.Project -> Path -> TTask Problem ()
+createElmJsonFile elmJson packageNamePath =
     let
         packageElmJson : String
         packageElmJson =
@@ -200,18 +226,18 @@ createElmJsonFile elmJson input =
                 |> Elm.Project.encode
                 |> Encode.encode 4
     in
-    Fs.writeTextFile (Path.join2 input.packageName "elm.json") packageElmJson
+    Fs.writeTextFile (Path.join2 packageNamePath "elm.json") packageElmJson
         |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm.json file" (FsData.errorToString error))
 
 
-createElmJson : Input -> Elm.Project.Project
-createElmJson input =
+createElmJson : Module.Name -> Elm.Package.Name -> Elm.Project.Project
+createElmJson ruleName name =
     Elm.Project.Package
-        { name = input.fullPackageName
+        { name = name
         , summary = ""
-        , license = input.license
+        , license = License.bsd3
         , version = Version.one
-        , exposed = Elm.Project.ExposedList [ input.ruleName ]
+        , exposed = Elm.Project.ExposedList [ ruleName ]
         , deps = toElmJsonDeps dependencies
         , testDeps = toElmJsonDeps testDependencies
         , elm = elm019 ()
@@ -253,22 +279,22 @@ toElmJsonDeps deps =
         deps
 
 
-createPackageJsonFile : Input -> TTask Problem ()
-createPackageJsonFile input =
+createPackageJsonFile : Elm.Package.Name -> Path -> TTask Problem ()
+createPackageJsonFile name path =
     let
         packageElmJson : String
         packageElmJson =
-            packageJson input
+            packageJson name
                 |> Encode.encode 4
     in
-    Fs.writeTextFile (Path.join2 input.packageName "package.json") packageElmJson
+    Fs.writeTextFile (Path.join2 path "package.json") packageElmJson
         |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's package.json file" (FsData.errorToString error))
 
 
-packageJson : Input -> Encode.Value
-packageJson input =
+packageJson : Elm.Package.Name -> Encode.Value
+packageJson name =
     Encode.object
-        [ ( "name", Encode.string <| Elm.Package.toString input.fullPackageName )
+        [ ( "name", Encode.string <| Elm.Package.toString name )
         , ( "private", Encode.bool True )
         , ( "scripts", Encode.object (scripts ()) )
         , ( "engines", Encode.object [ ( "node", Encode.string ">=14.21.3" ) ] )
@@ -306,8 +332,8 @@ packageJsonDevDependencies () =
         |> List.map (\( name, script ) -> ( name, Encode.string script ))
 
 
-createElmToolingJson : Input -> TTask Problem ()
-createElmToolingJson input =
+createElmToolingJson : Path -> TTask Problem ()
+createElmToolingJson path =
     let
         elmToolingJson : String
         elmToolingJson =
@@ -322,13 +348,13 @@ createElmToolingJson input =
                 ]
                 |> Encode.encode 4
     in
-    Fs.writeTextFile (Path.join2 input.packageName "elm-tooling.json") elmToolingJson
+    Fs.writeTextFile (Path.join2 path "elm-tooling.json") elmToolingJson
         |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's elm-tooling.json file" (FsData.errorToString error))
 
 
 createReadme : Input -> TTask Problem ()
 createReadme input =
-    Fs.writeTextFile (Path.join2 input.packageName "README.md") (readme input)
+    Fs.writeTextFile (Path.join2 input.path "README.md") (readme input)
         |> TTask.mapError (\error -> Problem.unexpectedError "while creating the new package's README file" (FsData.errorToString error))
 
 
@@ -337,7 +363,7 @@ readme input =
     let
         fullName : String
         fullName =
-            Elm.Package.toString input.fullPackageName
+            Elm.Package.toString input.name
 
         ruleName : String
         ruleName =

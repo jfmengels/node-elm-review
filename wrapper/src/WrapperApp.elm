@@ -30,7 +30,7 @@ type Model
     | Review Review.Model
     | Init Init.Model
     | NewRule
-    | NewPackage NewPackage.Model
+    | NewPackage
     | PrepareOffline PrepareOffline.Model
 
 
@@ -143,11 +143,10 @@ handleCliArgsParseResult env stdinSupported result =
                 |> InitError.Success
 
         OptionsParser.NewPackage options ->
-            let
-                ( newPackageModel, cmd ) =
-                    NewPackage.init stdinSupported options
-            in
-            ( NewPackage newPackageModel, TCmd.map NewPackageMsg cmd )
+            ( NewPackage
+            , NewPackage.init options
+                |> TCmd.map NewPackageMsg
+            )
                 |> InitError.Success
 
         OptionsParser.PrepareOffline options ->
@@ -209,9 +208,9 @@ update msg model =
 
         NewPackageMsg newPackageMsg ->
             case model of
-                NewPackage newPackageModel ->
-                    ( model
-                    , NewPackage.update newPackageMsg newPackageModel
+                NewPackage ->
+                    ( NewPackage
+                    , NewPackage.update newPackageMsg
                         |> TCmd.map NewPackageMsg
                     )
 
