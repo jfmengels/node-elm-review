@@ -359,14 +359,17 @@ addReviewAppDependencies outputTarget initialDependencies =
                         ]
 
                     OutputTarget.ElmRunTarget ->
-                        [ ( "elm-run/cli", "1.0.0" )
+                        [ ( "elm-run/basis", "1.0.0" )
+                        , ( "elm-run/cli", "1.0.0" )
                         , ( "elm-run/fs", "1.0.0" )
+                        , ( "elm-run/env", "1.0.0" )
                         , ( "elm-run/os", "1.0.0" )
                         , ( "elm-run/worker", "1.0.0" )
                         , ( "elm-run/capabilities", "1.0.0" )
                         , ( "elm-run/log", "1.0.0" )
                         , ( "elm-run/stdio", "1.0.0" )
                         , ( "elm-run/terminal", "1.0.0" )
+                        , ( "elm-run/terminfo", "1.0.0" )
                         , ( "elm-run/binary", "1.0.0" )
                         ]
                )
