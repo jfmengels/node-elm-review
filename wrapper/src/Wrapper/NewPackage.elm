@@ -208,7 +208,7 @@ createProject options ({ name, path, ruleName, ruleType } as input) =
             |> TTask.mapError
                 (\error -> Problem.unexpectedError "while copying the GitHub Actions" (FsData.errorToString error))
 
-        -- TODO
+        -- TODO Add remaining new-package tasks
         --, createElmReviewConfiguration  input
         --, createLicense  input
         --, createMaintenanceScripts  input
