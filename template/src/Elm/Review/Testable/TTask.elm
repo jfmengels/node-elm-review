@@ -298,8 +298,11 @@ transform tx source =
             Internal.WalkTree path pattern matchKind (onResult >> tx)
 
         -- Http
-        Internal.HttpGet url onResult ->
-            Internal.HttpGet url (onResult >> tx)
+        Internal.HttpGetString url onResult ->
+            Internal.HttpGetString url (onResult >> tx)
+
+        Internal.HttpGetBytes url onResult ->
+            Internal.HttpGetBytes url (onResult >> tx)
 
         -- Stdin/stdout/stderr
         Internal.ReadKey onResult ->

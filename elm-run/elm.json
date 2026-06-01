@@ -8,6 +8,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "elm/bytes": "1.0.8",
             "elm/core": "1.0.5",
             "elm/http": "2.0.0",
             "elm/json": "1.1.4",
@@ -16,8 +17,8 @@
             "elm-run/binary": "1.0.0",
             "elm-run/capabilities": "1.0.0",
             "elm-run/cli": "1.0.0",
-            "elm-run/fs": "1.0.0",
             "elm-run/env": "1.0.0",
+            "elm-run/fs": "1.0.0",
             "elm-run/os": "1.0.0",
             "elm-run/stdio": "1.0.0",
             "elm-run/terminfo": "1.0.0",
@@ -25,7 +26,6 @@
             "robinheghan/fnv1a": "1.0.0"
         },
         "indirect": {
-            "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
             "elm/parser": "1.1.0",
             "elm/time": "1.0.0",

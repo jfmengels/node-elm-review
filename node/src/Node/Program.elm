@@ -1,5 +1,6 @@
 port module Node.Program exposing (Config, Program, program)
 
+import Bytes exposing (Bytes)
 import ConcurrentTask exposing (ConcurrentTask, Pool)
 import ConcurrentTask.Http
 import Dict exposing (Dict)
@@ -409,8 +410,12 @@ task testableTask =
                 |> handle onResult
 
         -- Http
-        Internal.HttpGet url onResult ->
-            effects.httpGet url
+        Internal.HttpGetString url onResult ->
+            effects.httpGetString url
+                |> handle onResult
+
+        Internal.HttpGetBytes url onResult ->
+            effects.httpGetBytes url
                 |> handle onResult
 
         -- Stdin/stdout/stderr
@@ -671,13 +676,24 @@ decodeCompleted =
         (Decode.succeed False)
 
 
-httpGet : String -> ConcurrentTask () String
-httpGet url =
+httpGetString : String -> ConcurrentTask () String
+httpGetString url =
     ConcurrentTask.Http.get
         { url = url
         , headers = []
         , expect = ConcurrentTask.Http.expectString
         , timeout = Nothing
+        }
+        |> ConcurrentTask.mapError (\_ -> ())
+
+
+httpGetBytes : String -> ConcurrentTask () Bytes
+httpGetBytes url =
+    ConcurrentTask.Http.get
+        { url = url
+        , headers = []
+        , expect = ConcurrentTask.Http.expectRawBytes
+        , timeout = Just 60000
         }
         |> ConcurrentTask.mapError (\_ -> ())
 
@@ -959,7 +975,8 @@ type alias Effects =
     , removeDirectory : Path -> ConcurrentTask FsError ()
     , copyDirectory : { from : Path, to : Path } -> ConcurrentTask FsError ()
     , walkTree : Path -> Maybe String -> MatchKind -> ConcurrentTask FsError (List Path)
-    , httpGet : String -> ConcurrentTask () String
+    , httpGetString : String -> ConcurrentTask () String
+    , httpGetBytes : String -> ConcurrentTask () Bytes
 
     -- Stdin / Stdout
     , readKey : ConcurrentTask StdinError Key
@@ -992,7 +1009,8 @@ effects =
     , walkTree = walkTree
 
     -- Http
-    , httpGet = httpGet
+    , httpGetString = httpGetString
+    , httpGetBytes = httpGetBytes
 
     -- Stdin / Stdout
     , readKey = readKey

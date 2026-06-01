@@ -1,5 +1,6 @@
 module ElmRun.Effects exposing (effects, subEffects)
 
+import Bytes exposing (Bytes)
 import Capabilities exposing (Console, FileWatcher, Stdin)
 import Cli as ElmRunCli exposing (Env)
 import Elm.Review.Testable exposing (Effects)
@@ -38,7 +39,8 @@ effects fs os stdin stdout stderr =
     , walkTree = walkTree fs
 
     -- Http
-    , httpGet = httpGet
+    , httpGetString = httpGetString
+    , httpGetBytes = httpGetBytes
 
     -- Stdin / Stdout
     , readKey = readKey stdin
@@ -56,8 +58,8 @@ effects fs os stdin stdout stderr =
     }
 
 
-httpGet : String -> Task () String
-httpGet url =
+httpGetString : String -> Task () String
+httpGetString url =
     Http.task
         { method = "GET"
         , url = url
@@ -74,6 +76,27 @@ httpGet url =
                             Err ()
                 )
         , timeout = Nothing
+        }
+
+
+httpGetBytes : String -> Task () Bytes
+httpGetBytes url =
+    Http.task
+        { method = "GET"
+        , url = url
+        , headers = []
+        , body = Http.emptyBody
+        , resolver =
+            Http.bytesResolver
+                (\response ->
+                    case response of
+                        Http.GoodStatus_ _ body ->
+                            Ok body
+
+                        _ ->
+                            Err ()
+                )
+        , timeout = Just 60000
         }
 
 

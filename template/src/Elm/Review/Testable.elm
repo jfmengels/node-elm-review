@@ -19,6 +19,7 @@ module Elm.Review.Testable exposing
 
 -}
 
+import Bytes exposing (Bytes)
 import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FsData exposing (Entry, FileStat, FsError, MatchKind)
@@ -42,7 +43,8 @@ type alias Effects =
     , removeDirectory : Path -> PlatformTask.Task FsError ()
     , copyDirectory : { from : Path, to : Path } -> PlatformTask.Task FsError ()
     , walkTree : Path -> Maybe String -> MatchKind -> PlatformTask.Task FsError (List Path)
-    , httpGet : String -> PlatformTask.Task () String
+    , httpGetString : String -> PlatformTask.Task () String
+    , httpGetBytes : String -> PlatformTask.Task () Bytes
 
     -- Stdin / Stdout
     , readKey : PlatformTask.Task StdinError Key
@@ -160,8 +162,12 @@ task effects testableTask =
                 |> handle effects onResult
 
         -- Http
-        Internal.HttpGet url onResult ->
-            effects.httpGet url
+        Internal.HttpGetString url onResult ->
+            effects.httpGetString url
+                |> handle effects onResult
+
+        Internal.HttpGetBytes url onResult ->
+            effects.httpGetBytes url
                 |> handle effects onResult
 
         -- Stdin

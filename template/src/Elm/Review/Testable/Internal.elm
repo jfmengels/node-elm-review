@@ -11,6 +11,7 @@ module Elm.Review.Testable.Internal exposing
 
 -}
 
+import Bytes exposing (Bytes)
 import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.FileWatchData exposing (FileEvent, WatchOptions)
 import Elm.Review.Testable.FsData exposing (Entry, FileStat, FsError, MatchKind)
@@ -44,7 +45,8 @@ type TTask error value
     | CopyDirectory { from : Path, to : Path } (Result FsError () -> TaskResult error value)
     | WalkTree Path (Maybe String) MatchKind (Result FsError (List Path) -> TaskResult error value)
       -- Http
-    | HttpGet String (Result () String -> TaskResult error value)
+    | HttpGetString String (Result () String -> TaskResult error value)
+    | HttpGetBytes String (Result () Bytes -> TaskResult error value)
       -- Stdin/stdout/stderr
     | ReadKey (Result StdinError Key -> TaskResult error value)
     | ReadLine (Result StdinError String -> TaskResult error value)
