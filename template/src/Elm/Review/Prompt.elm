@@ -58,7 +58,6 @@ type PromptResult
 update : Msg -> PromptResult
 update msg =
     case msg of
-        -- TODO Figure out how to get interactive keypresses that don't wait for the Enter key
         UserPressedKey (Ok key) ->
             case interpretKey key of
                 Just True ->
