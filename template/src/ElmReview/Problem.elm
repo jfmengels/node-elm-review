@@ -86,10 +86,17 @@ unwrapFOR_TESTS (Problem problem) =
 
 stop : FormatOptions options -> Problem -> TCmd msg
 stop formatOptions problem =
-    TCmd.batch
-        [ Cli.printlnStderr (format formatOptions problem)
-        , exit (shouldExitWithError formatOptions.attemptFutureRecovery problem)
-        ]
+    let
+        message : String
+        message =
+            format formatOptions problem
+    in
+    case shouldExitWithError formatOptions.attemptFutureRecovery problem of
+        Exit True ->
+            Cli.printErrorThenExit message 1
+
+        Exit False ->
+            Cli.printlnStderr message
 
 
 type Exit
