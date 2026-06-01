@@ -18,14 +18,15 @@ import Elm.Review.Testable.Stdin as Stdin
 import Elm.Review.Testable.StdinData as Stdin exposing (Key(..), StdinError)
 import Elm.Review.Testable.TTask as TTask
 import ElmReview.Color as Color exposing (Color(..), Colorize)
+import ElmReview.Problem as Problem exposing (Problem)
 
 
 type Msg
-    = UserPressedKey (Result StdinError Stdin.Key)
+    = UserPressedKey (Problem.FormatOptions {}) (Result Problem.Exit Stdin.Key)
 
 
-prompt : { color : Color.Support, priorMessage : Maybe String, question : Colorize -> String } -> TCmd Msg
-prompt { color, priorMessage, question } =
+prompt : { formatOptions : Problem.FormatOptions {}, priorMessage : Maybe String, question : Colorize -> String } -> TCmd Msg
+prompt { formatOptions, priorMessage, question } =
     let
         message : String
         message =
@@ -36,17 +37,17 @@ prompt { color, priorMessage, question } =
                 Nothing ->
                     ""
 
+        c : Colorize
+        c =
+            Color.toAnsi formatOptions.color
+
         question_ : String
         question_ =
-            Color.bold color (question (Color.toAnsi color))
-
-        yesNo : String
-        yesNo =
-            Color.toAnsi color Gray " (Y/n)"
+            Color.bold formatOptions.color (question c)
     in
-    Cli.printlnStdoutTask (message ++ question_ ++ yesNo ++ "")
-        |> TTask.andThen (\() -> Stdin.readKey)
-        |> TTask.attempt UserPressedKey
+    Cli.printlnStdoutTask (message ++ question_ ++ c Gray " (Y/n)" ++ "")
+        |> TTask.andThen (\() -> promptForConfirmation formatOptions)
+        |> TTask.attempt (UserPressedKey formatOptions)
 
 
 type PromptResult
@@ -58,7 +59,7 @@ type PromptResult
 update : Msg -> PromptResult
 update msg =
     case msg of
-        UserPressedKey (Ok key) ->
+        UserPressedKey formatOptions (Ok key) ->
             case interpretKey key of
                 Just True ->
                     Accepted
@@ -67,12 +68,19 @@ update msg =
                     Refused
 
                 Nothing ->
-                    Stdin.readKey
-                        |> TTask.attempt UserPressedKey
+                    promptForConfirmation formatOptions
+                        |> TTask.attempt (UserPressedKey formatOptions)
                         |> TriggerCmd
 
-        UserPressedKey (Err err) ->
-            Debug.todo ("Got error while awaiting key: " ++ Debug.toString err)
+        UserPressedKey _ (Err exit) ->
+            Problem.exit exit
+                |> TriggerCmd
+
+
+promptForConfirmation : Problem.FormatOptions {} -> TTask.TTask Problem.Exit Key
+promptForConfirmation formatOptions =
+    Stdin.readKey
+        |> TTask.onError (\error -> Stdin.toProblem "while prompting for confirmation" error |> Problem.exitOnUnrecoverable formatOptions)
 
 
 interpretKey : Key -> Maybe Bool

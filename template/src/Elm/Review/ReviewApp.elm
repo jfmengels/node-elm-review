@@ -1068,7 +1068,7 @@ sendFixPrompt diffs result nbErrors model =
         in
         ( { model | promptId = promptId }
         , Prompt.prompt
-            { color = model.options.color
+            { formatOptions = formatOptions model.options
             , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
             , question =
                 \_ ->

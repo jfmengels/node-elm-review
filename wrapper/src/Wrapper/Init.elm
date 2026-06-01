@@ -109,7 +109,7 @@ formatOptions options =
 prompt : ModelData -> TCmd Msg
 prompt model =
     Prompt.prompt
-        { color = model.options.color
+        { formatOptions = formatOptions model.options
         , priorMessage = Nothing
         , question =
             \c ->
