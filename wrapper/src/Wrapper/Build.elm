@@ -333,7 +333,7 @@ addReviewAppDependencies outputTarget initialDependencies =
                         ( name, version ) :: deps
 
                     _ ->
-                        Debug.todo "Report error"
+                        deps
         )
         initialDependencies
         ([ ( "elm/json", "1.1.4" )
