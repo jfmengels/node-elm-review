@@ -1,5 +1,6 @@
 port module Node.Program exposing (Config, Program, program)
 
+import Base64
 import Bytes exposing (Bytes)
 import ConcurrentTask exposing (ConcurrentTask, Pool)
 import ConcurrentTask.Http
@@ -385,6 +386,10 @@ task testableTask =
             effects.writeTextFile path string
                 |> handle onResult
 
+        Internal.WriteBytes path bytes onResult ->
+            effects.writeBytes path bytes
+                |> handle onResult
+
         Internal.DeleteFile path onResult ->
             effects.deleteFile path
                 |> handle onResult
@@ -472,6 +477,20 @@ writeTextFile path content =
             Encode.object
                 [ ( "path", Encode.string path )
                 , ( "content", Encode.string content )
+                ]
+        }
+
+
+writeBytes : String -> Bytes -> ConcurrentTask FsData.FsError ()
+writeBytes path content =
+    ConcurrentTask.define
+        { function = "fs:writeBytes"
+        , expect = ConcurrentTask.expectWhatever
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                , ( "content", Encode.string (Base64.fromBytes content |> Maybe.withDefault "Invalid bytes") )
                 ]
         }
 
@@ -967,6 +986,7 @@ type alias Effects =
     { -- File system
       readTextFile : Path -> ConcurrentTask FsError String
     , writeTextFile : Path -> String -> ConcurrentTask FsError ()
+    , writeBytes : Path -> Bytes -> ConcurrentTask FsError ()
     , stat : Path -> ConcurrentTask FsError FileStat
     , list : Path -> ConcurrentTask FsError (List Entry)
     , deleteFile : Path -> ConcurrentTask FsError ()
@@ -999,6 +1019,7 @@ effects =
     { -- File system
       readTextFile = readTextFile
     , writeTextFile = writeTextFile
+    , writeBytes = writeBytes
     , stat = stat
     , list = list
     , deleteFile = deleteFile

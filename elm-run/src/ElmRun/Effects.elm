@@ -29,6 +29,7 @@ effects fs os stdin stdout stderr =
     { -- File system
       readTextFile = \path -> ElmRunFs.readTextFile fs (Fs.Location.file path) |> Task.mapError mapFsError
     , writeTextFile = \path string -> ElmRunFs.writeTextFile fs (Fs.Location.file path) string |> Task.mapError mapFsError
+    , writeBytes = \path bytes -> ElmRunFs.writeBytes fs (Fs.Location.file path) bytes |> Task.mapError mapFsError
     , stat = \path -> ElmRunFs.stat fs (Fs.Location.fromFile (Fs.Location.file path)) |> Task.map toTestableStat |> Task.mapError mapFsError
     , list = \path -> ElmRunFs.list fs (Fs.Location.dir path) |> Task.map (List.map toTestableEntry) |> Task.mapError mapFsError
     , deleteFile = \path -> ElmRunFs.deleteFile fs (Fs.Location.file path) |> Task.mapError mapFsError

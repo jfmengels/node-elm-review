@@ -38,6 +38,7 @@ type TTask error value
     | List Path (Result FsError (List Entry) -> TaskResult error value)
     | ReadTextFile Path (Result FsError String -> TaskResult error value)
     | WriteTextFile Path String (Result FsError () -> TaskResult error value)
+    | WriteBytes Path Bytes (Result FsError () -> TaskResult error value)
     | DeleteFile Path (Result FsError () -> TaskResult error value)
     | CreateSymlink { target : Path, linkPath : Path } (Result FsError () -> TaskResult error value)
     | CreateDirectory Path (Result FsError () -> TaskResult error value)

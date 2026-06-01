@@ -35,6 +35,7 @@ type alias Effects =
     { -- File system
       readTextFile : Path -> PlatformTask.Task FsError String
     , writeTextFile : Path -> String -> PlatformTask.Task FsError ()
+    , writeBytes : Path -> Bytes -> PlatformTask.Task FsError ()
     , stat : Path -> PlatformTask.Task FsError FileStat
     , list : Path -> PlatformTask.Task FsError (List Entry)
     , deleteFile : Path -> PlatformTask.Task FsError ()
@@ -135,6 +136,10 @@ task effects testableTask =
 
         Internal.WriteTextFile path string onResult ->
             effects.writeTextFile path string
+                |> handle effects onResult
+
+        Internal.WriteBytes path bytes onResult ->
+            effects.writeBytes path bytes
                 |> handle effects onResult
 
         Internal.DeleteFile path onResult ->

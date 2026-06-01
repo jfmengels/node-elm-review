@@ -9,9 +9,11 @@ module Elm.Review.Testable.Fs exposing
     , removeDirectory
     , stat
     , walkTree
+    , writeBytes
     , writeTextFile
     )
 
+import Bytes exposing (Bytes)
 import Elm.Review.Testable.FsData exposing (Entry, FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
@@ -50,6 +52,13 @@ readTextFile path =
 writeTextFile : Path -> String -> TTask FsError ()
 writeTextFile path string =
     Internal.WriteTextFile path string Internal.resultFromResult
+
+
+{-| Write binary data (Bytes) to a file.
+-}
+writeBytes : Path -> Bytes -> TTask FsError ()
+writeBytes path bytes =
+    Internal.WriteBytes path bytes Internal.resultFromResult
 
 
 createFileAndItsDirectory : Path -> String -> TTask FsError ()
