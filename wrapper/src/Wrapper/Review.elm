@@ -137,7 +137,7 @@ updateHelp msg model =
 
             else
                 case result of
-                    Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation } ->
+                    Ok { elmJsonPath, reviewElmJson, reviewAppPath, packagesLocation, appHash } ->
                         ( if model.options.watchConfig then
                             case model.options.reviewProject of
                                 Options.Local reviewFolder ->
@@ -157,6 +157,7 @@ updateHelp msg model =
                             { reviewAppPath = reviewAppPath
                             , reviewElmJson = reviewElmJson
                             , reviewFolder = Path.dirname elmJsonPath
+                            , resultCacheFolder = ProjectPaths.resultCacheFolder model.options.projectPaths appHash
                             , packagesLocation = packagesLocation
                             }
                             |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions model.options) problem)
@@ -266,6 +267,7 @@ type alias RunReviewOptions =
     { reviewAppPath : Path
     , reviewElmJson : Elm.Project.ApplicationInfo
     , reviewFolder : Path
+    , resultCacheFolder : Path
     , packagesLocation : Path
     }
 
@@ -281,11 +283,12 @@ runReviewProcess options runReviewOptions =
 
 
 runReviewProcessWithNodeJs : ReviewOptions -> RunReviewOptions -> TTask Problem ProcessId
-runReviewProcessWithNodeJs options { reviewAppPath, reviewElmJson, reviewFolder, packagesLocation } =
+runReviewProcessWithNodeJs options { reviewAppPath, reviewElmJson, reviewFolder, resultCacheFolder, packagesLocation } =
     let
         reviewAppFlags : List String
         reviewAppFlags =
-            ("--review-folder=" ++ reviewFolder)
+            resultCacheFolder
+                :: ("--review-folder=" ++ reviewFolder)
                 :: ("--packages-location=" ++ packagesLocation)
                 :: options.reviewAppFlags
     in

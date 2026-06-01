@@ -1,6 +1,7 @@
 module Wrapper.ProjectPaths exposing
     ( ProjectPaths, from
     , projectRoot, reviewApp, buildFolder
+    , resultCacheFolder
     )
 
 {-|
@@ -66,6 +67,15 @@ buildFolder projectPaths subFolder =
         [ elmStuff projectPaths
         , "build-project"
         , subFolder
+        ]
+
+
+resultCacheFolder : ProjectPaths -> Hash -> Path
+resultCacheFolder projectPaths hash =
+    Path.join
+        [ elmStuff projectPaths
+        , "result-cache"
+        , Hash.toString hash
         ]
 
 
