@@ -9,6 +9,7 @@ and downloads missing ones from GitHub.
 
 -}
 
+import Bytes exposing (Bytes)
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData exposing (FsError)
 import Elm.Review.Testable.Http as Http
@@ -69,11 +70,10 @@ download packagesLocation pkg =
         |> TTask.andThen (\() -> Fs.createDirectory tmpDir |> TTask.mapError CacheFsError)
         |> TTask.andThen
             (\() ->
-                -- TODO Fetch and writes as Bytes for `elm-run`
                 fetchZip url
                     |> TTask.andThen
                         (\zipBytes ->
-                            Fs.writeTextFile zipFile zipBytes
+                            Fs.writeBytes zipFile zipBytes
                                 |> TTask.mapError CacheFsError
                         )
                     |> TTask.andThen (\() -> extractZip tmpDir zipFile)
@@ -99,9 +99,9 @@ download packagesLocation pkg =
             )
 
 
-fetchZip : String -> TTask CacheError String
+fetchZip : String -> TTask CacheError Bytes
 fetchZip url =
-    Http.get url
+    Http.getBytes url
         |> TTask.mapError (\_ -> CacheHttpError)
 
 

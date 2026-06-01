@@ -279,6 +279,9 @@ transform tx source =
         Internal.WriteTextFile path string onResult ->
             Internal.WriteTextFile path string (onResult >> tx)
 
+        Internal.WriteBytes path string onResult ->
+            Internal.WriteBytes path string (onResult >> tx)
+
         Internal.DeleteFile path onResult ->
             Internal.DeleteFile path (onResult >> tx)
 
