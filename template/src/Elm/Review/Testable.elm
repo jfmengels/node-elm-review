@@ -21,7 +21,7 @@ module Elm.Review.Testable exposing
 
 import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
-import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.FsData exposing (Entry, FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TSub, TaskResult)
 import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
@@ -35,6 +35,7 @@ type alias Effects =
       readTextFile : Path -> PlatformTask.Task FsError String
     , writeTextFile : Path -> String -> PlatformTask.Task FsError ()
     , stat : Path -> PlatformTask.Task FsError FileStat
+    , list : Path -> PlatformTask.Task FsError (List Entry)
     , deleteFile : Path -> PlatformTask.Task FsError ()
     , createSymlink : { target : Path, linkPath : Path } -> PlatformTask.Task FsError ()
     , createDirectory : Path -> PlatformTask.Task FsError ()
@@ -120,6 +121,10 @@ task effects testableTask =
         -- File system
         Internal.Stat path onResult ->
             effects.stat path
+                |> handle effects onResult
+
+        Internal.List path onResult ->
+            effects.list path
                 |> handle effects onResult
 
         Internal.ReadTextFile path onResult ->

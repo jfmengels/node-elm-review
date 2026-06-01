@@ -7,13 +7,13 @@ import Elm.Review.InitError as InitError
 import Elm.Review.Testable.CliData as CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
 import Elm.Review.Testable.FileWatchData as FileWatchData
-import Elm.Review.Testable.FsData as FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.FsData as FsData exposing (Entry, FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TCmd, TSub, TaskResult)
 import Elm.Review.Testable.ProcessData as ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData as StdinData exposing (Key, StdinError)
 import Elm.Review.Testable.TSub as TSub exposing (SubEffects, TSub)
 import Elm.Review.Testable.TTask exposing (TTask)
-import ElmReview.Path exposing (Path)
+import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -293,7 +293,7 @@ taskToCmd pool initialExitCode ongoingTasksCount testableEffects =
                         cmd
             }
 
-        Internal.Batch list ->
+        Internal.Batch elements ->
             let
                 result : { pool : Pool msg, exitCode : Maybe Int, ongoingTasksCount : Int, cmds : List (Cmd (Msg msg)) }
                 result =
@@ -315,7 +315,7 @@ taskToCmd pool initialExitCode ongoingTasksCount testableEffects =
                         , ongoingTasksCount = ongoingTasksCount
                         , cmds = []
                         }
-                        list
+                        elements
             in
             { pool = result.pool
             , exitCode = result.exitCode
@@ -370,6 +370,10 @@ task testableTask =
         -- File system
         Internal.Stat path onResult ->
             effects.stat path
+                |> handle onResult
+
+        Internal.List path onResult ->
+            effects.list path
                 |> handle onResult
 
         Internal.ReadTextFile path onResult ->
@@ -480,6 +484,19 @@ stat path =
         }
 
 
+list : Path -> ConcurrentTask FsData.FsError (List Entry)
+list path =
+    ConcurrentTask.define
+        { function = "fs:list"
+        , expect = ConcurrentTask.expectJson (Decode.list (entryDecoder path))
+        , errors = ConcurrentTask.expectErrors decodeFsError
+        , args =
+            Encode.object
+                [ ( "path", Encode.string path )
+                ]
+        }
+
+
 statDecoder : Decoder FileStat
 statDecoder =
     Decode.map5 FileStat
@@ -488,6 +505,20 @@ statDecoder =
         (Decode.field "isSymlink" Decode.bool)
         (Decode.field "size" Decode.int)
         (Decode.field "modifiedTime" Decode.int)
+
+
+entryDecoder : Path -> Decoder Entry
+entryDecoder root =
+    Decode.map8 Entry
+        (Decode.field "path" Decode.string)
+        (Decode.field "name" Decode.string)
+        (Decode.field "path" Decode.string |> Decode.map (Path.join2 root))
+        (Decode.field "isDirectory" Decode.bool)
+        (Decode.field "isFile" Decode.bool)
+        (Decode.field "isSymlink" Decode.bool)
+        (Decode.field "size" Decode.int)
+        (Decode.field "modifiedTime" Decode.int)
+        |> Decode.map (\f -> f 0)
 
 
 deleteFile : Path -> ConcurrentTask FsData.FsError ()
@@ -741,8 +772,8 @@ encodeSpawnOptions command spawnOptions =
 
 
 encodeEnv : List ( String, String ) -> Encode.Value
-encodeEnv list =
-    List.map (\( key, value ) -> ( key, Encode.string value )) list
+encodeEnv envList =
+    List.map (\( key, value ) -> ( key, Encode.string value )) envList
         |> Encode.object
 
 
@@ -921,6 +952,7 @@ type alias Effects =
       readTextFile : Path -> ConcurrentTask FsError String
     , writeTextFile : Path -> String -> ConcurrentTask FsError ()
     , stat : Path -> ConcurrentTask FsError FileStat
+    , list : Path -> ConcurrentTask FsError (List Entry)
     , deleteFile : Path -> ConcurrentTask FsError ()
     , createSymlink : { target : Path, linkPath : Path } -> ConcurrentTask FsError ()
     , createDirectory : Path -> ConcurrentTask FsError ()
@@ -951,6 +983,7 @@ effects =
       readTextFile = readTextFile
     , writeTextFile = writeTextFile
     , stat = stat
+    , list = list
     , deleteFile = deleteFile
     , createSymlink = createSymlink
     , createDirectory = createDirectory

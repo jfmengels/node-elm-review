@@ -270,6 +270,9 @@ transform tx source =
         Internal.Stat path onResult ->
             Internal.Stat path (onResult >> tx)
 
+        Internal.List path onResult ->
+            Internal.List path (onResult >> tx)
+
         Internal.ReadTextFile path onResult ->
             Internal.ReadTextFile path (onResult >> tx)
 

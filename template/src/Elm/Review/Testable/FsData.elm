@@ -3,6 +3,7 @@ module Elm.Review.Testable.FsData exposing
     , Errno(..), errorFromCodeAndPath
     , FileStat
     , MatchKind(..)
+    , Entry
     )
 
 {-|
@@ -819,6 +820,30 @@ type alias FileStat =
     , isSymlink : Bool
     , size : Int
     , modifiedTime : Int
+    }
+
+
+{-| A filesystem entry with full metadata.
+
+Returned by `list` and `Fs.Walk` functions. Carries everything
+the OS gives us in one shot — no separate `stat` call needed.
+
+  - `relativePath` — relative to the walk root (e.g. `"src/Foo/Bar.elm"`)
+  - `location` — typed file or directory location for follow-up I/O
+  - `name` — basename only (e.g. `"Bar.elm"`)
+  - `depth` — 0 = direct child of walk root
+
+-}
+type alias Entry =
+    { relativePath : Path
+    , name : String
+    , path : Path
+    , isDirectory : Bool
+    , isFile : Bool
+    , isSymlink : Bool
+    , size : Int
+    , modifiedTime : Int
+    , depth : Int
     }
 
 

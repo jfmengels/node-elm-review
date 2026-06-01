@@ -4,6 +4,7 @@ module Elm.Review.Testable.Fs exposing
     , createFileAndItsDirectory
     , createSymlink
     , deleteFile
+    , list
     , readTextFile
     , removeDirectory
     , stat
@@ -11,7 +12,7 @@ module Elm.Review.Testable.Fs exposing
     , writeTextFile
     )
 
-import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.FsData exposing (Entry, FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
 import ElmReview.Path as Path exposing (Path)
@@ -22,6 +23,19 @@ import ElmReview.Path as Path exposing (Path)
 stat : Path -> TTask FsError FileStat
 stat path =
     Internal.Stat path Internal.resultFromResult
+
+
+{-| List the direct children of a directory.
+
+Returns `Entry` records with full metadata (no separate `stat` needed).
+Equivalent to a walk with `maxDepth = 0`.
+
+    Fs.list fs (Fs.Location.dir "src")
+
+-}
+list : Path -> TTask FsError (List Entry)
+list path =
+    Internal.List path Internal.resultFromResult
 
 
 {-| Read a file as a String.

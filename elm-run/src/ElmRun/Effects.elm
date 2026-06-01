@@ -29,6 +29,7 @@ effects fs os stdin stdout stderr =
       readTextFile = \path -> ElmRunFs.readTextFile fs (Fs.Location.file path) |> Task.mapError mapFsError
     , writeTextFile = \path string -> ElmRunFs.writeTextFile fs (Fs.Location.file path) string |> Task.mapError mapFsError
     , stat = \path -> ElmRunFs.stat fs (Fs.Location.fromFile (Fs.Location.file path)) |> Task.map toTestableStat |> Task.mapError mapFsError
+    , list = \path -> ElmRunFs.list fs (Fs.Location.dir path) |> Task.map (List.map toTestableEntry) |> Task.mapError mapFsError
     , deleteFile = \path -> ElmRunFs.deleteFile fs (Fs.Location.file path) |> Task.mapError mapFsError
     , createSymlink = createSymlink fs
     , createDirectory = \path -> ElmRunFs.createDirectory fs (Fs.Location.dir path) |> Task.mapError mapFsError
@@ -111,6 +112,20 @@ toTestableStat s =
     , isSymlink = s.isSymlink
     , size = s.size
     , modifiedTime = s.modifiedTime
+    }
+
+
+toTestableEntry : ElmRunFs.Entry -> FsData.Entry
+toTestableEntry s =
+    { relativePath = Fs.Path.toString s.relativePath
+    , name = s.name
+    , path = Fs.Location.display s.location
+    , isDirectory = s.isDirectory
+    , isFile = s.isFile
+    , isSymlink = s.isSymlink
+    , size = s.size
+    , modifiedTime = s.modifiedTime
+    , depth = s.depth
     }
 
 

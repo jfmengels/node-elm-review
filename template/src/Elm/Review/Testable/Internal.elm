@@ -13,7 +13,7 @@ module Elm.Review.Testable.Internal exposing
 
 import Elm.Review.Testable.CliData exposing (Console)
 import Elm.Review.Testable.FileWatchData exposing (FileEvent, WatchOptions)
-import Elm.Review.Testable.FsData exposing (FileStat, FsError, MatchKind)
+import Elm.Review.Testable.FsData exposing (Entry, FileStat, FsError, MatchKind)
 import Elm.Review.Testable.ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
 import Elm.Review.Testable.StdinData exposing (Key, StdinError)
 import ElmReview.Path exposing (Path)
@@ -34,6 +34,7 @@ type TTask error value
     = ImmediateTask (TaskResult error value)
       -- File system
     | Stat Path (Result FsError FileStat -> TaskResult error value)
+    | List Path (Result FsError (List Entry) -> TaskResult error value)
     | ReadTextFile Path (Result FsError String -> TaskResult error value)
     | WriteTextFile Path String (Result FsError () -> TaskResult error value)
     | DeleteFile Path (Result FsError () -> TaskResult error value)
