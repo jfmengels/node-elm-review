@@ -28,6 +28,7 @@ import Elm.Docs
 import Elm.Module
 import Elm.Package
 import Elm.Project
+import Elm.Review.DownloadPackage as DownloadPackage
 import Elm.Review.Options exposing (Options)
 import Elm.Review.StoreVersion as StoreVersion exposing (StoreVersion)
 import Elm.Review.SuppressedErrors as SuppressedErrors exposing (SuppressedErrors)
@@ -36,7 +37,6 @@ import Elm.Review.Testable.FileWatchData as FileWatchData exposing (FileEvent)
 import Elm.Review.Testable.FileWatcher as FileWatcher
 import Elm.Review.Testable.Fs as Fs
 import Elm.Review.Testable.FsData as FsData exposing (FsError)
-import Elm.Review.Testable.Http as Http
 import Elm.Review.Testable.Internal exposing (TCmd)
 import Elm.Review.Testable.TSub as TSub exposing (TSub)
 import Elm.Review.Testable.TTask as TTask exposing (TTask)
@@ -1067,9 +1067,12 @@ fetchElmFiles directory =
 
 fetchDependency : Options -> String -> String -> TCmd Msg
 fetchDependency options packageName packageVersion =
-    TTask.map2 (\elmJson docsJson -> { elmJson = elmJson, docsJson = docsJson })
-        (findOrDownloadPackageFile options packageName packageVersion "elm.json")
-        (findOrDownloadPackageFile options packageName packageVersion "docs.json")
+    findOrDownloadPackageFile options packageName packageVersion "elm.json"
+        |> TTask.andThen
+            (\elmJson ->
+                findOrDownloadPackageFile options packageName packageVersion "docs.json"
+                    |> TTask.map (\docsJson -> { elmJson = elmJson, docsJson = docsJson })
+            )
         |> TTask.attempt (ReceivedDependency packageName)
 
 
@@ -1087,16 +1090,20 @@ findOrDownloadPackageFile options packageName packageVersion fileName =
                     TTask.fail error
 
                 else
-                    -- TODO Try to download the package like the Elm compiler would, not just a single file
-                    readFromPackagesWebsite packageName packageVersion fileName
-                        |> TTask.mapError (\_ -> error)
+                    case String.split "/" packageName of
+                        [ author, name ] ->
+                            DownloadPackage.download options.packagesLocation
+                                { author = author
+                                , name = name
+                                , version = packageVersion
+                                }
+                                |> TTask.mapError (\_ -> error)
+                                |> TTask.andThen (\() -> Fs.readTextFile path)
+
+                        _ ->
+                            TTask.fail error
             )
         |> TTask.map (\source -> { path = path, source = source })
-
-
-readFromPackagesWebsite : String -> String -> String -> TTask () String
-readFromPackagesWebsite packageName packageVersion fileName =
-    Http.get ("https://package.elm-lang.org/packages/" ++ packageName ++ "/" ++ packageVersion ++ "" ++ fileName)
 
 
 fetchRuleLinks : { options | reviewFolder : Path, packagesLocation : Path } -> TCmd Msg
