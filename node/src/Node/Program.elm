@@ -161,19 +161,11 @@ update updateFn msg modelWrapper =
 
                 TaskOnComplete (ConcurrentTask.Error error) ->
                     -- TODO Handle Task ConcurrentTask.Error
-                    let
-                        _ =
-                            Debug.log "Task error" error
-                    in
                     ( modelWrapper, Cmd.none )
                         |> exitIfRequestedAndDone
 
                 TaskOnComplete (ConcurrentTask.UnexpectedError error) ->
                     -- TODO Handle Task ConcurrentTask.UnexpectedError
-                    let
-                        _ =
-                            Debug.log "Task unexpected error" error
-                    in
                     ( modelWrapper, Cmd.none )
                         |> exitIfRequestedAndDone
 
