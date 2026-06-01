@@ -439,11 +439,11 @@ coreElmPerformanceReplacements =
 
 fasterCreateRuleModuleVisitor : List Optimization
 fasterCreateRuleModuleVisitor =
-    [ { target = """var $author$project$Review$Rule$createRuleModuleVisitor = F4(
+    [ { target = """var $jfmengels$elm_review$Review$Rule$createRuleModuleVisitor = F4(
 \tfunction (schema, params, toRuleProjectVisitor, initialContext) {
 \t\tvar raise = function (errorsAndContext) {
 \t\t\treturn {"""
-      , replacement = """var $author$project$Review$Rule$createRuleModuleVisitor = F4(
+      , replacement = """var $jfmengels$elm_review$Review$Rule$createRuleModuleVisitor = F4(
   function (schema, params, toRuleProjectVisitor, initialContext) {
     var raise = function (errorsAndContext) {
       function raise(_v0) {
@@ -457,21 +457,21 @@ fasterCreateRuleModuleVisitor =
 
 mutatingMapReplacement : List Optimization
 mutatingMapReplacement =
-    [ { target = """var $author$project$Review$Rule$fromJsArrayToList = function (_v0) {
+    [ { target = """var $jfmengels$elm_review$Review$Rule$fromJsArrayToList = function (_v0) {
 \tvar list = _v0;
 \treturn list;
 };"""
-      , replacement = """var $author$project$Review$Rule$fromJsArrayToList = _List_fromArray;"""
+      , replacement = """var $jfmengels$elm_review$Review$Rule$fromJsArrayToList = _List_fromArray;"""
       }
-    , { target = """var $author$project$Review$Rule$fromListToJsArray = $elm$core$Basics$identity;"""
-      , replacement = """var $author$project$Review$Rule$fromListToJsArray = _List_toArray;"""
+    , { target = """var $jfmengels$elm_review$Review$Rule$fromListToJsArray = $elm$core$Basics$identity;"""
+      , replacement = """var $jfmengels$elm_review$Review$Rule$fromListToJsArray = _List_toArray;"""
       }
-    , { target = """var $author$project$Review$Rule$mutatingMap = F2(
+    , { target = """var $jfmengels$elm_review$Review$Rule$mutatingMap = F2(
 \tfunction (mapper, _v0) {
 \t\tvar list = _v0;
 \t\treturn A2($elm$core$List$map, mapper, list);
 \t});"""
-      , replacement = """var $author$project$Review$Rule$mutatingMap = F2(
+      , replacement = """var $jfmengels$elm_review$Review$Rule$mutatingMap = F2(
   function (mapper, arr) {
     var len = arr.length;
     for (var i = 0; i < len; i++) {
@@ -480,37 +480,37 @@ mutatingMapReplacement =
     return arr;
   });"""
       }
-    , { target = """var $author$project$Review$Cache$ContextHash$sort = $elm$core$Basics$identity;"""
-      , replacement = """var $author$project$Review$Cache$ContextHash$sort = function(l) { return $elm$core$List$sort(l); }"""
+    , { target = """var $jfmengels$elm_review$Review$Cache$ContextHash$sort = $elm$core$Basics$identity;"""
+      , replacement = """var $jfmengels$elm_review$Review$Cache$ContextHash$sort = function(l) { return $elm$core$List$sort(l); }"""
       }
     ]
 
 
 cacheReplacements : List Optimization
 cacheReplacements =
-    [ { target = """var $author$project$Review$Rule$initialCacheMarker = F3(
+    [ { target = """var $jfmengels$elm_review$Review$Rule$initialCacheMarker = F3(
 \tfunction (_v0, _v1, cache) {
 \t\treturn cache;
 \t});"""
-      , replacement = """var $author$project$Review$Rule$initialCacheMarker = F3(
+      , replacement = """var $jfmengels$elm_review$Review$Rule$initialCacheMarker = F3(
   function (ruleName, ruleId, defaultCache) {
     return globalThis.loadResultFromCache(ruleName, ruleId) || defaultCache;
   });"""
       }
-    , { target = """var $author$project$Review$Rule$finalCacheMarker = F3(
+    , { target = """var $jfmengels$elm_review$Review$Rule$finalCacheMarker = F3(
 \tfunction (_v0, _v1, cache) {
 \t\treturn cache;
 \t});"""
-      , replacement = """var $author$project$Review$Rule$finalCacheMarker = F3(
+      , replacement = """var $jfmengels$elm_review$Review$Rule$finalCacheMarker = F3(
   function (ruleName, ruleId, cacheEntry) {
     globalThis.saveResultToCache(ruleName, ruleId, cacheEntry);
     return cacheEntry;
   });"""
       }
-    , { target = """var $author$project$Review$Cache$ContextHash$createContextHashMarker = function (context) {
+    , { target = """var $jfmengels$elm_review$Review$Cache$ContextHash$createContextHashMarker = function (context) {
 \treturn context;
 };"""
-      , replacement = """var $author$project$Review$Cache$ContextHash$createContextHashMarker = function (context) {
+      , replacement = """var $jfmengels$elm_review$Review$Cache$ContextHash$createContextHashMarker = function (context) {
   return jsonToHash(contextToJson(context));
 };
 
@@ -534,7 +534,7 @@ function jsonToHash(json) {
   if (contextHashMap.has(json)) {
     return contextHashMap.get(json);
   }
-  const hash = A2($author$project$Vendor$Murmur3$hashString, 0, json);
+  const hash = A2($jfmengels$elm_review$Vendor$Murmur3$hashString, 0, json);
   contextHashMap.set(json, hash);
   return hash;
 }"""
