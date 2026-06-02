@@ -5,6 +5,7 @@ import Bytes exposing (Bytes)
 import ConcurrentTask exposing (ConcurrentTask, Pool)
 import ConcurrentTask.Http
 import Dict exposing (Dict)
+import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.InitError as InitError
 import Elm.Review.Testable.CliData as CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
@@ -62,6 +63,7 @@ type alias Config model msg =
 type alias Flags =
     { args : List String
     , env : Dict String String
+    , communicationKey : CliCommunication.Key
     , userHome : Path
     , binaryRoot : Path
     }
@@ -123,9 +125,10 @@ init initFn rawFlags =
 
 flagsDecoder : Decode.Decoder Flags
 flagsDecoder =
-    Decode.map4 Flags
+    Decode.map5 Flags
         (Decode.field "args" (Decode.list Decode.string))
         (Decode.field "env" (Decode.dict Decode.string))
+        CliCommunication.decoder
         (Decode.field "userHome" Decode.string)
         (Decode.field "binaryRoot" Decode.string)
 

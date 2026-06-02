@@ -129,14 +129,14 @@ initWithOptions stdinSupported options rulesFromConfig =
     )
 
 
-init : Bool -> List String -> InitError ( Model, TCmd Msg )
-init stdinSupported args =
+init : Bool -> CliCommunication.Key -> List String -> InitError ( Model, TCmd Msg )
+init stdinSupported communicationKey args =
     case Options.parse args of
         Ok options ->
             computeRulesToRun options
                 |> InitError.map
                     (\rulesFromConfig ->
-                        initWithOptions stdinSupported options rulesFromConfig
+                        initWithOptions stdinSupported communicationKey options rulesFromConfig
                     )
 
         Err problem ->

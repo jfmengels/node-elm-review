@@ -1,5 +1,5 @@
 module Elm.Review.CliCommunication exposing
-    ( Key, dummy
+    ( Key, decoder, dummy
     , send
     , timerStart, timerEnd
     )
@@ -8,7 +8,7 @@ module Elm.Review.CliCommunication exposing
 
 This is mostly done to provide feedback to the user like the number of applied fixes.
 
-@docs Key, dummy
+@docs Key, decoder, dummy
 
 @docs send
 @docs timerStart, timerEnd
@@ -26,6 +26,14 @@ type Key
 dummy : Key
 dummy =
     Key (Encode.bool True)
+
+
+decoder : Json.Decode.Decoder Key
+decoder =
+    Json.Decode.oneOf
+        [ Json.Decode.field "logger" (Json.Decode.map Key Json.Decode.value)
+        , Json.Decode.succeed dummy
+        ]
 
 
 send : Key -> List ( String, Json.Decode.Value ) -> List ( String, Json.Decode.Value )
