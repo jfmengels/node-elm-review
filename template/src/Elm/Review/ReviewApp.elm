@@ -136,7 +136,7 @@ init stdinSupported communicationKey args =
             computeRulesToRun options
                 |> InitError.map
                     (\rulesFromConfig ->
-                        initWithOptions stdinSupported communicationKey options rulesFromConfig
+                        initWithOptions stdinSupported { options | communicationKey = communicationKey } rulesFromConfig
                     )
 
         Err problem ->
