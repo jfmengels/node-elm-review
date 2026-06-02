@@ -106,20 +106,20 @@ init initFn rawFlags =
                     , stop formatOptions problem
                     )
 
-                InitError.StringProblem string ->
+                InitError.StringProblem message ->
                     ( Done
-                    , Cmd.batch
-                        [ printlnStdout string
-                        , exit 1
-                        ]
+                    , printlnStderrThenExit
+                        { message = message
+                        , exitCode = 1
+                        }
                     )
 
         Err decodingError ->
             ( Done
-            , Cmd.batch
-                [ printlnStdout ("Problem decoding flags: " ++ Decode.errorToString decodingError)
-                , exit 1
-                ]
+            , printlnStderrThenExit
+                { message = "Problem decoding flags: " ++ Decode.errorToString decodingError
+                , exitCode = 1
+                }
             )
 
 
