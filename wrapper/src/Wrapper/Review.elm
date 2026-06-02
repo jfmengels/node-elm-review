@@ -363,8 +363,8 @@ watchConfig reviewFolder reviewElmJson =
 watchElmJson : Path -> TSub Msg
 watchElmJson reviewFolder =
     FileWatcher.watch
-        (Path.join2 reviewFolder "elm.json")
-        { excludePaths = []
+        { path = Path.join2 reviewFolder "elm.json"
+        , excludePaths = []
         , recursive = False
         , coalesceMs = 100
         , eventMask = 2
@@ -375,8 +375,8 @@ watchElmJson reviewFolder =
 watchSourceDirectory : Path -> TSub Msg
 watchSourceDirectory directory =
     FileWatcher.watch
-        directory
-        { excludePaths = []
+        { path = directory
+        , excludePaths = []
         , recursive = True
         , coalesceMs = 100
         , eventMask = 2

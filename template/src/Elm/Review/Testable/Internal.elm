@@ -68,7 +68,7 @@ type TaskResult error value
 
 type TSub msg
     = SubBatch (List (TSub msg))
-    | WatchFiles String WatchOptions (FileEvent -> msg)
+    | WatchFiles WatchOptions (FileEvent -> msg)
 
 
 resultFromResult : Result error value -> TaskResult error value

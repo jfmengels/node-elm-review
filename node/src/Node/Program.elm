@@ -945,8 +945,8 @@ subEffects =
     }
 
 
-watchFiles : Path -> FileWatchData.WatchOptions -> (FileWatchData.FileEvent -> msg) -> Sub msg
-watchFiles path watchOptions toMsg =
+watchFiles : FileWatchData.WatchOptions -> (FileWatchData.FileEvent -> msg) -> Sub msg
+watchFiles watchOptions toMsg =
     -- TODO Implement watch files
     Sub.none
 

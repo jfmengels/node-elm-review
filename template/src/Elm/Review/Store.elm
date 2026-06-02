@@ -1243,10 +1243,10 @@ watchSuppressedFiles options =
 watchPath : { toMsg : FileEvent -> Msg, path : Path, recursive : Bool, eventMask : Int } -> TSub Msg
 watchPath { toMsg, path, recursive, eventMask } =
     FileWatcher.watch
-        path
         -- If the path explicitly mentions an excluded path (e.g. "./node_modules/elm-library/src")
         -- then re-include that path.
-        { excludePaths = List.filter (\excludePath -> not (String.contains excludePath path)) excludePaths
+        { path = path
+        , excludePaths = List.filter (\excludePath -> not (String.contains excludePath path)) excludePaths
         , recursive = recursive
         , coalesceMs = 100
         , eventMask = eventMask

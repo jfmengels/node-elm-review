@@ -407,15 +407,22 @@ subEffects maybeFileWatcher =
     }
 
 
-watchFiles : Maybe FileWatcher -> Path -> WatchOptions -> (FileEvent -> msg) -> Sub msg
+watchFiles : Maybe FileWatcher -> WatchOptions -> (FileEvent -> msg) -> Sub msg
 watchFiles maybeFileWatcher =
     case maybeFileWatcher of
         Just fileWatcher ->
-            \path watchOptions toMsg ->
-                FileWatcher.watch fileWatcher path watchOptions toMsg
+            \watchOptions toMsg ->
+                FileWatcher.watch fileWatcher
+                    watchOptions.path
+                    { excludePaths = watchOptions.excludePaths
+                    , recursive = watchOptions.recursive
+                    , coalesceMs = watchOptions.coalesceMs
+                    , eventMask = watchOptions.eventMask
+                    }
+                    toMsg
 
         Nothing ->
-            \_ _ _ -> Sub.none
+            \_ _ -> Sub.none
 
 
 mapFsErrno : Fs.Error.Errno -> FsData.Errno

@@ -12,11 +12,14 @@ module Elm.Review.Testable.FileWatchData exposing
 
 -}
 
+import ElmReview.Path exposing (Path)
+
 
 {-| Options for file watching.
 -}
 type alias WatchOptions =
-    { excludePaths : List String
+    { path : Path
+    , excludePaths : List String
     , recursive : Bool
     , coalesceMs : Int
     , eventMask : Int -- Bitmask: 1=Created, 2=Modified, 4=Deleted, 8=Renamed
@@ -24,7 +27,7 @@ type alias WatchOptions =
 
 
 type alias FileEvent =
-    { path : String
+    { path : Path
     , eventType : Int
     , timestamp : Int
     , subscriptionId : Int
