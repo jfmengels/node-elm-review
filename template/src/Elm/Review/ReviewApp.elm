@@ -369,14 +369,7 @@ update msg model =
 
         PrintedReport hasNoMoreErrors ->
             ( model
-            , if model.options.watch then
-                TCmd.none
-
-              else if hasNoMoreErrors then
-                Cli.exit 0
-
-              else
-                Cli.exit 1
+            , TCmd.none
             )
 
 
@@ -503,6 +496,8 @@ startReviewIfNoPendingTasks (( model, cmd ) as unchanged) =
                         NDJson ->
                             TCmd.none
                     , cmd
+
+                    -- TODO Exit after print?
                     , Cli.exit 0
                     ]
                 )

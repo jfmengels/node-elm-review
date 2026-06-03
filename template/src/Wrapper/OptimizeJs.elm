@@ -16,37 +16,38 @@ import ElmReview.Problem as Problem exposing (Problem)
 
 optimize : Bool -> Path -> TTask Problem ()
 optimize debug elmModulePath =
-    if debug then
-        TTask.succeed ()
+    Fs.readTextFile elmModulePath
+        |> TTask.mapError (\error -> Problem.unexpectedError "while trying to read the generated Elm file" (FsData.errorToString error))
+        |> TTask.andThen
+            (\initialSource ->
+                let
+                    replacements : List (List Optimization)
+                    replacements =
+                        if debug then
+                            [ fileWatcherReplacements ]
 
-    else
-        Fs.readTextFile elmModulePath
-            |> TTask.mapError (\error -> Problem.unexpectedError "while trying to read the generated Elm file" (FsData.errorToString error))
-            |> TTask.andThen
-                (\initialSource ->
-                    let
-                        replacements : List (List Optimization)
-                        replacements =
+                        else
                             List.map List.singleton coreElmPerformanceReplacements
-                                ++ List.map List.singleton fasterCreateRuleModuleVisitor
-                                ++ [ mutatingMapReplacement
+                                ++ [ fasterCreateRuleModuleVisitor
+                                   , fileWatcherReplacements
+                                   , mutatingMapReplacement
                                    , cacheReplacements
                                    ]
-                    in
-                    List.foldl
-                        (\replacementGroup source ->
-                            case applyReplacementGroup replacementGroup source of
-                                Ok newSource ->
-                                    newSource
+                in
+                List.foldl
+                    (\replacementGroup source ->
+                        case applyReplacementGroup replacementGroup source of
+                            Ok newSource ->
+                                newSource
 
-                                Err () ->
-                                    source
-                        )
-                        initialSource
-                        replacements
-                        |> Fs.writeTextFile elmModulePath
-                        |> TTask.mapError (\error -> Problem.unexpectedError "while trying to optimize the generated Elm file" (FsData.errorToString error))
-                )
+                            Err () ->
+                                source
+                    )
+                    initialSource
+                    replacements
+                    |> Fs.writeTextFile elmModulePath
+                    |> TTask.mapError (\error -> Problem.unexpectedError "while trying to optimize the generated Elm file" (FsData.errorToString error))
+            )
 
 
 type alias Optimization =
@@ -538,5 +539,33 @@ function jsonToHash(json) {
   contextHashMap.set(json, hash);
   return hash;
 }"""
+      }
+    ]
+
+
+fileWatcherReplacements : List Optimization
+fileWatcherReplacements =
+    [ { target = """var $author$project$Node$FileWatcher$subscription = function (_v0) {
+\tvar _v1 = _Utils_Tuple2($author$project$Node$FileWatcher$onEffects, $author$project$Node$FileWatcher$onSelfMsg);
+\tvar _v2 = _Utils_Tuple2($author$project$Node$FileWatcher$init, $author$project$Node$FileWatcher$subMap);
+\treturn $elm$core$Platform$Sub$none;
+};"""
+      , replacement = """
+_Platform_effectManagers['ElmReview.FileWatcher'] = _Platform_createManager($author$project$Node$FileWatcher$init, $author$project$Node$FileWatcher$onEffects, $author$project$Node$FileWatcher$onSelfMsg, 0, $author$project$Node$FileWatcher$subMap);
+var $author$project$Node$FileWatcher$subscription = _Platform_leaf('ElmReview.FileWatcher');"""
+      }
+    , { target = """var $author$project$Node$FileWatcher$kernelStartWatch = F2(
+\tfunction (watchOptions, onFileEvent) {
+\t\treturn $elm$core$Task$succeed(
+\t\t\t$elm$core$Task$succeed(0));
+\t});"""
+      , replacement = """var $author$project$Node$FileWatcher$kernelStartWatch = F2(function(options, sendToSelf)
+{
+\treturn _Scheduler_spawn(_Scheduler_binding(function(callback)
+\t{
+\t\tfunction handler(event)\t{ _Scheduler_rawSpawn(sendToSelf(event)); }
+\t\treturn globalThis.watchFiles(options, handler);
+\t}));
+});"""
       }
     ]

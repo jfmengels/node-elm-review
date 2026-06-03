@@ -20,6 +20,9 @@ import ElmReview.Path as Path exposing (Path)
 import ElmReview.Problem as Problem exposing (Problem)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Node.FileWatcher as FileWatcher
+import Process
+import Task exposing (Task)
 
 
 type ModelWrapper model msg
@@ -941,14 +944,8 @@ subscriptions subsFn model =
 
 subEffects : SubEffects msg
 subEffects =
-    { watchFiles = watchFiles
+    { watchFiles = FileWatcher.watchFiles
     }
-
-
-watchFiles : FileWatchData.WatchOptions -> (FileWatchData.FileEvent -> msg) -> Sub msg
-watchFiles watchOptions toMsg =
-    -- TODO Implement watch files
-    Sub.none
 
 
 stop : Problem.FormatOptions options -> Problem -> Cmd msg
