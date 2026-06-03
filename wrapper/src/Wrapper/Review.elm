@@ -190,7 +190,11 @@ updateHelp msg model =
                 case result of
                     Ok exitCode ->
                         ( model
-                        , Cli.exit exitCode
+                        , if model.options.watchConfig && exitCode == 2 then
+                            TCmd.none
+
+                          else
+                            Cli.exit exitCode
                         )
 
                     Err exit ->

@@ -4,6 +4,7 @@ module ElmReview.Problem exposing
     , invalidElmJson, unexpectedError
     , exitOnUnrecoverable, Exit, exit
     , stop
+    , isRecoverable
     , FormatOptions, format
     , unwrapFOR_TESTS
     )
@@ -17,6 +18,7 @@ module ElmReview.Problem exposing
 
 @docs exitOnUnrecoverable, Exit, exit
 @docs stop
+@docs isRecoverable
 
 @docs FormatOptions, format
 
@@ -93,7 +95,13 @@ stop formatOptions problem =
     in
     case shouldExitWithError formatOptions.attemptFutureRecovery problem of
         Exit True ->
-            Cli.printErrorThenExit message 1
+            Cli.printErrorThenExit message
+                (if isRecoverable problem then
+                    2
+
+                 else
+                    1
+                )
 
         Exit False ->
             Cli.printlnStderr message
@@ -131,6 +139,16 @@ shouldExitWithError attemptFutureRecovery (Problem problem) =
 
         Unrecoverable ->
             doExit
+
+
+isRecoverable : Problem -> Bool
+isRecoverable (Problem problem) =
+    case problem.recovery of
+        Recoverable ->
+            True
+
+        Unrecoverable ->
+            False
 
 
 exit : Exit -> TCmd msg

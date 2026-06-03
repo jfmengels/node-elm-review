@@ -113,7 +113,7 @@ init initFn rawFlags =
                     ( Done
                     , printlnStderrThenExit
                         { message = message
-                        , exitCode = 1
+                        , exitCode = 2
                         }
                     )
 
@@ -952,7 +952,12 @@ stop : Problem.FormatOptions options -> Problem -> Cmd msg
 stop formatOptions problem =
     printlnStderrThenExit
         { message = Problem.format formatOptions problem
-        , exitCode = 1
+        , exitCode =
+            if Problem.isRecoverable problem then
+                2
+
+            else
+                1
         }
 
 
