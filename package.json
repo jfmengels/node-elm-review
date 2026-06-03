@@ -33,6 +33,7 @@
     "/ast-codec/src/**/*.elm",
     "/ast-codec/elm.json",
     "/bin/",
+    "/dist/",
     "/lib/**/*.js",
     "/parseElm/**/*.elm",
     "/parseElm/elm.json",
@@ -44,6 +45,7 @@
     "/template/src/**/*.elm"
   ],
   "scripts": {
+    "build-node": "(cd node ; elm make src/Node/WrapperMain.elm --output ../dist/wrapper.js)",
     "check-engines": "ls-engines --mode=ideal",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
@@ -54,9 +56,9 @@
     "prettier-check": "prettier . --check --cache",
     "prettier-fix": "prettier . --write --cache",
     "test": "turbo run testing check-engines --continue",
-    "test-sync": "npm run jest && npm run test-run",
-    "test-run": "(cd test/ && node ./check-rate-limit-snapshots.mjs && node ./run.mjs)",
-    "test-run-record": "(cd test/ && node ./run.mjs record && node ./check-rate-limit-snapshots.mjs)",
+    "test-sync": "npm run build-node && npm run jest && npm run test-run",
+    "test-run": "npm run build-node && (cd test/ && node ./check-rate-limit-snapshots.mjs && node ./run.mjs)",
+    "test-run-record": "npm run build-node && (cd test/ && node ./run.mjs record && node ./check-rate-limit-snapshots.mjs)",
     "test-check-rate-limit-snapshots": "(cd test/ && node ./check-rate-limit-snapshots.mjs)",
     "tsc": "tsc",
     "tsc-watch": "tsc --watch"
