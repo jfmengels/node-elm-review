@@ -108,13 +108,7 @@ handleCliArgsParseResult env stdinSupported result =
                 , stdinSupported = stdinSupported
                 }
             , getCwd env
-                |> TTask.andThen
-                    (\cwd ->
-                        -- TODO Use `\` for Windows Support?
-                        String.split "/" cwd
-                            |> Array.fromList
-                            |> findNearestElmJson
-                    )
+                |> TTask.andThen findNearestElmJson
                 |> TTask.attempt FoundNearestElmJson
             )
                 |> InitError.Success
@@ -269,23 +263,22 @@ try re-running it with """ ++ c Cyan "--elmjson <path-to-elm.json>" ++ "."
                 |> InitError.Problem loading.formatOptions
 
 
-findNearestElmJson : Array String -> TTask FsError Path
-findNearestElmJson pathSegments =
-    if Array.isEmpty pathSegments then
+findNearestElmJson : Path -> TTask FsError Path
+findNearestElmJson path =
+    if path == "." then
         TTask.fail (FsData.FsError FsData.ENOENT "")
 
     else
         let
-            path : Path
-            path =
-                -- TODO Does this work for Windows?
-                Array.push "elm.json" pathSegments |> Array.toList |> String.join "/"
+            elmJsonPath : Path
+            elmJsonPath =
+                Path.join2 path "elm.json"
         in
-        Fs.stat path
-            |> TTask.map (\_ -> path)
+        Fs.stat elmJsonPath
+            |> TTask.map (\_ -> elmJsonPath)
             |> TTask.onError
                 (\_ ->
-                    findNearestElmJson (Array.slice 0 -1 pathSegments)
+                    findNearestElmJson (Path.dirname path)
                 )
 
 
