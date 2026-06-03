@@ -780,7 +780,7 @@ waitProcess pid =
 killProcess : ProcessId -> Int -> ConcurrentTask ProcessError ()
 killProcess pid signal =
     ConcurrentTask.define
-        { function = "killProcess"
+        { function = "os:killProcess"
         , expect = ConcurrentTask.expectWhatever
         , errors = ConcurrentTask.expectErrors decodeProcessError
         , args =
