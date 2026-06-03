@@ -716,6 +716,7 @@ printReportDependingOnReportMode ruleLinks suppressedErrors result model =
                 }
                 filesWithError
                 |> Text.toAnsi model.options.supportsColor
+                |> clearScreen (model.options.watch && not model.options.debug)
                 |> Cli.printlnStdoutTask
 
         Json ->
@@ -759,6 +760,15 @@ printReportDependingOnReportMode ruleLinks suppressedErrors result model =
                     )
                 |> printNDJson
                 |> Cli.printlnStdoutTask
+
+
+clearScreen : Bool -> String -> String
+clearScreen shouldClear str =
+    if shouldClear then
+        "\u{001B}c" ++ str
+
+    else
+        str
 
 
 printJson : Bool -> Encode.Value -> Encode.Value -> String
