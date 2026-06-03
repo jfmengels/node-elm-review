@@ -62,19 +62,9 @@ init :
     }
     -> InitError ( Model, TCmd Msg )
 init { env, args, stdinSupported, defaultOutputTarget, binaryRoot, userHome } =
-    let
-        elmHomePath : Path
-        elmHomePath =
-            case Dict.get "ELM_HOME" env of
-                Just elmHomePath_ ->
-                    elmHomePath_
-
-                Nothing ->
-                    Path.join2 userHome ".elm"
-    in
     OptionsParser.parse { args = args, env = env }
         binaryRoot
-        elmHomePath
+        userHome
         defaultOutputTarget
         |> handleCliArgsParseResult env stdinSupported
 

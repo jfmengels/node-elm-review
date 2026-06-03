@@ -18,9 +18,9 @@ import Wrapper.Subcommand as Subcommand exposing (Subcommand)
 
 
 parse : { env | args : List String, env : Dict String String } -> Path -> Path -> OutputTarget -> OptionsParseResult
-parse { args, env } binaryRoot elmHomePath outputTarget =
+parse { args, env } binaryRoot userHome outputTarget =
     parseHelp args initialOptions
-        |> toOptions env binaryRoot elmHomePath outputTarget
+        |> toOptions env binaryRoot userHome outputTarget
 
 
 type OptionsParseResult
@@ -36,7 +36,7 @@ type OptionsParseResult
 
 
 toOptions : Dict String String -> Path -> Path -> OutputTarget -> InternalOptions -> OptionsParseResult
-toOptions env binaryRoot elmHomePath defaultOutputTarget options =
+toOptions env binaryRoot userHome defaultOutputTarget options =
     if options.version then
         ShowVersion
 
@@ -81,19 +81,19 @@ toOptions env binaryRoot elmHomePath defaultOutputTarget options =
                         Nothing ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env binaryRoot elmHomePath defaultOutputTarget color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot userHome defaultOutputTarget color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Suppress ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Review (toReviewOptions env binaryRoot elmHomePath defaultOutputTarget color options (Path.dirname elmJsonPath))
+                                    Review (toReviewOptions env binaryRoot userHome defaultOutputTarget color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.Init ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    Init (toInitOptions color options (Path.dirname elmJsonPath))
+                                    Init (toInitOptions env userHome color options (Path.dirname elmJsonPath))
                                 )
 
                         Just Subcommand.NewRule ->
@@ -125,7 +125,7 @@ I recommend you try to gain network access and try again."""
                         Just Subcommand.PrepareOffline ->
                             requiresElmJsonPath_
                                 (\elmJsonPath ->
-                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot elmHomePath defaultOutputTarget color options (Path.dirname elmJsonPath))
+                                    PrepareOffline (toPrepareOfflineOptions env binaryRoot userHome defaultOutputTarget color options (Path.dirname elmJsonPath))
                                 )
 
 
@@ -148,7 +148,7 @@ requiresElmJsonPath options color createOptions =
 
 
 toReviewOptions : Dict String String -> Path -> Path -> OutputTarget -> Color.Support -> InternalOptions -> Path -> ReviewOptions
-toReviewOptions env binaryRoot elmHomePath defaultOutputTarget color options projectRoot =
+toReviewOptions env binaryRoot userHome defaultOutputTarget color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -164,6 +164,7 @@ toReviewOptions env binaryRoot elmHomePath defaultOutputTarget color options pro
     , debug = options.debug
     , color = color
     , reviewProject = reviewProject projectRoot options
+    , cacheFolder = cacheFolder env userHome
     , reviewAppFlags = reviewAppFlags color options
 
     -- TODO Make this relative to CWD
@@ -172,13 +173,13 @@ toReviewOptions env binaryRoot elmHomePath defaultOutputTarget color options pro
     , processEnv = ProcessEnv.from env
     , elmCompilerPath = options.elmCompilerPath
     , binaryRoot = binaryRoot
-    , elmHomePath = elmHomePath
+    , elmHomePath = elmHomePath env userHome
     , outputTarget = Maybe.withDefault defaultOutputTarget options.outputTarget
     }
 
 
 toPrepareOfflineOptions : Dict String String -> Path -> Path -> OutputTarget -> Color.Support -> InternalOptions -> Path -> PrepareOfflineOptions
-toPrepareOfflineOptions env binaryRoot elmHomePath defaultOutputTarget color options projectRoot =
+toPrepareOfflineOptions env binaryRoot userHome defaultOutputTarget color options projectRoot =
     let
         projectPaths : ProjectPaths
         projectPaths =
@@ -194,13 +195,14 @@ toPrepareOfflineOptions env binaryRoot elmHomePath defaultOutputTarget color opt
     , offline = False
     , color = color
     , reviewProject = reviewProject projectRoot options
+    , cacheFolder = cacheFolder env userHome
 
     -- TODO Make this relative to CWD
     , localElmReview = Dict.get "LOCAL_ELM_REVIEW" env
     , processEnv = ProcessEnv.from env
     , elmCompilerPath = options.elmCompilerPath
     , binaryRoot = binaryRoot
-    , elmHomePath = elmHomePath
+    , elmHomePath = elmHomePath env userHome
     , outputTarget = Maybe.withDefault defaultOutputTarget options.outputTarget
     }
 
@@ -268,15 +270,36 @@ reviewAppFlags color options =
         options.reviewAppFlags
 
 
-toInitOptions : Color.Support -> InternalOptions -> Path -> InitOptions
-toInitOptions color options projectRoot =
+toInitOptions : Dict String String -> Path -> Color.Support -> InternalOptions -> Path -> InitOptions
+toInitOptions env userHome color options projectRoot =
     { configPath = Path.join2 projectRoot "review"
     , remoteTemplate = Maybe.map .remoteTemplate options.remoteTemplate
+    , cacheFolder = cacheFolder env userHome
     , offline = options.offline
     , forTests = options.forTests
     , debug = options.debug
     , color = color
     }
+
+
+elmHomePath : Dict String String -> Path -> Path
+elmHomePath env userHome =
+    case Dict.get "ELM_HOME" env of
+        Just elmHomePath_ ->
+            elmHomePath_
+
+        Nothing ->
+            Path.join2 userHome ".elm"
+
+
+cacheFolder : Dict String String -> Path -> Path
+cacheFolder env userHome =
+    case Dict.get "XDG_CACHE_HOME" env of
+        Just path ->
+            path
+
+        Nothing ->
+            Path.join2 userHome ".cache"
 
 
 toNewRuleOptions : Color.Support -> InternalOptions -> Path -> Result ProblemSimple NewRuleOptions

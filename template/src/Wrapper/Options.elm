@@ -43,6 +43,7 @@ type alias ReviewOptions =
     , offline : Bool
     , color : Color.Support
     , reviewProject : ReviewProject
+    , cacheFolder : Path
     , reviewAppFlags : List String
     , localElmReview : Maybe Path
     , watchConfig : Bool
@@ -69,6 +70,7 @@ type alias HelpOptions =
 type alias InitOptions =
     { configPath : Path
     , remoteTemplate : Maybe RemoteTemplate
+    , cacheFolder : Path
     , offline : Bool
     , forTests : Bool
     , debug : Bool
@@ -102,6 +104,7 @@ type alias PrepareOfflineOptions =
     , forceBuild : Bool
     , offline : Bool
     , reviewProject : ReviewProject
+    , cacheFolder : Path
     , color : Color.Support
     , localElmReview : Maybe Path
     , processEnv : ProcessEnv

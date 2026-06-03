@@ -44,6 +44,7 @@ type alias BuildData =
 type alias BuildOptions options =
     { options
         | projectPaths : ProjectPaths
+        , cacheFolder : Path
         , debug : Bool
         , forceBuild : Bool
         , offline : Bool
@@ -65,7 +66,7 @@ build options =
             buildProject options reviewFolder
 
         Options.Remote remoteTemplate ->
-            FetchRemoteTemplate.checkoutGitRepository options.offline remoteTemplate options.debug
+            FetchRemoteTemplate.checkoutGitRepository options.offline remoteTemplate options.cacheFolder options.debug
                 |> TTask.andThen (\reviewFolder -> buildProject options reviewFolder)
 
 

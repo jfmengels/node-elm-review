@@ -17,14 +17,14 @@ import ElmReview.Problem as Problem exposing (Problem)
 import Wrapper.RemoteTemplate exposing (RemoteTemplate)
 
 
-checkoutGitRepository : Bool -> RemoteTemplate -> Bool -> TTask Problem Path
-checkoutGitRepository offline remoteTemplate debug =
+checkoutGitRepository : Bool -> RemoteTemplate -> Path -> Bool -> TTask Problem Path
+checkoutGitRepository offline remoteTemplate cacheFolder debug =
     let
         repoFolder : Path
         repoFolder =
             Path.join
-                [ -- TODO Use HOME and/or XDG_CACHE_HOME
-                  "/Users/m1/.cache/elm-review/templates"
+                [ cacheFolder
+                , "elm-review/templates"
                 , remoteTemplate.repoName
                 ]
 

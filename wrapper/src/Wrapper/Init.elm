@@ -133,7 +133,7 @@ createConfiguration options =
                 |> TTask.attempt CreatedFiles
 
         Just remoteTemplate ->
-            createTemplateConfiguration options.configPath options.offline remoteTemplate options.debug
+            createTemplateConfiguration { reviewPath = options.configPath, cacheFolder = options.cacheFolder } options.offline remoteTemplate options.debug
                 |> TTask.onError (\problem -> Problem.exitOnUnrecoverable (formatOptions options) problem)
                 |> TTask.attempt CreatedFiles
 
@@ -145,9 +145,9 @@ createDefaultConfiguration reviewPath =
         |> TTask.mapError (\error -> Problem.unexpectedError "while creating files" (FsData.errorToString error))
 
 
-createTemplateConfiguration : Path -> Bool -> RemoteTemplate -> Bool -> TTask Problem ()
-createTemplateConfiguration reviewPath offline remoteTemplate debug =
-    FetchRemoteTemplate.checkoutGitRepository offline remoteTemplate debug
+createTemplateConfiguration : { reviewPath : Path, cacheFolder : Path } -> Bool -> RemoteTemplate -> Bool -> TTask Problem ()
+createTemplateConfiguration { reviewPath, cacheFolder } offline remoteTemplate debug =
+    FetchRemoteTemplate.checkoutGitRepository offline remoteTemplate cacheFolder debug
         |> TTask.andThen
             (\templateConfigPath ->
                 let
