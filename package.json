@@ -45,7 +45,8 @@
     "/template/src/**/*.elm"
   ],
   "scripts": {
-    "build-node": "(cd node ; elm make src/Node/WrapperMain.elm --output ../dist/wrapper.js) && node ./apply-patches.mjs ./dist/wrapper.js",
+    "build-node": "(cd node ; elm make src/Node/WrapperMain.elm --output ../dist/wrapper.js --optimize) && node ./apply-patches.mjs ./dist/wrapper.js",
+    "build-node-debug": "(cd node ; elm make src/Node/WrapperMain.elm --output ../dist/wrapper.js) && node ./apply-patches.mjs ./dist/wrapper.js",
     "check-engines": "ls-engines --mode=ideal",
     "elm-format": "elm-format --validate ast-codec init-templates new-package parseElm review template",
     "elm-tests": "(cd template/ && elm make src/Elm/Review/Main.elm --output=/dev/null && elm-test)",
