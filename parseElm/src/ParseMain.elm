@@ -2,15 +2,15 @@ port module ParseMain exposing (main)
 
 import Elm.Parser as Parser
 import Elm.Processing
-import Elm.Review.AstCodec as AstCodec
 import Elm.Syntax.File exposing (File)
 import Json.Encode as Encode
+import Parser
 
 
-port requestParsing : (String -> msg) -> Sub msg
+port requestParsing : ({ path : String, source : String } -> msg) -> Sub msg
 
 
-port parseResult : Encode.Value -> Cmd msg
+port parseResult : { path : String, output : String } -> Cmd msg
 
 
 main : Program () () Msg
@@ -28,31 +28,32 @@ subscriptions =
 
 
 type Msg
-    = GotFile String
+    = GotFile { path : String, source : String }
 
 
 update : Msg -> Cmd Msg
-update (GotFile source) =
-    let
-        json : Encode.Value
-        json =
+update (GotFile { path, source }) =
+    parseResult
+        { path = path
+        , output =
             case parseSource source of
                 Ok ast ->
-                    AstCodec.encode ast
+                    Elm.Syntax.File.encode ast
+                        |> Encode.encode 2
 
-                Err _ ->
-                    Encode.null
-    in
-    parseResult json
+                Err error ->
+                    error
+        }
 
 
 {-| Parse source code into a AST
 -}
-parseSource : String -> Result () File
+parseSource : String -> Result String File
 parseSource source =
     case Parser.parse source of
         Ok ast ->
             Ok (Elm.Processing.process Elm.Processing.init ast)
 
-        Err _ ->
-            Err ()
+        Err error ->
+            ("ERROR: " ++ Parser.deadEndsToString error)
+                |> Err
