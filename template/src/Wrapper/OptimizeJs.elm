@@ -24,7 +24,9 @@ optimize debug elmModulePath =
                     replacements : List (List Optimization)
                     replacements =
                         if debug then
-                            [ fileWatcherReplacements ]
+                            [ fileWatcherReplacements
+                            , fastContextHash
+                            ]
 
                         else
                             List.map List.singleton coreElmPerformanceReplacements
@@ -32,6 +34,7 @@ optimize debug elmModulePath =
                                    , fileWatcherReplacements
                                    , mutatingMapReplacement
                                    , cacheReplacements
+                                   , fastContextHash
                                    ]
                 in
                 List.foldl
@@ -508,7 +511,12 @@ cacheReplacements =
     return cacheEntry;
   });"""
       }
-    , { target = """var $jfmengels$elm_review$Review$Cache$ContextHash$createContextHashMarker = function (context) {
+    ]
+
+
+fastContextHash : List Optimization
+fastContextHash =
+    [ { target = """var $jfmengels$elm_review$Review$Cache$ContextHash$createContextHashMarker = function (context) {
 \treturn context;
 };"""
       , replacement = """var $jfmengels$elm_review$Review$Cache$ContextHash$createContextHashMarker = function (context) {
