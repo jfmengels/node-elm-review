@@ -290,7 +290,6 @@ createTemplateElmJson { outputTarget, mainFileSrc, reviewFolder, buildFolder, bi
                 | dirs =
                     "src"
                         :: mainFileSrc
-                        :: Path.join2 binaryRoot "ast-codec/src"
                         :: List.map (\dir -> Path.join2 reviewFolder dir) reviewElmJson.dirs
                 , depsDirect = dependencies
                 , depsIndirect = []
