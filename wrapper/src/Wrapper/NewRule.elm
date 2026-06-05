@@ -537,6 +537,7 @@ injectRuleInReadme options pkg ruleName =
 injectRuleInReadmeContent : Elm.Project.PackageInfo -> String -> String -> FileModification
 injectRuleInReadmeContent pkg ruleName content =
     { lines = String.split "\n" content
+    , content = content
     , warnings = []
     }
         |> insertRuleDescription pkg ruleName
@@ -544,21 +545,24 @@ injectRuleInReadmeContent pkg ruleName content =
 
 
 type alias FileModification =
-    { lines : List String
+    { content : String
+    , lines : List String
     , warnings : List Warning
     }
 
 
 updateLines : FileModification -> List String -> FileModification
-updateLines { warnings } lines =
-    { lines = lines
+updateLines { content, warnings } lines =
+    { content = content
+    , lines = lines
     , warnings = warnings
     }
 
 
 addWarning : FileModification -> Warning -> FileModification
-addWarning { lines, warnings } warning =
-    { lines = lines
+addWarning { content, lines, warnings } warning =
+    { content = content
+    , lines = lines
     , warnings = warning :: warnings
     }
 
@@ -672,7 +676,8 @@ injectRuleInPreview previewFolder pkg ruleName =
                                 insertRuleInConfiguration "README.md"
                                     pkg
                                     ruleName
-                                    { lines = String.lines content
+                                    { content = content
+                                    , lines = String.lines content
                                     , warnings = []
                                     }
                         in
@@ -692,9 +697,12 @@ injectRuleInPreview previewFolder pkg ruleName =
 
 insertRuleInConfiguration : String -> Elm.Project.PackageInfo -> String -> FileModification -> FileModification
 insertRuleInConfiguration target pkg ruleName fileModification =
-    if fileModification.lines |> String.join "\n" |> String.contains ("import " ++ ruleName ++ "\n") then
+    if String.contains ("import " ++ ruleName ++ "\n") fileModification.content then
         -- Rule already exists in configuration
-        { lines = fileModification.lines, warnings = [] }
+        { content = fileModification.content
+        , lines = fileModification.lines
+        , warnings = []
+        }
 
     else
         case findSomeRuleName pkg.exposed of
@@ -704,7 +712,8 @@ insertRuleInConfiguration target pkg ruleName fileModification =
                     |> insertRuleInConfigList target ruleName someRuleName
 
             Nothing ->
-                { lines = fileModification.lines
+                { content = fileModification.content
+                , lines = fileModification.lines
                 , warnings = [ \c -> "I tried mentioning the rule in the configuration in " ++ c Yellow target ++ " but I could somehow not find where to insert it." ]
                 }
 
