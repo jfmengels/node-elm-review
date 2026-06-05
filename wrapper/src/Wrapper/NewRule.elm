@@ -673,7 +673,7 @@ injectRuleInPreview previewFolder pkg ruleName =
                         let
                             result : FileModification
                             result =
-                                insertRuleInConfiguration "README.md"
+                                insertRuleInConfiguration filePath
                                     pkg
                                     ruleName
                                     { content = content
