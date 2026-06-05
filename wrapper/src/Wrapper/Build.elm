@@ -234,7 +234,7 @@ createSymLinkForLocalElmReview { buildFolder, localElmReview, packagesLocation, 
             let
                 packagePath : Path
                 packagePath =
-                    Path.join [ packagesLocation, "jfmengels/elm-review", Elm.Version.toString elmReviewVersion, "elm.json" ]
+                    Path.join [ packagesLocation, "jfmengels/elm-review", Elm.Version.toString elmReviewVersion ]
 
                 elmStuffForBuild : Path
                 elmStuffForBuild =
@@ -244,17 +244,18 @@ createSymLinkForLocalElmReview { buildFolder, localElmReview, packagesLocation, 
                 TTask.sequence
                     [ -- TODO Move code rather than delete it?
                       -- Fs.createTempDirectory  "elm-review"
-                      Fs.removeDirectory packagePath
-                        |> TTask.onError (\_ -> TTask.succeed ())
-                    , Fs.removeDirectory elmStuffForBuild
+                      Fs.removeDirectory elmStuffForBuild
                         |> TTask.onError (\_ -> TTask.succeed ())
                     , Fs.deleteFile (Path.join2 localElmReview_ "artifacts.dat")
                         |> TTask.onError (\_ -> TTask.succeed ())
-                    , -- TODO Create a symlink instead
-                      Fs.copyDirectory { from = localElmReview_, to = packagePath }
+                    , Fs.removeDirectory packagePath
+                        |> TTask.onError (\_ -> TTask.succeed ())
+                    , Fs.createDirectory (Path.dirname packagePath)
+                        |> TTask.onError (\_ -> TTask.succeed ())
+                    , Fs.createSymlink { target = localElmReview_, linkPath = packagePath }
                         |> TTask.mapError
                             (fsErrorToProblem
-                                ("while copying the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath)
+                                ("while linking the LOCAL_ELM_REVIEW package from " ++ localElmReview_ ++ " to " ++ packagePath)
                             )
                     ]
             , cleanUp =

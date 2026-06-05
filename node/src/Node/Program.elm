@@ -9,7 +9,6 @@ import Elm.Review.CliCommunication as CliCommunication
 import Elm.Review.InitError as InitError
 import Elm.Review.Testable.CliData as CliData exposing (Console)
 import Elm.Review.Testable.Cmd as TestableCmd
-import Elm.Review.Testable.FileWatchData as FileWatchData
 import Elm.Review.Testable.FsData as FsData exposing (Entry, FileStat, FsError, MatchKind)
 import Elm.Review.Testable.Internal as Internal exposing (TCmd, TSub, TaskResult)
 import Elm.Review.Testable.ProcessData as ProcessData exposing (Completed, ProcessError, ProcessId, SpawnError, SpawnOptions)
@@ -21,8 +20,6 @@ import ElmReview.Problem as Problem exposing (Problem)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Node.FileWatcher as FileWatcher
-import Process
-import Task exposing (Task)
 
 
 type ModelWrapper model msg
@@ -576,10 +573,7 @@ createDirectory path =
         { function = "fs:createDirectory"
         , expect = ConcurrentTask.expectWhatever
         , errors = ConcurrentTask.expectErrors decodeFsError
-        , args =
-            Encode.object
-                [ ( "path", Encode.string path )
-                ]
+        , args = Encode.string path
         }
 
 
@@ -589,10 +583,7 @@ removeDirectory path =
         { function = "fs:removeDirectory"
         , expect = ConcurrentTask.expectWhatever
         , errors = ConcurrentTask.expectErrors decodeFsError
-        , args =
-            Encode.object
-                [ ( "path", Encode.string path )
-                ]
+        , args = Encode.string path
         }
 
 
