@@ -1,0 +1,997 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      37
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            21
+          ],
+          "value": [
+            "Page",
+            "NotFound"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            22,
+            1,
+            37
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  32,
+                  1,
+                  36
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "view"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        13
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            13
+          ],
+          "value": [
+            "Asset"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        55
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            12
+          ],
+          "value": [
+            "Html"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            4,
+            13,
+            4,
+            55
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  4,
+                  23,
+                  4,
+                  27
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Html"
+                  }
+                }
+              },
+              {
+                "range": [
+                  4,
+                  29,
+                  4,
+                  32
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "div"
+                  }
+                }
+              },
+              {
+                "range": [
+                  4,
+                  34,
+                  4,
+                  36
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "h1"
+                  }
+                }
+              },
+              {
+                "range": [
+                  4,
+                  38,
+                  4,
+                  41
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "img"
+                  }
+                }
+              },
+              {
+                "range": [
+                  4,
+                  43,
+                  4,
+                  48
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "main_"
+                  }
+                }
+              },
+              {
+                "range": [
+                  4,
+                  50,
+                  4,
+                  54
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "text"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        5,
+        1,
+        5,
+        54
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            5,
+            8,
+            5,
+            23
+          ],
+          "value": [
+            "Html",
+            "Attributes"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            5,
+            24,
+            5,
+            54
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  5,
+                  34,
+                  5,
+                  39
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "class"
+                  }
+                }
+              },
+              {
+                "range": [
+                  5,
+                  41,
+                  5,
+                  43
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "id"
+                  }
+                }
+              },
+              {
+                "range": [
+                  5,
+                  45,
+                  5,
+                  53
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "tabindex"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        12,
+        1,
+        21,
+        6
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              12,
+              1,
+              12,
+              46
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  12,
+                  1,
+                  12,
+                  5
+                ],
+                "value": "view"
+              },
+              "typeAnnotation": {
+                "range": [
+                  12,
+                  8,
+                  12,
+                  46
+                ],
+                "value": {
+                  "type": "record",
+                  "record": {
+                    "value": [
+                      {
+                        "range": [
+                          12,
+                          10,
+                          12,
+                          24
+                        ],
+                        "value": {
+                          "name": {
+                            "range": [
+                              12,
+                              10,
+                              12,
+                              15
+                            ],
+                            "value": "title"
+                          },
+                          "typeAnnotation": {
+                            "range": [
+                              12,
+                              18,
+                              12,
+                              24
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    12,
+                                    18,
+                                    12,
+                                    24
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "String"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          12,
+                          26,
+                          12,
+                          45
+                        ],
+                        "value": {
+                          "name": {
+                            "range": [
+                              12,
+                              26,
+                              12,
+                              33
+                            ],
+                            "value": "content"
+                          },
+                          "typeAnnotation": {
+                            "range": [
+                              12,
+                              36,
+                              12,
+                              44
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    12,
+                                    36,
+                                    12,
+                                    40
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Html"
+                                  }
+                                },
+                                "args": [
+                                  {
+                                    "range": [
+                                      12,
+                                      41,
+                                      12,
+                                      44
+                                    ],
+                                    "value": {
+                                      "type": "generic",
+                                      "generic": {
+                                        "value": "msg"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              13,
+              1,
+              21,
+              6
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  13,
+                  1,
+                  13,
+                  5
+                ],
+                "value": "view"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  14,
+                  5,
+                  21,
+                  6
+                ],
+                "value": {
+                  "type": "record",
+                  "record": [
+                    {
+                      "range": [
+                        14,
+                        7,
+                        14,
+                        31
+                      ],
+                      "value": {
+                        "field": {
+                          "range": [
+                            14,
+                            7,
+                            14,
+                            12
+                          ],
+                          "value": "title"
+                        },
+                        "expression": {
+                          "range": [
+                            14,
+                            15,
+                            14,
+                            31
+                          ],
+                          "value": {
+                            "type": "literal",
+                            "literal": "Page Not Found"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        15,
+                        7,
+                        21,
+                        5
+                      ],
+                      "value": {
+                        "field": {
+                          "range": [
+                            15,
+                            7,
+                            15,
+                            14
+                          ],
+                          "value": "content"
+                        },
+                        "expression": {
+                          "range": [
+                            16,
+                            9,
+                            20,
+                            14
+                          ],
+                          "value": {
+                            "type": "application",
+                            "application": [
+                              {
+                                "range": [
+                                  16,
+                                  9,
+                                  16,
+                                  14
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "main_"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  16,
+                                  15,
+                                  16,
+                                  63
+                                ],
+                                "value": {
+                                  "type": "list",
+                                  "list": [
+                                    {
+                                      "range": [
+                                        16,
+                                        17,
+                                        16,
+                                        29
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              16,
+                                              17,
+                                              16,
+                                              19
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "id"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              16,
+                                              20,
+                                              16,
+                                              29
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "content"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        16,
+                                        31,
+                                        16,
+                                        48
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              16,
+                                              31,
+                                              16,
+                                              36
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "class"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              16,
+                                              37,
+                                              16,
+                                              48
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "container"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        16,
+                                        50,
+                                        16,
+                                        61
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              16,
+                                              50,
+                                              16,
+                                              58
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "tabindex"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              16,
+                                              59,
+                                              16,
+                                              61
+                                            ],
+                                            "value": {
+                                              "type": "negation",
+                                              "negation": {
+                                                "range": [
+                                                  16,
+                                                  60,
+                                                  16,
+                                                  61
+                                                ],
+                                                "value": {
+                                                  "type": "integer",
+                                                  "integer": 1
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "range": [
+                                  17,
+                                  13,
+                                  20,
+                                  14
+                                ],
+                                "value": {
+                                  "type": "list",
+                                  "list": [
+                                    {
+                                      "range": [
+                                        17,
+                                        15,
+                                        17,
+                                        41
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              17,
+                                              15,
+                                              17,
+                                              17
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "h1"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              17,
+                                              18,
+                                              17,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "list",
+                                              "list": []
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              17,
+                                              21,
+                                              17,
+                                              41
+                                            ],
+                                            "value": {
+                                              "type": "list",
+                                              "list": [
+                                                {
+                                                  "range": [
+                                                    17,
+                                                    23,
+                                                    17,
+                                                    39
+                                                  ],
+                                                  "value": {
+                                                    "type": "application",
+                                                    "application": [
+                                                      {
+                                                        "range": [
+                                                          17,
+                                                          23,
+                                                          17,
+                                                          27
+                                                        ],
+                                                        "value": {
+                                                          "type": "functionOrValue",
+                                                          "functionOrValue": {
+                                                            "moduleName": [],
+                                                            "name": "text"
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "range": [
+                                                          17,
+                                                          28,
+                                                          17,
+                                                          39
+                                                        ],
+                                                        "value": {
+                                                          "type": "literal",
+                                                          "literal": "Not Found"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        18,
+                                        15,
+                                        19,
+                                        53
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              18,
+                                              15,
+                                              18,
+                                              18
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "div"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              18,
+                                              19,
+                                              18,
+                                              34
+                                            ],
+                                            "value": {
+                                              "type": "list",
+                                              "list": [
+                                                {
+                                                  "range": [
+                                                    18,
+                                                    21,
+                                                    18,
+                                                    32
+                                                  ],
+                                                  "value": {
+                                                    "type": "application",
+                                                    "application": [
+                                                      {
+                                                        "range": [
+                                                          18,
+                                                          21,
+                                                          18,
+                                                          26
+                                                        ],
+                                                        "value": {
+                                                          "type": "functionOrValue",
+                                                          "functionOrValue": {
+                                                            "moduleName": [],
+                                                            "name": "class"
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "range": [
+                                                          18,
+                                                          27,
+                                                          18,
+                                                          32
+                                                        ],
+                                                        "value": {
+                                                          "type": "literal",
+                                                          "literal": "row"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              19,
+                                              17,
+                                              19,
+                                              53
+                                            ],
+                                            "value": {
+                                              "type": "list",
+                                              "list": [
+                                                {
+                                                  "range": [
+                                                    19,
+                                                    19,
+                                                    19,
+                                                    51
+                                                  ],
+                                                  "value": {
+                                                    "type": "application",
+                                                    "application": [
+                                                      {
+                                                        "range": [
+                                                          19,
+                                                          19,
+                                                          19,
+                                                          22
+                                                        ],
+                                                        "value": {
+                                                          "type": "functionOrValue",
+                                                          "functionOrValue": {
+                                                            "moduleName": [],
+                                                            "name": "img"
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "range": [
+                                                          19,
+                                                          23,
+                                                          19,
+                                                          48
+                                                        ],
+                                                        "value": {
+                                                          "type": "list",
+                                                          "list": [
+                                                            {
+                                                              "range": [
+                                                                19,
+                                                                25,
+                                                                19,
+                                                                46
+                                                              ],
+                                                              "value": {
+                                                                "type": "application",
+                                                                "application": [
+                                                                  {
+                                                                    "range": [
+                                                                      19,
+                                                                      25,
+                                                                      19,
+                                                                      34
+                                                                    ],
+                                                                    "value": {
+                                                                      "type": "functionOrValue",
+                                                                      "functionOrValue": {
+                                                                        "moduleName": [
+                                                                          "Asset"
+                                                                        ],
+                                                                        "name": "src"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  {
+                                                                    "range": [
+                                                                      19,
+                                                                      35,
+                                                                      19,
+                                                                      46
+                                                                    ],
+                                                                    "value": {
+                                                                      "type": "functionOrValue",
+                                                                      "functionOrValue": {
+                                                                        "moduleName": [
+                                                                          "Asset"
+                                                                        ],
+                                                                        "name": "error"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                ]
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      {
+                                                        "range": [
+                                                          19,
+                                                          49,
+                                                          19,
+                                                          51
+                                                        ],
+                                                        "value": {
+                                                          "type": "list",
+                                                          "list": []
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        9,
+        1,
+        9,
+        8
+      ],
+      "value": "-- VIEW"
+    }
+  ]
+}

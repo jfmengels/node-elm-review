@@ -1,0 +1,972 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      66
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            20
+          ],
+          "value": [
+            "Article",
+            "Slug"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            21,
+            1,
+            66
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  31,
+                  1,
+                  35
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Slug"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  37,
+                  1,
+                  44
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "decoder"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  46,
+                  1,
+                  54
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "toString"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  56,
+                  1,
+                  65
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "urlParser"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        48
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            19
+          ],
+          "value": [
+            "Json",
+            "Decode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            3,
+            23,
+            3,
+            29
+          ],
+          "value": [
+            "Decode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            3,
+            30,
+            3,
+            48
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  40,
+                  3,
+                  47
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Decoder"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        36
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            18
+          ],
+          "value": [
+            "Url",
+            "Parser"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            4,
+            19,
+            4,
+            36
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  4,
+                  29,
+                  4,
+                  35
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Parser"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        11,
+        1,
+        12,
+        18
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": null,
+          "name": {
+            "range": [
+              11,
+              6,
+              11,
+              10
+            ],
+            "value": "Slug"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                12,
+                7,
+                12,
+                18
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    12,
+                    7,
+                    12,
+                    11
+                  ],
+                  "value": "Slug"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      12,
+                      12,
+                      12,
+                      18
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            12,
+                            12,
+                            12,
+                            18
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "String"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        19,
+        1,
+        21,
+        55
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              19,
+              1,
+              19,
+              33
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  19,
+                  1,
+                  19,
+                  10
+                ],
+                "value": "urlParser"
+              },
+              "typeAnnotation": {
+                "range": [
+                  19,
+                  13,
+                  19,
+                  33
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        19,
+                        13,
+                        19,
+                        19
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Parser"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          19,
+                          20,
+                          19,
+                          31
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "left": {
+                              "range": [
+                                19,
+                                21,
+                                19,
+                                25
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      19,
+                                      21,
+                                      19,
+                                      25
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Slug"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            },
+                            "right": {
+                              "range": [
+                                19,
+                                29,
+                                19,
+                                30
+                              ],
+                              "value": {
+                                "type": "generic",
+                                "generic": {
+                                  "value": "a"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          19,
+                          32,
+                          19,
+                          33
+                        ],
+                        "value": {
+                          "type": "generic",
+                          "generic": {
+                            "value": "a"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              20,
+              1,
+              21,
+              55
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  20,
+                  1,
+                  20,
+                  10
+                ],
+                "value": "urlParser"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  21,
+                  5,
+                  21,
+                  55
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        21,
+                        5,
+                        21,
+                        22
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Url",
+                            "Parser"
+                          ],
+                          "name": "custom"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        21,
+                        23,
+                        21,
+                        29
+                      ],
+                      "value": {
+                        "type": "literal",
+                        "literal": "SLUG"
+                      }
+                    },
+                    {
+                      "range": [
+                        21,
+                        30,
+                        21,
+                        55
+                      ],
+                      "value": {
+                        "type": "parenthesized",
+                        "parenthesized": {
+                          "range": [
+                            21,
+                            31,
+                            21,
+                            54
+                          ],
+                          "value": {
+                            "type": "lambda",
+                            "lambda": {
+                              "patterns": [
+                                {
+                                  "range": [
+                                    21,
+                                    32,
+                                    21,
+                                    35
+                                  ],
+                                  "value": {
+                                    "type": "var",
+                                    "var": {
+                                      "value": "str"
+                                    }
+                                  }
+                                }
+                              ],
+                              "expression": {
+                                "range": [
+                                  21,
+                                  39,
+                                  21,
+                                  54
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        21,
+                                        39,
+                                        21,
+                                        43
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "Just"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        21,
+                                        44,
+                                        21,
+                                        54
+                                      ],
+                                      "value": {
+                                        "type": "parenthesized",
+                                        "parenthesized": {
+                                          "range": [
+                                            21,
+                                            45,
+                                            21,
+                                            53
+                                          ],
+                                          "value": {
+                                            "type": "application",
+                                            "application": [
+                                              {
+                                                "range": [
+                                                  21,
+                                                  45,
+                                                  21,
+                                                  49
+                                                ],
+                                                "value": {
+                                                  "type": "functionOrValue",
+                                                  "functionOrValue": {
+                                                    "moduleName": [],
+                                                    "name": "Slug"
+                                                  }
+                                                }
+                                              },
+                                              {
+                                                "range": [
+                                                  21,
+                                                  50,
+                                                  21,
+                                                  53
+                                                ],
+                                                "value": {
+                                                  "type": "functionOrValue",
+                                                  "functionOrValue": {
+                                                    "moduleName": [],
+                                                    "name": "str"
+                                                  }
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        24,
+        1,
+        26,
+        34
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              24,
+              1,
+              24,
+              23
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  24,
+                  1,
+                  24,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "typeAnnotation": {
+                "range": [
+                  24,
+                  11,
+                  24,
+                  23
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        24,
+                        11,
+                        24,
+                        18
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Decoder"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          24,
+                          19,
+                          24,
+                          23
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                24,
+                                19,
+                                24,
+                                23
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "Slug"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              25,
+              1,
+              26,
+              34
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  25,
+                  1,
+                  25,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  26,
+                  5,
+                  26,
+                  34
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        26,
+                        5,
+                        26,
+                        15
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Decode"
+                          ],
+                          "name": "map"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        26,
+                        16,
+                        26,
+                        20
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "Slug"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        26,
+                        21,
+                        26,
+                        34
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Decode"
+                          ],
+                          "name": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        33,
+        1,
+        35,
+        8
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              33,
+              1,
+              33,
+              26
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  33,
+                  1,
+                  33,
+                  9
+                ],
+                "value": "toString"
+              },
+              "typeAnnotation": {
+                "range": [
+                  33,
+                  12,
+                  33,
+                  26
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        33,
+                        12,
+                        33,
+                        16
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              33,
+                              12,
+                              33,
+                              16
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        33,
+                        20,
+                        33,
+                        26
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              33,
+                              20,
+                              33,
+                              26
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              34,
+              1,
+              35,
+              8
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  34,
+                  1,
+                  34,
+                  9
+                ],
+                "value": "toString"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    34,
+                    10,
+                    34,
+                    20
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          34,
+                          11,
+                          34,
+                          19
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  34,
+                                  16,
+                                  34,
+                                  19
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "str"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  35,
+                  5,
+                  35,
+                  8
+                ],
+                "value": {
+                  "type": "functionOrValue",
+                  "functionOrValue": {
+                    "moduleName": [],
+                    "name": "str"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        8,
+        1,
+        8,
+        9
+      ],
+      "value": "-- TYPES"
+    },
+    {
+      "range": [
+        16,
+        1,
+        16,
+        10
+      ],
+      "value": "-- CREATE"
+    },
+    {
+      "range": [
+        30,
+        1,
+        30,
+        13
+      ],
+      "value": "-- TRANSFORM"
+    }
+  ]
+}

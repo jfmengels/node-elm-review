@@ -1,0 +1,1798 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      90
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            14
+          ],
+          "value": [
+            "Viewer"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            15,
+            1,
+            90
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  25,
+                  1,
+                  31
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Viewer"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  33,
+                  1,
+                  39
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "avatar"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  41,
+                  1,
+                  45
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "cred"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  47,
+                  1,
+                  54
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "decoder"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  56,
+                  1,
+                  72
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "minPasswordChars"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  74,
+                  1,
+                  79
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "store"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  81,
+                  1,
+                  89
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "username"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        8,
+        1,
+        8,
+        27
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            8,
+            8,
+            8,
+            11
+          ],
+          "value": [
+            "Api"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            8,
+            12,
+            8,
+            27
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  8,
+                  22,
+                  8,
+                  26
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Cred"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        9,
+        1,
+        9,
+        32
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            9,
+            8,
+            9,
+            14
+          ],
+          "value": [
+            "Avatar"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            9,
+            15,
+            9,
+            32
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  9,
+                  25,
+                  9,
+                  31
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Avatar"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        10,
+        1,
+        10,
+        48
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            10,
+            8,
+            10,
+            19
+          ],
+          "value": [
+            "Json",
+            "Decode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            10,
+            23,
+            10,
+            29
+          ],
+          "value": [
+            "Decode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            10,
+            30,
+            10,
+            48
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  10,
+                  40,
+                  10,
+                  47
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Decoder"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        11,
+        1,
+        11,
+        46
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            11,
+            8,
+            11,
+            28
+          ],
+          "value": [
+            "Json",
+            "Decode",
+            "Pipeline"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            11,
+            29,
+            11,
+            46
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  11,
+                  39,
+                  11,
+                  45
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "custom"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        12,
+        1,
+        12,
+        36
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            12,
+            8,
+            12,
+            16
+          ],
+          "value": [
+            "Username"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            12,
+            17,
+            12,
+            36
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  12,
+                  27,
+                  12,
+                  35
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Username"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        19,
+        1,
+        20,
+        25
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": null,
+          "name": {
+            "range": [
+              19,
+              6,
+              19,
+              12
+            ],
+            "value": "Viewer"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                20,
+                7,
+                20,
+                25
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    20,
+                    7,
+                    20,
+                    13
+                  ],
+                  "value": "Viewer"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      20,
+                      14,
+                      20,
+                      20
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            20,
+                            14,
+                            20,
+                            20
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Avatar"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  },
+                  {
+                    "range": [
+                      20,
+                      21,
+                      20,
+                      25
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            20,
+                            21,
+                            20,
+                            25
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Cred"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        27,
+        1,
+        29,
+        8
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              27,
+              1,
+              27,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  27,
+                  1,
+                  27,
+                  5
+                ],
+                "value": "cred"
+              },
+              "typeAnnotation": {
+                "range": [
+                  27,
+                  8,
+                  27,
+                  22
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        27,
+                        8,
+                        27,
+                        14
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              27,
+                              8,
+                              27,
+                              14
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        27,
+                        18,
+                        27,
+                        22
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              27,
+                              18,
+                              27,
+                              22
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Cred"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              28,
+              1,
+              29,
+              8
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  28,
+                  1,
+                  28,
+                  5
+                ],
+                "value": "cred"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    28,
+                    6,
+                    28,
+                    20
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          28,
+                          7,
+                          28,
+                          19
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  28,
+                                  14,
+                                  28,
+                                  15
+                                ],
+                                "value": {
+                                  "type": "all",
+                                  "all": {}
+                                }
+                              },
+                              {
+                                "range": [
+                                  28,
+                                  16,
+                                  28,
+                                  19
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "val"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  29,
+                  5,
+                  29,
+                  8
+                ],
+                "value": {
+                  "type": "functionOrValue",
+                  "functionOrValue": {
+                    "moduleName": [],
+                    "name": "val"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        32,
+        1,
+        34,
+        21
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              32,
+              1,
+              32,
+              30
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  32,
+                  1,
+                  32,
+                  9
+                ],
+                "value": "username"
+              },
+              "typeAnnotation": {
+                "range": [
+                  32,
+                  12,
+                  32,
+                  30
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        32,
+                        12,
+                        32,
+                        18
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              32,
+                              12,
+                              32,
+                              18
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        32,
+                        22,
+                        32,
+                        30
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              32,
+                              22,
+                              32,
+                              30
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Username"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              33,
+              1,
+              34,
+              21
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  33,
+                  1,
+                  33,
+                  9
+                ],
+                "value": "username"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    33,
+                    10,
+                    33,
+                    24
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          33,
+                          11,
+                          33,
+                          23
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  33,
+                                  18,
+                                  33,
+                                  19
+                                ],
+                                "value": {
+                                  "type": "all",
+                                  "all": {}
+                                }
+                              },
+                              {
+                                "range": [
+                                  33,
+                                  20,
+                                  33,
+                                  23
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "val"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  34,
+                  5,
+                  34,
+                  21
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        34,
+                        5,
+                        34,
+                        17
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Api"
+                          ],
+                          "name": "username"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        34,
+                        18,
+                        34,
+                        21
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "val"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        37,
+        1,
+        39,
+        8
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              37,
+              1,
+              37,
+              26
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  37,
+                  1,
+                  37,
+                  7
+                ],
+                "value": "avatar"
+              },
+              "typeAnnotation": {
+                "range": [
+                  37,
+                  10,
+                  37,
+                  26
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        37,
+                        10,
+                        37,
+                        16
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              37,
+                              10,
+                              37,
+                              16
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        37,
+                        20,
+                        37,
+                        26
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              37,
+                              20,
+                              37,
+                              26
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Avatar"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              38,
+              1,
+              39,
+              8
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  38,
+                  1,
+                  38,
+                  7
+                ],
+                "value": "avatar"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    38,
+                    8,
+                    38,
+                    22
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          38,
+                          9,
+                          38,
+                          21
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  38,
+                                  16,
+                                  38,
+                                  19
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "val"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  38,
+                                  20,
+                                  38,
+                                  21
+                                ],
+                                "value": {
+                                  "type": "all",
+                                  "all": {}
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  39,
+                  5,
+                  39,
+                  8
+                ],
+                "value": {
+                  "type": "functionOrValue",
+                  "functionOrValue": {
+                    "moduleName": [],
+                    "name": "val"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        42,
+        1,
+        46,
+        6
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": {
+            "range": [
+              42,
+              1,
+              43,
+              3
+            ],
+            "value": "{-| Passwords must be at least this many characters long!\n-}"
+          },
+          "signature": {
+            "range": [
+              44,
+              1,
+              44,
+              23
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  44,
+                  1,
+                  44,
+                  17
+                ],
+                "value": "minPasswordChars"
+              },
+              "typeAnnotation": {
+                "range": [
+                  44,
+                  20,
+                  44,
+                  23
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        44,
+                        20,
+                        44,
+                        23
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Int"
+                      }
+                    },
+                    "args": []
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              45,
+              1,
+              46,
+              6
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  45,
+                  1,
+                  45,
+                  17
+                ],
+                "value": "minPasswordChars"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  46,
+                  5,
+                  46,
+                  6
+                ],
+                "value": {
+                  "type": "integer",
+                  "integer": 6
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        53,
+        1,
+        56,
+        56
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              53,
+              1,
+              53,
+              35
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  53,
+                  1,
+                  53,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "typeAnnotation": {
+                "range": [
+                  53,
+                  11,
+                  53,
+                  35
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        53,
+                        11,
+                        53,
+                        18
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Decoder"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          53,
+                          19,
+                          53,
+                          35
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "left": {
+                              "range": [
+                                53,
+                                20,
+                                53,
+                                24
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      53,
+                                      20,
+                                      53,
+                                      24
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Cred"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            },
+                            "right": {
+                              "range": [
+                                53,
+                                28,
+                                53,
+                                34
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      53,
+                                      28,
+                                      53,
+                                      34
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Viewer"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              54,
+              1,
+              56,
+              56
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  54,
+                  1,
+                  54,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  55,
+                  5,
+                  56,
+                  56
+                ],
+                "value": {
+                  "type": "operatorapplication",
+                  "operatorapplication": {
+                    "operator": "|>",
+                    "direction": "left",
+                    "left": {
+                      "range": [
+                        55,
+                        5,
+                        55,
+                        26
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              55,
+                              5,
+                              55,
+                              19
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Decode"
+                                ],
+                                "name": "succeed"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              55,
+                              20,
+                              55,
+                              26
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "Viewer"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        56,
+                        12,
+                        56,
+                        56
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              56,
+                              12,
+                              56,
+                              18
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "custom"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              56,
+                              19,
+                              56,
+                              56
+                            ],
+                            "value": {
+                              "type": "parenthesized",
+                              "parenthesized": {
+                                "range": [
+                                  56,
+                                  20,
+                                  56,
+                                  55
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        56,
+                                        20,
+                                        56,
+                                        32
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Decode"
+                                          ],
+                                          "name": "field"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        56,
+                                        33,
+                                        56,
+                                        40
+                                      ],
+                                      "value": {
+                                        "type": "literal",
+                                        "literal": "image"
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        56,
+                                        41,
+                                        56,
+                                        55
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Avatar"
+                                          ],
+                                          "name": "decoder"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        59,
+        1,
+        63,
+        18
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              59,
+              1,
+              59,
+              26
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  59,
+                  1,
+                  59,
+                  6
+                ],
+                "value": "store"
+              },
+              "typeAnnotation": {
+                "range": [
+                  59,
+                  9,
+                  59,
+                  26
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        59,
+                        9,
+                        59,
+                        15
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              59,
+                              9,
+                              59,
+                              15
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        59,
+                        19,
+                        59,
+                        26
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              59,
+                              19,
+                              59,
+                              22
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Cmd"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                59,
+                                23,
+                                59,
+                                26
+                              ],
+                              "value": {
+                                "type": "generic",
+                                "generic": {
+                                  "value": "msg"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              60,
+              1,
+              63,
+              18
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  60,
+                  1,
+                  60,
+                  6
+                ],
+                "value": "store"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    60,
+                    7,
+                    60,
+                    33
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          60,
+                          8,
+                          60,
+                          32
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Viewer"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  60,
+                                  15,
+                                  60,
+                                  24
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "avatarVal"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  60,
+                                  25,
+                                  60,
+                                  32
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "credVal"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  61,
+                  5,
+                  63,
+                  18
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        61,
+                        5,
+                        61,
+                        22
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Api"
+                          ],
+                          "name": "storeCredWith"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        62,
+                        9,
+                        62,
+                        16
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "credVal"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        63,
+                        9,
+                        63,
+                        18
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "avatarVal"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        3,
+        1,
+        6,
+        3
+      ],
+      "value": "{-| The logged-in user currently viewing this page. It stores enough data to\nbe able to render the menu bar (username and avatar), along with Cred so it's\nimpossible to have a Viewer if you aren't logged in.\n-}"
+    },
+    {
+      "range": [
+        16,
+        1,
+        16,
+        9
+      ],
+      "value": "-- TYPES"
+    },
+    {
+      "range": [
+        24,
+        1,
+        24,
+        8
+      ],
+      "value": "-- INFO"
+    },
+    {
+      "range": [
+        50,
+        1,
+        50,
+        17
+      ],
+      "value": "-- SERIALIZATION"
+    }
+  ]
+}

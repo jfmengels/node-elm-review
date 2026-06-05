@@ -1,0 +1,386 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      34
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            18
+          ],
+          "value": [
+            "Page",
+            "Blank"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            19,
+            1,
+            34
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  29,
+                  1,
+                  33
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "view"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        28
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            12
+          ],
+          "value": [
+            "Html"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            3,
+            13,
+            3,
+            28
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  23,
+                  3,
+                  27
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Html"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        6,
+        1,
+        10,
+        6
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              6,
+              1,
+              6,
+              46
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  6,
+                  1,
+                  6,
+                  5
+                ],
+                "value": "view"
+              },
+              "typeAnnotation": {
+                "range": [
+                  6,
+                  8,
+                  6,
+                  46
+                ],
+                "value": {
+                  "type": "record",
+                  "record": {
+                    "value": [
+                      {
+                        "range": [
+                          6,
+                          10,
+                          6,
+                          24
+                        ],
+                        "value": {
+                          "name": {
+                            "range": [
+                              6,
+                              10,
+                              6,
+                              15
+                            ],
+                            "value": "title"
+                          },
+                          "typeAnnotation": {
+                            "range": [
+                              6,
+                              18,
+                              6,
+                              24
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    6,
+                                    18,
+                                    6,
+                                    24
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "String"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          6,
+                          26,
+                          6,
+                          45
+                        ],
+                        "value": {
+                          "name": {
+                            "range": [
+                              6,
+                              26,
+                              6,
+                              33
+                            ],
+                            "value": "content"
+                          },
+                          "typeAnnotation": {
+                            "range": [
+                              6,
+                              36,
+                              6,
+                              44
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    6,
+                                    36,
+                                    6,
+                                    40
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Html"
+                                  }
+                                },
+                                "args": [
+                                  {
+                                    "range": [
+                                      6,
+                                      41,
+                                      6,
+                                      44
+                                    ],
+                                    "value": {
+                                      "type": "generic",
+                                      "generic": {
+                                        "value": "msg"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              7,
+              1,
+              10,
+              6
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  7,
+                  1,
+                  7,
+                  5
+                ],
+                "value": "view"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  8,
+                  5,
+                  10,
+                  6
+                ],
+                "value": {
+                  "type": "record",
+                  "record": [
+                    {
+                      "range": [
+                        8,
+                        7,
+                        8,
+                        17
+                      ],
+                      "value": {
+                        "field": {
+                          "range": [
+                            8,
+                            7,
+                            8,
+                            12
+                          ],
+                          "value": "title"
+                        },
+                        "expression": {
+                          "range": [
+                            8,
+                            15,
+                            8,
+                            17
+                          ],
+                          "value": {
+                            "type": "literal",
+                            "literal": ""
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        9,
+                        7,
+                        10,
+                        5
+                      ],
+                      "value": {
+                        "field": {
+                          "range": [
+                            9,
+                            7,
+                            9,
+                            14
+                          ],
+                          "value": "content"
+                        },
+                        "expression": {
+                          "range": [
+                            9,
+                            17,
+                            9,
+                            29
+                          ],
+                          "value": {
+                            "type": "application",
+                            "application": [
+                              {
+                                "range": [
+                                  9,
+                                  17,
+                                  9,
+                                  26
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [
+                                      "Html"
+                                    ],
+                                    "name": "text"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  9,
+                                  27,
+                                  9,
+                                  29
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": ""
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": []
+}

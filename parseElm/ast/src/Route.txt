@@ -1,0 +1,3919 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      61
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            13
+          ],
+          "value": [
+            "Route"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            14,
+            1,
+            61
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  24,
+                  1,
+                  33
+                ],
+                "value": {
+                  "type": "typeexpose",
+                  "typeexpose": {
+                    "name": "Route",
+                    "open": [
+                      1,
+                      29,
+                      1,
+                      33
+                    ]
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  35,
+                  1,
+                  42
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "fromUrl"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  44,
+                  1,
+                  48
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "href"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  50,
+                  1,
+                  60
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "replaceUrl"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        44
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            20
+          ],
+          "value": [
+            "Article",
+            "Slug"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            3,
+            24,
+            3,
+            28
+          ],
+          "value": [
+            "Slug"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            3,
+            29,
+            3,
+            44
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  39,
+                  3,
+                  43
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Slug"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        33
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            26
+          ],
+          "value": [
+            "Browser",
+            "Navigation"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            4,
+            30,
+            4,
+            33
+          ],
+          "value": [
+            "Nav"
+          ]
+        },
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        5,
+        1,
+        5,
+        33
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            5,
+            8,
+            5,
+            12
+          ],
+          "value": [
+            "Html"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            5,
+            13,
+            5,
+            33
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  5,
+                  23,
+                  5,
+                  32
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Attribute"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        6,
+        1,
+        6,
+        31
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            6,
+            8,
+            6,
+            23
+          ],
+          "value": [
+            "Html",
+            "Attributes"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            6,
+            27,
+            6,
+            31
+          ],
+          "value": [
+            "Attr"
+          ]
+        },
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        7,
+        1,
+        7,
+        26
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            7,
+            8,
+            7,
+            11
+          ],
+          "value": [
+            "Url"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            7,
+            12,
+            7,
+            26
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  7,
+                  22,
+                  7,
+                  25
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Url"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        8,
+        1,
+        8,
+        63
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            8,
+            8,
+            8,
+            18
+          ],
+          "value": [
+            "Url",
+            "Parser"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            8,
+            22,
+            8,
+            28
+          ],
+          "value": [
+            "Parser"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            8,
+            29,
+            8,
+            63
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  8,
+                  39,
+                  8,
+                  44
+                ],
+                "value": {
+                  "type": "infix",
+                  "infix": {
+                    "name": "</>"
+                  }
+                }
+              },
+              {
+                "range": [
+                  8,
+                  46,
+                  8,
+                  52
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Parser"
+                  }
+                }
+              },
+              {
+                "range": [
+                  8,
+                  54,
+                  8,
+                  59
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "oneOf"
+                  }
+                }
+              },
+              {
+                "range": [
+                  8,
+                  61,
+                  8,
+                  62
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "s"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        9,
+        1,
+        9,
+        36
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            9,
+            8,
+            9,
+            16
+          ],
+          "value": [
+            "Username"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            9,
+            17,
+            9,
+            36
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  9,
+                  27,
+                  9,
+                  35
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Username"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        16,
+        1,
+        26,
+        23
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": null,
+          "name": {
+            "range": [
+              16,
+              6,
+              16,
+              11
+            ],
+            "value": "Route"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                17,
+                7,
+                17,
+                11
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    17,
+                    7,
+                    17,
+                    11
+                  ],
+                  "value": "Home"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                18,
+                7,
+                18,
+                11
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    18,
+                    7,
+                    18,
+                    11
+                  ],
+                  "value": "Root"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                19,
+                7,
+                19,
+                12
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    19,
+                    7,
+                    19,
+                    12
+                  ],
+                  "value": "Login"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                20,
+                7,
+                20,
+                13
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    20,
+                    7,
+                    20,
+                    13
+                  ],
+                  "value": "Logout"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                21,
+                7,
+                21,
+                15
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    21,
+                    7,
+                    21,
+                    15
+                  ],
+                  "value": "Register"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                22,
+                7,
+                22,
+                15
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    22,
+                    7,
+                    22,
+                    15
+                  ],
+                  "value": "Settings"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                23,
+                7,
+                23,
+                19
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    23,
+                    7,
+                    23,
+                    14
+                  ],
+                  "value": "Article"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      23,
+                      15,
+                      23,
+                      19
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            23,
+                            15,
+                            23,
+                            19
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Slug"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "range": [
+                24,
+                7,
+                24,
+                23
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    24,
+                    7,
+                    24,
+                    14
+                  ],
+                  "value": "Profile"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      24,
+                      15,
+                      24,
+                      23
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            24,
+                            15,
+                            24,
+                            23
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Username"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "range": [
+                25,
+                7,
+                25,
+                17
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    25,
+                    7,
+                    25,
+                    17
+                  ],
+                  "value": "NewArticle"
+                },
+                "arguments": []
+              }
+            },
+            {
+              "range": [
+                26,
+                7,
+                26,
+                23
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    26,
+                    7,
+                    26,
+                    18
+                  ],
+                  "value": "EditArticle"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      26,
+                      19,
+                      26,
+                      23
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            26,
+                            19,
+                            26,
+                            23
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Slug"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        29,
+        1,
+        41,
+        10
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              29,
+              1,
+              29,
+              31
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  29,
+                  1,
+                  29,
+                  7
+                ],
+                "value": "parser"
+              },
+              "typeAnnotation": {
+                "range": [
+                  29,
+                  10,
+                  29,
+                  31
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        29,
+                        10,
+                        29,
+                        16
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Parser"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          29,
+                          17,
+                          29,
+                          29
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "left": {
+                              "range": [
+                                29,
+                                18,
+                                29,
+                                23
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      29,
+                                      18,
+                                      29,
+                                      23
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Route"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            },
+                            "right": {
+                              "range": [
+                                29,
+                                27,
+                                29,
+                                28
+                              ],
+                              "value": {
+                                "type": "generic",
+                                "generic": {
+                                  "value": "a"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          29,
+                          30,
+                          29,
+                          31
+                        ],
+                        "value": {
+                          "type": "generic",
+                          "generic": {
+                            "value": "a"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              30,
+              1,
+              41,
+              10
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  30,
+                  1,
+                  30,
+                  7
+                ],
+                "value": "parser"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  31,
+                  5,
+                  41,
+                  10
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        31,
+                        5,
+                        31,
+                        10
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "oneOf"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        32,
+                        9,
+                        41,
+                        10
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              32,
+                              11,
+                              32,
+                              37
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    32,
+                                    11,
+                                    32,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    32,
+                                    22,
+                                    32,
+                                    26
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Home"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    32,
+                                    27,
+                                    32,
+                                    37
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "top"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              33,
+                              11,
+                              33,
+                              39
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    33,
+                                    11,
+                                    33,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    33,
+                                    22,
+                                    33,
+                                    27
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Login"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    33,
+                                    28,
+                                    33,
+                                    39
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        33,
+                                        29,
+                                        33,
+                                        38
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              33,
+                                              29,
+                                              33,
+                                              30
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "s"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              33,
+                                              31,
+                                              33,
+                                              38
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "login"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              34,
+                              11,
+                              34,
+                              41
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    34,
+                                    11,
+                                    34,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    34,
+                                    22,
+                                    34,
+                                    28
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Logout"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    34,
+                                    29,
+                                    34,
+                                    41
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        34,
+                                        30,
+                                        34,
+                                        40
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              34,
+                                              30,
+                                              34,
+                                              31
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "s"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              34,
+                                              32,
+                                              34,
+                                              40
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "logout"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              35,
+                              11,
+                              35,
+                              45
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    35,
+                                    11,
+                                    35,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    35,
+                                    22,
+                                    35,
+                                    30
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Settings"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    35,
+                                    31,
+                                    35,
+                                    45
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        35,
+                                        32,
+                                        35,
+                                        44
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              35,
+                                              32,
+                                              35,
+                                              33
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "s"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              35,
+                                              34,
+                                              35,
+                                              44
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "settings"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              36,
+                              11,
+                              36,
+                              66
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    36,
+                                    11,
+                                    36,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    36,
+                                    22,
+                                    36,
+                                    29
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Profile"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    36,
+                                    30,
+                                    36,
+                                    66
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        36,
+                                        31,
+                                        36,
+                                        65
+                                      ],
+                                      "value": {
+                                        "type": "operatorapplication",
+                                        "operatorapplication": {
+                                          "operator": "</>",
+                                          "direction": "right",
+                                          "left": {
+                                            "range": [
+                                              36,
+                                              31,
+                                              36,
+                                              42
+                                            ],
+                                            "value": {
+                                              "type": "application",
+                                              "application": [
+                                                {
+                                                  "range": [
+                                                    36,
+                                                    31,
+                                                    36,
+                                                    32
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "s"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    36,
+                                                    33,
+                                                    36,
+                                                    42
+                                                  ],
+                                                  "value": {
+                                                    "type": "literal",
+                                                    "literal": "profile"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "right": {
+                                            "range": [
+                                              36,
+                                              47,
+                                              36,
+                                              65
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [
+                                                  "Username"
+                                                ],
+                                                "name": "urlParser"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              37,
+                              11,
+                              37,
+                              45
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    37,
+                                    11,
+                                    37,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    37,
+                                    22,
+                                    37,
+                                    30
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Register"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    37,
+                                    31,
+                                    37,
+                                    45
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        37,
+                                        32,
+                                        37,
+                                        44
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              37,
+                                              32,
+                                              37,
+                                              33
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "s"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              37,
+                                              34,
+                                              37,
+                                              44
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "register"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              38,
+                              11,
+                              38,
+                              62
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    38,
+                                    11,
+                                    38,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    38,
+                                    22,
+                                    38,
+                                    29
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Article"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    38,
+                                    30,
+                                    38,
+                                    62
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        38,
+                                        31,
+                                        38,
+                                        61
+                                      ],
+                                      "value": {
+                                        "type": "operatorapplication",
+                                        "operatorapplication": {
+                                          "operator": "</>",
+                                          "direction": "right",
+                                          "left": {
+                                            "range": [
+                                              38,
+                                              31,
+                                              38,
+                                              42
+                                            ],
+                                            "value": {
+                                              "type": "application",
+                                              "application": [
+                                                {
+                                                  "range": [
+                                                    38,
+                                                    31,
+                                                    38,
+                                                    32
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "s"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    38,
+                                                    33,
+                                                    38,
+                                                    42
+                                                  ],
+                                                  "value": {
+                                                    "type": "literal",
+                                                    "literal": "article"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "right": {
+                                            "range": [
+                                              38,
+                                              47,
+                                              38,
+                                              61
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [
+                                                  "Slug"
+                                                ],
+                                                "name": "urlParser"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              39,
+                              11,
+                              39,
+                              45
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    39,
+                                    11,
+                                    39,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    39,
+                                    22,
+                                    39,
+                                    32
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "NewArticle"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    39,
+                                    33,
+                                    39,
+                                    45
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        39,
+                                        34,
+                                        39,
+                                        44
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              39,
+                                              34,
+                                              39,
+                                              35
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "s"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              39,
+                                              36,
+                                              39,
+                                              44
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "editor"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              40,
+                              11,
+                              40,
+                              65
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    40,
+                                    11,
+                                    40,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Parser"
+                                      ],
+                                      "name": "map"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    40,
+                                    22,
+                                    40,
+                                    33
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "EditArticle"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    40,
+                                    34,
+                                    40,
+                                    65
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        40,
+                                        35,
+                                        40,
+                                        64
+                                      ],
+                                      "value": {
+                                        "type": "operatorapplication",
+                                        "operatorapplication": {
+                                          "operator": "</>",
+                                          "direction": "right",
+                                          "left": {
+                                            "range": [
+                                              40,
+                                              35,
+                                              40,
+                                              45
+                                            ],
+                                            "value": {
+                                              "type": "application",
+                                              "application": [
+                                                {
+                                                  "range": [
+                                                    40,
+                                                    35,
+                                                    40,
+                                                    36
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "s"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    40,
+                                                    37,
+                                                    40,
+                                                    45
+                                                  ],
+                                                  "value": {
+                                                    "type": "literal",
+                                                    "literal": "editor"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "right": {
+                                            "range": [
+                                              40,
+                                              50,
+                                              40,
+                                              64
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [
+                                                  "Slug"
+                                                ],
+                                                "name": "urlParser"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        48,
+        1,
+        50,
+        42
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              48,
+              1,
+              48,
+              30
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  48,
+                  1,
+                  48,
+                  5
+                ],
+                "value": "href"
+              },
+              "typeAnnotation": {
+                "range": [
+                  48,
+                  8,
+                  48,
+                  30
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        48,
+                        8,
+                        48,
+                        13
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              48,
+                              8,
+                              48,
+                              13
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Route"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        48,
+                        17,
+                        48,
+                        30
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              48,
+                              17,
+                              48,
+                              26
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Attribute"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                48,
+                                27,
+                                48,
+                                30
+                              ],
+                              "value": {
+                                "type": "generic",
+                                "generic": {
+                                  "value": "msg"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              49,
+              1,
+              50,
+              42
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  49,
+                  1,
+                  49,
+                  5
+                ],
+                "value": "href"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    49,
+                    6,
+                    49,
+                    17
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "targetRoute"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  50,
+                  5,
+                  50,
+                  42
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        50,
+                        5,
+                        50,
+                        14
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Attr"
+                          ],
+                          "name": "href"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        50,
+                        15,
+                        50,
+                        42
+                      ],
+                      "value": {
+                        "type": "parenthesized",
+                        "parenthesized": {
+                          "range": [
+                            50,
+                            16,
+                            50,
+                            41
+                          ],
+                          "value": {
+                            "type": "application",
+                            "application": [
+                              {
+                                "range": [
+                                  50,
+                                  16,
+                                  50,
+                                  29
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "routeToString"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  50,
+                                  30,
+                                  50,
+                                  41
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "targetRoute"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        53,
+        1,
+        55,
+        45
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              53,
+              1,
+              53,
+              41
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  53,
+                  1,
+                  53,
+                  11
+                ],
+                "value": "replaceUrl"
+              },
+              "typeAnnotation": {
+                "range": [
+                  53,
+                  14,
+                  53,
+                  41
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        53,
+                        14,
+                        53,
+                        21
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              53,
+                              14,
+                              53,
+                              21
+                            ],
+                            "value": {
+                              "moduleName": [
+                                "Nav"
+                              ],
+                              "name": "Key"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        53,
+                        25,
+                        53,
+                        41
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              53,
+                              25,
+                              53,
+                              30
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    53,
+                                    25,
+                                    53,
+                                    30
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Route"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              53,
+                              34,
+                              53,
+                              41
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    53,
+                                    34,
+                                    53,
+                                    37
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Cmd"
+                                  }
+                                },
+                                "args": [
+                                  {
+                                    "range": [
+                                      53,
+                                      38,
+                                      53,
+                                      41
+                                    ],
+                                    "value": {
+                                      "type": "generic",
+                                      "generic": {
+                                        "value": "msg"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              54,
+              1,
+              55,
+              45
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  54,
+                  1,
+                  54,
+                  11
+                ],
+                "value": "replaceUrl"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    54,
+                    12,
+                    54,
+                    15
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "key"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    54,
+                    16,
+                    54,
+                    21
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "route"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  55,
+                  5,
+                  55,
+                  45
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        55,
+                        5,
+                        55,
+                        19
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Nav"
+                          ],
+                          "name": "replaceUrl"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        55,
+                        20,
+                        55,
+                        23
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "key"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        55,
+                        24,
+                        55,
+                        45
+                      ],
+                      "value": {
+                        "type": "parenthesized",
+                        "parenthesized": {
+                          "range": [
+                            55,
+                            25,
+                            55,
+                            44
+                          ],
+                          "value": {
+                            "type": "application",
+                            "application": [
+                              {
+                                "range": [
+                                  55,
+                                  25,
+                                  55,
+                                  38
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "routeToString"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  55,
+                                  39,
+                                  55,
+                                  44
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "route"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        58,
+        1,
+        64,
+        31
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              58,
+              1,
+              58,
+              29
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  58,
+                  1,
+                  58,
+                  8
+                ],
+                "value": "fromUrl"
+              },
+              "typeAnnotation": {
+                "range": [
+                  58,
+                  11,
+                  58,
+                  29
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        58,
+                        11,
+                        58,
+                        14
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              58,
+                              11,
+                              58,
+                              14
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Url"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        58,
+                        18,
+                        58,
+                        29
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              58,
+                              18,
+                              58,
+                              23
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Maybe"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                58,
+                                24,
+                                58,
+                                29
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      58,
+                                      24,
+                                      58,
+                                      29
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Route"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              59,
+              1,
+              64,
+              31
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  59,
+                  1,
+                  59,
+                  8
+                ],
+                "value": "fromUrl"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    59,
+                    9,
+                    59,
+                    12
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "url"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  63,
+                  5,
+                  64,
+                  31
+                ],
+                "value": {
+                  "type": "operatorapplication",
+                  "operatorapplication": {
+                    "operator": "|>",
+                    "direction": "left",
+                    "left": {
+                      "range": [
+                        63,
+                        5,
+                        63,
+                        75
+                      ],
+                      "value": {
+                        "type": "recordUpdate",
+                        "recordUpdate": {
+                          "name": {
+                            "range": [
+                              63,
+                              7,
+                              63,
+                              10
+                            ],
+                            "value": "url"
+                          },
+                          "updates": [
+                            {
+                              "range": [
+                                63,
+                                13,
+                                63,
+                                53
+                              ],
+                              "value": {
+                                "field": {
+                                  "range": [
+                                    63,
+                                    13,
+                                    63,
+                                    17
+                                  ],
+                                  "value": "path"
+                                },
+                                "expression": {
+                                  "range": [
+                                    63,
+                                    20,
+                                    63,
+                                    53
+                                  ],
+                                  "value": {
+                                    "type": "application",
+                                    "application": [
+                                      {
+                                        "range": [
+                                          63,
+                                          20,
+                                          63,
+                                          37
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [
+                                              "Maybe"
+                                            ],
+                                            "name": "withDefault"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          63,
+                                          38,
+                                          63,
+                                          40
+                                        ],
+                                        "value": {
+                                          "type": "literal",
+                                          "literal": ""
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          63,
+                                          41,
+                                          63,
+                                          53
+                                        ],
+                                        "value": {
+                                          "type": "recordAccess",
+                                          "recordAccess": {
+                                            "expression": {
+                                              "range": [
+                                                63,
+                                                41,
+                                                63,
+                                                44
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "url"
+                                                }
+                                              }
+                                            },
+                                            "name": {
+                                              "range": [
+                                                63,
+                                                45,
+                                                63,
+                                                53
+                                              ],
+                                              "value": "fragment"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                63,
+                                55,
+                                63,
+                                74
+                              ],
+                              "value": {
+                                "field": {
+                                  "range": [
+                                    63,
+                                    55,
+                                    63,
+                                    63
+                                  ],
+                                  "value": "fragment"
+                                },
+                                "expression": {
+                                  "range": [
+                                    63,
+                                    66,
+                                    63,
+                                    73
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "Nothing"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        64,
+                        12,
+                        64,
+                        31
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              64,
+                              12,
+                              64,
+                              24
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Parser"
+                                ],
+                                "name": "parse"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              64,
+                              25,
+                              64,
+                              31
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "parser"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        71,
+        1,
+        73,
+        49
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              71,
+              1,
+              71,
+              32
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  71,
+                  1,
+                  71,
+                  14
+                ],
+                "value": "routeToString"
+              },
+              "typeAnnotation": {
+                "range": [
+                  71,
+                  17,
+                  71,
+                  32
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        71,
+                        17,
+                        71,
+                        22
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              71,
+                              17,
+                              71,
+                              22
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Route"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        71,
+                        26,
+                        71,
+                        32
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              71,
+                              26,
+                              71,
+                              32
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              72,
+              1,
+              73,
+              49
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  72,
+                  1,
+                  72,
+                  14
+                ],
+                "value": "routeToString"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    72,
+                    15,
+                    72,
+                    19
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "page"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  73,
+                  5,
+                  73,
+                  49
+                ],
+                "value": {
+                  "type": "operatorapplication",
+                  "operatorapplication": {
+                    "operator": "++",
+                    "direction": "right",
+                    "left": {
+                      "range": [
+                        73,
+                        5,
+                        73,
+                        9
+                      ],
+                      "value": {
+                        "type": "literal",
+                        "literal": "#/"
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        73,
+                        13,
+                        73,
+                        49
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              73,
+                              13,
+                              73,
+                              24
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "String"
+                                ],
+                                "name": "join"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              73,
+                              25,
+                              73,
+                              28
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "/"
+                            }
+                          },
+                          {
+                            "range": [
+                              73,
+                              29,
+                              73,
+                              49
+                            ],
+                            "value": {
+                              "type": "parenthesized",
+                              "parenthesized": {
+                                "range": [
+                                  73,
+                                  30,
+                                  73,
+                                  48
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        73,
+                                        30,
+                                        73,
+                                        43
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "routeToPieces"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        73,
+                                        44,
+                                        73,
+                                        48
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "page"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        76,
+        1,
+        107,
+        45
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              76,
+              1,
+              76,
+              37
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  76,
+                  1,
+                  76,
+                  14
+                ],
+                "value": "routeToPieces"
+              },
+              "typeAnnotation": {
+                "range": [
+                  76,
+                  17,
+                  76,
+                  37
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        76,
+                        17,
+                        76,
+                        22
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              76,
+                              17,
+                              76,
+                              22
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Route"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        76,
+                        26,
+                        76,
+                        37
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              76,
+                              26,
+                              76,
+                              30
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "List"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                76,
+                                31,
+                                76,
+                                37
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      76,
+                                      31,
+                                      76,
+                                      37
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "String"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              77,
+              1,
+              107,
+              45
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  77,
+                  1,
+                  77,
+                  14
+                ],
+                "value": "routeToPieces"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    77,
+                    15,
+                    77,
+                    19
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "page"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  78,
+                  5,
+                  107,
+                  45
+                ],
+                "value": {
+                  "type": "case",
+                  "case": {
+                    "cases": [
+                      {
+                        "pattern": {
+                          "range": [
+                            79,
+                            9,
+                            79,
+                            13
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Home"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            80,
+                            13,
+                            80,
+                            15
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": []
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            82,
+                            9,
+                            82,
+                            13
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Root"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            83,
+                            13,
+                            83,
+                            15
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": []
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            85,
+                            9,
+                            85,
+                            14
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Login"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            86,
+                            13,
+                            86,
+                            24
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  86,
+                                  15,
+                                  86,
+                                  22
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "login"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            88,
+                            9,
+                            88,
+                            15
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Logout"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            89,
+                            13,
+                            89,
+                            25
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  89,
+                                  15,
+                                  89,
+                                  23
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "logout"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            91,
+                            9,
+                            91,
+                            17
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Register"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            92,
+                            13,
+                            92,
+                            27
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  92,
+                                  15,
+                                  92,
+                                  25
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "register"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            94,
+                            9,
+                            94,
+                            17
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Settings"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            95,
+                            13,
+                            95,
+                            27
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  95,
+                                  15,
+                                  95,
+                                  25
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "settings"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            97,
+                            9,
+                            97,
+                            21
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Article"
+                              },
+                              "patterns": [
+                                {
+                                  "range": [
+                                    97,
+                                    17,
+                                    97,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "var",
+                                    "var": {
+                                      "value": "slug"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            98,
+                            13,
+                            98,
+                            46
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  98,
+                                  15,
+                                  98,
+                                  24
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "article"
+                                }
+                              },
+                              {
+                                "range": [
+                                  98,
+                                  26,
+                                  98,
+                                  44
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        98,
+                                        26,
+                                        98,
+                                        39
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Slug"
+                                          ],
+                                          "name": "toString"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        98,
+                                        40,
+                                        98,
+                                        44
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "slug"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            100,
+                            9,
+                            100,
+                            25
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "Profile"
+                              },
+                              "patterns": [
+                                {
+                                  "range": [
+                                    100,
+                                    17,
+                                    100,
+                                    25
+                                  ],
+                                  "value": {
+                                    "type": "var",
+                                    "var": {
+                                      "value": "username"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            101,
+                            13,
+                            101,
+                            54
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  101,
+                                  15,
+                                  101,
+                                  24
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "profile"
+                                }
+                              },
+                              {
+                                "range": [
+                                  101,
+                                  26,
+                                  101,
+                                  52
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        101,
+                                        26,
+                                        101,
+                                        43
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Username"
+                                          ],
+                                          "name": "toString"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        101,
+                                        44,
+                                        101,
+                                        52
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "username"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            103,
+                            9,
+                            103,
+                            19
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "NewArticle"
+                              },
+                              "patterns": []
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            104,
+                            13,
+                            104,
+                            25
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  104,
+                                  15,
+                                  104,
+                                  23
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "editor"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "pattern": {
+                          "range": [
+                            106,
+                            9,
+                            106,
+                            25
+                          ],
+                          "value": {
+                            "type": "named",
+                            "named": {
+                              "qualified": {
+                                "moduleName": [],
+                                "name": "EditArticle"
+                              },
+                              "patterns": [
+                                {
+                                  "range": [
+                                    106,
+                                    21,
+                                    106,
+                                    25
+                                  ],
+                                  "value": {
+                                    "type": "var",
+                                    "var": {
+                                      "value": "slug"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "expression": {
+                          "range": [
+                            107,
+                            13,
+                            107,
+                            45
+                          ],
+                          "value": {
+                            "type": "list",
+                            "list": [
+                              {
+                                "range": [
+                                  107,
+                                  15,
+                                  107,
+                                  23
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "editor"
+                                }
+                              },
+                              {
+                                "range": [
+                                  107,
+                                  25,
+                                  107,
+                                  43
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        107,
+                                        25,
+                                        107,
+                                        38
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Slug"
+                                          ],
+                                          "name": "toString"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        107,
+                                        39,
+                                        107,
+                                        43
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "slug"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "range": [
+                        78,
+                        10,
+                        78,
+                        14
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "page"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        13,
+        1,
+        13,
+        11
+      ],
+      "value": "-- ROUTING"
+    },
+    {
+      "range": [
+        45,
+        1,
+        45,
+        18
+      ],
+      "value": "-- PUBLIC HELPERS"
+    },
+    {
+      "range": [
+        60,
+        5,
+        60,
+        59
+      ],
+      "value": "-- The RealWorld spec treats the fragment like a path."
+    },
+    {
+      "range": [
+        61,
+        5,
+        61,
+        61
+      ],
+      "value": "-- This makes it *literally* the path, so we can proceed"
+    },
+    {
+      "range": [
+        62,
+        5,
+        62,
+        63
+      ],
+      "value": "-- with parsing as if it had been a normal path all along."
+    },
+    {
+      "range": [
+        68,
+        1,
+        68,
+        12
+      ],
+      "value": "-- INTERNAL"
+    }
+  ]
+}

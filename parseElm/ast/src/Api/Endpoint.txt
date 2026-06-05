@@ -1,0 +1,4820 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      147
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            20
+          ],
+          "value": [
+            "Api",
+            "Endpoint"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            21,
+            1,
+            147
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  31,
+                  1,
+                  39
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Endpoint"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  41,
+                  1,
+                  48
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "article"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  50,
+                  1,
+                  58
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "articles"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  60,
+                  1,
+                  67
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "comment"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  69,
+                  1,
+                  77
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "comments"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  79,
+                  1,
+                  87
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "favorite"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  89,
+                  1,
+                  93
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "feed"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  95,
+                  1,
+                  101
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "follow"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  103,
+                  1,
+                  108
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "login"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  110,
+                  1,
+                  118
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "profiles"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  120,
+                  1,
+                  127
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "request"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  129,
+                  1,
+                  133
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "tags"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  135,
+                  1,
+                  139
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "user"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  141,
+                  1,
+                  146
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "users"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        44
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            20
+          ],
+          "value": [
+            "Article",
+            "Slug"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            3,
+            24,
+            3,
+            28
+          ],
+          "value": [
+            "Slug"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            3,
+            29,
+            3,
+            44
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  39,
+                  3,
+                  43
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Slug"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        38
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            17
+          ],
+          "value": [
+            "CommentId"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            4,
+            18,
+            4,
+            38
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  4,
+                  28,
+                  4,
+                  37
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "CommentId"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        5,
+        1,
+        5,
+        12
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            5,
+            8,
+            5,
+            12
+          ],
+          "value": [
+            "Http"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        6,
+        1,
+        6,
+        45
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            6,
+            8,
+            6,
+            19
+          ],
+          "value": [
+            "Url",
+            "Builder"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            6,
+            20,
+            6,
+            45
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  6,
+                  30,
+                  6,
+                  44
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "QueryParameter"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        7,
+        1,
+        7,
+        36
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            7,
+            8,
+            7,
+            16
+          ],
+          "value": [
+            "Username"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            7,
+            17,
+            7,
+            36
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  7,
+                  27,
+                  7,
+                  35
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Username"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        10,
+        1,
+        31,
+        10
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": {
+            "range": [
+              10,
+              1,
+              11,
+              3
+            ],
+            "value": "{-| Http.request, except it takes an Endpoint instead of a Url.\n-}"
+          },
+          "signature": {
+            "range": [
+              12,
+              1,
+              21,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  12,
+                  1,
+                  12,
+                  8
+                ],
+                "value": "request"
+              },
+              "typeAnnotation": {
+                "range": [
+                  13,
+                  5,
+                  21,
+                  22
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        13,
+                        5,
+                        20,
+                        6
+                      ],
+                      "value": {
+                        "type": "record",
+                        "record": {
+                          "value": [
+                            {
+                              "range": [
+                                13,
+                                7,
+                                13,
+                                23
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    13,
+                                    7,
+                                    13,
+                                    11
+                                  ],
+                                  "value": "body"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    13,
+                                    14,
+                                    13,
+                                    23
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          13,
+                                          14,
+                                          13,
+                                          23
+                                        ],
+                                        "value": {
+                                          "moduleName": [
+                                            "Http"
+                                          ],
+                                          "name": "Body"
+                                        }
+                                      },
+                                      "args": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                14,
+                                7,
+                                15,
+                                5
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    14,
+                                    7,
+                                    14,
+                                    13
+                                  ],
+                                  "value": "expect"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    14,
+                                    16,
+                                    14,
+                                    29
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          14,
+                                          16,
+                                          14,
+                                          27
+                                        ],
+                                        "value": {
+                                          "moduleName": [
+                                            "Http"
+                                          ],
+                                          "name": "Expect"
+                                        }
+                                      },
+                                      "args": [
+                                        {
+                                          "range": [
+                                            14,
+                                            28,
+                                            14,
+                                            29
+                                          ],
+                                          "value": {
+                                            "type": "generic",
+                                            "generic": {
+                                              "value": "a"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                15,
+                                7,
+                                16,
+                                5
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    15,
+                                    7,
+                                    15,
+                                    14
+                                  ],
+                                  "value": "headers"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    15,
+                                    17,
+                                    15,
+                                    33
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          15,
+                                          17,
+                                          15,
+                                          21
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "List"
+                                        }
+                                      },
+                                      "args": [
+                                        {
+                                          "range": [
+                                            15,
+                                            22,
+                                            15,
+                                            33
+                                          ],
+                                          "value": {
+                                            "type": "typed",
+                                            "typed": {
+                                              "moduleNameAndName": {
+                                                "range": [
+                                                  15,
+                                                  22,
+                                                  15,
+                                                  33
+                                                ],
+                                                "value": {
+                                                  "moduleName": [
+                                                    "Http"
+                                                  ],
+                                                  "name": "Header"
+                                                }
+                                              },
+                                              "args": []
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                16,
+                                7,
+                                17,
+                                5
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    16,
+                                    7,
+                                    16,
+                                    13
+                                  ],
+                                  "value": "method"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    16,
+                                    16,
+                                    16,
+                                    22
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          16,
+                                          16,
+                                          16,
+                                          22
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "String"
+                                        }
+                                      },
+                                      "args": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                17,
+                                7,
+                                18,
+                                5
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    17,
+                                    7,
+                                    17,
+                                    14
+                                  ],
+                                  "value": "timeout"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    17,
+                                    17,
+                                    17,
+                                    28
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          17,
+                                          17,
+                                          17,
+                                          22
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "Maybe"
+                                        }
+                                      },
+                                      "args": [
+                                        {
+                                          "range": [
+                                            17,
+                                            23,
+                                            17,
+                                            28
+                                          ],
+                                          "value": {
+                                            "type": "typed",
+                                            "typed": {
+                                              "moduleNameAndName": {
+                                                "range": [
+                                                  17,
+                                                  23,
+                                                  17,
+                                                  28
+                                                ],
+                                                "value": {
+                                                  "moduleName": [],
+                                                  "name": "Float"
+                                                }
+                                              },
+                                              "args": []
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                18,
+                                7,
+                                19,
+                                5
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    18,
+                                    7,
+                                    18,
+                                    10
+                                  ],
+                                  "value": "url"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    18,
+                                    13,
+                                    18,
+                                    21
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          18,
+                                          13,
+                                          18,
+                                          21
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "Endpoint"
+                                        }
+                                      },
+                                      "args": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "range": [
+                                19,
+                                7,
+                                20,
+                                5
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    19,
+                                    7,
+                                    19,
+                                    22
+                                  ],
+                                  "value": "withCredentials"
+                                },
+                                "typeAnnotation": {
+                                  "range": [
+                                    19,
+                                    25,
+                                    19,
+                                    29
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          19,
+                                          25,
+                                          19,
+                                          29
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "Bool"
+                                        }
+                                      },
+                                      "args": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        21,
+                        8,
+                        21,
+                        22
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              21,
+                              8,
+                              21,
+                              20
+                            ],
+                            "value": {
+                              "moduleName": [
+                                "Http"
+                              ],
+                              "name": "Request"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                21,
+                                21,
+                                21,
+                                22
+                              ],
+                              "value": {
+                                "type": "generic",
+                                "generic": {
+                                  "value": "a"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              22,
+              1,
+              31,
+              10
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  22,
+                  1,
+                  22,
+                  8
+                ],
+                "value": "request"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    22,
+                    9,
+                    22,
+                    15
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "config"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  23,
+                  5,
+                  31,
+                  10
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        23,
+                        5,
+                        23,
+                        17
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Http"
+                          ],
+                          "name": "request"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        24,
+                        9,
+                        31,
+                        10
+                      ],
+                      "value": {
+                        "type": "record",
+                        "record": [
+                          {
+                            "range": [
+                              24,
+                              11,
+                              24,
+                              29
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  24,
+                                  11,
+                                  24,
+                                  15
+                                ],
+                                "value": "body"
+                              },
+                              "expression": {
+                                "range": [
+                                  24,
+                                  18,
+                                  24,
+                                  29
+                                ],
+                                "value": {
+                                  "type": "recordAccess",
+                                  "recordAccess": {
+                                    "expression": {
+                                      "range": [
+                                        24,
+                                        18,
+                                        24,
+                                        24
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "config"
+                                        }
+                                      }
+                                    },
+                                    "name": {
+                                      "range": [
+                                        24,
+                                        25,
+                                        24,
+                                        29
+                                      ],
+                                      "value": "body"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              25,
+                              11,
+                              26,
+                              9
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  25,
+                                  11,
+                                  25,
+                                  17
+                                ],
+                                "value": "expect"
+                              },
+                              "expression": {
+                                "range": [
+                                  25,
+                                  20,
+                                  25,
+                                  33
+                                ],
+                                "value": {
+                                  "type": "recordAccess",
+                                  "recordAccess": {
+                                    "expression": {
+                                      "range": [
+                                        25,
+                                        20,
+                                        25,
+                                        26
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "config"
+                                        }
+                                      }
+                                    },
+                                    "name": {
+                                      "range": [
+                                        25,
+                                        27,
+                                        25,
+                                        33
+                                      ],
+                                      "value": "expect"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              26,
+                              11,
+                              27,
+                              9
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  26,
+                                  11,
+                                  26,
+                                  18
+                                ],
+                                "value": "headers"
+                              },
+                              "expression": {
+                                "range": [
+                                  26,
+                                  21,
+                                  26,
+                                  35
+                                ],
+                                "value": {
+                                  "type": "recordAccess",
+                                  "recordAccess": {
+                                    "expression": {
+                                      "range": [
+                                        26,
+                                        21,
+                                        26,
+                                        27
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "config"
+                                        }
+                                      }
+                                    },
+                                    "name": {
+                                      "range": [
+                                        26,
+                                        28,
+                                        26,
+                                        35
+                                      ],
+                                      "value": "headers"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              27,
+                              11,
+                              28,
+                              9
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  27,
+                                  11,
+                                  27,
+                                  17
+                                ],
+                                "value": "method"
+                              },
+                              "expression": {
+                                "range": [
+                                  27,
+                                  20,
+                                  27,
+                                  33
+                                ],
+                                "value": {
+                                  "type": "recordAccess",
+                                  "recordAccess": {
+                                    "expression": {
+                                      "range": [
+                                        27,
+                                        20,
+                                        27,
+                                        26
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "config"
+                                        }
+                                      }
+                                    },
+                                    "name": {
+                                      "range": [
+                                        27,
+                                        27,
+                                        27,
+                                        33
+                                      ],
+                                      "value": "method"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              28,
+                              11,
+                              29,
+                              9
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  28,
+                                  11,
+                                  28,
+                                  18
+                                ],
+                                "value": "timeout"
+                              },
+                              "expression": {
+                                "range": [
+                                  28,
+                                  21,
+                                  28,
+                                  35
+                                ],
+                                "value": {
+                                  "type": "recordAccess",
+                                  "recordAccess": {
+                                    "expression": {
+                                      "range": [
+                                        28,
+                                        21,
+                                        28,
+                                        27
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "config"
+                                        }
+                                      }
+                                    },
+                                    "name": {
+                                      "range": [
+                                        28,
+                                        28,
+                                        28,
+                                        35
+                                      ],
+                                      "value": "timeout"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              29,
+                              11,
+                              30,
+                              9
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  29,
+                                  11,
+                                  29,
+                                  14
+                                ],
+                                "value": "url"
+                              },
+                              "expression": {
+                                "range": [
+                                  29,
+                                  17,
+                                  29,
+                                  34
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        29,
+                                        17,
+                                        29,
+                                        23
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "unwrap"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        29,
+                                        24,
+                                        29,
+                                        34
+                                      ],
+                                      "value": {
+                                        "type": "recordAccess",
+                                        "recordAccess": {
+                                          "expression": {
+                                            "range": [
+                                              29,
+                                              24,
+                                              29,
+                                              30
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "config"
+                                              }
+                                            }
+                                          },
+                                          "name": {
+                                            "range": [
+                                              29,
+                                              31,
+                                              29,
+                                              34
+                                            ],
+                                            "value": "url"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              30,
+                              11,
+                              31,
+                              9
+                            ],
+                            "value": {
+                              "field": {
+                                "range": [
+                                  30,
+                                  11,
+                                  30,
+                                  26
+                                ],
+                                "value": "withCredentials"
+                              },
+                              "expression": {
+                                "range": [
+                                  30,
+                                  29,
+                                  30,
+                                  51
+                                ],
+                                "value": {
+                                  "type": "recordAccess",
+                                  "recordAccess": {
+                                    "expression": {
+                                      "range": [
+                                        30,
+                                        29,
+                                        30,
+                                        35
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "config"
+                                        }
+                                      }
+                                    },
+                                    "name": {
+                                      "range": [
+                                        30,
+                                        36,
+                                        30,
+                                        51
+                                      ],
+                                      "value": "withCredentials"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        38,
+        1,
+        44,
+        22
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": {
+            "range": [
+              38,
+              1,
+              42,
+              3
+            ],
+            "value": "{-| Get a URL to the Conduit API.\n\nThis is not publicly exposed, because we want to make sure the only way to get one of these URLs is from this module.\n\n-}"
+          },
+          "name": {
+            "range": [
+              43,
+              6,
+              43,
+              14
+            ],
+            "value": "Endpoint"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                44,
+                7,
+                44,
+                22
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    44,
+                    7,
+                    44,
+                    15
+                  ],
+                  "value": "Endpoint"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      44,
+                      16,
+                      44,
+                      22
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            44,
+                            16,
+                            44,
+                            22
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "String"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        47,
+        1,
+        49,
+        8
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              47,
+              1,
+              47,
+              28
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  47,
+                  1,
+                  47,
+                  7
+                ],
+                "value": "unwrap"
+              },
+              "typeAnnotation": {
+                "range": [
+                  47,
+                  10,
+                  47,
+                  28
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        47,
+                        10,
+                        47,
+                        18
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              47,
+                              10,
+                              47,
+                              18
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        47,
+                        22,
+                        47,
+                        28
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              47,
+                              22,
+                              47,
+                              28
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              48,
+              1,
+              49,
+              8
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  48,
+                  1,
+                  48,
+                  7
+                ],
+                "value": "unwrap"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    48,
+                    8,
+                    48,
+                    22
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          48,
+                          9,
+                          48,
+                          21
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  48,
+                                  18,
+                                  48,
+                                  21
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "str"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  49,
+                  5,
+                  49,
+                  8
+                ],
+                "value": {
+                  "type": "functionOrValue",
+                  "functionOrValue": {
+                    "moduleName": [],
+                    "name": "str"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        52,
+        1,
+        59,
+        20
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              52,
+              1,
+              52,
+              53
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  52,
+                  1,
+                  52,
+                  4
+                ],
+                "value": "url"
+              },
+              "typeAnnotation": {
+                "range": [
+                  52,
+                  7,
+                  52,
+                  53
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        52,
+                        7,
+                        52,
+                        18
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              52,
+                              7,
+                              52,
+                              11
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "List"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                52,
+                                12,
+                                52,
+                                18
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      52,
+                                      12,
+                                      52,
+                                      18
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "String"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        52,
+                        22,
+                        52,
+                        53
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              52,
+                              22,
+                              52,
+                              41
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    52,
+                                    22,
+                                    52,
+                                    26
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "List"
+                                  }
+                                },
+                                "args": [
+                                  {
+                                    "range": [
+                                      52,
+                                      27,
+                                      52,
+                                      41
+                                    ],
+                                    "value": {
+                                      "type": "typed",
+                                      "typed": {
+                                        "moduleNameAndName": {
+                                          "range": [
+                                            52,
+                                            27,
+                                            52,
+                                            41
+                                          ],
+                                          "value": {
+                                            "moduleName": [],
+                                            "name": "QueryParameter"
+                                          }
+                                        },
+                                        "args": []
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              52,
+                              45,
+                              52,
+                              53
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    52,
+                                    45,
+                                    52,
+                                    53
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Endpoint"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              53,
+              1,
+              59,
+              20
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  53,
+                  1,
+                  53,
+                  4
+                ],
+                "value": "url"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    53,
+                    5,
+                    53,
+                    10
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "paths"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    53,
+                    11,
+                    53,
+                    22
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "queryParams"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  56,
+                  5,
+                  59,
+                  20
+                ],
+                "value": {
+                  "type": "operatorapplication",
+                  "operatorapplication": {
+                    "operator": "|>",
+                    "direction": "left",
+                    "left": {
+                      "range": [
+                        56,
+                        5,
+                        58,
+                        20
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              56,
+                              5,
+                              56,
+                              28
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Url",
+                                  "Builder"
+                                ],
+                                "name": "crossOrigin"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              56,
+                              29,
+                              56,
+                              65
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "https://conduit.productionready.io"
+                            }
+                          },
+                          {
+                            "range": [
+                              57,
+                              9,
+                              57,
+                              25
+                            ],
+                            "value": {
+                              "type": "parenthesized",
+                              "parenthesized": {
+                                "range": [
+                                  57,
+                                  10,
+                                  57,
+                                  24
+                                ],
+                                "value": {
+                                  "type": "operatorapplication",
+                                  "operatorapplication": {
+                                    "operator": "::",
+                                    "direction": "right",
+                                    "left": {
+                                      "range": [
+                                        57,
+                                        10,
+                                        57,
+                                        15
+                                      ],
+                                      "value": {
+                                        "type": "literal",
+                                        "literal": "api"
+                                      }
+                                    },
+                                    "right": {
+                                      "range": [
+                                        57,
+                                        19,
+                                        57,
+                                        24
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "paths"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              58,
+                              9,
+                              58,
+                              20
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "queryParams"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        59,
+                        12,
+                        59,
+                        20
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "Endpoint"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        66,
+        1,
+        68,
+        32
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              66,
+              1,
+              66,
+              17
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  66,
+                  1,
+                  66,
+                  6
+                ],
+                "value": "login"
+              },
+              "typeAnnotation": {
+                "range": [
+                  66,
+                  9,
+                  66,
+                  17
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        66,
+                        9,
+                        66,
+                        17
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Endpoint"
+                      }
+                    },
+                    "args": []
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              67,
+              1,
+              68,
+              32
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  67,
+                  1,
+                  67,
+                  6
+                ],
+                "value": "login"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  68,
+                  5,
+                  68,
+                  32
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        68,
+                        5,
+                        68,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        68,
+                        9,
+                        68,
+                        29
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              68,
+                              11,
+                              68,
+                              18
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "users"
+                            }
+                          },
+                          {
+                            "range": [
+                              68,
+                              20,
+                              68,
+                              27
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "login"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        68,
+                        30,
+                        68,
+                        32
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        71,
+        1,
+        73,
+        22
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              71,
+              1,
+              71,
+              16
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  71,
+                  1,
+                  71,
+                  5
+                ],
+                "value": "user"
+              },
+              "typeAnnotation": {
+                "range": [
+                  71,
+                  8,
+                  71,
+                  16
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        71,
+                        8,
+                        71,
+                        16
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Endpoint"
+                      }
+                    },
+                    "args": []
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              72,
+              1,
+              73,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  72,
+                  1,
+                  72,
+                  5
+                ],
+                "value": "user"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  73,
+                  5,
+                  73,
+                  22
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        73,
+                        5,
+                        73,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        73,
+                        9,
+                        73,
+                        19
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              73,
+                              11,
+                              73,
+                              17
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "user"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        73,
+                        20,
+                        73,
+                        22
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        76,
+        1,
+        78,
+        23
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              76,
+              1,
+              76,
+              17
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  76,
+                  1,
+                  76,
+                  6
+                ],
+                "value": "users"
+              },
+              "typeAnnotation": {
+                "range": [
+                  76,
+                  9,
+                  76,
+                  17
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        76,
+                        9,
+                        76,
+                        17
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Endpoint"
+                      }
+                    },
+                    "args": []
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              77,
+              1,
+              78,
+              23
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  77,
+                  1,
+                  77,
+                  6
+                ],
+                "value": "users"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  78,
+                  5,
+                  78,
+                  23
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        78,
+                        5,
+                        78,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        78,
+                        9,
+                        78,
+                        20
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              78,
+                              11,
+                              78,
+                              18
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "users"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        78,
+                        21,
+                        78,
+                        23
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        81,
+        1,
+        83,
+        61
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              81,
+              1,
+              81,
+              30
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  81,
+                  1,
+                  81,
+                  7
+                ],
+                "value": "follow"
+              },
+              "typeAnnotation": {
+                "range": [
+                  81,
+                  10,
+                  81,
+                  30
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        81,
+                        10,
+                        81,
+                        18
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              81,
+                              10,
+                              81,
+                              18
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Username"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        81,
+                        22,
+                        81,
+                        30
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              81,
+                              22,
+                              81,
+                              30
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              82,
+              1,
+              83,
+              61
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  82,
+                  1,
+                  82,
+                  7
+                ],
+                "value": "follow"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    82,
+                    8,
+                    82,
+                    13
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "uname"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  83,
+                  5,
+                  83,
+                  61
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        83,
+                        5,
+                        83,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        83,
+                        9,
+                        83,
+                        58
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              83,
+                              11,
+                              83,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "profiles"
+                            }
+                          },
+                          {
+                            "range": [
+                              83,
+                              23,
+                              83,
+                              46
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    83,
+                                    23,
+                                    83,
+                                    40
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Username"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    83,
+                                    41,
+                                    83,
+                                    46
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "uname"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              83,
+                              48,
+                              83,
+                              56
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "follow"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        83,
+                        59,
+                        83,
+                        61
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        90,
+        1,
+        92,
+        46
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              90,
+              1,
+              90,
+              27
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  90,
+                  1,
+                  90,
+                  8
+                ],
+                "value": "article"
+              },
+              "typeAnnotation": {
+                "range": [
+                  90,
+                  11,
+                  90,
+                  27
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        90,
+                        11,
+                        90,
+                        15
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              90,
+                              11,
+                              90,
+                              15
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        90,
+                        19,
+                        90,
+                        27
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              90,
+                              19,
+                              90,
+                              27
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              91,
+              1,
+              92,
+              46
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  91,
+                  1,
+                  91,
+                  8
+                ],
+                "value": "article"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    91,
+                    9,
+                    91,
+                    13
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "slug"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  92,
+                  5,
+                  92,
+                  46
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        92,
+                        5,
+                        92,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        92,
+                        9,
+                        92,
+                        43
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              92,
+                              11,
+                              92,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "articles"
+                            }
+                          },
+                          {
+                            "range": [
+                              92,
+                              23,
+                              92,
+                              41
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    92,
+                                    23,
+                                    92,
+                                    36
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Slug"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    92,
+                                    37,
+                                    92,
+                                    41
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "slug"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        92,
+                        44,
+                        92,
+                        46
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        95,
+        1,
+        97,
+        58
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              95,
+              1,
+              95,
+              28
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  95,
+                  1,
+                  95,
+                  9
+                ],
+                "value": "comments"
+              },
+              "typeAnnotation": {
+                "range": [
+                  95,
+                  12,
+                  95,
+                  28
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        95,
+                        12,
+                        95,
+                        16
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              95,
+                              12,
+                              95,
+                              16
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        95,
+                        20,
+                        95,
+                        28
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              95,
+                              20,
+                              95,
+                              28
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              96,
+              1,
+              97,
+              58
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  96,
+                  1,
+                  96,
+                  9
+                ],
+                "value": "comments"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    96,
+                    10,
+                    96,
+                    14
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "slug"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  97,
+                  5,
+                  97,
+                  58
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        97,
+                        5,
+                        97,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        97,
+                        9,
+                        97,
+                        55
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              97,
+                              11,
+                              97,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "articles"
+                            }
+                          },
+                          {
+                            "range": [
+                              97,
+                              23,
+                              97,
+                              41
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    97,
+                                    23,
+                                    97,
+                                    36
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Slug"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    97,
+                                    37,
+                                    97,
+                                    41
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "slug"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              97,
+                              43,
+                              97,
+                              53
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "comments"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        97,
+                        56,
+                        97,
+                        58
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        100,
+        1,
+        102,
+        88
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              100,
+              1,
+              100,
+              40
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  100,
+                  1,
+                  100,
+                  8
+                ],
+                "value": "comment"
+              },
+              "typeAnnotation": {
+                "range": [
+                  100,
+                  11,
+                  100,
+                  40
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        100,
+                        11,
+                        100,
+                        15
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              100,
+                              11,
+                              100,
+                              15
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        100,
+                        19,
+                        100,
+                        40
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              100,
+                              19,
+                              100,
+                              28
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    100,
+                                    19,
+                                    100,
+                                    28
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "CommentId"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              100,
+                              32,
+                              100,
+                              40
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    100,
+                                    32,
+                                    100,
+                                    40
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Endpoint"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              101,
+              1,
+              102,
+              88
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  101,
+                  1,
+                  101,
+                  8
+                ],
+                "value": "comment"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    101,
+                    9,
+                    101,
+                    13
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "slug"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    101,
+                    14,
+                    101,
+                    23
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "commentId"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  102,
+                  5,
+                  102,
+                  88
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        102,
+                        5,
+                        102,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        102,
+                        9,
+                        102,
+                        85
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              102,
+                              11,
+                              102,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "articles"
+                            }
+                          },
+                          {
+                            "range": [
+                              102,
+                              23,
+                              102,
+                              41
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    102,
+                                    23,
+                                    102,
+                                    36
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Slug"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    102,
+                                    37,
+                                    102,
+                                    41
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "slug"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              102,
+                              43,
+                              102,
+                              53
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "comments"
+                            }
+                          },
+                          {
+                            "range": [
+                              102,
+                              55,
+                              102,
+                              83
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    102,
+                                    55,
+                                    102,
+                                    73
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "CommentId"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    102,
+                                    74,
+                                    102,
+                                    83
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "commentId"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        102,
+                        86,
+                        102,
+                        88
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        105,
+        1,
+        107,
+        58
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              105,
+              1,
+              105,
+              28
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  105,
+                  1,
+                  105,
+                  9
+                ],
+                "value": "favorite"
+              },
+              "typeAnnotation": {
+                "range": [
+                  105,
+                  12,
+                  105,
+                  28
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        105,
+                        12,
+                        105,
+                        16
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              105,
+                              12,
+                              105,
+                              16
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        105,
+                        20,
+                        105,
+                        28
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              105,
+                              20,
+                              105,
+                              28
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              106,
+              1,
+              107,
+              58
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  106,
+                  1,
+                  106,
+                  9
+                ],
+                "value": "favorite"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    106,
+                    10,
+                    106,
+                    14
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "slug"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  107,
+                  5,
+                  107,
+                  58
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        107,
+                        5,
+                        107,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        107,
+                        9,
+                        107,
+                        55
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              107,
+                              11,
+                              107,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "articles"
+                            }
+                          },
+                          {
+                            "range": [
+                              107,
+                              23,
+                              107,
+                              41
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    107,
+                                    23,
+                                    107,
+                                    36
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Slug"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    107,
+                                    37,
+                                    107,
+                                    41
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "slug"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              107,
+                              43,
+                              107,
+                              53
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "favorite"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        107,
+                        56,
+                        107,
+                        58
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        110,
+        1,
+        112,
+        30
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              110,
+              1,
+              110,
+              43
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  110,
+                  1,
+                  110,
+                  9
+                ],
+                "value": "articles"
+              },
+              "typeAnnotation": {
+                "range": [
+                  110,
+                  12,
+                  110,
+                  43
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        110,
+                        12,
+                        110,
+                        31
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              110,
+                              12,
+                              110,
+                              16
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "List"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                110,
+                                17,
+                                110,
+                                31
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      110,
+                                      17,
+                                      110,
+                                      31
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "QueryParameter"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        110,
+                        35,
+                        110,
+                        43
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              110,
+                              35,
+                              110,
+                              43
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              111,
+              1,
+              112,
+              30
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  111,
+                  1,
+                  111,
+                  9
+                ],
+                "value": "articles"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    111,
+                    10,
+                    111,
+                    16
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "params"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  112,
+                  5,
+                  112,
+                  30
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        112,
+                        5,
+                        112,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        112,
+                        9,
+                        112,
+                        23
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              112,
+                              11,
+                              112,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "articles"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        112,
+                        24,
+                        112,
+                        30
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "params"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        115,
+        1,
+        117,
+        51
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              115,
+              1,
+              115,
+              32
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  115,
+                  1,
+                  115,
+                  9
+                ],
+                "value": "profiles"
+              },
+              "typeAnnotation": {
+                "range": [
+                  115,
+                  12,
+                  115,
+                  32
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        115,
+                        12,
+                        115,
+                        20
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              115,
+                              12,
+                              115,
+                              20
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Username"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        115,
+                        24,
+                        115,
+                        32
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              115,
+                              24,
+                              115,
+                              32
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              116,
+              1,
+              117,
+              51
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  116,
+                  1,
+                  116,
+                  9
+                ],
+                "value": "profiles"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    116,
+                    10,
+                    116,
+                    15
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "uname"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  117,
+                  5,
+                  117,
+                  51
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        117,
+                        5,
+                        117,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        117,
+                        9,
+                        117,
+                        48
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              117,
+                              11,
+                              117,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "profiles"
+                            }
+                          },
+                          {
+                            "range": [
+                              117,
+                              23,
+                              117,
+                              46
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    117,
+                                    23,
+                                    117,
+                                    40
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Username"
+                                      ],
+                                      "name": "toString"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    117,
+                                    41,
+                                    117,
+                                    46
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "uname"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        117,
+                        49,
+                        117,
+                        51
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        120,
+        1,
+        122,
+        38
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              120,
+              1,
+              120,
+              39
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  120,
+                  1,
+                  120,
+                  5
+                ],
+                "value": "feed"
+              },
+              "typeAnnotation": {
+                "range": [
+                  120,
+                  8,
+                  120,
+                  39
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        120,
+                        8,
+                        120,
+                        27
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              120,
+                              8,
+                              120,
+                              12
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "List"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                120,
+                                13,
+                                120,
+                                27
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      120,
+                                      13,
+                                      120,
+                                      27
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "QueryParameter"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        120,
+                        31,
+                        120,
+                        39
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              120,
+                              31,
+                              120,
+                              39
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Endpoint"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              121,
+              1,
+              122,
+              38
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  121,
+                  1,
+                  121,
+                  5
+                ],
+                "value": "feed"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    121,
+                    6,
+                    121,
+                    12
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "params"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  122,
+                  5,
+                  122,
+                  38
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        122,
+                        5,
+                        122,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        122,
+                        9,
+                        122,
+                        31
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              122,
+                              11,
+                              122,
+                              21
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "articles"
+                            }
+                          },
+                          {
+                            "range": [
+                              122,
+                              23,
+                              122,
+                              29
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "feed"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        122,
+                        32,
+                        122,
+                        38
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "params"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        125,
+        1,
+        127,
+        22
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              125,
+              1,
+              125,
+              16
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  125,
+                  1,
+                  125,
+                  5
+                ],
+                "value": "tags"
+              },
+              "typeAnnotation": {
+                "range": [
+                  125,
+                  8,
+                  125,
+                  16
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        125,
+                        8,
+                        125,
+                        16
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Endpoint"
+                      }
+                    },
+                    "args": []
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              126,
+              1,
+              127,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  126,
+                  1,
+                  126,
+                  5
+                ],
+                "value": "tags"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  127,
+                  5,
+                  127,
+                  22
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        127,
+                        5,
+                        127,
+                        8
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "url"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        127,
+                        9,
+                        127,
+                        19
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              127,
+                              11,
+                              127,
+                              17
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "tags"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        127,
+                        20,
+                        127,
+                        22
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        35,
+        1,
+        35,
+        9
+      ],
+      "value": "-- TYPES"
+    },
+    {
+      "range": [
+        54,
+        5,
+        54,
+        80
+      ],
+      "value": "-- NOTE: Url.Builder takes care of percent-encoding special URL characters."
+    },
+    {
+      "range": [
+        55,
+        5,
+        55,
+        82
+      ],
+      "value": "-- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode"
+    },
+    {
+      "range": [
+        63,
+        1,
+        63,
+        13
+      ],
+      "value": "-- ENDPOINTS"
+    },
+    {
+      "range": [
+        87,
+        1,
+        87,
+        21
+      ],
+      "value": "-- ARTICLE ENDPOINTS"
+    }
+  ]
+}

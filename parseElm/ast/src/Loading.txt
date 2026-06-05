@@ -1,0 +1,1040 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      53
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            15
+          ],
+          "value": [
+            "Loading"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            16,
+            1,
+            53
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  26,
+                  1,
+                  31
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "error"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  33,
+                  1,
+                  37
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "icon"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  39,
+                  1,
+                  52
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "slowThreshold"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        6,
+        1,
+        6,
+        13
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            6,
+            8,
+            6,
+            13
+          ],
+          "value": [
+            "Asset"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        7,
+        1,
+        7,
+        28
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            7,
+            8,
+            7,
+            12
+          ],
+          "value": [
+            "Html"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            7,
+            13,
+            7,
+            28
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  7,
+                  23,
+                  7,
+                  27
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Html"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        8,
+        1,
+        8,
+        53
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            8,
+            8,
+            8,
+            23
+          ],
+          "value": [
+            "Html",
+            "Attributes"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            8,
+            24,
+            8,
+            53
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  8,
+                  34,
+                  8,
+                  37
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "alt"
+                  }
+                }
+              },
+              {
+                "range": [
+                  8,
+                  39,
+                  8,
+                  45
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "height"
+                  }
+                }
+              },
+              {
+                "range": [
+                  8,
+                  47,
+                  8,
+                  52
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "width"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        9,
+        1,
+        9,
+        15
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            9,
+            8,
+            9,
+            15
+          ],
+          "value": [
+            "Process"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        10,
+        1,
+        10,
+        28
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            10,
+            8,
+            10,
+            12
+          ],
+          "value": [
+            "Task"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            10,
+            13,
+            10,
+            28
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  10,
+                  23,
+                  10,
+                  27
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Task"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        13,
+        1,
+        21,
+        11
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              13,
+              1,
+              13,
+              16
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  13,
+                  1,
+                  13,
+                  5
+                ],
+                "value": "icon"
+              },
+              "typeAnnotation": {
+                "range": [
+                  13,
+                  8,
+                  13,
+                  16
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        13,
+                        8,
+                        13,
+                        12
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Html"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          13,
+                          13,
+                          13,
+                          16
+                        ],
+                        "value": {
+                          "type": "generic",
+                          "generic": {
+                            "value": "msg"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              14,
+              1,
+              21,
+              11
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  14,
+                  1,
+                  14,
+                  5
+                ],
+                "value": "icon"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  15,
+                  5,
+                  21,
+                  11
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        15,
+                        5,
+                        15,
+                        13
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Html"
+                          ],
+                          "name": "img"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        16,
+                        9,
+                        20,
+                        10
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              16,
+                              11,
+                              16,
+                              34
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    16,
+                                    11,
+                                    16,
+                                    20
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Asset"
+                                      ],
+                                      "name": "src"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    16,
+                                    21,
+                                    16,
+                                    34
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Asset"
+                                      ],
+                                      "name": "loading"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              17,
+                              11,
+                              17,
+                              19
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    17,
+                                    11,
+                                    17,
+                                    16
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "width"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    17,
+                                    17,
+                                    17,
+                                    19
+                                  ],
+                                  "value": {
+                                    "type": "integer",
+                                    "integer": 64
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              18,
+                              11,
+                              18,
+                              20
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    18,
+                                    11,
+                                    18,
+                                    17
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "height"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    18,
+                                    18,
+                                    18,
+                                    20
+                                  ],
+                                  "value": {
+                                    "type": "integer",
+                                    "integer": 64
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "range": [
+                              19,
+                              11,
+                              19,
+                              27
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    19,
+                                    11,
+                                    19,
+                                    14
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "alt"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    19,
+                                    15,
+                                    19,
+                                    27
+                                  ],
+                                  "value": {
+                                    "type": "literal",
+                                    "literal": "Loading..."
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        21,
+                        9,
+                        21,
+                        11
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": []
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        24,
+        1,
+        26,
+        47
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              24,
+              1,
+              24,
+              27
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  24,
+                  1,
+                  24,
+                  6
+                ],
+                "value": "error"
+              },
+              "typeAnnotation": {
+                "range": [
+                  24,
+                  9,
+                  24,
+                  27
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        24,
+                        9,
+                        24,
+                        15
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              24,
+                              9,
+                              24,
+                              15
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        24,
+                        19,
+                        24,
+                        27
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              24,
+                              19,
+                              24,
+                              23
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Html"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                24,
+                                24,
+                                24,
+                                27
+                              ],
+                              "value": {
+                                "type": "generic",
+                                "generic": {
+                                  "value": "msg"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              25,
+              1,
+              26,
+              47
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  25,
+                  1,
+                  25,
+                  6
+                ],
+                "value": "error"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    25,
+                    7,
+                    25,
+                    10
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "str"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  26,
+                  5,
+                  26,
+                  47
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        26,
+                        5,
+                        26,
+                        14
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Html"
+                          ],
+                          "name": "text"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        26,
+                        15,
+                        26,
+                        47
+                      ],
+                      "value": {
+                        "type": "parenthesized",
+                        "parenthesized": {
+                          "range": [
+                            26,
+                            16,
+                            26,
+                            46
+                          ],
+                          "value": {
+                            "type": "operatorapplication",
+                            "operatorapplication": {
+                              "operator": "++",
+                              "direction": "right",
+                              "left": {
+                                "range": [
+                                  26,
+                                  16,
+                                  26,
+                                  32
+                                ],
+                                "value": {
+                                  "type": "literal",
+                                  "literal": "Error loading "
+                                }
+                              },
+                              "right": {
+                                "range": [
+                                  26,
+                                  36,
+                                  26,
+                                  46
+                                ],
+                                "value": {
+                                  "type": "operatorapplication",
+                                  "operatorapplication": {
+                                    "operator": "++",
+                                    "direction": "right",
+                                    "left": {
+                                      "range": [
+                                        26,
+                                        36,
+                                        26,
+                                        39
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "str"
+                                        }
+                                      }
+                                    },
+                                    "right": {
+                                      "range": [
+                                        26,
+                                        43,
+                                        26,
+                                        46
+                                      ],
+                                      "value": {
+                                        "type": "literal",
+                                        "literal": "."
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        29,
+        1,
+        31,
+        22
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              29,
+              1,
+              29,
+              26
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  29,
+                  1,
+                  29,
+                  14
+                ],
+                "value": "slowThreshold"
+              },
+              "typeAnnotation": {
+                "range": [
+                  29,
+                  17,
+                  29,
+                  26
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        29,
+                        17,
+                        29,
+                        21
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Task"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          29,
+                          22,
+                          29,
+                          23
+                        ],
+                        "value": {
+                          "type": "generic",
+                          "generic": {
+                            "value": "x"
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          29,
+                          24,
+                          29,
+                          26
+                        ],
+                        "value": {
+                          "type": "unit",
+                          "unit": {}
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              30,
+              1,
+              31,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  30,
+                  1,
+                  30,
+                  14
+                ],
+                "value": "slowThreshold"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  31,
+                  5,
+                  31,
+                  22
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        31,
+                        5,
+                        31,
+                        18
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Process"
+                          ],
+                          "name": "sleep"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        31,
+                        19,
+                        31,
+                        22
+                      ],
+                      "value": {
+                        "type": "integer",
+                        "integer": 500
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        3,
+        1,
+        4,
+        3
+      ],
+      "value": "{-| A loading spinner icon.\n-}"
+    }
+  ]
+}

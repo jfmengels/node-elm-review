@@ -1,0 +1,625 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      57
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            17
+          ],
+          "value": [
+            "CommentId"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            18,
+            1,
+            57
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  28,
+                  1,
+                  37
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "CommentId"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  39,
+                  1,
+                  46
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "decoder"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  48,
+                  1,
+                  56
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "toString"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        48
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            19
+          ],
+          "value": [
+            "Json",
+            "Decode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            3,
+            23,
+            3,
+            29
+          ],
+          "value": [
+            "Decode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            3,
+            30,
+            3,
+            48
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  40,
+                  3,
+                  47
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Decoder"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        10,
+        1,
+        11,
+        20
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": null,
+          "name": {
+            "range": [
+              10,
+              6,
+              10,
+              15
+            ],
+            "value": "CommentId"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                11,
+                7,
+                11,
+                20
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    11,
+                    7,
+                    11,
+                    16
+                  ],
+                  "value": "CommentId"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      11,
+                      17,
+                      11,
+                      20
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            11,
+                            17,
+                            11,
+                            20
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Int"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        18,
+        1,
+        20,
+        36
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              18,
+              1,
+              18,
+              28
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  18,
+                  1,
+                  18,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "typeAnnotation": {
+                "range": [
+                  18,
+                  11,
+                  18,
+                  28
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        18,
+                        11,
+                        18,
+                        18
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Decoder"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          18,
+                          19,
+                          18,
+                          28
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                18,
+                                19,
+                                18,
+                                28
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "CommentId"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              19,
+              1,
+              20,
+              36
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  19,
+                  1,
+                  19,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  20,
+                  5,
+                  20,
+                  36
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        20,
+                        5,
+                        20,
+                        15
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Decode"
+                          ],
+                          "name": "map"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        20,
+                        16,
+                        20,
+                        25
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "CommentId"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        20,
+                        26,
+                        20,
+                        36
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Decode"
+                          ],
+                          "name": "int"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        27,
+        1,
+        29,
+        22
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              27,
+              1,
+              27,
+              31
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  27,
+                  1,
+                  27,
+                  9
+                ],
+                "value": "toString"
+              },
+              "typeAnnotation": {
+                "range": [
+                  27,
+                  12,
+                  27,
+                  31
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        27,
+                        12,
+                        27,
+                        21
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              27,
+                              12,
+                              27,
+                              21
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "CommentId"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        27,
+                        25,
+                        27,
+                        31
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              27,
+                              25,
+                              27,
+                              31
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              28,
+              1,
+              29,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  28,
+                  1,
+                  28,
+                  9
+                ],
+                "value": "toString"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    28,
+                    10,
+                    28,
+                    24
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          28,
+                          11,
+                          28,
+                          23
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "CommentId"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  28,
+                                  21,
+                                  28,
+                                  23
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "id"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  29,
+                  5,
+                  29,
+                  22
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        29,
+                        5,
+                        29,
+                        19
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "String"
+                          ],
+                          "name": "fromInt"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        29,
+                        20,
+                        29,
+                        22
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "id"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        7,
+        1,
+        7,
+        9
+      ],
+      "value": "-- TYPES"
+    },
+    {
+      "range": [
+        15,
+        1,
+        15,
+        10
+      ],
+      "value": "-- CREATE"
+    },
+    {
+      "range": [
+        24,
+        1,
+        24,
+        13
+      ],
+      "value": "-- TRANSFORM"
+    }
+  ]
+}

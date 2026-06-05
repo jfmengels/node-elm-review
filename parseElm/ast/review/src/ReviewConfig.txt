@@ -1,0 +1,1247 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      38
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            20
+          ],
+          "value": [
+            "ReviewConfig"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            21,
+            1,
+            38
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  31,
+                  1,
+                  37
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "config"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        15,
+        1,
+        15,
+        25
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            15,
+            8,
+            15,
+            25
+          ],
+          "value": [
+            "Docs",
+            "ReviewAtDocs"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        16,
+        1,
+        16,
+        33
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            16,
+            8,
+            16,
+            33
+          ],
+          "value": [
+            "NoConfusingPrefixOperator"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        17,
+        1,
+        17,
+        19
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            17,
+            8,
+            17,
+            19
+          ],
+          "value": [
+            "NoDebug",
+            "Log"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        18,
+        1,
+        18,
+        30
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            18,
+            8,
+            18,
+            30
+          ],
+          "value": [
+            "NoDebug",
+            "TodoOrToString"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        19,
+        1,
+        19,
+        28
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            19,
+            8,
+            19,
+            28
+          ],
+          "value": [
+            "NoExposingEverything"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        20,
+        1,
+        20,
+        29
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            20,
+            8,
+            20,
+            29
+          ],
+          "value": [
+            "NoImportingEverything"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        21,
+        1,
+        21,
+        31
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            21,
+            8,
+            21,
+            31
+          ],
+          "value": [
+            "NoMissingTypeAnnotation"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        22,
+        1,
+        22,
+        38
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            22,
+            8,
+            22,
+            38
+          ],
+          "value": [
+            "NoMissingTypeAnnotationInLetIn"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        23,
+        1,
+        23,
+        27
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            23,
+            8,
+            23,
+            27
+          ],
+          "value": [
+            "NoMissingTypeExpose"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        24,
+        1,
+        24,
+        33
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            24,
+            8,
+            24,
+            33
+          ],
+          "value": [
+            "NoPrematureLetComputation"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        25,
+        1,
+        25,
+        23
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            25,
+            8,
+            25,
+            23
+          ],
+          "value": [
+            "NoSimpleLetBody"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        26,
+        1,
+        26,
+        42
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            26,
+            8,
+            26,
+            42
+          ],
+          "value": [
+            "NoUnused",
+            "CustomTypeConstructorArgs"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        27,
+        1,
+        27,
+        39
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            27,
+            8,
+            27,
+            39
+          ],
+          "value": [
+            "NoUnused",
+            "CustomTypeConstructors"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        28,
+        1,
+        28,
+        29
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            28,
+            8,
+            28,
+            29
+          ],
+          "value": [
+            "NoUnused",
+            "Dependencies"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        29,
+        1,
+        29,
+        24
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            29,
+            8,
+            29,
+            24
+          ],
+          "value": [
+            "NoUnused",
+            "Exports"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        30,
+        1,
+        30,
+        27
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            30,
+            8,
+            30,
+            27
+          ],
+          "value": [
+            "NoUnused",
+            "Parameters"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        31,
+        1,
+        31,
+        25
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            31,
+            8,
+            31,
+            25
+          ],
+          "value": [
+            "NoUnused",
+            "Patterns"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        32,
+        1,
+        32,
+        26
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            32,
+            8,
+            32,
+            26
+          ],
+          "value": [
+            "NoUnused",
+            "Variables"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        33,
+        1,
+        33,
+        43
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            33,
+            8,
+            33,
+            19
+          ],
+          "value": [
+            "Review",
+            "Rule"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            33,
+            23,
+            33,
+            27
+          ],
+          "value": [
+            "Rule"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            33,
+            28,
+            33,
+            43
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  33,
+                  38,
+                  33,
+                  42
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Rule"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        34,
+        1,
+        34,
+        16
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            34,
+            8,
+            34,
+            16
+          ],
+          "value": [
+            "Simplify"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        37,
+        1,
+        60,
+        6
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              37,
+              1,
+              37,
+              19
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  37,
+                  1,
+                  37,
+                  7
+                ],
+                "value": "config"
+              },
+              "typeAnnotation": {
+                "range": [
+                  37,
+                  10,
+                  37,
+                  19
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        37,
+                        10,
+                        37,
+                        14
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "List"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          37,
+                          15,
+                          37,
+                          19
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                37,
+                                15,
+                                37,
+                                19
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "Rule"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              38,
+              1,
+              60,
+              6
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  38,
+                  1,
+                  38,
+                  7
+                ],
+                "value": "config"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  39,
+                  5,
+                  60,
+                  6
+                ],
+                "value": {
+                  "type": "list",
+                  "list": [
+                    {
+                      "range": [
+                        39,
+                        7,
+                        39,
+                        29
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Docs",
+                            "ReviewAtDocs"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        40,
+                        7,
+                        40,
+                        37
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoConfusingPrefixOperator"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        41,
+                        7,
+                        41,
+                        23
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoDebug",
+                            "Log"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        42,
+                        7,
+                        43,
+                        56
+                      ],
+                      "value": {
+                        "type": "operatorapplication",
+                        "operatorapplication": {
+                          "operator": "|>",
+                          "direction": "left",
+                          "left": {
+                            "range": [
+                              42,
+                              7,
+                              42,
+                              34
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "NoDebug",
+                                  "TodoOrToString"
+                                ],
+                                "name": "rule"
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              43,
+                              12,
+                              43,
+                              56
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    43,
+                                    12,
+                                    43,
+                                    43
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Rule"
+                                      ],
+                                      "name": "ignoreErrorsForDirectories"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    43,
+                                    44,
+                                    43,
+                                    56
+                                  ],
+                                  "value": {
+                                    "type": "list",
+                                    "list": [
+                                      {
+                                        "range": [
+                                          43,
+                                          46,
+                                          43,
+                                          54
+                                        ],
+                                        "value": {
+                                          "type": "literal",
+                                          "literal": "tests/"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        44,
+                        7,
+                        44,
+                        32
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoExposingEverything"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        45,
+                        7,
+                        45,
+                        36
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              45,
+                              7,
+                              45,
+                              33
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "NoImportingEverything"
+                                ],
+                                "name": "rule"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              45,
+                              34,
+                              45,
+                              36
+                            ],
+                            "value": {
+                              "type": "list",
+                              "list": []
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        46,
+                        7,
+                        46,
+                        35
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoMissingTypeAnnotation"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        47,
+                        7,
+                        47,
+                        42
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoMissingTypeAnnotationInLetIn"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        48,
+                        7,
+                        48,
+                        31
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoMissingTypeExpose"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        49,
+                        7,
+                        49,
+                        27
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoSimpleLetBody"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        50,
+                        7,
+                        50,
+                        37
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoPrematureLetComputation"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        51,
+                        7,
+                        51,
+                        46
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              51,
+                              7,
+                              51,
+                              43
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "NoUnused",
+                                  "CustomTypeConstructors"
+                                ],
+                                "name": "rule"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              51,
+                              44,
+                              51,
+                              46
+                            ],
+                            "value": {
+                              "type": "list",
+                              "list": []
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        52,
+                        7,
+                        52,
+                        46
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoUnused",
+                            "CustomTypeConstructorArgs"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        53,
+                        7,
+                        53,
+                        33
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoUnused",
+                            "Dependencies"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        54,
+                        7,
+                        54,
+                        28
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoUnused",
+                            "Exports"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        55,
+                        7,
+                        55,
+                        31
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoUnused",
+                            "Parameters"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        56,
+                        7,
+                        56,
+                        29
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "NoUnused",
+                            "Patterns"
+                          ],
+                          "name": "rule"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        57,
+                        7,
+                        58,
+                        56
+                      ],
+                      "value": {
+                        "type": "operatorapplication",
+                        "operatorapplication": {
+                          "operator": "|>",
+                          "direction": "left",
+                          "left": {
+                            "range": [
+                              57,
+                              7,
+                              57,
+                              30
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "NoUnused",
+                                  "Variables"
+                                ],
+                                "name": "rule"
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              58,
+                              12,
+                              58,
+                              56
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    58,
+                                    12,
+                                    58,
+                                    37
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Rule"
+                                      ],
+                                      "name": "ignoreErrorsForFiles"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    58,
+                                    38,
+                                    58,
+                                    56
+                                  ],
+                                  "value": {
+                                    "type": "list",
+                                    "list": [
+                                      {
+                                        "range": [
+                                          58,
+                                          40,
+                                          58,
+                                          54
+                                        ],
+                                        "value": {
+                                          "type": "literal",
+                                          "literal": "src/Main.elm"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        59,
+                        7,
+                        59,
+                        38
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              59,
+                              7,
+                              59,
+                              20
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Simplify"
+                                ],
+                                "name": "rule"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              59,
+                              21,
+                              59,
+                              38
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Simplify"
+                                ],
+                                "name": "defaults"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        4,
+        1,
+        13,
+        3
+      ],
+      "value": "{-| Do not rename the ReviewConfig module or the config function, because\n`elm-review` will look for these.\n\nTo add packages that contain rules, add them to this review project using\n\n    `elm install author/packagename`\n\nwhen inside the directory containing this file.\n\n-}"
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      28
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            11
+          ],
+          "value": [
+            "Log"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            12,
+            1,
+            28
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  22,
+                  1,
+                  27
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "error"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [],
+  "declarations": [
+    {
+      "range": [
+        18,
+        1,
+        20,
+        13
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              18,
+              1,
+              18,
+              16
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  18,
+                  1,
+                  18,
+                  6
+                ],
+                "value": "error"
+              },
+              "typeAnnotation": {
+                "range": [
+                  18,
+                  9,
+                  18,
+                  16
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        18,
+                        9,
+                        18,
+                        12
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Cmd"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          18,
+                          13,
+                          18,
+                          16
+                        ],
+                        "value": {
+                          "type": "generic",
+                          "generic": {
+                            "value": "msg"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              19,
+              1,
+              20,
+              13
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  19,
+                  1,
+                  19,
+                  6
+                ],
+                "value": "error"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  20,
+                  5,
+                  20,
+                  13
+                ],
+                "value": {
+                  "type": "functionOrValue",
+                  "functionOrValue": {
+                    "moduleName": [
+                      "Cmd"
+                    ],
+                    "name": "none"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        3,
+        1,
+        15,
+        3
+      ],
+      "value": "{-| This is a placeholder API for how we might do logging through\nsome service like <http://rollbar.com> (which is what we use at work).\n\nWhenever you see Log.error used in this code base, it means\n\"Something unexpected happened. This is where we would log an\nerror to our server with some diagnostic info so we could investigate\nwhat happened later.\"\n\n(Since this is outside the scope of the RealWorld spec, and is only\na placeholder anyway, I didn't bother making this function accept actual\ndiagnostic info, authentication tokens, etc.)\n\n-}"
+    }
+  ]
+}

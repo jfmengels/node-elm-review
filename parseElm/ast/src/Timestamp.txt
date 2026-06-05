@@ -1,0 +1,1777 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      41
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            17
+          ],
+          "value": [
+            "Timestamp"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            18,
+            1,
+            41
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  28,
+                  1,
+                  34
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "format"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  36,
+                  1,
+                  40
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "view"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        40
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            12
+          ],
+          "value": [
+            "Html"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            3,
+            13,
+            3,
+            40
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  23,
+                  3,
+                  27
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Html"
+                  }
+                }
+              },
+              {
+                "range": [
+                  3,
+                  29,
+                  3,
+                  33
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "span"
+                  }
+                }
+              },
+              {
+                "range": [
+                  3,
+                  35,
+                  3,
+                  39
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "text"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        40
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            23
+          ],
+          "value": [
+            "Html",
+            "Attributes"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            4,
+            24,
+            4,
+            40
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  4,
+                  34,
+                  4,
+                  39
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "class"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        5,
+        1,
+        5,
+        33
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            5,
+            8,
+            5,
+            12
+          ],
+          "value": [
+            "Time"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            5,
+            13,
+            5,
+            33
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  5,
+                  23,
+                  5,
+                  32
+                ],
+                "value": {
+                  "type": "typeexpose",
+                  "typeexpose": {
+                    "name": "Month",
+                    "open": [
+                      5,
+                      28,
+                      5,
+                      32
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        12,
+        1,
+        14,
+        63
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              12,
+              1,
+              12,
+              43
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  12,
+                  1,
+                  12,
+                  5
+                ],
+                "value": "view"
+              },
+              "typeAnnotation": {
+                "range": [
+                  12,
+                  8,
+                  12,
+                  43
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        12,
+                        8,
+                        12,
+                        17
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              12,
+                              8,
+                              12,
+                              17
+                            ],
+                            "value": {
+                              "moduleName": [
+                                "Time"
+                              ],
+                              "name": "Zone"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        12,
+                        21,
+                        12,
+                        43
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              12,
+                              21,
+                              12,
+                              31
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    12,
+                                    21,
+                                    12,
+                                    31
+                                  ],
+                                  "value": {
+                                    "moduleName": [
+                                      "Time"
+                                    ],
+                                    "name": "Posix"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              12,
+                              35,
+                              12,
+                              43
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    12,
+                                    35,
+                                    12,
+                                    39
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Html"
+                                  }
+                                },
+                                "args": [
+                                  {
+                                    "range": [
+                                      12,
+                                      40,
+                                      12,
+                                      43
+                                    ],
+                                    "value": {
+                                      "type": "generic",
+                                      "generic": {
+                                        "value": "msg"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              13,
+              1,
+              14,
+              63
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  13,
+                  1,
+                  13,
+                  5
+                ],
+                "value": "view"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    13,
+                    6,
+                    13,
+                    14
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "timeZone"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    13,
+                    15,
+                    13,
+                    24
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "timestamp"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  14,
+                  5,
+                  14,
+                  63
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        14,
+                        5,
+                        14,
+                        9
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "span"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        14,
+                        10,
+                        14,
+                        26
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              14,
+                              12,
+                              14,
+                              24
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    14,
+                                    12,
+                                    14,
+                                    17
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "class"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    14,
+                                    18,
+                                    14,
+                                    24
+                                  ],
+                                  "value": {
+                                    "type": "literal",
+                                    "literal": "date"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "range": [
+                        14,
+                        27,
+                        14,
+                        63
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              14,
+                              29,
+                              14,
+                              61
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    14,
+                                    29,
+                                    14,
+                                    33
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "text"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    14,
+                                    34,
+                                    14,
+                                    61
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        14,
+                                        35,
+                                        14,
+                                        60
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              14,
+                                              35,
+                                              14,
+                                              41
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "format"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              14,
+                                              42,
+                                              14,
+                                              50
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "timeZone"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              14,
+                                              51,
+                                              14,
+                                              60
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "timestamp"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        21,
+        1,
+        76,
+        40
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": {
+            "range": [
+              21,
+              1,
+              28,
+              3
+            ],
+            "value": "{-| Format a timestamp as a String, like so:\n\n    \"February 14, 2018\"\n\nFor more complex date formatting scenarios, here's a nice package:\n<https://package.elm-lang.org/packages/ryannhg/date-format/latest/>\n\n-}"
+          },
+          "signature": {
+            "range": [
+              29,
+              1,
+              29,
+              43
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  29,
+                  1,
+                  29,
+                  7
+                ],
+                "value": "format"
+              },
+              "typeAnnotation": {
+                "range": [
+                  29,
+                  10,
+                  29,
+                  43
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        29,
+                        10,
+                        29,
+                        19
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              29,
+                              10,
+                              29,
+                              19
+                            ],
+                            "value": {
+                              "moduleName": [
+                                "Time"
+                              ],
+                              "name": "Zone"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        29,
+                        23,
+                        29,
+                        43
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              29,
+                              23,
+                              29,
+                              33
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    29,
+                                    23,
+                                    29,
+                                    33
+                                  ],
+                                  "value": {
+                                    "moduleName": [
+                                      "Time"
+                                    ],
+                                    "name": "Posix"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              29,
+                              37,
+                              29,
+                              43
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    29,
+                                    37,
+                                    29,
+                                    43
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "String"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              30,
+              1,
+              76,
+              40
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  30,
+                  1,
+                  30,
+                  7
+                ],
+                "value": "format"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    30,
+                    8,
+                    30,
+                    12
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "zone"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    30,
+                    13,
+                    30,
+                    17
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "time"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  31,
+                  5,
+                  76,
+                  40
+                ],
+                "value": {
+                  "type": "let",
+                  "let": {
+                    "declarations": [
+                      {
+                        "range": [
+                          32,
+                          9,
+                          68,
+                          31
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "documentation": null,
+                            "signature": null,
+                            "declaration": {
+                              "range": [
+                                32,
+                                9,
+                                68,
+                                31
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    32,
+                                    9,
+                                    32,
+                                    14
+                                  ],
+                                  "value": "month"
+                                },
+                                "arguments": [],
+                                "expression": {
+                                  "range": [
+                                    33,
+                                    13,
+                                    68,
+                                    31
+                                  ],
+                                  "value": {
+                                    "type": "case",
+                                    "case": {
+                                      "cases": [
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              34,
+                                              17,
+                                              34,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Jan"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              35,
+                                              21,
+                                              35,
+                                              30
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "January"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              37,
+                                              17,
+                                              37,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Feb"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              38,
+                                              21,
+                                              38,
+                                              31
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "February"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              40,
+                                              17,
+                                              40,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Mar"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              41,
+                                              21,
+                                              41,
+                                              28
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "March"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              43,
+                                              17,
+                                              43,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Apr"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              44,
+                                              21,
+                                              44,
+                                              28
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "April"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              46,
+                                              17,
+                                              46,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "May"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              47,
+                                              21,
+                                              47,
+                                              26
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "May"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              49,
+                                              17,
+                                              49,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Jun"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              50,
+                                              21,
+                                              50,
+                                              27
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "June"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              52,
+                                              17,
+                                              52,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Jul"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              53,
+                                              21,
+                                              53,
+                                              27
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "July"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              55,
+                                              17,
+                                              55,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Aug"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              56,
+                                              21,
+                                              56,
+                                              29
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "August"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              58,
+                                              17,
+                                              58,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Sep"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              59,
+                                              21,
+                                              59,
+                                              32
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "September"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              61,
+                                              17,
+                                              61,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Oct"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              62,
+                                              21,
+                                              62,
+                                              30
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "October"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              64,
+                                              17,
+                                              64,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Nov"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              65,
+                                              21,
+                                              65,
+                                              31
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "November"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "pattern": {
+                                            "range": [
+                                              67,
+                                              17,
+                                              67,
+                                              20
+                                            ],
+                                            "value": {
+                                              "type": "named",
+                                              "named": {
+                                                "qualified": {
+                                                  "moduleName": [],
+                                                  "name": "Dec"
+                                                },
+                                                "patterns": []
+                                              }
+                                            }
+                                          },
+                                          "expression": {
+                                            "range": [
+                                              68,
+                                              21,
+                                              68,
+                                              31
+                                            ],
+                                            "value": {
+                                              "type": "literal",
+                                              "literal": "December"
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "expression": {
+                                        "range": [
+                                          33,
+                                          18,
+                                          33,
+                                          40
+                                        ],
+                                        "value": {
+                                          "type": "application",
+                                          "application": [
+                                            {
+                                              "range": [
+                                                33,
+                                                18,
+                                                33,
+                                                30
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [
+                                                    "Time"
+                                                  ],
+                                                  "name": "toMonth"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "range": [
+                                                33,
+                                                31,
+                                                33,
+                                                35
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "zone"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "range": [
+                                                33,
+                                                36,
+                                                33,
+                                                40
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "time"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          70,
+                          9,
+                          71,
+                          50
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "documentation": null,
+                            "signature": null,
+                            "declaration": {
+                              "range": [
+                                70,
+                                9,
+                                71,
+                                50
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    70,
+                                    9,
+                                    70,
+                                    12
+                                  ],
+                                  "value": "day"
+                                },
+                                "arguments": [],
+                                "expression": {
+                                  "range": [
+                                    71,
+                                    13,
+                                    71,
+                                    50
+                                  ],
+                                  "value": {
+                                    "type": "application",
+                                    "application": [
+                                      {
+                                        "range": [
+                                          71,
+                                          13,
+                                          71,
+                                          27
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [
+                                              "String"
+                                            ],
+                                            "name": "fromInt"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          71,
+                                          28,
+                                          71,
+                                          50
+                                        ],
+                                        "value": {
+                                          "type": "parenthesized",
+                                          "parenthesized": {
+                                            "range": [
+                                              71,
+                                              29,
+                                              71,
+                                              49
+                                            ],
+                                            "value": {
+                                              "type": "application",
+                                              "application": [
+                                                {
+                                                  "range": [
+                                                    71,
+                                                    29,
+                                                    71,
+                                                    39
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [
+                                                        "Time"
+                                                      ],
+                                                      "name": "toDay"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    71,
+                                                    40,
+                                                    71,
+                                                    44
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "zone"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    71,
+                                                    45,
+                                                    71,
+                                                    49
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "time"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "range": [
+                          73,
+                          9,
+                          74,
+                          51
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "documentation": null,
+                            "signature": null,
+                            "declaration": {
+                              "range": [
+                                73,
+                                9,
+                                74,
+                                51
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    73,
+                                    9,
+                                    73,
+                                    13
+                                  ],
+                                  "value": "year"
+                                },
+                                "arguments": [],
+                                "expression": {
+                                  "range": [
+                                    74,
+                                    13,
+                                    74,
+                                    51
+                                  ],
+                                  "value": {
+                                    "type": "application",
+                                    "application": [
+                                      {
+                                        "range": [
+                                          74,
+                                          13,
+                                          74,
+                                          27
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [
+                                              "String"
+                                            ],
+                                            "name": "fromInt"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          74,
+                                          28,
+                                          74,
+                                          51
+                                        ],
+                                        "value": {
+                                          "type": "parenthesized",
+                                          "parenthesized": {
+                                            "range": [
+                                              74,
+                                              29,
+                                              74,
+                                              50
+                                            ],
+                                            "value": {
+                                              "type": "application",
+                                              "application": [
+                                                {
+                                                  "range": [
+                                                    74,
+                                                    29,
+                                                    74,
+                                                    40
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [
+                                                        "Time"
+                                                      ],
+                                                      "name": "toYear"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    74,
+                                                    41,
+                                                    74,
+                                                    45
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "zone"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "range": [
+                                                    74,
+                                                    46,
+                                                    74,
+                                                    50
+                                                  ],
+                                                  "value": {
+                                                    "type": "functionOrValue",
+                                                    "functionOrValue": {
+                                                      "moduleName": [],
+                                                      "name": "time"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "range": [
+                        76,
+                        5,
+                        76,
+                        40
+                      ],
+                      "value": {
+                        "type": "operatorapplication",
+                        "operatorapplication": {
+                          "operator": "++",
+                          "direction": "right",
+                          "left": {
+                            "range": [
+                              76,
+                              5,
+                              76,
+                              10
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "month"
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              76,
+                              14,
+                              76,
+                              40
+                            ],
+                            "value": {
+                              "type": "operatorapplication",
+                              "operatorapplication": {
+                                "operator": "++",
+                                "direction": "right",
+                                "left": {
+                                  "range": [
+                                    76,
+                                    14,
+                                    76,
+                                    17
+                                  ],
+                                  "value": {
+                                    "type": "literal",
+                                    "literal": " "
+                                  }
+                                },
+                                "right": {
+                                  "range": [
+                                    76,
+                                    21,
+                                    76,
+                                    40
+                                  ],
+                                  "value": {
+                                    "type": "operatorapplication",
+                                    "operatorapplication": {
+                                      "operator": "++",
+                                      "direction": "right",
+                                      "left": {
+                                        "range": [
+                                          76,
+                                          21,
+                                          76,
+                                          24
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [],
+                                            "name": "day"
+                                          }
+                                        }
+                                      },
+                                      "right": {
+                                        "range": [
+                                          76,
+                                          28,
+                                          76,
+                                          40
+                                        ],
+                                        "value": {
+                                          "type": "operatorapplication",
+                                          "operatorapplication": {
+                                            "operator": "++",
+                                            "direction": "right",
+                                            "left": {
+                                              "range": [
+                                                76,
+                                                28,
+                                                76,
+                                                32
+                                              ],
+                                              "value": {
+                                                "type": "literal",
+                                                "literal": ", "
+                                              }
+                                            },
+                                            "right": {
+                                              "range": [
+                                                76,
+                                                36,
+                                                76,
+                                                40
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "year"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        9,
+        1,
+        9,
+        8
+      ],
+      "value": "-- VIEW"
+    },
+    {
+      "range": [
+        18,
+        1,
+        18,
+        10
+      ],
+      "value": "-- FORMAT"
+    }
+  ]
+}

@@ -1,0 +1,859 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      57
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            13
+          ],
+          "value": [
+            "Email"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            14,
+            1,
+            57
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  24,
+                  1,
+                  29
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Email"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  31,
+                  1,
+                  38
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "decoder"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  40,
+                  1,
+                  46
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "encode"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  48,
+                  1,
+                  56
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "toString"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        48
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            19
+          ],
+          "value": [
+            "Json",
+            "Decode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            3,
+            23,
+            3,
+            29
+          ],
+          "value": [
+            "Decode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            3,
+            30,
+            3,
+            48
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  40,
+                  3,
+                  47
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Decoder"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        46
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            19
+          ],
+          "value": [
+            "Json",
+            "Encode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            4,
+            23,
+            4,
+            29
+          ],
+          "value": [
+            "Encode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            4,
+            30,
+            4,
+            46
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  4,
+                  40,
+                  4,
+                  45
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Value"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        7,
+        1,
+        30,
+        19
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": {
+            "range": [
+              7,
+              1,
+              28,
+              3
+            ],
+            "value": "{-| An email address.\n\nHaving this as a custom type that's separate from String makes certain\nmistakes impossible. Consider this function:\n\nupdateEmailAddress : Email -> String -> Http.Request\nupdateEmailAddress email password = ...\n\n(The server needs your password to confirm that you should be allowed\nto update the email address.)\n\nBecause Email is not a type alias for String, but is instead a separate\ncustom type, it is now impossible to mix up the argument order of the\nemail and the password. If we do, it won't compile!\n\nIf Email were instead defined as `type alias Email = String`, we could\ncall updateEmailAddress password email and it would compile (and never\nwork properly).\n\nThis way, we make it impossible for a bug like that to compile!\n\n-}"
+          },
+          "name": {
+            "range": [
+              29,
+              6,
+              29,
+              11
+            ],
+            "value": "Email"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                30,
+                7,
+                30,
+                19
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    30,
+                    7,
+                    30,
+                    12
+                  ],
+                  "value": "Email"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      30,
+                      13,
+                      30,
+                      19
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            30,
+                            13,
+                            30,
+                            19
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "String"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        33,
+        1,
+        35,
+        8
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              33,
+              1,
+              33,
+              27
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  33,
+                  1,
+                  33,
+                  9
+                ],
+                "value": "toString"
+              },
+              "typeAnnotation": {
+                "range": [
+                  33,
+                  12,
+                  33,
+                  27
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        33,
+                        12,
+                        33,
+                        17
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              33,
+                              12,
+                              33,
+                              17
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Email"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        33,
+                        21,
+                        33,
+                        27
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              33,
+                              21,
+                              33,
+                              27
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              34,
+              1,
+              35,
+              8
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  34,
+                  1,
+                  34,
+                  9
+                ],
+                "value": "toString"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    34,
+                    10,
+                    34,
+                    21
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          34,
+                          11,
+                          34,
+                          20
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Email"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  34,
+                                  17,
+                                  34,
+                                  20
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "str"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  35,
+                  5,
+                  35,
+                  8
+                ],
+                "value": {
+                  "type": "functionOrValue",
+                  "functionOrValue": {
+                    "moduleName": [],
+                    "name": "str"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        38,
+        1,
+        40,
+        22
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              38,
+              1,
+              38,
+              24
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  38,
+                  1,
+                  38,
+                  7
+                ],
+                "value": "encode"
+              },
+              "typeAnnotation": {
+                "range": [
+                  38,
+                  10,
+                  38,
+                  24
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        38,
+                        10,
+                        38,
+                        15
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              38,
+                              10,
+                              38,
+                              15
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Email"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        38,
+                        19,
+                        38,
+                        24
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              38,
+                              19,
+                              38,
+                              24
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Value"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              39,
+              1,
+              40,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  39,
+                  1,
+                  39,
+                  7
+                ],
+                "value": "encode"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    39,
+                    8,
+                    39,
+                    19
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          39,
+                          9,
+                          39,
+                          18
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Email"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  39,
+                                  15,
+                                  39,
+                                  18
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "str"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  40,
+                  5,
+                  40,
+                  22
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        40,
+                        5,
+                        40,
+                        18
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Encode"
+                          ],
+                          "name": "string"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        40,
+                        19,
+                        40,
+                        22
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "str"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        43,
+        1,
+        45,
+        35
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              43,
+              1,
+              43,
+              24
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  43,
+                  1,
+                  43,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "typeAnnotation": {
+                "range": [
+                  43,
+                  11,
+                  43,
+                  24
+                ],
+                "value": {
+                  "type": "typed",
+                  "typed": {
+                    "moduleNameAndName": {
+                      "range": [
+                        43,
+                        11,
+                        43,
+                        18
+                      ],
+                      "value": {
+                        "moduleName": [],
+                        "name": "Decoder"
+                      }
+                    },
+                    "args": [
+                      {
+                        "range": [
+                          43,
+                          19,
+                          43,
+                          24
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                43,
+                                19,
+                                43,
+                                24
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "Email"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              44,
+              1,
+              45,
+              35
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  44,
+                  1,
+                  44,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "arguments": [],
+              "expression": {
+                "range": [
+                  45,
+                  5,
+                  45,
+                  35
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        45,
+                        5,
+                        45,
+                        15
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Decode"
+                          ],
+                          "name": "map"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        45,
+                        16,
+                        45,
+                        21
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "Email"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        45,
+                        22,
+                        45,
+                        35
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Decode"
+                          ],
+                          "name": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": []
+}

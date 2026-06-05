@@ -1,0 +1,4380 @@
+{
+  "moduleDefinition": {
+    "range": [
+      1,
+      1,
+      1,
+      91
+    ],
+    "value": {
+      "type": "normal",
+      "normal": {
+        "moduleName": {
+          "range": [
+            1,
+            8,
+            1,
+            23
+          ],
+          "value": [
+            "Article",
+            "Comment"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            1,
+            24,
+            1,
+            91
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  1,
+                  34,
+                  1,
+                  41
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Comment"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  43,
+                  1,
+                  49
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "author"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  51,
+                  1,
+                  55
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "body"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  57,
+                  1,
+                  66
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "createdAt"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  68,
+                  1,
+                  74
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "delete"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  76,
+                  1,
+                  78
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "id"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  80,
+                  1,
+                  84
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "list"
+                  }
+                }
+              },
+              {
+                "range": [
+                  1,
+                  86,
+                  1,
+                  90
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "post"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "imports": [
+    {
+      "range": [
+        3,
+        1,
+        3,
+        27
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            3,
+            8,
+            3,
+            11
+          ],
+          "value": [
+            "Api"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            3,
+            12,
+            3,
+            27
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  3,
+                  22,
+                  3,
+                  26
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Cred"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        4,
+        1,
+        4,
+        32
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            4,
+            8,
+            4,
+            20
+          ],
+          "value": [
+            "Api",
+            "Endpoint"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            4,
+            24,
+            4,
+            32
+          ],
+          "value": [
+            "Endpoint"
+          ]
+        },
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        5,
+        1,
+        5,
+        36
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            5,
+            8,
+            5,
+            20
+          ],
+          "value": [
+            "Article",
+            "Slug"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            5,
+            21,
+            5,
+            36
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  5,
+                  31,
+                  5,
+                  35
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Slug"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        6,
+        1,
+        6,
+        32
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            6,
+            8,
+            6,
+            14
+          ],
+          "value": [
+            "Author"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            6,
+            15,
+            6,
+            32
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  6,
+                  25,
+                  6,
+                  31
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Author"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        7,
+        1,
+        7,
+        38
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            7,
+            8,
+            7,
+            17
+          ],
+          "value": [
+            "CommentId"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            7,
+            18,
+            7,
+            38
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  7,
+                  28,
+                  7,
+                  37
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "CommentId"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        8,
+        1,
+        8,
+        12
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            8,
+            8,
+            8,
+            12
+          ],
+          "value": [
+            "Http"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        9,
+        1,
+        9,
+        15
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            9,
+            8,
+            9,
+            15
+          ],
+          "value": [
+            "Iso8601"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    },
+    {
+      "range": [
+        10,
+        1,
+        10,
+        48
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            10,
+            8,
+            10,
+            19
+          ],
+          "value": [
+            "Json",
+            "Decode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            10,
+            23,
+            10,
+            29
+          ],
+          "value": [
+            "Decode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            10,
+            30,
+            10,
+            48
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  10,
+                  40,
+                  10,
+                  47
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Decoder"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        11,
+        1,
+        11,
+        48
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            11,
+            8,
+            11,
+            28
+          ],
+          "value": [
+            "Json",
+            "Decode",
+            "Pipeline"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": {
+          "range": [
+            11,
+            29,
+            11,
+            48
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  11,
+                  39,
+                  11,
+                  47
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "name": "required"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        12,
+        1,
+        12,
+        46
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            12,
+            8,
+            12,
+            19
+          ],
+          "value": [
+            "Json",
+            "Encode"
+          ]
+        },
+        "moduleAlias": {
+          "range": [
+            12,
+            23,
+            12,
+            29
+          ],
+          "value": [
+            "Encode"
+          ]
+        },
+        "exposingList": {
+          "range": [
+            12,
+            30,
+            12,
+            46
+          ],
+          "value": {
+            "type": "explicit",
+            "explicit": [
+              {
+                "range": [
+                  12,
+                  40,
+                  12,
+                  45
+                ],
+                "value": {
+                  "type": "typeOrAlias",
+                  "typeOrAlias": {
+                    "name": "Value"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        13,
+        1,
+        13,
+        12
+      ],
+      "value": {
+        "moduleName": {
+          "range": [
+            13,
+            8,
+            13,
+            12
+          ],
+          "value": [
+            "Time"
+          ]
+        },
+        "moduleAlias": null,
+        "exposingList": null
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "range": [
+        20,
+        1,
+        21,
+        24
+      ],
+      "value": {
+        "type": "typedecl",
+        "typedecl": {
+          "documentation": null,
+          "name": {
+            "range": [
+              20,
+              6,
+              20,
+              13
+            ],
+            "value": "Comment"
+          },
+          "generics": [],
+          "constructors": [
+            {
+              "range": [
+                21,
+                7,
+                21,
+                24
+              ],
+              "value": {
+                "name": {
+                  "range": [
+                    21,
+                    7,
+                    21,
+                    14
+                  ],
+                  "value": "Comment"
+                },
+                "arguments": [
+                  {
+                    "range": [
+                      21,
+                      15,
+                      21,
+                      24
+                    ],
+                    "value": {
+                      "type": "typed",
+                      "typed": {
+                        "moduleNameAndName": {
+                          "range": [
+                            21,
+                            15,
+                            21,
+                            24
+                          ],
+                          "value": {
+                            "moduleName": [],
+                            "name": "Internals"
+                          }
+                        },
+                        "args": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "range": [
+        24,
+        1,
+        29,
+        6
+      ],
+      "value": {
+        "type": "typeAlias",
+        "typeAlias": {
+          "documentation": null,
+          "name": {
+            "range": [
+              24,
+              12,
+              24,
+              21
+            ],
+            "value": "Internals"
+          },
+          "generics": [],
+          "typeAnnotation": {
+            "range": [
+              25,
+              5,
+              29,
+              6
+            ],
+            "value": {
+              "type": "record",
+              "record": {
+                "value": [
+                  {
+                    "range": [
+                      25,
+                      7,
+                      25,
+                      21
+                    ],
+                    "value": {
+                      "name": {
+                        "range": [
+                          25,
+                          7,
+                          25,
+                          9
+                        ],
+                        "value": "id"
+                      },
+                      "typeAnnotation": {
+                        "range": [
+                          25,
+                          12,
+                          25,
+                          21
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                25,
+                                12,
+                                25,
+                                21
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "CommentId"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "range": [
+                      26,
+                      7,
+                      27,
+                      5
+                    ],
+                    "value": {
+                      "name": {
+                        "range": [
+                          26,
+                          7,
+                          26,
+                          11
+                        ],
+                        "value": "body"
+                      },
+                      "typeAnnotation": {
+                        "range": [
+                          26,
+                          14,
+                          26,
+                          20
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                26,
+                                14,
+                                26,
+                                20
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "String"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "range": [
+                      27,
+                      7,
+                      28,
+                      5
+                    ],
+                    "value": {
+                      "name": {
+                        "range": [
+                          27,
+                          7,
+                          27,
+                          16
+                        ],
+                        "value": "createdAt"
+                      },
+                      "typeAnnotation": {
+                        "range": [
+                          27,
+                          19,
+                          27,
+                          29
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                27,
+                                19,
+                                27,
+                                29
+                              ],
+                              "value": {
+                                "moduleName": [
+                                  "Time"
+                                ],
+                                "name": "Posix"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "range": [
+                      28,
+                      7,
+                      29,
+                      5
+                    ],
+                    "value": {
+                      "name": {
+                        "range": [
+                          28,
+                          7,
+                          28,
+                          13
+                        ],
+                        "value": "author"
+                      },
+                      "typeAnnotation": {
+                        "range": [
+                          28,
+                          16,
+                          28,
+                          22
+                        ],
+                        "value": {
+                          "type": "typed",
+                          "typed": {
+                            "moduleNameAndName": {
+                              "range": [
+                                28,
+                                16,
+                                28,
+                                22
+                              ],
+                              "value": {
+                                "moduleName": [],
+                                "name": "Author"
+                              }
+                            },
+                            "args": []
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        36,
+        1,
+        38,
+        15
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              36,
+              1,
+              36,
+              26
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  36,
+                  1,
+                  36,
+                  3
+                ],
+                "value": "id"
+              },
+              "typeAnnotation": {
+                "range": [
+                  36,
+                  6,
+                  36,
+                  26
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        36,
+                        6,
+                        36,
+                        13
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              36,
+                              6,
+                              36,
+                              13
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        36,
+                        17,
+                        36,
+                        26
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              36,
+                              17,
+                              36,
+                              26
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "CommentId"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              37,
+              1,
+              38,
+              15
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  37,
+                  1,
+                  37,
+                  3
+                ],
+                "value": "id"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    37,
+                    4,
+                    37,
+                    21
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          37,
+                          5,
+                          37,
+                          20
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  37,
+                                  13,
+                                  37,
+                                  20
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "comment"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  38,
+                  5,
+                  38,
+                  15
+                ],
+                "value": {
+                  "type": "recordAccess",
+                  "recordAccess": {
+                    "expression": {
+                      "range": [
+                        38,
+                        5,
+                        38,
+                        12
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "comment"
+                        }
+                      }
+                    },
+                    "name": {
+                      "range": [
+                        38,
+                        13,
+                        38,
+                        15
+                      ],
+                      "value": "id"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        41,
+        1,
+        43,
+        17
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              41,
+              1,
+              41,
+              25
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  41,
+                  1,
+                  41,
+                  5
+                ],
+                "value": "body"
+              },
+              "typeAnnotation": {
+                "range": [
+                  41,
+                  8,
+                  41,
+                  25
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        41,
+                        8,
+                        41,
+                        15
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              41,
+                              8,
+                              41,
+                              15
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        41,
+                        19,
+                        41,
+                        25
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              41,
+                              19,
+                              41,
+                              25
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              42,
+              1,
+              43,
+              17
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  42,
+                  1,
+                  42,
+                  5
+                ],
+                "value": "body"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    42,
+                    6,
+                    42,
+                    23
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          42,
+                          7,
+                          42,
+                          22
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  42,
+                                  15,
+                                  42,
+                                  22
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "comment"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  43,
+                  5,
+                  43,
+                  17
+                ],
+                "value": {
+                  "type": "recordAccess",
+                  "recordAccess": {
+                    "expression": {
+                      "range": [
+                        43,
+                        5,
+                        43,
+                        12
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "comment"
+                        }
+                      }
+                    },
+                    "name": {
+                      "range": [
+                        43,
+                        13,
+                        43,
+                        17
+                      ],
+                      "value": "body"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        46,
+        1,
+        48,
+        22
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              46,
+              1,
+              46,
+              34
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  46,
+                  1,
+                  46,
+                  10
+                ],
+                "value": "createdAt"
+              },
+              "typeAnnotation": {
+                "range": [
+                  46,
+                  13,
+                  46,
+                  34
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        46,
+                        13,
+                        46,
+                        20
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              46,
+                              13,
+                              46,
+                              20
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        46,
+                        24,
+                        46,
+                        34
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              46,
+                              24,
+                              46,
+                              34
+                            ],
+                            "value": {
+                              "moduleName": [
+                                "Time"
+                              ],
+                              "name": "Posix"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              47,
+              1,
+              48,
+              22
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  47,
+                  1,
+                  47,
+                  10
+                ],
+                "value": "createdAt"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    47,
+                    11,
+                    47,
+                    28
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          47,
+                          12,
+                          47,
+                          27
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  47,
+                                  20,
+                                  47,
+                                  27
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "comment"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  48,
+                  5,
+                  48,
+                  22
+                ],
+                "value": {
+                  "type": "recordAccess",
+                  "recordAccess": {
+                    "expression": {
+                      "range": [
+                        48,
+                        5,
+                        48,
+                        12
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "comment"
+                        }
+                      }
+                    },
+                    "name": {
+                      "range": [
+                        48,
+                        13,
+                        48,
+                        22
+                      ],
+                      "value": "createdAt"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        51,
+        1,
+        53,
+        19
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              51,
+              1,
+              51,
+              27
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  51,
+                  1,
+                  51,
+                  7
+                ],
+                "value": "author"
+              },
+              "typeAnnotation": {
+                "range": [
+                  51,
+                  10,
+                  51,
+                  27
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        51,
+                        10,
+                        51,
+                        17
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              51,
+                              10,
+                              51,
+                              17
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        51,
+                        21,
+                        51,
+                        27
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              51,
+                              21,
+                              51,
+                              27
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Author"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              52,
+              1,
+              53,
+              19
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  52,
+                  1,
+                  52,
+                  7
+                ],
+                "value": "author"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    52,
+                    8,
+                    52,
+                    25
+                  ],
+                  "value": {
+                    "type": "parentisized",
+                    "parentisized": {
+                      "value": {
+                        "range": [
+                          52,
+                          9,
+                          52,
+                          24
+                        ],
+                        "value": {
+                          "type": "named",
+                          "named": {
+                            "qualified": {
+                              "moduleName": [],
+                              "name": "Comment"
+                            },
+                            "patterns": [
+                              {
+                                "range": [
+                                  52,
+                                  17,
+                                  52,
+                                  24
+                                ],
+                                "value": {
+                                  "type": "var",
+                                  "var": {
+                                    "value": "comment"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  53,
+                  5,
+                  53,
+                  19
+                ],
+                "value": {
+                  "type": "recordAccess",
+                  "recordAccess": {
+                    "expression": {
+                      "range": [
+                        53,
+                        5,
+                        53,
+                        12
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "comment"
+                        }
+                      }
+                    },
+                    "name": {
+                      "range": [
+                        53,
+                        13,
+                        53,
+                        19
+                      ],
+                      "value": "author"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        60,
+        1,
+        63,
+        61
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              60,
+              1,
+              60,
+              57
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  60,
+                  1,
+                  60,
+                  5
+                ],
+                "value": "list"
+              },
+              "typeAnnotation": {
+                "range": [
+                  60,
+                  8,
+                  60,
+                  57
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        60,
+                        8,
+                        60,
+                        18
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              60,
+                              8,
+                              60,
+                              13
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Maybe"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                60,
+                                14,
+                                60,
+                                18
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      60,
+                                      14,
+                                      60,
+                                      18
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Cred"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        60,
+                        22,
+                        60,
+                        57
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              60,
+                              22,
+                              60,
+                              26
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    60,
+                                    22,
+                                    60,
+                                    26
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "Slug"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              60,
+                              30,
+                              60,
+                              57
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    60,
+                                    30,
+                                    60,
+                                    42
+                                  ],
+                                  "value": {
+                                    "moduleName": [
+                                      "Http"
+                                    ],
+                                    "name": "Request"
+                                  }
+                                },
+                                "args": [
+                                  {
+                                    "range": [
+                                      60,
+                                      43,
+                                      60,
+                                      57
+                                    ],
+                                    "value": {
+                                      "type": "typed",
+                                      "typed": {
+                                        "moduleNameAndName": {
+                                          "range": [
+                                            60,
+                                            44,
+                                            60,
+                                            48
+                                          ],
+                                          "value": {
+                                            "moduleName": [],
+                                            "name": "List"
+                                          }
+                                        },
+                                        "args": [
+                                          {
+                                            "range": [
+                                              60,
+                                              49,
+                                              60,
+                                              56
+                                            ],
+                                            "value": {
+                                              "type": "typed",
+                                              "typed": {
+                                                "moduleNameAndName": {
+                                                  "range": [
+                                                    60,
+                                                    49,
+                                                    60,
+                                                    56
+                                                  ],
+                                                  "value": {
+                                                    "moduleName": [],
+                                                    "name": "Comment"
+                                                  }
+                                                },
+                                                "args": []
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              61,
+              1,
+              63,
+              61
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  61,
+                  1,
+                  61,
+                  5
+                ],
+                "value": "list"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    61,
+                    6,
+                    61,
+                    15
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "maybeCred"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    61,
+                    16,
+                    61,
+                    27
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "articleSlug"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  62,
+                  5,
+                  63,
+                  61
+                ],
+                "value": {
+                  "type": "operatorapplication",
+                  "operatorapplication": {
+                    "operator": "|>",
+                    "direction": "left",
+                    "left": {
+                      "range": [
+                        62,
+                        5,
+                        62,
+                        62
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              62,
+                              5,
+                              62,
+                              17
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Decode"
+                                ],
+                                "name": "field"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              62,
+                              18,
+                              62,
+                              28
+                            ],
+                            "value": {
+                              "type": "literal",
+                              "literal": "comments"
+                            }
+                          },
+                          {
+                            "range": [
+                              62,
+                              29,
+                              62,
+                              62
+                            ],
+                            "value": {
+                              "type": "parenthesized",
+                              "parenthesized": {
+                                "range": [
+                                  62,
+                                  30,
+                                  62,
+                                  61
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        62,
+                                        30,
+                                        62,
+                                        41
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Decode"
+                                          ],
+                                          "name": "list"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        62,
+                                        42,
+                                        62,
+                                        61
+                                      ],
+                                      "value": {
+                                        "type": "parenthesized",
+                                        "parenthesized": {
+                                          "range": [
+                                            62,
+                                            43,
+                                            62,
+                                            60
+                                          ],
+                                          "value": {
+                                            "type": "application",
+                                            "application": [
+                                              {
+                                                "range": [
+                                                  62,
+                                                  43,
+                                                  62,
+                                                  50
+                                                ],
+                                                "value": {
+                                                  "type": "functionOrValue",
+                                                  "functionOrValue": {
+                                                    "moduleName": [],
+                                                    "name": "decoder"
+                                                  }
+                                                }
+                                              },
+                                              {
+                                                "range": [
+                                                  62,
+                                                  51,
+                                                  62,
+                                                  60
+                                                ],
+                                                "value": {
+                                                  "type": "functionOrValue",
+                                                  "functionOrValue": {
+                                                    "moduleName": [],
+                                                    "name": "maybeCred"
+                                                  }
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        63,
+                        12,
+                        63,
+                        61
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              63,
+                              12,
+                              63,
+                              19
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Api"
+                                ],
+                                "name": "get"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              63,
+                              20,
+                              63,
+                              51
+                            ],
+                            "value": {
+                              "type": "parenthesized",
+                              "parenthesized": {
+                                "range": [
+                                  63,
+                                  21,
+                                  63,
+                                  50
+                                ],
+                                "value": {
+                                  "type": "application",
+                                  "application": [
+                                    {
+                                      "range": [
+                                        63,
+                                        21,
+                                        63,
+                                        38
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [
+                                            "Endpoint"
+                                          ],
+                                          "name": "comments"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "range": [
+                                        63,
+                                        39,
+                                        63,
+                                        50
+                                      ],
+                                      "value": {
+                                        "type": "functionOrValue",
+                                        "functionOrValue": {
+                                          "moduleName": [],
+                                          "name": "articleSlug"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              63,
+                              52,
+                              63,
+                              61
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "maybeCred"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        70,
+        1,
+        78,
+        68
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              70,
+              1,
+              70,
+              54
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  70,
+                  1,
+                  70,
+                  5
+                ],
+                "value": "post"
+              },
+              "typeAnnotation": {
+                "range": [
+                  70,
+                  8,
+                  70,
+                  54
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        70,
+                        8,
+                        70,
+                        12
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              70,
+                              8,
+                              70,
+                              12
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        70,
+                        16,
+                        70,
+                        54
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              70,
+                              16,
+                              70,
+                              22
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    70,
+                                    16,
+                                    70,
+                                    22
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "String"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              70,
+                              26,
+                              70,
+                              54
+                            ],
+                            "value": {
+                              "type": "function",
+                              "function": {
+                                "left": {
+                                  "range": [
+                                    70,
+                                    26,
+                                    70,
+                                    30
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          70,
+                                          26,
+                                          70,
+                                          30
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "Cred"
+                                        }
+                                      },
+                                      "args": []
+                                    }
+                                  }
+                                },
+                                "right": {
+                                  "range": [
+                                    70,
+                                    34,
+                                    70,
+                                    54
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          70,
+                                          34,
+                                          70,
+                                          46
+                                        ],
+                                        "value": {
+                                          "moduleName": [
+                                            "Http"
+                                          ],
+                                          "name": "Request"
+                                        }
+                                      },
+                                      "args": [
+                                        {
+                                          "range": [
+                                            70,
+                                            47,
+                                            70,
+                                            54
+                                          ],
+                                          "value": {
+                                            "type": "typed",
+                                            "typed": {
+                                              "moduleNameAndName": {
+                                                "range": [
+                                                  70,
+                                                  47,
+                                                  70,
+                                                  54
+                                                ],
+                                                "value": {
+                                                  "moduleName": [],
+                                                  "name": "Comment"
+                                                }
+                                              },
+                                              "args": []
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              71,
+              1,
+              78,
+              68
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  71,
+                  1,
+                  71,
+                  5
+                ],
+                "value": "post"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    71,
+                    6,
+                    71,
+                    17
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "articleSlug"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    71,
+                    18,
+                    71,
+                    29
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "commentBody"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    71,
+                    30,
+                    71,
+                    34
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "cred"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  72,
+                  5,
+                  78,
+                  68
+                ],
+                "value": {
+                  "type": "let",
+                  "let": {
+                    "declarations": [
+                      {
+                        "range": [
+                          73,
+                          9,
+                          75,
+                          33
+                        ],
+                        "value": {
+                          "type": "function",
+                          "function": {
+                            "documentation": null,
+                            "signature": null,
+                            "declaration": {
+                              "range": [
+                                73,
+                                9,
+                                75,
+                                33
+                              ],
+                              "value": {
+                                "name": {
+                                  "range": [
+                                    73,
+                                    9,
+                                    73,
+                                    12
+                                  ],
+                                  "value": "bod"
+                                },
+                                "arguments": [],
+                                "expression": {
+                                  "range": [
+                                    74,
+                                    13,
+                                    75,
+                                    33
+                                  ],
+                                  "value": {
+                                    "type": "operatorapplication",
+                                    "operatorapplication": {
+                                      "operator": "|>",
+                                      "direction": "left",
+                                      "left": {
+                                        "range": [
+                                          74,
+                                          13,
+                                          74,
+                                          42
+                                        ],
+                                        "value": {
+                                          "type": "application",
+                                          "application": [
+                                            {
+                                              "range": [
+                                                74,
+                                                13,
+                                                74,
+                                                30
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "encodeCommentBody"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "range": [
+                                                74,
+                                                31,
+                                                74,
+                                                42
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "commentBody"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "right": {
+                                        "range": [
+                                          75,
+                                          20,
+                                          75,
+                                          33
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [
+                                              "Http"
+                                            ],
+                                            "name": "jsonBody"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "range": [
+                        77,
+                        5,
+                        78,
+                        68
+                      ],
+                      "value": {
+                        "type": "operatorapplication",
+                        "operatorapplication": {
+                          "operator": "|>",
+                          "direction": "left",
+                          "left": {
+                            "range": [
+                              77,
+                              5,
+                              77,
+                              49
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    77,
+                                    5,
+                                    77,
+                                    17
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Decode"
+                                      ],
+                                      "name": "field"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    77,
+                                    18,
+                                    77,
+                                    27
+                                  ],
+                                  "value": {
+                                    "type": "literal",
+                                    "literal": "comment"
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    77,
+                                    28,
+                                    77,
+                                    49
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        77,
+                                        29,
+                                        77,
+                                        48
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              77,
+                                              29,
+                                              77,
+                                              36
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "decoder"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              77,
+                                              37,
+                                              77,
+                                              48
+                                            ],
+                                            "value": {
+                                              "type": "parenthesized",
+                                              "parenthesized": {
+                                                "range": [
+                                                  77,
+                                                  38,
+                                                  77,
+                                                  47
+                                                ],
+                                                "value": {
+                                                  "type": "application",
+                                                  "application": [
+                                                    {
+                                                      "range": [
+                                                        77,
+                                                        38,
+                                                        77,
+                                                        42
+                                                      ],
+                                                      "value": {
+                                                        "type": "functionOrValue",
+                                                        "functionOrValue": {
+                                                          "moduleName": [],
+                                                          "name": "Just"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "range": [
+                                                        77,
+                                                        43,
+                                                        77,
+                                                        47
+                                                      ],
+                                                      "value": {
+                                                        "type": "functionOrValue",
+                                                        "functionOrValue": {
+                                                          "moduleName": [],
+                                                          "name": "cred"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              78,
+                              12,
+                              78,
+                              68
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    78,
+                                    12,
+                                    78,
+                                    20
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [
+                                        "Api"
+                                      ],
+                                      "name": "post"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    78,
+                                    21,
+                                    78,
+                                    52
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        78,
+                                        22,
+                                        78,
+                                        51
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              78,
+                                              22,
+                                              78,
+                                              39
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [
+                                                  "Endpoint"
+                                                ],
+                                                "name": "comments"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              78,
+                                              40,
+                                              78,
+                                              51
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "articleSlug"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    78,
+                                    53,
+                                    78,
+                                    64
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        78,
+                                        54,
+                                        78,
+                                        63
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              78,
+                                              54,
+                                              78,
+                                              58
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "Just"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              78,
+                                              59,
+                                              78,
+                                              63
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "cred"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    78,
+                                    65,
+                                    78,
+                                    68
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "bod"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        81,
+        1,
+        83,
+        85
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              81,
+              1,
+              81,
+              36
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  81,
+                  1,
+                  81,
+                  18
+                ],
+                "value": "encodeCommentBody"
+              },
+              "typeAnnotation": {
+                "range": [
+                  81,
+                  21,
+                  81,
+                  36
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        81,
+                        21,
+                        81,
+                        27
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              81,
+                              21,
+                              81,
+                              27
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "String"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        81,
+                        31,
+                        81,
+                        36
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              81,
+                              31,
+                              81,
+                              36
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Value"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              82,
+              1,
+              83,
+              85
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  82,
+                  1,
+                  82,
+                  18
+                ],
+                "value": "encodeCommentBody"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    82,
+                    19,
+                    82,
+                    22
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "str"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  83,
+                  5,
+                  83,
+                  85
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        83,
+                        5,
+                        83,
+                        18
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Encode"
+                          ],
+                          "name": "object"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        83,
+                        19,
+                        83,
+                        85
+                      ],
+                      "value": {
+                        "type": "list",
+                        "list": [
+                          {
+                            "range": [
+                              83,
+                              21,
+                              83,
+                              83
+                            ],
+                            "value": {
+                              "type": "tupled",
+                              "tupled": [
+                                {
+                                  "range": [
+                                    83,
+                                    23,
+                                    83,
+                                    32
+                                  ],
+                                  "value": {
+                                    "type": "literal",
+                                    "literal": "comment"
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    83,
+                                    34,
+                                    83,
+                                    81
+                                  ],
+                                  "value": {
+                                    "type": "application",
+                                    "application": [
+                                      {
+                                        "range": [
+                                          83,
+                                          34,
+                                          83,
+                                          47
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [
+                                              "Encode"
+                                            ],
+                                            "name": "object"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          83,
+                                          48,
+                                          83,
+                                          81
+                                        ],
+                                        "value": {
+                                          "type": "list",
+                                          "list": [
+                                            {
+                                              "range": [
+                                                83,
+                                                50,
+                                                83,
+                                                79
+                                              ],
+                                              "value": {
+                                                "type": "tupled",
+                                                "tupled": [
+                                                  {
+                                                    "range": [
+                                                      83,
+                                                      52,
+                                                      83,
+                                                      58
+                                                    ],
+                                                    "value": {
+                                                      "type": "literal",
+                                                      "literal": "body"
+                                                    }
+                                                  },
+                                                  {
+                                                    "range": [
+                                                      83,
+                                                      60,
+                                                      83,
+                                                      77
+                                                    ],
+                                                    "value": {
+                                                      "type": "application",
+                                                      "application": [
+                                                        {
+                                                          "range": [
+                                                            83,
+                                                            60,
+                                                            83,
+                                                            73
+                                                          ],
+                                                          "value": {
+                                                            "type": "functionOrValue",
+                                                            "functionOrValue": {
+                                                              "moduleName": [
+                                                                "Encode"
+                                                              ],
+                                                              "name": "string"
+                                                            }
+                                                          }
+                                                        },
+                                                        {
+                                                          "range": [
+                                                            83,
+                                                            74,
+                                                            83,
+                                                            77
+                                                          ],
+                                                          "value": {
+                                                            "type": "functionOrValue",
+                                                            "functionOrValue": {
+                                                              "moduleName": [],
+                                                              "name": "str"
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        90,
+        1,
+        92,
+        96
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              90,
+              1,
+              90,
+              54
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  90,
+                  1,
+                  90,
+                  7
+                ],
+                "value": "delete"
+              },
+              "typeAnnotation": {
+                "range": [
+                  90,
+                  10,
+                  90,
+                  54
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        90,
+                        10,
+                        90,
+                        14
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              90,
+                              10,
+                              90,
+                              14
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Slug"
+                            }
+                          },
+                          "args": []
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        90,
+                        18,
+                        90,
+                        54
+                      ],
+                      "value": {
+                        "type": "function",
+                        "function": {
+                          "left": {
+                            "range": [
+                              90,
+                              18,
+                              90,
+                              27
+                            ],
+                            "value": {
+                              "type": "typed",
+                              "typed": {
+                                "moduleNameAndName": {
+                                  "range": [
+                                    90,
+                                    18,
+                                    90,
+                                    27
+                                  ],
+                                  "value": {
+                                    "moduleName": [],
+                                    "name": "CommentId"
+                                  }
+                                },
+                                "args": []
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              90,
+                              31,
+                              90,
+                              54
+                            ],
+                            "value": {
+                              "type": "function",
+                              "function": {
+                                "left": {
+                                  "range": [
+                                    90,
+                                    31,
+                                    90,
+                                    35
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          90,
+                                          31,
+                                          90,
+                                          35
+                                        ],
+                                        "value": {
+                                          "moduleName": [],
+                                          "name": "Cred"
+                                        }
+                                      },
+                                      "args": []
+                                    }
+                                  }
+                                },
+                                "right": {
+                                  "range": [
+                                    90,
+                                    39,
+                                    90,
+                                    54
+                                  ],
+                                  "value": {
+                                    "type": "typed",
+                                    "typed": {
+                                      "moduleNameAndName": {
+                                        "range": [
+                                          90,
+                                          39,
+                                          90,
+                                          51
+                                        ],
+                                        "value": {
+                                          "moduleName": [
+                                            "Http"
+                                          ],
+                                          "name": "Request"
+                                        }
+                                      },
+                                      "args": [
+                                        {
+                                          "range": [
+                                            90,
+                                            52,
+                                            90,
+                                            54
+                                          ],
+                                          "value": {
+                                            "type": "unit",
+                                            "unit": {}
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              91,
+              1,
+              92,
+              96
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  91,
+                  1,
+                  91,
+                  7
+                ],
+                "value": "delete"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    91,
+                    8,
+                    91,
+                    19
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "articleSlug"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    91,
+                    20,
+                    91,
+                    29
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "commentId"
+                    }
+                  }
+                },
+                {
+                  "range": [
+                    91,
+                    30,
+                    91,
+                    34
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "cred"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  92,
+                  5,
+                  92,
+                  96
+                ],
+                "value": {
+                  "type": "application",
+                  "application": [
+                    {
+                      "range": [
+                        92,
+                        5,
+                        92,
+                        15
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Api"
+                          ],
+                          "name": "delete"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        92,
+                        16,
+                        92,
+                        56
+                      ],
+                      "value": {
+                        "type": "parenthesized",
+                        "parenthesized": {
+                          "range": [
+                            92,
+                            17,
+                            92,
+                            55
+                          ],
+                          "value": {
+                            "type": "application",
+                            "application": [
+                              {
+                                "range": [
+                                  92,
+                                  17,
+                                  92,
+                                  33
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [
+                                      "Endpoint"
+                                    ],
+                                    "name": "comment"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  92,
+                                  34,
+                                  92,
+                                  45
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "articleSlug"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  92,
+                                  46,
+                                  92,
+                                  55
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [],
+                                    "name": "commentId"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        92,
+                        57,
+                        92,
+                        61
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [],
+                          "name": "cred"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        92,
+                        62,
+                        92,
+                        76
+                      ],
+                      "value": {
+                        "type": "functionOrValue",
+                        "functionOrValue": {
+                          "moduleName": [
+                            "Http"
+                          ],
+                          "name": "emptyBody"
+                        }
+                      }
+                    },
+                    {
+                      "range": [
+                        92,
+                        77,
+                        92,
+                        96
+                      ],
+                      "value": {
+                        "type": "parenthesized",
+                        "parenthesized": {
+                          "range": [
+                            92,
+                            78,
+                            92,
+                            95
+                          ],
+                          "value": {
+                            "type": "application",
+                            "application": [
+                              {
+                                "range": [
+                                  92,
+                                  78,
+                                  92,
+                                  92
+                                ],
+                                "value": {
+                                  "type": "functionOrValue",
+                                  "functionOrValue": {
+                                    "moduleName": [
+                                      "Decode"
+                                    ],
+                                    "name": "succeed"
+                                  }
+                                }
+                              },
+                              {
+                                "range": [
+                                  92,
+                                  93,
+                                  92,
+                                  95
+                                ],
+                                "value": {
+                                  "type": "unit",
+                                  "unit": null
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "range": [
+        99,
+        1,
+        106,
+        30
+      ],
+      "value": {
+        "type": "function",
+        "function": {
+          "documentation": null,
+          "signature": {
+            "range": [
+              99,
+              1,
+              99,
+              40
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  99,
+                  1,
+                  99,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "typeAnnotation": {
+                "range": [
+                  99,
+                  11,
+                  99,
+                  40
+                ],
+                "value": {
+                  "type": "function",
+                  "function": {
+                    "left": {
+                      "range": [
+                        99,
+                        11,
+                        99,
+                        21
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              99,
+                              11,
+                              99,
+                              16
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Maybe"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                99,
+                                17,
+                                99,
+                                21
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      99,
+                                      17,
+                                      99,
+                                      21
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Cred"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        99,
+                        25,
+                        99,
+                        40
+                      ],
+                      "value": {
+                        "type": "typed",
+                        "typed": {
+                          "moduleNameAndName": {
+                            "range": [
+                              99,
+                              25,
+                              99,
+                              32
+                            ],
+                            "value": {
+                              "moduleName": [],
+                              "name": "Decoder"
+                            }
+                          },
+                          "args": [
+                            {
+                              "range": [
+                                99,
+                                33,
+                                99,
+                                40
+                              ],
+                              "value": {
+                                "type": "typed",
+                                "typed": {
+                                  "moduleNameAndName": {
+                                    "range": [
+                                      99,
+                                      33,
+                                      99,
+                                      40
+                                    ],
+                                    "value": {
+                                      "moduleName": [],
+                                      "name": "Comment"
+                                    }
+                                  },
+                                  "args": []
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "declaration": {
+            "range": [
+              100,
+              1,
+              106,
+              30
+            ],
+            "value": {
+              "name": {
+                "range": [
+                  100,
+                  1,
+                  100,
+                  8
+                ],
+                "value": "decoder"
+              },
+              "arguments": [
+                {
+                  "range": [
+                    100,
+                    9,
+                    100,
+                    18
+                  ],
+                  "value": {
+                    "type": "var",
+                    "var": {
+                      "value": "maybeCred"
+                    }
+                  }
+                }
+              ],
+              "expression": {
+                "range": [
+                  101,
+                  5,
+                  106,
+                  30
+                ],
+                "value": {
+                  "type": "operatorapplication",
+                  "operatorapplication": {
+                    "operator": "|>",
+                    "direction": "left",
+                    "left": {
+                      "range": [
+                        101,
+                        5,
+                        105,
+                        56
+                      ],
+                      "value": {
+                        "type": "operatorapplication",
+                        "operatorapplication": {
+                          "operator": "|>",
+                          "direction": "left",
+                          "left": {
+                            "range": [
+                              101,
+                              5,
+                              104,
+                              48
+                            ],
+                            "value": {
+                              "type": "operatorapplication",
+                              "operatorapplication": {
+                                "operator": "|>",
+                                "direction": "left",
+                                "left": {
+                                  "range": [
+                                    101,
+                                    5,
+                                    103,
+                                    41
+                                  ],
+                                  "value": {
+                                    "type": "operatorapplication",
+                                    "operatorapplication": {
+                                      "operator": "|>",
+                                      "direction": "left",
+                                      "left": {
+                                        "range": [
+                                          101,
+                                          5,
+                                          102,
+                                          43
+                                        ],
+                                        "value": {
+                                          "type": "operatorapplication",
+                                          "operatorapplication": {
+                                            "operator": "|>",
+                                            "direction": "left",
+                                            "left": {
+                                              "range": [
+                                                101,
+                                                5,
+                                                101,
+                                                29
+                                              ],
+                                              "value": {
+                                                "type": "application",
+                                                "application": [
+                                                  {
+                                                    "range": [
+                                                      101,
+                                                      5,
+                                                      101,
+                                                      19
+                                                    ],
+                                                    "value": {
+                                                      "type": "functionOrValue",
+                                                      "functionOrValue": {
+                                                        "moduleName": [
+                                                          "Decode"
+                                                        ],
+                                                        "name": "succeed"
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "range": [
+                                                      101,
+                                                      20,
+                                                      101,
+                                                      29
+                                                    ],
+                                                    "value": {
+                                                      "type": "functionOrValue",
+                                                      "functionOrValue": {
+                                                        "moduleName": [],
+                                                        "name": "Internals"
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "right": {
+                                              "range": [
+                                                102,
+                                                12,
+                                                102,
+                                                43
+                                              ],
+                                              "value": {
+                                                "type": "application",
+                                                "application": [
+                                                  {
+                                                    "range": [
+                                                      102,
+                                                      12,
+                                                      102,
+                                                      20
+                                                    ],
+                                                    "value": {
+                                                      "type": "functionOrValue",
+                                                      "functionOrValue": {
+                                                        "moduleName": [],
+                                                        "name": "required"
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "range": [
+                                                      102,
+                                                      21,
+                                                      102,
+                                                      25
+                                                    ],
+                                                    "value": {
+                                                      "type": "literal",
+                                                      "literal": "id"
+                                                    }
+                                                  },
+                                                  {
+                                                    "range": [
+                                                      102,
+                                                      26,
+                                                      102,
+                                                      43
+                                                    ],
+                                                    "value": {
+                                                      "type": "functionOrValue",
+                                                      "functionOrValue": {
+                                                        "moduleName": [
+                                                          "CommentId"
+                                                        ],
+                                                        "name": "decoder"
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "right": {
+                                        "range": [
+                                          103,
+                                          12,
+                                          103,
+                                          41
+                                        ],
+                                        "value": {
+                                          "type": "application",
+                                          "application": [
+                                            {
+                                              "range": [
+                                                103,
+                                                12,
+                                                103,
+                                                20
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [],
+                                                  "name": "required"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "range": [
+                                                103,
+                                                21,
+                                                103,
+                                                27
+                                              ],
+                                              "value": {
+                                                "type": "literal",
+                                                "literal": "body"
+                                              }
+                                            },
+                                            {
+                                              "range": [
+                                                103,
+                                                28,
+                                                103,
+                                                41
+                                              ],
+                                              "value": {
+                                                "type": "functionOrValue",
+                                                "functionOrValue": {
+                                                  "moduleName": [
+                                                    "Decode"
+                                                  ],
+                                                  "name": "string"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "right": {
+                                  "range": [
+                                    104,
+                                    12,
+                                    104,
+                                    48
+                                  ],
+                                  "value": {
+                                    "type": "application",
+                                    "application": [
+                                      {
+                                        "range": [
+                                          104,
+                                          12,
+                                          104,
+                                          20
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [],
+                                            "name": "required"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          104,
+                                          21,
+                                          104,
+                                          32
+                                        ],
+                                        "value": {
+                                          "type": "literal",
+                                          "literal": "createdAt"
+                                        }
+                                      },
+                                      {
+                                        "range": [
+                                          104,
+                                          33,
+                                          104,
+                                          48
+                                        ],
+                                        "value": {
+                                          "type": "functionOrValue",
+                                          "functionOrValue": {
+                                            "moduleName": [
+                                              "Iso8601"
+                                            ],
+                                            "name": "decoder"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "range": [
+                              105,
+                              12,
+                              105,
+                              56
+                            ],
+                            "value": {
+                              "type": "application",
+                              "application": [
+                                {
+                                  "range": [
+                                    105,
+                                    12,
+                                    105,
+                                    20
+                                  ],
+                                  "value": {
+                                    "type": "functionOrValue",
+                                    "functionOrValue": {
+                                      "moduleName": [],
+                                      "name": "required"
+                                    }
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    105,
+                                    21,
+                                    105,
+                                    29
+                                  ],
+                                  "value": {
+                                    "type": "literal",
+                                    "literal": "author"
+                                  }
+                                },
+                                {
+                                  "range": [
+                                    105,
+                                    30,
+                                    105,
+                                    56
+                                  ],
+                                  "value": {
+                                    "type": "parenthesized",
+                                    "parenthesized": {
+                                      "range": [
+                                        105,
+                                        31,
+                                        105,
+                                        55
+                                      ],
+                                      "value": {
+                                        "type": "application",
+                                        "application": [
+                                          {
+                                            "range": [
+                                              105,
+                                              31,
+                                              105,
+                                              45
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [
+                                                  "Author"
+                                                ],
+                                                "name": "decoder"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "range": [
+                                              105,
+                                              46,
+                                              105,
+                                              55
+                                            ],
+                                            "value": {
+                                              "type": "functionOrValue",
+                                              "functionOrValue": {
+                                                "moduleName": [],
+                                                "name": "maybeCred"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "right": {
+                      "range": [
+                        106,
+                        12,
+                        106,
+                        30
+                      ],
+                      "value": {
+                        "type": "application",
+                        "application": [
+                          {
+                            "range": [
+                              106,
+                              12,
+                              106,
+                              22
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [
+                                  "Decode"
+                                ],
+                                "name": "map"
+                              }
+                            }
+                          },
+                          {
+                            "range": [
+                              106,
+                              23,
+                              106,
+                              30
+                            ],
+                            "value": {
+                              "type": "functionOrValue",
+                              "functionOrValue": {
+                                "moduleName": [],
+                                "name": "Comment"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "comments": [
+    {
+      "range": [
+        17,
+        1,
+        17,
+        9
+      ],
+      "value": "-- TYPES"
+    },
+    {
+      "range": [
+        33,
+        1,
+        33,
+        8
+      ],
+      "value": "-- INFO"
+    },
+    {
+      "range": [
+        57,
+        1,
+        57,
+        8
+      ],
+      "value": "-- LIST"
+    },
+    {
+      "range": [
+        67,
+        1,
+        67,
+        8
+      ],
+      "value": "-- POST"
+    },
+    {
+      "range": [
+        87,
+        1,
+        87,
+        10
+      ],
+      "value": "-- DELETE"
+    },
+    {
+      "range": [
+        96,
+        1,
+        96,
+        17
+      ],
+      "value": "-- SERIALIZATION"
+    }
+  ]
+}
