@@ -681,17 +681,18 @@ injectRuleInPreview previewFolder pkg ruleName =
                                     , warnings = []
                                     }
                         in
-                        if List.isEmpty result.warnings then
-                            Fs.writeTextFile filePath (String.join "\n" result.lines)
-                                |> TTask.mapError
-                                    (\error ->
-                                        Problem.unexpectedError ("while trying to update the " ++ previewFolder ++ "/ preview configuration") (FsData.errorToString error)
-                                            |> Problem.withPath filePath
-                                    )
-                                |> TTask.map (\_ -> [])
+                        case result.warnings of
+                            [] ->
+                                Fs.writeTextFile filePath (String.join "\n" result.lines)
+                                    |> TTask.mapError
+                                        (\error ->
+                                            Problem.unexpectedError ("while trying to update the " ++ previewFolder ++ "/ preview configuration") (FsData.errorToString error)
+                                                |> Problem.withPath filePath
+                                        )
+                                    |> TTask.map (\_ -> [])
 
-                        else
-                            TTask.succeed [ \c -> "I tried inserting the rule in the " ++ c Yellow (previewFolder ++ "/") ++ " preview configuration but could not read it." ]
+                            warnings ->
+                                TTask.succeed warnings
             )
 
 
