@@ -624,7 +624,7 @@ ruleDescription packageName packageVersion ruleName =
     let
         ruleNameAsUrl : String
         ruleNameAsUrl =
-            String.replace ruleName "." "-"
+            String.replace "." "-" ruleName
     in
     "- [`" ++ ruleName ++ "`](https://package.elm-lang.org/packages/" ++ packageName ++ "/" ++ packageVersion ++ "/" ++ ruleNameAsUrl ++ ") - Reports REPLACEME."
 
