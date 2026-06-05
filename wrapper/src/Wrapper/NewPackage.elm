@@ -58,9 +58,9 @@ type alias Warning =
 init : NewPackageOptions -> TCmd Msg
 init options =
     TTask.map2
-        (\name ( ruleName, ruleType ) ->
+        (\{ name, path } ( ruleName, ruleType ) ->
             { name = name
-            , path = Elm.Package.toString name
+            , path = path
             , ruleName = ruleName
             , ruleType = ruleType
             }
@@ -74,7 +74,7 @@ init options =
         |> TTask.attempt Done
 
 
-promptForName : TTask Problem Elm.Package.Name
+promptForName : TTask Problem { name : Elm.Package.Name, path : String }
 promptForName =
     promptForAuthorName
         |> TTask.andThen promptForPackageName
@@ -98,31 +98,34 @@ promptForAuthorName =
             )
 
 
-promptForPackageName : String -> TTask Problem Elm.Package.Name
-promptForPackageName authorName =
+promptForPackageName : String -> TTask Problem { name : Elm.Package.Name, path : String }
+promptForPackageName author =
     -- TODO Put special effects on prompt messages
     Cli.printlnStdoutTask """? The package name (starting with "elm-review-")"""
         |> TTask.andThen (\() -> Stdin.readLine)
         |> TTask.mapError (Stdin.toProblem "while prompting for the package name")
         |> TTask.map String.trim
         |> TTask.andThen
-            (\packageName ->
+            (\package ->
                 let
                     name : Maybe Elm.Package.Name
                     name =
-                        if not (String.startsWith "elm-review-" packageName) then
+                        if not (String.startsWith "elm-review-" package) then
                             Nothing
 
                         else
-                            Elm.Package.fromString (authorName ++ "/" ++ packageName)
+                            Elm.Package.fromString (author ++ "/" ++ package)
                 in
                 case name of
                     Just validName ->
-                        TTask.succeed validName
+                        TTask.succeed
+                            { name = validName
+                            , path = package
+                            }
 
                     Nothing ->
                         Cli.printlnStdoutTask """The package name needs to start with "elm-review-"."""
-                            |> TTask.andThen (\() -> promptForPackageName authorName)
+                            |> TTask.andThen (\() -> promptForPackageName author)
             )
 
 
