@@ -545,7 +545,11 @@ filePathToPosition : FilePath -> Range -> String
 filePathToPosition filePath range =
     case filePath of
         FilePath str ->
-            " " ++ str ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
+            if range.start.row == 0 && range.start.column == 0 then
+                " " ++ str
+
+            else
+                " " ++ str ++ ":" ++ String.fromInt range.start.row ++ ":" ++ String.fromInt range.start.column
 
         Global ->
             " GLOBAL ERROR"
