@@ -1208,16 +1208,6 @@ groupErrorsByFile mapper project errors =
     if List.isEmpty errors then
         []
 
-    else if not (List.isEmpty (Project.modulesThatFailedToParse project)) then
-        List.map
-            (\error ->
-                { path = Reporter.FilePath (Rule.errorFilePath error)
-                , source = Reporter.Source Array.empty
-                , errors = [ mapper error ]
-                }
-            )
-            errors
-
     else
         let
             findSource_ : String -> String
