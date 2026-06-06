@@ -187,10 +187,6 @@ updateHelp msg model =
 
         ReviewProcessEnded pid result ->
             if model.pid == Just pid then
-                let
-                    _ =
-                        Debug.todo (Debug.toString result)
-                in
                 case result of
                     Ok exitCode ->
                         ( model
