@@ -533,7 +533,7 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     ( newProject, version, cmds ) =
                         case FileWatchData.toEventType fileEvent.eventType of
                             FileWatchData.Created ->
-                                ( model.project, model.version, [ fetchElmFile (String.replace "/Users/m1/dev/elm-spa-example/" "" fileEvent.path) ] )
+                                ( model.project, model.version, [ fetchElmFile (Debug.todo <| String.replace "/Users/m1/dev/elm-spa-example/" "" fileEvent.path) ] )
 
                             FileWatchData.Modified ->
                                 ( model.project, model.version, [ fetchElmFile (String.replace "/Users/m1/dev/elm-spa-example/" "" fileEvent.path) ] )
