@@ -616,10 +616,10 @@ elmFilesToFetch elmJson directoriesToAnalyze =
                             |> Err
 
                     else
-                        Ok ("test" :: application.dirs)
+                        Ok ("tests" :: application.dirs)
 
                 Elm.Project.Package _ ->
-                    Ok [ "src", "test" ]
+                    Ok [ "src", "tests" ]
 
         Just directoriesToAnalyze_ ->
             Ok directoriesToAnalyze_
