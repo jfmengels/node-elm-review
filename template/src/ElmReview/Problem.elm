@@ -135,10 +135,10 @@ shouldExitWithError attemptFutureRecovery (Problem problem) =
                 dontExit
 
             else
-                doExit
+                dontExit
 
         Unrecoverable ->
-            doExit
+            dontExit
 
 
 isRecoverable : Problem -> Bool
