@@ -768,7 +768,14 @@ clearScreen shouldClear str =
         "\u{001B}c" ++ str
 
     else
-        str
+        moveCursorToBeginningOfLine ++ str
+
+
+{-| Move to the beginning of the line to erase the "Fixed N issue so far" message
+-}
+moveCursorToBeginningOfLine : String
+moveCursorToBeginningOfLine =
+    "\u{001B}[0G"
 
 
 printJson : Bool -> Encode.Value -> Encode.Value -> String
@@ -1074,7 +1081,7 @@ sendFixPrompt diffs result nbErrors model =
         ( { model | promptId = promptId }
         , Prompt.prompt
             { formatOptions = formatOptions model.options
-            , priorMessage = Just (Text.toAnsi model.options.supportsColor proposal)
+            , priorMessage = Just (moveCursorToBeginningOfLine ++ Text.toAnsi model.options.supportsColor proposal)
             , question =
                 \_ ->
                     case nbErrors of
