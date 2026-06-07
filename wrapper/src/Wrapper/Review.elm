@@ -323,8 +323,8 @@ runReviewProcessWithElmRun options { reviewAppPath, reviewElmJson, reviewFolder,
 
         ( cmd, args ) =
             if options.debug then
-                -- TODO Get host-cli from somewhere?
-                ( "host-cli"
+                -- TODO Get host-run from somewhere?
+                ( "host-run"
                 , "-v" :: "--trust" :: reviewAppPath :: reviewAppFlags
                 )
 
