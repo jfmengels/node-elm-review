@@ -741,8 +741,14 @@ fetchDataOnElmJsonChange options before after model =
                 let
                     tasks : List (TCmd Msg)
                     tasks =
-                        fetchAddedSourceDirectories sourceDirectories.added
-                            |> fetchAddedDependencies options dependencies
+                        case options.directoriesToAnalyze of
+                            Nothing ->
+                                fetchAddedSourceDirectories sourceDirectories.added
+                                    |> fetchAddedDependencies options dependencies
+
+                            Just _ ->
+                                -- Already fetched on init
+                                []
 
                     newProject : Project
                     newProject =
