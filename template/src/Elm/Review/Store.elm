@@ -135,7 +135,7 @@ checkReadiness (Model model) =
         { title = "NO FILES FOUND"
         , message =
             \_ -> """I was expecting to find Elm files in all the paths that you passed, but I could not find any in the following directories:
-- """ ++ String.join "\n - " model.directoriesFromCliArgsWithoutFiles ++ """
+ - """ ++ String.join "\n - " model.directoriesFromCliArgsWithoutFiles ++ """
 
 When I can't find files in some of the directories, I'm assuming that you
 misconfigured the CLI's arguments."""
@@ -148,7 +148,7 @@ misconfigured the CLI's arguments."""
         { title = "NO FILES FOUND"
         , message =
             \_ -> """I could not find any files in this project. I looked in these folders:
-- """ ++ String.join "\n - " model.emptySourceDirectories
+ - """ ++ String.join "\n - " model.emptySourceDirectories
         }
             |> Problem.from Problem.Recoverable
             |> Failure
