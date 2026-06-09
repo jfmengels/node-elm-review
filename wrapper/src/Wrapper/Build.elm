@@ -213,7 +213,7 @@ createSymlinkToTemplateSrc options buildFolder =
                         TTask.succeed ()
 
                     _ ->
-                        fsErrorToProblem "while building creating a symlink to the template' source directory" error
+                        fsErrorToProblem "while building and creating a symlink to the template' source directory" error
                             |> TTask.fail
             )
 
