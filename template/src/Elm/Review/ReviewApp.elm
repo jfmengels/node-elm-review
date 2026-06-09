@@ -1001,6 +1001,10 @@ applyFixesAfterReview ({ model, result } as input) =
             makeReport (Store.suppressedErrors model.store) input
 
         Just nbErrors ->
+            let
+                _ =
+                    Debug.todo ("Projects are same " ++ Debug.toString (Store.project model.store == result.project))
+            in
             case Project.diffV2 { before = Store.project model.store, after = result.project } of
                 [] ->
                     makeReport (Store.suppressedErrors model.store) input
