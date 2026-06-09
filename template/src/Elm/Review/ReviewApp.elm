@@ -1003,7 +1003,13 @@ applyFixesAfterReview ({ model, result } as input) =
         Just nbErrors ->
             let
                 _ =
-                    Debug.todo ("Projects are same " ++ Debug.toString (Store.project model.store == result.project))
+                    Debug.todo
+                        ("Projects are same "
+                            ++ Debug.toString
+                                { equal = Store.project model.store == result.project
+                                , diff = diffV2 { before = Store.project model.store, after = result.project }
+                                }
+                        )
             in
             case Project.diffV2 { before = Store.project model.store, after = result.project } of
                 [] ->
@@ -1011,6 +1017,69 @@ applyFixesAfterReview ({ model, result } as input) =
 
                 diffs ->
                     sendFixPrompt diffs result nbErrors model
+
+
+diffV2 : { before : Project, after : Project } -> List { path : String, diff : Project.Diff }
+diffV2 projects =
+    let
+        modules_ : Project -> Dict String ProjectModule
+        modules_ project =
+            List.foldl (\mod dict -> Dict.insert mod.path mod dict)
+                Dict.empty
+                (Project.modules project)
+
+        projects_ =
+            { before = modules_ projects.before, after = modules_ projects.after }
+    in
+    []
+        --|> diffElmJson2 projects_
+        --|> diffReadme2 projects_
+        --|> diffExtraFiles2 projects_
+        |> diffElmFiles2_ projects_
+
+
+diffElmFiles2_ : { before : Dict String ProjectModule, after : Dict String ProjectModule } -> List { path : String, diff : Diff } -> List { path : String, diff : Diff }
+diffElmFiles2_ { before, after } list =
+    Dict.merge
+        (\path _ acc ->
+            { path = path, diff = Project.Removed } :: acc
+        )
+        (\path beforeModule afterModule acc ->
+            if beforeModule.contentHash /= afterModule.contentHash then
+                { path = path
+                , diff = Project.Edited { before = beforeModule.source, after = afterModule.source }
+                }
+                    :: acc
+
+            else
+                acc
+        )
+        (\_ _ acc -> acc)
+        before
+        after
+        list
+
+
+diffElmFiles2 : { before : ProjectInternals, after : ProjectInternals } -> List { path : String, diff : Diff } -> List { path : String, diff : Diff }
+diffElmFiles2 { before, after } list =
+    Dict.merge
+        (\path _ acc ->
+            { path = path, diff = Project.Removed } :: acc
+        )
+        (\path beforeModule afterModule acc ->
+            if ProjectModule.contentHash beforeModule /= ProjectModule.contentHash afterModule then
+                { path = path
+                , diff = Project.Edited { before = ProjectModule.source beforeModule, after = ProjectModule.source afterModule }
+                }
+                    :: acc
+
+            else
+                acc
+        )
+        (\_ _ acc -> acc)
+        before.modulesByPath
+        after.modulesByPath
+        list
 
 
 sendFixPrompt : List FixedFile -> RunReviewResult -> NumberOfErrors -> Model -> ( Model, TCmd Msg )
