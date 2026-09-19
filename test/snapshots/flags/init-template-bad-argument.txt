@@ -10,5 +10,5 @@ Here is the documentation for this flag:
         - elm-review init --template author/elm-review-configuration
         - elm-review init --template jfmengels/elm-review-config/package
         - elm-review init --template jfmengels/elm-review-config/application
-        - elm-review init --template jfmengels/elm-review-unused/example#master
+        - elm-review init --template jfmengels/elm-review-unused/example#main
 

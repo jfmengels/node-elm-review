@@ -10,7 +10,7 @@ Here is the documentation for this flag:
         This flag requires Internet access, even after the first run.
         Examples:
           - elm-review --template author/elm-review-configuration
-          - elm-review --template jfmengels/elm-review-unused/example#master
+          - elm-review --template jfmengels/elm-review-unused/example#main
 
         I recommend to only use this temporarily, and run elm-review init with
         this same flag to copy the configuration to your project.
