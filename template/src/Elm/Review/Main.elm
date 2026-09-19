@@ -927,50 +927,58 @@ confirmationDecoder ignoreProblematicDependencies =
             )
 
 
+type RunReviewResult
+    = RunReviewResultSuccess Model
+    | RunReviewResultNeed Model
+
+
 runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
 runReview { fixesAllowed } initialProject model =
-    let
-        { errors, rules, project, extracts, fixedErrors } =
-            initialProject
-                |> CliCommunication.timerStart model.communicationKey "run-review"
-                |> Rule.reviewV3
-                    (ReviewOptions.defaults
-                        |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
-                        |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
-                        |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
-                        |> ReviewOptions.withFileRemovalFixes (isFileRemovalFixesEnabled model.fixMode)
-                        |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
-                        |> SuppressedErrors.addToReviewOptions model.suppressedErrors
-                    )
-                    model.rules
-                |> CliCommunication.timerEnd model.communicationKey "run-review"
-    in
-    { model
-        | reviewErrors = errors
-        , reviewErrorsAfterSuppression =
-            errors
-                |> CliCommunication.timerStart model.communicationKey "apply-suppressions"
-                |> SuppressedErrors.apply model.unsuppressMode model.suppressedErrors
-                |> CliCommunication.timerEnd model.communicationKey "apply-suppressions"
-        , rules =
-            if model.isInitialRun || model.fixMode == Mode_DontFix then
-                rules
-
-            else
+    case
+        initialProject
+            |> CliCommunication.timerStart model.communicationKey "run-review"
+            |> Rule.reviewV4
+                (ReviewOptions.defaults
+                    |> ReviewOptions.withDataExtraction (model.enableExtract && model.reportMode == Json)
+                    |> ReviewOptions.withLogger (Just (CliCommunication.send model.communicationKey))
+                    |> ReviewOptions.withFixes (toReviewOptionsFixMode fixesAllowed model)
+                    |> ReviewOptions.withFileRemovalFixes (isFileRemovalFixesEnabled model.fixMode)
+                    |> ReviewOptions.withIgnoredFixes (\error -> RefusedErrorFixes.memberUsingRecord error model.refusedErrorFixes)
+                    |> SuppressedErrors.addToReviewOptions model.suppressedErrors
+                )
                 model.rules
-        , isInitialRun = False
-        , fixAllRules = rules
-        , project =
-            if model.fixMode == Mode_DontFix then
-                project
+            |> CliCommunication.timerEnd model.communicationKey "run-review"
+    of
+        Rule.ReviewV4_Success { errors, rules, project, extracts, fixedErrors } ->
+            { model
+                | reviewErrors = errors
+                , reviewErrorsAfterSuppression =
+                    errors
+                        |> CliCommunication.timerStart model.communicationKey "apply-suppressions"
+                        |> SuppressedErrors.apply model.unsuppressMode model.suppressedErrors
+                        |> CliCommunication.timerEnd model.communicationKey "apply-suppressions"
+                , rules =
+                    if model.isInitialRun || model.fixMode == Mode_DontFix then
+                        rules
 
-            else
-                model.project
-        , fixAllResultProject = project
-        , fixAllErrors = fixedErrors
-        , errorAwaitingConfirmation = NotAwaiting
-        , extracts = extracts
-    }
+                    else
+                        model.rules
+                , isInitialRun = False
+                , fixAllRules = rules
+                , project =
+                    if model.fixMode == Mode_DontFix then
+                        project
+
+                    else
+                        model.project
+                , fixAllResultProject = project
+                , fixAllErrors = fixedErrors
+                , errorAwaitingConfirmation = NotAwaiting
+                , extracts = extracts
+            }
+
+        Rule.ReviewV4_NeedPackageSources packageSources ->
+            Debug.todo ("Need packages: " ++ Debug.toString packageSources)
 
 
 reportOrFix : Model -> ( Model, Cmd msg )
