@@ -767,21 +767,22 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                         --    )
 
                     else
-                        { model
-                            | project = newProject
-                            , rules = model.fixAllRules
-                            , fixAllErrors = Dict.empty
-                            , errorsHaveBeenFixedPreviously = True
-                        }
-                            |> runReview { fixesAllowed = True } newProject
-                            |> reportOrFix
-                            -- TODO Separate sending files to be cached and computing the files.
-                            -- We may now already have found new fixes which are likely to be accepted.
-                            |> Tuple.mapSecond
-                                (\cmd ->
-                                    (cmd :: List.map (.source >> sendFileToBeCached newProject) rawFiles)
-                                        |> Cmd.batch
-                                )
+                        let
+                            ( newModel, cmd ) =
+                                { model
+                                    | project = newProject
+                                    , rules = model.fixAllRules
+                                    , fixAllErrors = Dict.empty
+                                    , errorsHaveBeenFixedPreviously = True
+                                }
+                                    |> runReview { fixesAllowed = True } newProject
+                                    |> reportOrFix
+                        in
+                        ( newModel
+                        , cmd
+                            :: List.map (\{ source } -> sendFileToBeCached newProject source) rawFiles
+                            |> Cmd.batch
+                        )
 
                 Ok Refused ->
                     case model.errorAwaitingConfirmation of
