@@ -3,6 +3,7 @@ port module Elm.Review.Main exposing (main)
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Elm.Docs
+import Elm.Parser
 import Elm.Project
 import Elm.Review.AstCodec as AstCodec
 import Elm.Review.CliCommunication as CliCommunication
@@ -15,6 +16,7 @@ import Elm.Review.UnsuppressMode as UnsuppressMode exposing (UnsuppressMode)
 import Elm.Review.Vendor.Levenshtein as Levenshtein
 import Elm.Syntax.File
 import Elm.Syntax.Range as Range exposing (Range)
+import Elm.Version
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Review.Fix as Fix exposing (Fix)
@@ -34,6 +36,9 @@ import Set exposing (Set)
 port requestReadingFiles : List { files : List { pattern : String, included : Bool }, excludedDirectories : List String } -> Cmd msg
 
 
+port requestNeededPackageSources : Encode.Value -> Cmd msg
+
+
 port collectFile : (Decode.Value -> msg) -> Sub msg
 
 
@@ -47,6 +52,9 @@ port collectReadme : (Decode.Value -> msg) -> Sub msg
 
 
 port collectExtraFiles : (Decode.Value -> msg) -> Sub msg
+
+
+port collectPackageSources : (Decode.Value -> msg) -> Sub msg
 
 
 port collectDependencies : (Decode.Value -> msg) -> Sub msg
@@ -544,6 +552,7 @@ type Msg
     | ReceivedElmJson Decode.Value
     | ReceivedReadme Decode.Value
     | ReceivedExtraFiles Decode.Value
+    | ReceivedPackageSources Decode.Value
     | ReceivedDependencies Decode.Value
     | ReceivedSuppressedErrors Decode.Value
     | UpdateSuppressedErrors Decode.Value
@@ -634,6 +643,40 @@ update msg model =
 
                 Err _ ->
                     ( model, Cmd.none )
+
+        ReceivedPackageSources rawFiles ->
+            let
+                fileDecoder : Decode.Decoder Elm.Syntax.File.File
+                fileDecoder =
+                    Decode.field "path" Decode.string
+                        |> Decode.andThen
+                            (\path ->
+                                Decode.field "source" Decode.string
+                                    |> Decode.andThen
+                                        (\file ->
+                                            case Elm.Parser.parseToFile file of
+                                                Ok ast ->
+                                                    Decode.succeed ast
+
+                                                Err _ ->
+                                                    Decode.fail ("Could not read file " ++ path)
+                                        )
+                            )
+            in
+            case Decode.decodeValue (Decode.dict (Decode.list fileDecoder)) rawFiles of
+                Ok files ->
+                    -- TODO Then do something
+                    ( { model | project = Project.addDependencyFiles files model.project }
+                    , abort "Success!!!"
+                    )
+
+                Err error ->
+                    ( model
+                    , abortWithDetails
+                        { title = "PROBLEM READING DEPENDENCY FILES"
+                        , message = "I could not read files coming from your dependencies:\n\n" ++ Decode.errorToString error
+                        }
+                    )
 
         ReceivedDependencies json ->
             case Decode.decodeValue (dependenciesDecoder model.ignoreProblematicDependencies) json of
@@ -954,9 +997,35 @@ unwrapRunReviewResult runReviewResult =
             data
 
         RunReviewResultNeedPackageSources model packageSources ->
+            let
+                depToVersion : Dict String String
+                depToVersion =
+                    Project.dependencies model.project
+                        |> Dict.map (\_ dep -> dependencyVersion dep)
+            in
             ( model
-            , abort (Debug.toString packageSources)
+            , Encode.list (encodeNeededPackageSources depToVersion) (Dict.toList packageSources)
+                |> requestNeededPackageSources
             )
+
+
+encodeNeededPackageSources : Dict String String -> ( String, List String ) -> Encode.Value
+encodeNeededPackageSources depToVersion ( depName, files ) =
+    Encode.object
+        [ ( "name", Encode.string depName )
+        , ( "version", Encode.string (Dict.get depName depToVersion |> Maybe.withDefault "1.0.0") )
+        , ( "files", Encode.list Encode.string files )
+        ]
+
+
+dependencyVersion : Dependency -> String
+dependencyVersion dependency =
+    case Dependency.elmJson dependency of
+        Elm.Project.Package { version } ->
+            Elm.Version.toString version
+
+        Elm.Project.Application _ ->
+            "1.0.0"
 
 
 runReview : { fixesAllowed : Bool } -> Project -> Model -> RunReviewResult Model
@@ -1798,6 +1867,7 @@ subscriptions =
         , collectElmJson ReceivedElmJson
         , collectReadme ReceivedReadme
         , collectExtraFiles ReceivedExtraFiles
+        , collectPackageSources ReceivedPackageSources
         , collectDependencies ReceivedDependencies
         , collectSuppressedErrors ReceivedSuppressedErrors
         , updateSuppressedErrors UpdateSuppressedErrors

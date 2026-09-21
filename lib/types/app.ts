@@ -1,10 +1,11 @@
-import type {
+import {
   Ast,
   Dependencies,
   ElmFile,
   ElmJsonData,
   LinksToRuleDocs,
   NonElmFiles,
+  PackageSourceFileResult,
   Readme,
   Source
 } from './content.ts';
@@ -23,6 +24,7 @@ export type ReviewApp = ElmApp<Ports>;
 
 export type Ports = {
   requestReadingFiles: SubscribePort<string[]>;
+  requestNeededPackageSources: SubscribePort<string[]>;
   collectElmJson: SendPort<ElmJsonData>;
   collectReadme: SendPort<Readme>;
   collectDependencies: SendPort<Dependencies>;
@@ -32,6 +34,7 @@ export type Ports = {
   updateSuppressedErrors: SendPort<SuppressedErrorsFile[]>;
   collectLinks: SendPort<LinksToRuleDocs>;
   collectExtraFiles: SendPort<NonElmFiles>;
+  collectPackageSources: SendPort<PackageSourceFileResult>;
   userConfirmedFix: SendPort<FixConfirmation>;
 
   startGeneratingSuppressions: SendPort<null>;

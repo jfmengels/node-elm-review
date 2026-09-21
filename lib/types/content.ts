@@ -20,6 +20,13 @@ export type NonElmFile = {
 
 export type NonElmFiles = Record<string, string>;
 
+export type PackageSourceFileResult = Record<string, PackageSourceFile>;
+
+export type PackageSourceFile = {
+  path: Path;
+  source: Source;
+};
+
 export type Readme = NonElmFile;
 
 export type ElmJsonData = {
@@ -65,6 +72,12 @@ export type SourceDirectories = Path[];
 export type ExtraFileRequest = {
   files: {pattern: string; included: boolean}[];
   excludedDirectories: string[];
+};
+
+export type PackageSourcesRequest = {
+  name: string;
+  version: string;
+  files: Path[];
 };
 
 export type ProjectFiles = {
