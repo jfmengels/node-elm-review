@@ -149,6 +149,7 @@ type alias Model =
     , errorsHaveBeenFixedPreviously : Bool
     , extracts : Dict String Encode.Value
     , ignoreProblematicDependencies : Bool
+    , followUpAction : Maybe FollowUpAction
 
     -- FIX
     , refusedErrorFixes : RefusedErrorFixes
@@ -293,6 +294,7 @@ init rawFlags =
       , errorAwaitingConfirmation = NotAwaiting
       , fixAllErrors = Dict.empty
       , ignoreProblematicDependencies = flags.ignoreProblematicDependencies
+      , followUpAction = Nothing
       , extracts = Dict.empty
       , communicationKey = flags.logger
       }
@@ -563,6 +565,12 @@ type Msg
     | RequestedToKnowIfAFixConfirmationIsExpected
 
 
+type FollowUpAction
+    = RunReview
+    | RunReviewAndReport
+    | GenerateSuppressionErrors
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -666,9 +674,24 @@ update msg model =
             case Decode.decodeValue (Decode.dict (Decode.list fileDecoder)) rawFiles of
                 Ok files ->
                     -- TODO Then do something
-                    ( { model | project = Project.addDependencyFiles files model.project }
-                    , abort "Success!!!"
-                    )
+                    let
+                        project : Project
+                        project =
+                            Project.addDependencyFiles files model.project
+
+                        followUpAction : FollowUpAction
+                        followUpAction =
+                            model.followUpAction |> Maybe.withDefault RunReview
+                    in
+                    case followUpAction of
+                        RunReview ->
+                            startReview_ { model | project = project, followUpAction = Nothing }
+
+                        RunReviewAndReport ->
+                            runReviewAndReport { model | project = project, followUpAction = Nothing }
+
+                        GenerateSuppressionErrors ->
+                            generateSuppressionErrors { model | project = project, followUpAction = Nothing }
 
                 Err error ->
                     ( model
@@ -759,24 +782,10 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     ( { model | links = links }, Cmd.none )
 
         GotRequestToReview ->
-            { model | fixAllErrors = Dict.empty }
-                |> runReview { fixesAllowed = True } model.project
-                |> mapRunReviewResult reportOrFix
-                |> unwrapRunReviewResult
+            startReview_ model
 
         GotRequestToGenerateSuppressionErrors ->
-            { model | fixAllErrors = Dict.empty }
-                |> runReview { fixesAllowed = False } model.project
-                |> mapRunReviewResult
-                    (\newModel ->
-                        ( newModel
-                        , newModel.reviewErrors
-                            |> SuppressedErrors.fromReviewErrors
-                            |> SuppressedErrors.encode []
-                            |> suppressionsResponse
-                        )
-                    )
-                |> unwrapRunReviewResult
+            generateSuppressionErrors model
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue (confirmationDecoder model.ignoreProblematicDependencies) confirmation of
@@ -813,15 +822,13 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                     else
                         let
                             ( newModel, cmd ) =
-                                { model
-                                    | project = newProject
-                                    , rules = model.fixAllRules
-                                    , fixAllErrors = Dict.empty
-                                    , errorsHaveBeenFixedPreviously = True
-                                }
-                                    |> runReview { fixesAllowed = True } newProject
-                                    |> mapRunReviewResult reportOrFix
-                                    |> unwrapRunReviewResult
+                                startReview_
+                                    { model
+                                        | project = newProject
+                                        , rules = model.fixAllRules
+                                        , fixAllErrors = Dict.empty
+                                        , errorsHaveBeenFixedPreviously = True
+                                    }
                         in
                         ( newModel
                         , cmd
@@ -837,30 +844,55 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 , fixAllResultProject = model.project
                             }
                                 |> refuseError error
-                                |> runReview { fixesAllowed = True } model.project
-                                |> mapRunReviewResult reportOrFix
-                                |> unwrapRunReviewResult
+                                |> startReview_
 
                         AwaitingFixAll ->
-                            { model
-                                | errorAwaitingConfirmation = NotAwaiting
-                                , fixAllResultProject = model.project
-                            }
-                                |> runReview { fixesAllowed = False } model.project
-                                |> mapRunReviewResult (makeReport model.suppressedErrors)
-                                |> unwrapRunReviewResult
+                            runReviewAndReport
+                                { model
+                                    | errorAwaitingConfirmation = NotAwaiting
+                                    , fixAllResultProject = model.project
+                                }
 
                         NotAwaiting ->
                             -- Should not be possible?
-                            runReview { fixesAllowed = False } model.project model
-                                |> mapRunReviewResult (makeReport model.suppressedErrors)
-                                |> unwrapRunReviewResult
+                            runReviewAndReport model
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
 
         RequestedToKnowIfAFixConfirmationIsExpected ->
             ( model, fixConfirmationStatus (model.errorAwaitingConfirmation /= NotAwaiting) )
+
+
+startReview_ : Model -> ( Model, Cmd Msg )
+startReview_ model =
+    { model | fixAllErrors = Dict.empty }
+        |> runReview { fixesAllowed = True } model.project
+        |> mapRunReviewResult reportOrFix
+        |> unwrapRunReviewResult RunReview
+
+
+runReviewAndReport : Model -> ( Model, Cmd Msg )
+runReviewAndReport model =
+    runReview { fixesAllowed = False } model.project model
+        |> mapRunReviewResult (makeReport model.suppressedErrors)
+        |> unwrapRunReviewResult RunReviewAndReport
+
+
+generateSuppressionErrors : Model -> ( Model, Cmd Msg )
+generateSuppressionErrors model =
+    { model | fixAllErrors = Dict.empty }
+        |> runReview { fixesAllowed = False } model.project
+        |> mapRunReviewResult
+            (\newModel ->
+                ( newModel
+                , newModel.reviewErrors
+                    |> SuppressedErrors.fromReviewErrors
+                    |> SuppressedErrors.encode []
+                    |> suppressionsResponse
+                )
+            )
+        |> unwrapRunReviewResult GenerateSuppressionErrors
 
 
 elmJsonDecoder : Decode.Decoder { path : String, raw : String, project : Elm.Project.Project }
@@ -990,8 +1022,8 @@ mapRunReviewResult f runReviewResult =
             RunReviewResultNeedPackageSources model packageSources
 
 
-unwrapRunReviewResult : RunReviewResult ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-unwrapRunReviewResult runReviewResult =
+unwrapRunReviewResult : FollowUpAction -> RunReviewResult ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+unwrapRunReviewResult followUpAction runReviewResult =
     case runReviewResult of
         RunReviewResultSuccess data ->
             data
@@ -1003,7 +1035,7 @@ unwrapRunReviewResult runReviewResult =
                     Project.dependencies model.project
                         |> Dict.map (\_ dep -> dependencyVersion dep)
             in
-            ( model
+            ( { model | followUpAction = Just followUpAction }
             , Encode.list (encodeNeededPackageSources depToVersion) (Dict.toList packageSources)
                 |> requestNeededPackageSources
             )
