@@ -718,21 +718,22 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
         GotRequestToReview ->
             { model | fixAllErrors = Dict.empty }
                 |> runReview { fixesAllowed = True } model.project
-                |> reportOrFix
+                |> mapRunReviewResult reportOrFix
+                |> unwrapRunReviewResult
 
         GotRequestToGenerateSuppressionErrors ->
-            let
-                newModel : Model
-                newModel =
-                    { model | fixAllErrors = Dict.empty }
-                        |> runReview { fixesAllowed = False } model.project
-            in
-            ( newModel
-            , newModel.reviewErrors
-                |> SuppressedErrors.fromReviewErrors
-                |> SuppressedErrors.encode []
-                |> suppressionsResponse
-            )
+            { model | fixAllErrors = Dict.empty }
+                |> runReview { fixesAllowed = False } model.project
+                |> mapRunReviewResult
+                    (\newModel ->
+                        ( newModel
+                        , newModel.reviewErrors
+                            |> SuppressedErrors.fromReviewErrors
+                            |> SuppressedErrors.encode []
+                            |> suppressionsResponse
+                        )
+                    )
+                |> unwrapRunReviewResult
 
         UserConfirmedFix confirmation ->
             case Decode.decodeValue (confirmationDecoder model.ignoreProblematicDependencies) confirmation of
@@ -776,7 +777,8 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                     , errorsHaveBeenFixedPreviously = True
                                 }
                                     |> runReview { fixesAllowed = True } newProject
-                                    |> reportOrFix
+                                    |> mapRunReviewResult reportOrFix
+                                    |> unwrapRunReviewResult
                         in
                         ( newModel
                         , cmd
@@ -793,7 +795,8 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                             }
                                 |> refuseError error
                                 |> runReview { fixesAllowed = True } model.project
-                                |> reportOrFix
+                                |> mapRunReviewResult reportOrFix
+                                |> unwrapRunReviewResult
 
                         AwaitingFixAll ->
                             { model
@@ -801,12 +804,14 @@ If I am mistaken about the nature of the problem, please open a bug report at ht
                                 , fixAllResultProject = model.project
                             }
                                 |> runReview { fixesAllowed = False } model.project
-                                |> makeReport model.suppressedErrors
+                                |> mapRunReviewResult (makeReport model.suppressedErrors)
+                                |> unwrapRunReviewResult
 
                         NotAwaiting ->
                             -- Should not be possible?
                             runReview { fixesAllowed = False } model.project model
-                                |> makeReport model.suppressedErrors
+                                |> mapRunReviewResult (makeReport model.suppressedErrors)
+                                |> unwrapRunReviewResult
 
                 Err err ->
                     ( model, abort <| Decode.errorToString err )
@@ -927,12 +932,34 @@ confirmationDecoder ignoreProblematicDependencies =
             )
 
 
-type RunReviewResult
-    = RunReviewResultSuccess Model
-    | RunReviewResultNeed Model
+type RunReviewResult a
+    = RunReviewResultSuccess a
+    | RunReviewResultNeedPackageSources Model (Dict String (List String))
 
 
-runReview : { fixesAllowed : Bool } -> Project -> Model -> Model
+mapRunReviewResult : (a -> b) -> RunReviewResult a -> RunReviewResult b
+mapRunReviewResult f runReviewResult =
+    case runReviewResult of
+        RunReviewResultSuccess model ->
+            RunReviewResultSuccess (f model)
+
+        RunReviewResultNeedPackageSources model packageSources ->
+            RunReviewResultNeedPackageSources model packageSources
+
+
+unwrapRunReviewResult : RunReviewResult ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+unwrapRunReviewResult runReviewResult =
+    case runReviewResult of
+        RunReviewResultSuccess data ->
+            data
+
+        RunReviewResultNeedPackageSources model packageSources ->
+            ( model
+            , abort (Debug.toString packageSources)
+            )
+
+
+runReview : { fixesAllowed : Bool } -> Project -> Model -> RunReviewResult Model
 runReview { fixesAllowed } initialProject model =
     case
         initialProject
@@ -976,9 +1003,10 @@ runReview { fixesAllowed } initialProject model =
                 , errorAwaitingConfirmation = NotAwaiting
                 , extracts = extracts
             }
+                |> RunReviewResultSuccess
 
         Rule.ReviewV4_NeedPackageSources packageSources ->
-            Debug.todo ("Need packages: " ++ Debug.toString packageSources)
+            RunReviewResultNeedPackageSources model packageSources
 
 
 reportOrFix : Model -> ( Model, Cmd msg )
