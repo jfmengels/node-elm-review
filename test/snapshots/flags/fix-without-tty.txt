@@ -1,0 +1,12 @@
+-- CANNOT PROMPT FOR FIXES -----------------------------------------------------
+
+I can't ask you to confirm fixes because stdin is not an interactive terminal.
+When using --fix, I wait for you to accept or refuse the proposed fixes, so in a
+script, CI or other non-interactive environment I would wait forever.
+
+If you want to apply all the available fixes without being prompted, run with
+--fix-all-without-prompt instead. I recommend committing your changes beforehand
+and reviewing the applied changes afterwards:
+
+    elm-review --fix-all-without-prompt
+
