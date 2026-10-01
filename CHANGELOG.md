@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- `--fix` and `--fix-all` now fail with an error when stdin is not an interactive terminal (for instance in scripts, CI or when run by an agent), instead of waiting indefinitely for a confirmation that can never be given. Use `--fix-all-without-prompt` in those environments.
 - Performance improvements around presenting review results.
 - Fixed `~` not being resolved to the home folder when used in CLI flags, such as `--config=~/some/path` (`--config ~/some/path` worked correctly).
   This was an issue for `--config`, `--ignore-dirs`, `--ignore-files`, `--elmjson`, `--compiler` and `--elm-format-path`.

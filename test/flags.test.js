@@ -166,6 +166,16 @@ test('Using both new-package and --offline', async () => {
   expect(output).toMatchFile(testName('offline-new-package'));
 });
 
+test('Running --fix when stdin is not a TTY', async () => {
+  const output = await TestCli.runAndExpectError(['--fix']);
+  expect(output).toMatchFile(testName('fix-without-tty'));
+});
+
+test('Running --fix-all when stdin is not a TTY', async () => {
+  const output = await TestCli.runAndExpectError(['--fix-all']);
+  expect(output).toMatchFile(testName('fix-all-without-tty'));
+});
+
 test('Flags are all unique', () => {
   /** @type Record<string, boolean> **/
   const seenFlags = {};
