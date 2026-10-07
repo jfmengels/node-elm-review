@@ -14,6 +14,8 @@ import * as process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {glob} from 'tinyglobby';
 import {$, cd} from 'zx';
+// @ts-expect-error Warning about using "assert" requiring different "module" value in TS. Haven't figured out how.
+import packageJson from '../package.json' assert {type: 'json'};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,18 +45,29 @@ if (nodeVersion !== expectedVersion) {
 }
 
 /**
- * @param {string} data
+ * @param {string} output
  * @returns {string}
  */
-const replaceScript = (data) => {
+const replaceScript = (output) => {
   const localPath = path.join(__dirname, '..');
-  return data.replace(new RegExp(localPath, 'g'), '<local-path>');
+  const anonymized = output
+    .split(TMP)
+    .join('<local-path>')
+    .split(localPath)
+    .join('<local-path>')
+    .split(packageJson.version)
+    .join('<version>');
+  try {
+    return JSON.stringify(JSON.parse(anonymized), null, 2);
+  } catch {
+    return anonymized;
+  }
 };
 
 const {AUTH_GITHUB, CI, REMOTE} = process.env;
 const AUTH = AUTH_GITHUB === undefined ? [] : [`--github-auth=${AUTH_GITHUB}`];
 
-const TEST_ARGS = ['--no-color', ...AUTH, '--FOR-TESTS'];
+const TEST_ARGS = ['--no-color', ...AUTH];
 
 const TEST_ARGS_REGEX = /--no-color --github-auth=[\w:]+ /;
 

@@ -35,7 +35,16 @@ git add --all
 git commit --message="Initialize project"
 ```
 
-### 3. Replace REPLACEME
+### 3. Add a license file
+
+I recommend using the `license` npm tool to generate one.
+You should choose the same license as in your `elm.json` file.
+
+```bash
+npx license
+```
+
+### 4. Replace REPLACEME
 
 In some of the files, notably `elm.json`, `README.md` and the rule files that were created for you, you will find a few `REPLACEME`. You will need to replace all of these and by things that make sense in their individual context.
 
@@ -43,7 +52,7 @@ Again, you can do this step at a later time if you prefer, but you will have to 
 
 Note that you will also have to supply the `summary` field in the `elm.json`, which should be close to the same thing that you will write in the README.
 
-### 4. (Can be done later) Create the project on GitHub
+### 5. (Can be done later) Create the project on GitHub
 
 You can do this step at a later time if you prefer.
 When you do, consider to

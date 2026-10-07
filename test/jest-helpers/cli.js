@@ -8,8 +8,33 @@ const {toMatchFile} = require('jest-file-snapshot');
 // @ts-expect-error(TS1479): zx doesn't ship CJS types.
 const {$} = require('zx');
 
+const packageJson = require('../../package.json');
+
 const cli = path.resolve(__dirname, '../../bin/elm-review');
+
 expect.extend({toMatchFile});
+
+/**
+ * Strip the path and version out of the given string.
+ * This is to remove the absolute paths from the output, which would break snapshots when run on different computers.
+ *
+ * Also formats the output to readable JSON is the output is JSON parsable.
+ *
+ * @param {string} output
+ * @returns {string}
+ */
+function anonymizeAndFormat(output) {
+  const anonymized = output
+    .split(path.dirname(__dirname))
+    .join('<local-path>')
+    .split(packageJson.version)
+    .join('<version>');
+  try {
+    return JSON.stringify(JSON.parse(anonymized), null, 2);
+  } catch {
+    return anonymized;
+  }
+}
 
 /**
  * @param {string[]} args
@@ -17,11 +42,12 @@ expect.extend({toMatchFile});
  * @returns {Promise<string>}
  */
 async function run(args, options) {
-  const output = await internalExec(['--FOR-TESTS', ...args], options);
+  const cwd = cwdFromOptions(options);
+  const output = await internalExec(args, cwd, options);
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
-  return output.stdout;
+  return anonymizeAndFormat(output.stdout);
 }
 
 /**
@@ -30,15 +56,16 @@ async function run(args, options) {
  * @returns {Promise<unknown>}
  */
 async function runAndExpectError(args, options) {
-  const output = await internalExec(['--FOR-TESTS', ...args], options);
+  const cwd = cwdFromOptions(options);
+  const output = await internalExec(args, cwd, options);
   if (output.exitCode !== 0) {
-    return output.stdout; // Should this be stderr?
+    return anonymizeAndFormat(output.stdout); // Should this be stderr?
   }
 
   throw new Error(
     `CLI did not exit with an exit code as expected. Here is its output:
 
-  ${output.text()}`
+  ${anonymizeAndFormat(output.text())}`
   );
 }
 
@@ -47,8 +74,9 @@ async function runAndExpectError(args, options) {
  * @param {Options | undefined} [options]
  * @returns {Promise<string>}
  */
-async function runWithoutTestMode(args, options) {
-  const output = await internalExec(args, options);
+async function runWithoutPostProcessing(args, options) {
+  const cwd = cwdFromOptions(options);
+  const output = await internalExec(args, cwd, options);
 
   if (output.exitCode !== 0) throw new Error(output.text());
 
@@ -57,12 +85,13 @@ async function runWithoutTestMode(args, options) {
 
 /**
  * @param {string[]} args
+ * @param {string} cwd
  * @param {Options} [options]
  * @returns {Promise<ProcessOutput>}
  */
-async function internalExec(args, options = {}) {
+async function internalExec(args, cwd, options = {}) {
   const result = await $({
-    cwd: cwdFromOptions(options),
+    cwd: cwd,
     env: {
       ...process.env,
       // Overriding `FORCE_COLOR` because Jest forcefully adds it as well,
@@ -75,15 +104,19 @@ async function internalExec(args, options = {}) {
 }
 
 /**
- * @param {Options} options
- * @returns {string | undefined}
+ * @param {Options | undefined} options
+ * @returns {string}
  */
 function cwdFromOptions(options) {
+  if (!options) {
+    return path.dirname(__dirname);
+  }
+
   if (options.project) {
     return path.resolve(__dirname, '..', options.project);
   }
 
-  return options.cwd;
+  return options.cwd ?? __dirname;
 }
 
 /**
@@ -113,5 +146,5 @@ function colors(options) {
 module.exports = {
   run,
   runAndExpectError,
-  runWithoutTestMode
+  runWithoutPostProcessing
 };
