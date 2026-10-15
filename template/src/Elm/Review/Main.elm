@@ -1,5 +1,8 @@
 port module Elm.Review.Main exposing (main)
 
+-- TODO app.ports.requestNeededPackageSources crashes on non-review packages?
+-- TODO Crash without error when using incorrect version of Elm? (on ecobalyse)
+
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Elm.Docs
