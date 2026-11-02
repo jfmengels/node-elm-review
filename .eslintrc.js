@@ -147,6 +147,7 @@ module.exports = {
     '@typescript-eslint/prefer-regexp-exec': 'error', // Recommended in v8
     'prefer-promise-reject-errors': 'off', // TSESlint provides an alternative
     '@typescript-eslint/prefer-promise-reject-errors': 'error', // Recommended in v8
+    'no-undef': 'off', // We use TS instead
 
     // Unsafe
     '@typescript-eslint/no-unsafe-assignment': 'off', // Blocked on typescript-eslint/typescript-eslint#1682.
